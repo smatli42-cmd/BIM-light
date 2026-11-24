@@ -186,4 +186,26 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     const w = row(c.ai.call<WallRow[]>('wall.list'), top!);
     expect(w.ends.start).toBe('free');
   });
+
+  it('výška a podlaží přes AI: stěna přes dvě podlaží, změna výšky 1.NP, smazání podlaží (plán stěn Z3)', () => {
+    interface HeightRow {
+      id: string;
+      bottom: number;
+      top: number;
+      wallHeight: number;
+    }
+    const c = start();
+    const [left] = room(c);
+    const [s2] = c.ai.call<string[]>('storey.create', { name: '2.NP', elevation: 3000, height: 3000 });
+    const h = () => c.ai.call<HeightRow[]>('wall.list').find((w) => w.id === left)!;
+    expect(h()).toMatchObject({ bottom: 0, top: 3000 });
+    c.ai.call('wall.setHeight', {
+      wallIds: [left],
+      height: { baseOffset: 0, top: { kind: 'storey', storeys: 2, offset: -200 } },
+    });
+    expect(h()).toMatchObject({ top: 5800, wallHeight: 5800 });
+    c.ai.call('storey.update', { storeyId: c.storeyId, height: 3100 });
+    expect(h().top).toBe(5900);
+    expect(() => c.ai.call('storey.delete', { storeyId: s2 })).toThrow(/prvků/);
+  });
 });

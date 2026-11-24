@@ -1,9 +1,8 @@
-// Příkazy projektu: podlaží a poloha ve světě (základy 1, 12, 17).
-// Změna výšky podlaží: prvky s vázanou výškou se přizpůsobí samy (výška se počítá, neukládá).
+// Příkazy projektu: nové podlaží a poloha ve světě (základy 1, 12, 17).
+// Úprava a smazání podlaží jsou v storey-edit.ts.
 import type { Id } from '../../ids/index.ts';
 import type { Georeference, Storey } from '../../model/types.ts';
 import { putStorey } from '../../model/update.ts';
-import { storeyOf } from '../lookup.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 
@@ -38,37 +37,6 @@ export const storeyCreate = defineCommand<{
       height: p.height,
     };
     return { model: putStorey(model, storey), created: [storey.id] };
-  },
-});
-
-export const storeyUpdate = defineCommand<{
-  storeyId: Id;
-  name?: string;
-  elevation?: number;
-  height?: number;
-}>({
-  name: 'storey.update',
-  label: 'Upravit podlaží',
-  description: 'Změní název, úroveň nebo výšku podlaží. Vázané výšky prvků se přepočítají samy.',
-  group: 'Projekt',
-  params: S.object(
-    {
-      storeyId: S.id,
-      name: { type: 'string' },
-      elevation: S.number('mm'),
-      height: S.number('mm', { exclusiveMinimum: 0 }),
-    },
-    ['storeyId'],
-  ),
-  run(model, p) {
-    const s = storeyOf(model, p.storeyId);
-    const next = {
-      ...s,
-      name: p.name ?? s.name,
-      elevation: p.elevation ?? s.elevation,
-      height: p.height ?? s.height,
-    };
-    return { model: putStorey(model, next) };
   },
 });
 

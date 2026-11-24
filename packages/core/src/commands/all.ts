@@ -10,7 +10,8 @@ import {
 import { dimensionSetValue } from './dimension/set-value.ts';
 import { dimensionEqualize } from './dimension/equalize.ts';
 import { dimensionCreateSet, dimensionFlipSide, dimensionPlace } from './dimension/place.ts';
-import { projectSetGeoreference, storeyCreate, storeyUpdate } from './project/storey.ts';
+import { projectSetGeoreference, storeyCreate } from './project/storey.ts';
+import { storeyDelete, storeyUpdate } from './project/storey-edit.ts';
 import { CORE_QUERIES } from '../queries/all.ts';
 import { CommandRegistry } from './registry.ts';
 import { displayImport, displaySetPenWidth, styleSaveFromView } from './view/display.ts';
@@ -33,7 +34,8 @@ import { wallCopy, wallPaste } from './wall/copy.ts';
 import { wallAlign, wallRectangle, wallTrimToCorner } from './wall/corner.ts';
 import { wallMoveEndpoint, wallSetLength } from './wall/endpoint.ts';
 import { wallMove, wallOffset, wallRotate } from './wall/move.ts';
-import { wallFlipSide, wallSetHeight, wallSetProperties, wallSetType } from './wall/properties.ts';
+import { wallFlipSide, wallSetProperties, wallSetType } from './wall/properties.ts';
+import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
 import { wallSplit } from './wall/split.ts';
 import { wallDeleteNode } from './wall/merge.ts';
 import { selectionDelete } from './edit/delete.ts';
@@ -58,6 +60,7 @@ import { wallTypeLoad } from './wall-type/load.ts';
 export const CORE_COMMANDS = [
   storeyCreate,
   storeyUpdate,
+  storeyDelete,
   projectSetGeoreference,
   wallCreate,
   wallChain,
@@ -72,6 +75,7 @@ export const CORE_COMMANDS = [
   wallSetThickness,
   wallSetReferenceLine,
   wallSetHeight,
+  wallSetTopProfile,
   wallSetProperties,
   wallSplit,
   wallDeleteNode,

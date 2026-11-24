@@ -2,13 +2,14 @@
 import { S } from '../commands/schema.ts';
 import { bandAt, bandThickness, DEFAULT_CUT_HEIGHT } from '../wall/layers.ts';
 import { allWalls } from '../wall/queries.ts';
+import { storeysOf } from '../model/storeys.ts';
 import { defineQuery } from './types.ts';
 
 export const projectInfo = defineQuery<Record<string, never>, unknown>({
   name: 'project.info',
   label: 'Přehled projektu',
   description:
-    'Vrátí přehled projektu: název, podlaží (id, název, výška ±0 a konstrukční výška v mm), typy stěn ' +
+    'Vrátí přehled projektu: název, podlaží odspodu (id, název, úroveň nad ±0 a konstrukční výška v mm), typy stěn ' +
     '(id, název, tloušťka v mm), pohledy (id, název, podlaží, styl, měřítko), styly zobrazení a počty ' +
     'stěn a kót. Začni tímto dotazem, abys znal id pro další příkazy.',
   group: 'Projekt',
@@ -17,12 +18,14 @@ export const projectInfo = defineQuery<Record<string, never>, unknown>({
     return {
       name: m.project.name,
       schemaVersion: m.schemaVersion,
-      storeys: Object.values(m.storeys).map((s) => ({
-        id: s.id,
-        name: s.name,
-        elevation: s.elevation,
-        height: s.height,
-      })),
+      storeys: Object.values(m.buildings)
+        .flatMap((b) => storeysOf(m, b.id))
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          elevation: s.elevation,
+          height: s.height,
+        })),
       wallTypes: Object.values(m.wallTypes).map((t) => ({
         id: t.id,
         name: t.name,

@@ -12,7 +12,8 @@ import type { ReferenceLine, Wall, WallSide } from '../../wall/types.ts';
 import { storeyOf, wallOf, wallTypeOf } from '../lookup.ts';
 import { PATH_SCHEMA, S } from '../schema.ts';
 import { defineCommand } from '../types.ts';
-import { assertPath, CONNECTION_SCHEMA, HEIGHT_SCHEMA } from './shared.ts';
+import { assertPath, CONNECTION_SCHEMA, HEIGHT_SCHEMA, placedHeight } from './shared.ts';
+import { FLAT_TOP } from '../../wall-height/top-profile.ts';
 
 export interface WallCreateParams {
   storeyId: string;
@@ -99,11 +100,8 @@ export const wallCreate = defineCommand<WallCreateParams>({
       path: p.path,
       referenceLine: p.referenceLine ?? 'face',
       side: p.side ?? 'left',
-      height: p.height ?? {
-        baseStoreyId: storey.id,
-        baseOffset: 0,
-        top: { kind: 'height', value: storey.height },
-      },
+      height: placedHeight(model, storey.id, p.height),
+      topProfile: FLAT_TOP,
     };
     const relations: WallConnection[] = withAuto(model, storey.id, p).map((c) => {
       wallOf(model, c.wallId);

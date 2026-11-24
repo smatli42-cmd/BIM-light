@@ -42,6 +42,7 @@ describe('rozhodnutí / základy 1–3, 9, 12, 17: model ve tvaru IFC', () => {
   it('základ 3 a 12: výška je 3D a může být vázaná na podlaží; změna podlaží ji přepočítá', () => {
     const f = fixture();
     const [s2] = f.run('storey.create', { name: '2.NP', elevation: 3200, height: 3000 });
+    expect(s2).toBeTruthy();
     const id = f.line(
       { x: 0, y: 0 },
       { x: 5000, y: 0 },
@@ -49,7 +50,7 @@ describe('rozhodnutí / základy 1–3, 9, 12, 17: model ve tvaru IFC', () => {
         height: {
           baseStoreyId: f.storeyId,
           baseOffset: 0,
-          top: { kind: 'storey', storeyId: s2, offset: -250 },
+          top: { kind: 'storey', storeys: 1, offset: -250 },
         },
       },
     );

@@ -119,6 +119,7 @@ const SPEC_SCHEMA = S.object(
     side: S.enumOf(['left', 'right'], 'strana'),
     referenceLine: S.enumOf(['face', 'axis', 'core-face'], 'referenční čára'),
     height: { type: 'object' },
+    topProfile: { type: 'object' },
     status: { type: 'string' },
     discipline: { type: 'string' },
   },

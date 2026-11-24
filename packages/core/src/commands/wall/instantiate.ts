@@ -3,6 +3,7 @@
 import { endPoint, type Path } from '../../geometry/index.ts';
 import type { Id, IdGenerator } from '../../ids/index.ts';
 import type { HeightBinding } from '../../model/height.ts';
+import { FLAT_TOP, type TopProfile } from '../../wall-height/top-profile.ts';
 import { IFC_CLASS } from '../../model/categories.ts';
 import type { Model, Status, VariantRef } from '../../model/types.ts';
 import { putElements, putRelations } from '../../model/update.ts';
@@ -11,7 +12,7 @@ import { connectionAt, inwardDir, isFreeEnd } from '../../wall/auto-connect.ts';
 import { connectionsOf, endToType } from '../../wall/queries.ts';
 import type { ReferenceLine, Wall, WallSide } from '../../wall/types.ts';
 import { storeyOf, wallTypeOf } from '../lookup.ts';
-import { assertPath } from './shared.ts';
+import { assertPath, placedHeight } from './shared.ts';
 import { withCrossings } from './create.ts';
 
 /** Popis stěny bez id (obsah schránky). */
@@ -21,6 +22,7 @@ export interface WallSpec {
   side: WallSide;
   referenceLine: ReferenceLine;
   height?: HeightBinding;
+  topProfile?: TopProfile;
   status?: Status;
   discipline?: string;
 }
@@ -38,6 +40,7 @@ export function specOf(w: Wall): WallSpec {
     side: w.side,
     referenceLine: w.referenceLine,
     height: w.height,
+    topProfile: w.topProfile,
     status: w.status,
     discipline: w.discipline,
   };
@@ -108,11 +111,8 @@ export function instantiateWalls(
       path: s.path,
       referenceLine: s.referenceLine,
       side: s.side,
-      height: s.height ?? {
-        baseStoreyId: storey.id,
-        baseOffset: 0,
-        top: { kind: 'height', value: storey.height },
-      },
+      height: placedHeight(model, storey.id, s.height),
+      topProfile: s.topProfile ?? FLAT_TOP,
     };
   });
   const id = (i: number) => (walls[i] as Wall).id;

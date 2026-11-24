@@ -1,6 +1,7 @@
 // Společné části příkazů stěny: schémata parametrů a pomocníci.
 import { pathLength, type Path, type PathEnd } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
+import { heightError, type HeightBinding } from '../../model/height.ts';
 import type { Model } from '../../model/types.ts';
 import { putElements } from '../../model/update.ts';
 import { propagateConnections, type WallMotion } from '../../wall/propagate.ts';
@@ -22,8 +23,16 @@ export const HEIGHT_SCHEMA: JsonSchema = S.object(
           ['kind', 'value'],
         ),
         S.object(
-          { kind: S.enumOf(['storey'], 'vázáno na podlaží'), storeyId: S.id, offset: S.number('mm') },
-          ['kind', 'storeyId', 'offset'],
+          {
+            kind: S.enumOf(['storey'], 'vázáno na podlaží + N'),
+            storeys: {
+              type: 'integer',
+              minimum: 0,
+              description: 'N = počet podlaží nad spodním (0 = stejné, 1 = podlaží nad…)',
+            },
+            offset: S.number('odsazení vršku od úrovně podlaží + N (mm)'),
+          },
+          ['kind', 'storeys', 'offset'],
         ),
       ],
     },
@@ -61,4 +70,14 @@ export function applyWallChanges(
     if (w && pathLength(w.path) <= 0.1) fail('invalid', 'Změna by zkrátila napojenou stěnu na nulu');
   }
   return next;
+}
+
+/** Výška vložené stěny: vazba se přenese na cílové podlaží (odsazení i N zůstanou, jako Archicad). */
+export function placedHeight(model: Model, storeyId: Id, h?: HeightBinding): HeightBinding {
+  const out: HeightBinding = h
+    ? { ...h, baseStoreyId: storeyId }
+    : { baseStoreyId: storeyId, baseOffset: 0, top: { kind: 'storey', storeys: 1, offset: 0 } };
+  const err = heightError(model, out);
+  if (err) fail('invalid', err);
+  return out;
 }
