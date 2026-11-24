@@ -1,6 +1,7 @@
 // Rozložení dočasných kót vybrané stěny na obrazovce (katalog kreslení, část 3).
 // Světle modré, číslo nad čarou podle ČSN; kolečko udělá trvalou kótu, trojúhelník volí konec.
 import {
+  edgePath,
   add,
   allWallGeometry,
   formatLength,
@@ -106,7 +107,7 @@ export function tempDimViews(s: Session): TempDimView[] {
   if (!g) return [];
   const out: TempDimView[] = [];
   for (const t of temporaryDimensions(g, [...geoms.values()], s.tempMode)) {
-    if (t.kind === 'cross') out.push(crossView(s, t, tangentAt(g.faces[t.own.face], 'start')));
+    if (t.kind === 'cross') out.push(crossView(s, t, tangentAt(edgePath(g, t.own.face), 'start')));
     else {
       const l = lengthView(s, t, id);
       if (l) out.push(l);

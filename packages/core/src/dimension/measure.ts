@@ -13,12 +13,13 @@ import {
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
+import { edgePath } from '../wall/edges.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { getWall } from '../wall/queries.ts';
 import type { AngularDimension, Dimension, FaceRef } from './types.ts';
 
 export function facePath(model: Model, ref: FaceRef) {
-  return wallGeometry(model, getWall(model, ref.wallId)).faces[ref.face];
+  return edgePath(wallGeometry(model, getWall(model, ref.wallId)), ref.face);
 }
 
 /** Vzdálenost mezi dvěma líci: od středu prvního líce kolmo k nosné čáře druhého. */

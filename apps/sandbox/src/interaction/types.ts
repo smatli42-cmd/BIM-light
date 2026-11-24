@@ -1,5 +1,5 @@
 // Společné typy interakce sandboxu (základ 20: přichytávání, tracker, kóty a výběr jsou jedna služba).
-import type { Dimension, Id, Vec2, WallFace } from '@bim-light/core';
+import type { Dimension, Id, Vec2, WallEdge } from '@bim-light/core';
 
 /** Událost myši: bod na obrazovce (px) i v modelu (mm) a modifikátory. */
 export interface PointerInfo {
@@ -54,7 +54,7 @@ export interface Overlay {
   /** Kóty, které se právě táhnou (kreslí se jen jejich náhled). */
   readonly hiddenDims?: readonly Id[];
   /** Zvýrazněný líc (nástroj Kóta, Zarovnat). */
-  readonly faces?: readonly { readonly wallId: Id; readonly face: WallFace }[];
+  readonly faces?: readonly { readonly wallId: Id; readonly face: WallEdge }[];
   /** Stěny zvýrazněné pod kurzorem. */
   readonly hover?: readonly Id[];
   /** Rámeček výběru v px. */

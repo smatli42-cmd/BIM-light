@@ -1,6 +1,6 @@
 // Pomocné značky přes výkres: světle modré [R, katalog kreslení 2] – přichycení, pomocné čáry,
 // uzly, dočasné kóty, zámky a kolečka. Jsou to prvky rozhraní, ne kresba modelu.
-import { allWallGeometry, tessellate, type Id, type Vec2 } from '@bim-light/core';
+import { allWallGeometry, edgePath, tessellate, type Id, type Vec2 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import type { GripView, PermDimView } from '../interaction/hits.ts';
 import type { TempDimView } from '../interaction/temp-layout.ts';
@@ -80,7 +80,8 @@ export function drawOverlay(ctx: Ctx, s: Session, o: Overlay) {
   const geoms = allWallGeometry(s.model, s.storeyId);
   ctx.lineWidth = 3;
   for (const f of o.faces ?? []) {
-    const path = geoms.get(f.wallId)?.faces[f.face];
+    const g = geoms.get(f.wallId);
+    const path = g ? edgePath(g, f.face) : undefined;
     if (!path) continue;
     poly(ctx, s, tessellate(path), false);
     ctx.stroke();

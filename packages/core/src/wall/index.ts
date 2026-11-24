@@ -6,3 +6,5 @@ export * from './joins.ts';
 export * from './offset.ts';
 export * from './propagate.ts';
 export * from './draw.ts';
+export * from './edges.ts';
+export * from './outline.ts';

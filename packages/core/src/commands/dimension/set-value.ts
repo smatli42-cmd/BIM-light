@@ -1,10 +1,11 @@
 // Příkaz: změna čísla v kótě (základ 25; pravidla-interakce: kóty 1, 9; katalog kreslení 3.3–3.4).
 // Pohne se vybraná stěna z dvojice, jinak ta, ze které kóta vznikla. Zámek se změnou čísla nemění.
-import { rotatePath } from '../../geometry/index.ts';
+import { pathLength, rotatePath } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
-import { angleGeometry, measureDimension } from '../../dimension/measure.ts';
+import { angleGeometry, facePath, measureDimension } from '../../dimension/measure.ts';
+import { isCap } from '../../wall/edges.ts';
 import type { Dimension } from '../../dimension/types.ts';
 import { dimensionOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
@@ -42,16 +43,19 @@ function applyValue(model: Model, d: Dimension, p: SetValueParams): Model {
   const current = measureDimension(model, d);
   const delta = p.value - current;
   if (d.kind === 'length') {
-    return setWallLength(model, {
-      wallId: d.ref.wallId,
-      end: p.end ?? 'end',
-      length: p.value,
-      face: d.ref.face,
-    });
+    const face = isCap(d.ref.face) ? 'ref' : d.ref.face;
+    return setWallLength(model, { wallId: d.ref.wallId, end: p.end ?? 'end', length: p.value, face });
   }
   const mover = p.moveRef ?? d.ownerRef;
   if (d.kind === 'linear') {
     const ref = d.refs[mover];
+    const cap = ref.face;
+    if (isCap(cap)) {
+      // Čelo volného konce: změna čísla prodlouží / zkrátí stěnu na tomto konci.
+      const length = pathLength(facePath(model, { wallId: ref.wallId, face: 'ref' }));
+      const at = (l: number) => () => setWallLength(model, { wallId: ref.wallId, end: cap, length: l });
+      return closest(d, p.value, [at(length + delta), at(length - delta)]);
+    }
     if (ref.wallId === d.refs[mover === 0 ? 1 : 0].wallId) {
       fail('invalid', 'Tloušťka stěny se mění v typu nebo příkazem Tloušťka stěny');
     }

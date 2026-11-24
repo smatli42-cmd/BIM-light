@@ -4,16 +4,17 @@ import { cross, tangentAt } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
-import { measureDimension } from '../../dimension/measure.ts';
+import { facePath, measureDimension } from '../../dimension/measure.ts';
 import type { Dimension, FaceRef } from '../../dimension/types.ts';
 import { rulesFor } from '../../rules/cross-rules.ts';
+import { isCap } from '../../wall/edges.ts';
 import { activeAnnotationLayer } from '../../view/effective.ts';
 import { viewOf, wallOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 
 export const FACE_REF_SCHEMA: JsonSchema = S.object(
-  { wallId: S.id, face: S.enumOf(['ref', 'opp', 'axis'], 'líc stěny') },
+  { wallId: S.id, face: S.enumOf(['ref', 'opp', 'axis', 'start', 'end'], 'líc stěny nebo čelo konce') },
   ['wallId', 'face'],
 );
 
@@ -26,9 +27,9 @@ export type DimensionCreateParams = { annotationLayerId?: Id; viewId?: Id } & (
 const common = { annotationLayerId: S.id, viewId: S.id, offset: S.number('poloha kótovací čáry (mm)') };
 const owner = { type: 'integer', enum: [0, 1] } as JsonSchema;
 
-function checkFace(model: Model, ref: FaceRef) {
+function checkFace(model: Model, ref: FaceRef, capAllowed = true) {
   wallOf(model, ref.wallId);
-  if (!rulesFor('wall').dimensionFaces.includes(ref.face))
+  if (!rulesFor('wall').dimensionFaces.includes(ref.face) || (!capAllowed && isCap(ref.face)))
     fail('invalid', `Na líc ${ref.face} nejde kótovat`);
 }
 
@@ -53,7 +54,7 @@ export function buildDimension(model: Model, p: DimensionCreateParams, id: Id, l
   };
   if (p.kind === 'linear') {
     p.refs.forEach((r) => checkFace(model, r));
-    const [a, b] = p.refs.map((r) => wallOf(model, r.wallId).path);
+    const [a, b] = p.refs.map((r) => facePath(model, r));
     if (a && b && Math.abs(cross(tangentAt(a, 'start'), tangentAt(b, 'start'))) > 0.01) {
       fail('invalid', 'Kótovat vzdálenost jde jen mezi rovnoběžnými líci');
     }
@@ -68,7 +69,7 @@ export function buildDimension(model: Model, p: DimensionCreateParams, id: Id, l
     };
   }
   if (p.kind === 'length') {
-    checkFace(model, p.ref);
+    checkFace(model, p.ref, false);
     const storeyId = wallOf(model, p.ref.wallId).storeyId;
     return { ...base, storeyId, kind: 'length', ref: p.ref, offset: p.offset ?? 500 };
   }

@@ -1,7 +1,7 @@
 // Průřezová pravidla na jednom místě (základ 7): tabulka „pravidlo × typ prvku“.
 // Kóty, zámky, přichytávání, posuny, mazání a hostitelé se řídí touto tabulkou, ne kódem v prvcích.
 // Nový typ prvku = nový řádek tabulky.
-import type { WallFace } from '../wall/types.ts';
+import type { WallEdge } from '../wall/edges.ts';
 
 export type ElementKind = 'wall' | 'dimension';
 
@@ -12,8 +12,8 @@ export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'face' | 'axis
 export type DeleteCascade = 'dimensions' | 'connections';
 
 export interface CrossRules {
-  /** Na co jde navázat kóta (líce). */
-  readonly dimensionFaces: readonly WallFace[];
+  /** Na co jde navázat kóta (líce, osa, čela volných konců). */
+  readonly dimensionFaces: readonly WallEdge[];
   /** Může mít délkovou kótu. */
   readonly lengthDimension: boolean;
   /** Může mít úhlovou kótu. */
@@ -36,7 +36,7 @@ export interface CrossRules {
 
 export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
   wall: {
-    dimensionFaces: ['ref', 'opp', 'axis'],
+    dimensionFaces: ['ref', 'opp', 'axis', 'start', 'end'],
     lengthDimension: true,
     angularDimension: true,
     lockable: true,

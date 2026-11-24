@@ -15,7 +15,7 @@ describe('rozhodnutí / základ 7: průřezová pravidla na jednom místě (prav
 
   it('základ 7: na stěnu jde kótovat líce i osu, délku i úhel; stěna jde zamknout kótou', () => {
     const w = rulesFor('wall');
-    expect(w.dimensionFaces).toEqual(['ref', 'opp', 'axis']);
+    expect(w.dimensionFaces).toEqual(['ref', 'opp', 'axis', 'start', 'end']);
     expect([w.lengthDimension, w.angularDimension, w.lockable]).toEqual([true, true, true]);
   });
 

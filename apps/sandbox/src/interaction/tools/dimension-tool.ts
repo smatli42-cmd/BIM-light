@@ -14,6 +14,9 @@ import { FACE_PX, type Session } from '../../session/session.ts';
 import { commitDrafts, draftOf, placeDrafts, type DraftItem, type Placed } from '../placing.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
 
+/** Kótovat jde líce i čela volných konců stěn (čelo = nepřipojený konec). */
+const DIM_EDGES = ['ref', 'opp', 'start', 'end'] as const;
+
 const same = (a: FaceRef, b: FaceRef) => a.wallId === b.wallId && a.face === b.face;
 
 export class DimensionTool implements Tool {
@@ -27,13 +30,14 @@ export class DimensionTool implements Tool {
   constructor(private readonly s: Session) {}
 
   hint(): string {
-    if (!this.prev) return 'Klikni na první líc (tolerance 12 px).';
+    if (!this.prev) return 'Klikni na první líc nebo čelo volného konce stěny (tolerance 12 px).';
     if (!this.items.length) return 'Klikni na druhý rovnoběžný líc.';
     return 'Další líc přidá kótu do řady, Shift+klik úsek přeskočí. Klik do prázdna řadu usadí, Esc ji nechá na místě.';
   }
 
   private face(p: PointerInfo): FaceHit | null {
-    return pickFace(selectableWallGeometry(this.s.model, this.s.view), p.world, this.s.viewport.px(FACE_PX));
+    const geoms = selectableWallGeometry(this.s.model, this.s.view);
+    return pickFace(geoms, p.world, this.s.viewport.px(FACE_PX), DIM_EDGES);
   }
 
   move(p: PointerInfo) {

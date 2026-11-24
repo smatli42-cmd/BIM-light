@@ -191,3 +191,21 @@ test('kóty 5, 10: otevřené pole pro text zůstane, i když myš vjede na výk
   await input.press('Enter');
   expect((await dims(page)).some((d) => d.textOverride === 'cca 1 m')).toBe(true);
 });
+
+test.describe('závada: kóta délky stěny s nepřipojeným koncem', () => {
+  test('nástroj Kóta: čelo volného konce + rovnoběžný líc stěny v rohu dá délku stěny', async ({ page }) => {
+    const a = await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
+    const b = await wall(page, { x: 4000, y: 0 }, { x: 4000, y: 3000 }, [
+      { end: 'start', wallId: a, at: 'ATEND' },
+    ]);
+    await page.keyboard.press('d');
+    await clickAt(page, 3850, 3000);
+    await clickAt(page, 2000, 0);
+    await clickAt(page, 2000, 1500);
+    const ds = await dims(page);
+    expect(ds.length).toBe(1);
+    const d = ds[0];
+    expect(d?.kind === 'linear' && d.refs.some((r) => r.wallId === b && r.face === 'end')).toBe(true);
+    expect((await perms(page)).length).toBe(1);
+  });
+});

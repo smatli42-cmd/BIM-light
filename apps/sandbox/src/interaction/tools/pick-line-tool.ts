@@ -1,7 +1,7 @@
 // Stěna z čáry (pravidla-interakce: kontrolní seznam „vybrat čáru → stěna“; Revit „Vybrat čáry“):
 // klik na líc existující stěny vytvoří novou stěnu po této čáře. 2D čáry přibudou se 2D kresbou
 // (základ 22); nástroj pak bude brát i je.
-import { pickFace, selectableWallGeometry, type FaceHit } from '@bim-light/core';
+import { edgePath, pickFace, selectableWallGeometry, type FaceHit } from '@bim-light/core';
 import { FACE_PX, type Session } from '../../session/session.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool } from '../types.ts';
 
@@ -32,7 +32,7 @@ export class PickLineTool implements Tool {
     s.run('wall.create', {
       storeyId: s.storeyId,
       typeId: s.wallTypeId,
-      path: g.faces[f.face],
+      path: edgePath(g, f.face),
       side: s.wallSide,
     });
   }

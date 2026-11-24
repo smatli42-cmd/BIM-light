@@ -2,12 +2,12 @@
 // Kóta je samostatný objekt modelu: patří podlaží, má skupinu anotací (základ 28)
 // a odkazuje se na líce konkrétních stěn, ne na souřadnice (základ 4).
 import type { Id } from '../ids/index.ts';
-import type { WallFace } from '../wall/types.ts';
+import type { WallEdge } from '../wall/edges.ts';
 
-/** Odkaz na líc stěny. */
+/** Odkaz na líc stěny nebo na čelo jejího volného konce ('start' / 'end'). */
 export interface FaceRef {
   readonly wallId: Id;
-  readonly face: WallFace;
+  readonly face: WallEdge;
 }
 
 interface DimensionBase {
