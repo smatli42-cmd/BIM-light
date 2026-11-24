@@ -159,4 +159,31 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     c.ai.call('wallType.delete', { typeId, replacementId: c.typeId });
     expect(row(c.ai.call<WallRow[]>('wall.list'), left!).thickness).toBe(300);
   });
+
+  it('napojení vrstev přes AI: obrys vrstev v rohu, kříž, nespojovat (plán stěn Z2)', () => {
+    interface LayerRow {
+      material: string;
+      area: number;
+    }
+    const c = start();
+    const [left, top] = room(c);
+    const layers = (id: string) => c.ai.call<{ layers: LayerRow[] }>('wall.get', { wallId: id }).layers;
+    expect(layers(left!)[0]!.area).toBeGreaterThan(0);
+    const [a] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: { kind: 'line', start: { x: 3000, y: 1000 }, end: { x: 3000, y: 3000 } },
+    });
+    const [b] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: { kind: 'line', start: { x: 2000, y: 2000 }, end: { x: 4000, y: 2000 } },
+    });
+    const before = layers(a!)[0]!.area;
+    c.ai.call('wall.cross', { wallId: a, toWallId: b });
+    expect(layers(a!)[0]!.area).toBeLessThan(before);
+    c.ai.call('wall.setJoin', { wallId: top, end: 'start', join: false });
+    const w = row(c.ai.call<WallRow[]>('wall.list'), top!);
+    expect(w.ends.start).toBe('free');
+  });
 });

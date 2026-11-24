@@ -1,7 +1,7 @@
 // Příkaz: nová stěna (katalog kreslení, část 1). Napojení na jiné stěny vzniká v témže kroku.
 import { endPoint, type Path, type PathEnd } from '../../geometry/index.ts';
 import type { Model } from '../../model/types.ts';
-import { connectionAt, inwardDir } from '../../wall/auto-connect.ts';
+import { connectionAt, crossingWalls, inwardDir } from '../../wall/auto-connect.ts';
 import type { HeightBinding } from '../../model/height.ts';
 import { IFC_CLASS } from '../../model/categories.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
@@ -28,6 +28,17 @@ export interface WallCreateParams {
   autoConnect?: boolean;
 }
 
+/** Kříž X se stěnami, které nová stěna protíná uprostřed (plán stěn Z2). */
+export function withCrossings(model: Model, wall: Wall, newId: () => string): Model {
+  const rels = crossingWalls(model, wall.storeyId, wall.path, wall.id).map((other): WallConnection => ({
+    id: newId(),
+    kind: 'wall-connection',
+    relating: { wallId: other, at: 'ATPATH' },
+    related: { wallId: wall.id, at: 'ATPATH' },
+  }));
+  return rels.length ? putRelations(model, rels) : model;
+}
+
 /** Zadaná napojení + samočinná pro konce, které žádné nemají. */
 function withAuto(model: Model, storeyId: string, p: WallCreateParams) {
   const out = [...(p.connections ?? [])];
@@ -46,6 +57,7 @@ export const wallCreate = defineCommand<WallCreateParams>({
   description:
     'Nakreslí stěnu po referenční čáře (výchozí vnitřní líc, tloušťka doleva od směru kreslení). ' +
     'Napojení na jiné stěny (roh nebo T) zadej v connections, nebo autoConnect: true napojí konce ' +
+    '(a stěny, které nová stěna protíná uprostřed, křížem X) ' +
     'ležící na volném konci jiné stěny (roh) nebo na jejím líci / ose (T) samo, jako při kreslení myší.',
   group: 'Stěna',
   icon: 'wall',
@@ -96,7 +108,9 @@ export const wallCreate = defineCommand<WallCreateParams>({
         related: { wallId: wall.id, at: endToType(c.end) },
       };
     });
-    const m = putRelations(putElements(model, [wall]), relations);
-    return { model: m, created: [wall.id, ...relations.map((r) => r.id)] };
+    let m = putRelations(putElements(model, [wall]), relations);
+    if (p.autoConnect) m = withCrossings(m, wall, ctx.newId);
+    const created = Object.keys(m.relations).filter((id) => !model.relations[id]);
+    return { model: m, created: [wall.id, ...created] };
   },
 });

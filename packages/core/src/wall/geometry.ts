@@ -1,73 +1,72 @@
-// Půdorysná geometrie stěny počítaná z modelu (základ 4): líce, hranice vrstev, obrys.
-// Nic z toho se neukládá; vždy se přepočítá z referenční čáry, typu a napojení.
-import {
-  carrierOf,
-  endPoint,
-  intersectNearest,
-  offsetPath,
-  tessellate,
-  withEnd,
-  type Path,
-  type PathEnd,
-  type Vec2,
-} from '../geometry/index.ts';
+// Půdorysná geometrie stěny počítaná z modelu (základ 4): líce, obrys a obrys každé vrstvy po napojení
+// (plán stěn Z2, složka junction/). Nic z toho se neukládá; vždy se přepočítá z referenční čáry, typu,
+// napojení a priorit materiálů.
+import { offsetPath, type Path, type PathEnd, type Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
+import { signedArea } from '../junction/half-plane.ts';
+import { trimPath } from '../junction/trim.ts';
+import type { EndJoin, LayerEnd } from '../junction/types.ts';
+import { wallJunction } from '../junction/wall.ts';
 import type { Model } from '../model/types.ts';
-import { endCut, type EndCut } from './joins.ts';
 import type { CrossSection, LayerSpan } from './layers.ts';
 import { allWalls, wallSection } from './queries.ts';
 import type { Wall, WallFace } from './types.ts';
 
+export type { EndJoin } from '../junction/types.ts';
+
 export interface LayerGeometry {
   readonly span: LayerSpan;
-  readonly polygon: readonly Vec2[];
+  /** Obrys vrstvy po napojení (obvykle jeden mnohoúhelník; hostitel v T / kříži jich může mít víc). */
+  readonly polygons: readonly (readonly Vec2[])[];
 }
 
 export interface WallGeometry {
   readonly wallId: Id;
   readonly section: CrossSection;
-  readonly cuts: Readonly<Record<PathEnd, EndCut>>;
-  /** Líce a osa oříznuté podle napojení. */
+  /** Druh napojení na každém konci. */
+  readonly cuts: Readonly<Record<PathEnd, { readonly join: EndJoin }>>;
+  /** Líce a osa oříznuté podle napojení vrstev. */
   readonly faces: Readonly<Record<WallFace, Path>>;
-  /** Vnitřní hranice mezi vrstvami (bez líců). */
-  readonly layerBoundaries: readonly Path[];
   readonly layers: readonly LayerGeometry[];
-  /** Obrys stěny (uzavřený mnohoúhelník, oblouky rozložené na body). */
+  /** Obrys stěny (největší smyčka sjednocení vrstev, oblouky rozložené na body). */
   readonly outline: readonly Vec2[];
+  /** Všechny smyčky obrysu (stěna rozdělená křížem jich může mít víc). */
+  readonly outlines: readonly (readonly Vec2[])[];
 }
 
-/** Rovnoběžná čára v offsetu `o`, na koncích oříznutá zakončeními. */
-export function trimmedOffset(path: Path, o: number, cuts: Record<PathEnd, EndCut>, limit: number): Path {
-  let p = offsetPath(path, o);
-  for (const end of ['start', 'end'] as const) {
-    const at = endPoint(p, end);
-    const hit = intersectNearest(carrierOf(p), cuts[end].cut, at, limit);
-    if (hit) p = withEnd(p, end, hit);
-  }
-  return p;
+/** Index vrstvy, ve které leží offset (líc: krajní vrstva). */
+function layerAt(section: CrossSection, o: number): number {
+  const i = section.layers.findIndex(
+    (l) => o >= Math.min(l.from, l.to) - 1e-9 && o <= Math.max(l.from, l.to) + 1e-9,
+  );
+  return Math.max(0, i);
 }
-
-const polygonBetween = (a: Path, b: Path): Vec2[] => [...tessellate(a), ...tessellate(b).reverse()];
 
 export function wallGeometry(model: Model, wall: Wall): WallGeometry {
+  const j = wallJunction(model, wall);
   const section = wallSection(model, wall);
-  const cuts = { start: endCut(model, wall, 'start'), end: endCut(model, wall, 'end') };
-  const limit = 6 * section.thickness + 1000;
-  const at = (o: number) => trimmedOffset(wall.path, o, cuts, limit);
-  const faces = { ref: at(section.faces.ref), opp: at(section.faces.opp), axis: at(section.faces.axis) };
-  const layers = section.layers.map((span) => ({
-    span,
-    polygon: polygonBetween(at(span.from), at(span.to)),
-  }));
-  const layerBoundaries = section.layers.slice(1).map((span) => at(span.from));
+  const empty: LayerEnd = { variants: [[]], extend: 0, extras: [] };
+  const face = (o: number, i: number) =>
+    trimPath(offsetPath(wall.path, o), {
+      start: j.ends.start.layers[i] ?? empty,
+      end: j.ends.end.layers[i] ?? empty,
+    });
+  const last = section.layers.length - 1;
+  const faces = {
+    ref: face(section.faces.ref, 0),
+    opp: face(section.faces.opp, last),
+    axis: face(section.faces.axis, layerAt(section, section.faces.axis)),
+  };
+  const outlines = j.outlines;
+  const outline = [...outlines].sort((a, b) => Math.abs(signedArea(b)) - Math.abs(signedArea(a)))[0] ?? [];
   return {
     wallId: wall.id,
     section,
-    cuts,
+    cuts: { start: { join: j.joins.start }, end: { join: j.joins.end } },
     faces,
-    layerBoundaries,
-    layers,
-    outline: polygonBetween(faces.ref, faces.opp),
+    layers: section.layers.map((span, i) => ({ span, polygons: j.layers[i] ?? [] })),
+    outline,
+    outlines,
   };
 }
 

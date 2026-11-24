@@ -6,6 +6,7 @@ import {
   endPoint,
   mul,
   nearestOnPath,
+  pathIntersections,
   tangentAt,
   type Path,
   type PathEnd,
@@ -70,4 +71,19 @@ export function connectionAt(
     return { wallId: w.id, at: 'ATPATH' };
   }
   return null;
+}
+
+/**
+ * Stěny podlaží, které křivka protíná uprostřed (dál než `CONNECT_TOL` od konců obou) a se kterými
+ * stěna `wallId` ještě nemá žádné napojení: kreslení přes stěnu = kříž X (plán stěn Z2).
+ */
+export function crossingWalls(model: Model, storeyId: Id, path: Path, wallId?: Id): Id[] {
+  const linked = new Set(
+    wallId ? connectionsOf(model, wallId).map((c) => sidesFor(c, wallId).other.wallId) : [],
+  );
+  const inside = (q: Vec2, p: Path) => dist(q, p.start) > CONNECT_TOL && dist(q, p.end) > CONNECT_TOL;
+  return allWalls(model)
+    .filter((w) => w.storeyId === storeyId && w.id !== wallId && !linked.has(w.id))
+    .filter((w) => pathIntersections(path, w.path).some((q) => inside(q, path) && inside(q, w.path)))
+    .map((w) => w.id);
 }

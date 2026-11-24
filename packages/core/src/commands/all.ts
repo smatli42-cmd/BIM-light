@@ -26,6 +26,7 @@ import {
   viewSetStyle,
 } from './view/view.ts';
 import { wallConnect, wallDelete, wallDisconnect } from './wall/connect.ts';
+import { wallCross, wallSetJoin } from './wall/join.ts';
 import { wallCreate } from './wall/create.ts';
 import { wallChain } from './wall/chain.ts';
 import { wallCopy, wallPaste } from './wall/copy.ts';
@@ -82,6 +83,8 @@ export const CORE_COMMANDS = [
   wallAlign,
   wallRectangle,
   wallDisconnect,
+  wallSetJoin,
+  wallCross,
   dimensionCreate,
   dimensionDelete,
   dimensionSetLocked,

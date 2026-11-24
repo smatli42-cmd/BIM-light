@@ -7,6 +7,7 @@ import type { Id } from '../ids/index.ts';
 import { materialFill, materialLines } from '../material/colors.ts';
 import type { Material } from '../material/types.ts';
 import type { ResolvedEffect } from '../style/types.ts';
+import type { Vec2 } from '../geometry/index.ts';
 import type { LayerGeometry } from './geometry.ts';
 
 /** Kde kresba najde materiály a šrafy projektu. */
@@ -18,9 +19,10 @@ export interface DrawLookup {
 /** Společný počátek rastru šraf v souřadnicích modelu (sousední stěny na sebe navazují). */
 export const HATCH_ORIGIN = { x: 0, y: 0 } as const;
 
-/** Šrafa (s výplní) jedné vrstvy, nebo nic. */
+/** Šrafa (s výplní) jednoho mnohoúhelníku vrstvy, nebo nic. */
 export function layerHatch(
   layer: LayerGeometry,
+  polygon: readonly Vec2[],
   g: ResolvedEffect,
   look: DrawLookup,
   wallId: Id,
@@ -36,7 +38,7 @@ export function layerHatch(
   return [
     {
       kind: 'hatch',
-      polygon: layer.polygon,
+      polygon,
       hatch,
       pen: own?.pen ?? m?.hatchPen ?? g.layerPen,
       lineColor,

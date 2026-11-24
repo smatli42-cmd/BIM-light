@@ -12,6 +12,7 @@ import { connectionsOf, endToType } from '../../wall/queries.ts';
 import type { ReferenceLine, Wall, WallSide } from '../../wall/types.ts';
 import { storeyOf, wallTypeOf } from '../lookup.ts';
 import { assertPath } from './shared.ts';
+import { withCrossings } from './create.ts';
 
 /** Popis stěny bez id (obsah schránky). */
 export interface WallSpec {
@@ -57,7 +58,7 @@ export function connectionsWithin(model: Model, ids: readonly Id[]): SpecConnect
   return out;
 }
 
-/** Volné konce nových stěn se napojí na volný konec jiné stěny (roh) nebo na její líc (T). */
+/** Volné konce nových stěn se napojí na volný konec jiné stěny (roh) nebo na její líc (T); stěny, které nová protíná, křížem. */
 function autoConnect(model: Model, newIds: readonly Id[], newId: IdGenerator): Model {
   let m = model;
   for (const id of newIds)
@@ -74,6 +75,7 @@ function autoConnect(model: Model, newIds: readonly Id[], newId: IdGenerator): M
       };
       m = putRelations(m, [rel]);
     }
+  for (const id of newIds) m = withCrossings(m, m.elements[id] as Wall, newId);
   return m;
 }
 

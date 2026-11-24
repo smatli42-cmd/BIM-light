@@ -38,7 +38,7 @@ describe('katalog-kresleni / část 1 a rozhodnutí 5: líce a tloušťka', () =
     expect(core.faces.ref.start.y).toBeCloseTo(985);
     expect(core.faces.opp.start.y).toBeCloseTo(1450);
     expect(core.layers).toHaveLength(3);
-    expect(core.layerBoundaries).toHaveLength(2);
+    expect(core.layers.every((l) => l.polygons.length === 1)).toBe(true);
   });
 
   it('katalog-kresleni / část 6.3: přepnutí referenční čáry stěnu nepohne', () => {
@@ -117,7 +117,8 @@ describe('základ 24: napojení stěn je uložený vztah (rohy, T napojení)', (
         connections: [{ end: 'start', wallId: arc, at: 'ATEND' }],
       },
     );
-    expect(geom(f, straight).cuts.start.join).toBe('corner');
-    expect(geom(f, arc).cuts.end.join).toBe('corner');
+    // Přímka navazuje na oblouk tečně, je tedy „v přímce“ (kolmý řez), plan-steny / Z2.
+    expect(geom(f, straight).cuts.start.join).toBe('straight');
+    expect(geom(f, arc).cuts.end.join).toBe('straight');
   });
 });

@@ -8,10 +8,9 @@ import type { Model } from '../model/types.ts';
 import { rulesFor } from '../rules/cross-rules.ts';
 import { elementFacts, type ElementFacts } from '../style/conditions.ts';
 import { resolveGraphics } from '../style/graphics.ts';
-import { drawWall } from '../wall/draw.ts';
+import { drawWalls as drawWallItems, type WallDrawItem } from '../wall/draw.ts';
 import type { DrawLookup } from '../wall/draw-hatch.ts';
 import { allWallGeometry } from '../wall/geometry.ts';
-import { teeGaps } from '../wall/tee-gaps.ts';
 import { allWalls } from '../wall/queries.ts';
 import { categoryState, detailOf, layerState } from './effective.ts';
 import type { View } from './types.ts';
@@ -36,7 +35,7 @@ export const isDimensionVisible = (model: Model, view: View, d: Dimension): bool
 function drawWalls(model: Model, view: View): Primitive[] {
   const detail = detailOf(model.display, view);
   const geoms = allWallGeometry(model, view.storeyId);
-  const out: Primitive[] = [];
+  const items: WallDrawItem[] = [];
   const look: DrawLookup = {
     material: (id) => model.materials[id],
     hatch: (id) => model.display.hatches[id],
@@ -46,10 +45,9 @@ function drawWalls(model: Model, view: View): Primitive[] {
     if (!geom || w.variant.kind !== 'main') continue;
     if (!categoryState(model.display, view, w.category).visible) continue;
     const g = resolveGraphics(model.display, view, elementFacts(model, w)).effect;
-    const gaps = teeGaps(model, geom, geoms);
-    out.push(...drawWall(geom, detail, g, look, gaps));
+    if (g.visible) items.push({ geom, g });
   }
-  return out;
+  return drawWallItems(items, detail, look);
 }
 
 /** Kresba pohledu jako seznam primitiv. */

@@ -2,6 +2,7 @@
 import { S } from '../commands/schema.ts';
 import { fail } from '../commands/types.ts';
 import { pathLength, type Path } from '../geometry/index.ts';
+import { signedArea } from '../junction/half-plane.ts';
 import type { Model } from '../model/types.ts';
 import { capPath } from '../wall/edges.ts';
 import { wallGeometry } from '../wall/geometry.ts';
@@ -29,7 +30,7 @@ function summary(m: Model, w: Wall) {
     ends: { start: g.cuts.start.join, end: g.cuts.end.join },
     connections: connectionsOf(m, w.id).map((c) => {
       const s = sidesFor(c, w.id);
-      return { id: c.id, own: s.own.at, otherWallId: s.other.wallId, other: s.other.at };
+      return { id: c.id, own: s.own.at, otherWallId: s.other.wallId, other: s.other.at, noJoin: !!c.noJoin };
     }),
   };
 }
@@ -42,7 +43,8 @@ export const wallList = defineQuery<{ storeyId?: string }, unknown>({
   description:
     'Vrátí stěny (volitelně jen jednoho podlaží): id, typ, tloušťka (mm), referenční čára (path, mm), ' +
     'strana tloušťky, stav, výška, délka referenčního líce po oříznutí v rozích (mm), druh konců ' +
-    '(free = volný, corner = roh, tee = T, multiple) a napojení na jiné stěny (ATSTART / ATEND / ATPATH).',
+    '(free = volný, corner = roh, tee = T, straight = v přímce, multiple = tři a více) a napojení na jiné ' +
+    'stěny (ATSTART / ATEND / ATPATH; obě ATPATH = kříž; noJoin = nespojovat).',
   group: 'Stěna',
   params: STOREY,
   run(m, p) {
@@ -57,8 +59,9 @@ export const wallGet = defineQuery<{ wallId: string }, unknown>({
   label: 'Detail stěny',
   description:
     'Vrátí jednu stěnu jako wall.list a navíc líce oříznuté podle napojení (ref = referenční, opp = ' +
-    'protější, axis = osa; začátek, konec, délka v mm), čela konců (start / end; kótovat jde jen volné) ' +
-    'a obrys. Hodí se pro kóty (dimension.create) a pro přesné navazování dalších stěn.',
+    'protější, axis = osa; začátek, konec, délka v mm), čela konců (start / end; kótovat jde jen volné), ' +
+    'obrys a obrys každé vrstvy po napojení v rozích (layers: materiál, funkce, plocha mm², body). ' +
+    'Hodí se pro kóty (dimension.create) a pro přesné navazování dalších stěn.',
   group: 'Stěna',
   params: S.object({ wallId: S.id }, ['wallId']),
   run(m, p) {
@@ -69,6 +72,12 @@ export const wallGet = defineQuery<{ wallId: string }, unknown>({
       faces: { ref: seg(g.faces.ref), opp: seg(g.faces.opp), axis: seg(g.faces.axis) },
       caps: { start: seg(capPath(g, 'start')), end: seg(capPath(g, 'end')) },
       outline: g.outline.map(pt),
+      layers: g.layers.map((l) => ({
+        material: m.materials[l.span.layer.materialId]?.name ?? '',
+        function: l.span.layer.function,
+        area: r1(l.polygons.reduce((s, poly) => s + Math.abs(signedArea(poly)), 0)),
+        polygons: l.polygons.map((poly) => poly.map(pt)),
+      })),
     };
   },
 });
