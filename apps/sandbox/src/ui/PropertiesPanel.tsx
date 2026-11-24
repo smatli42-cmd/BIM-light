@@ -3,6 +3,7 @@
 import { bandThickness, parseNumber, typeHasCore, type Wall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { LayerMaterials } from './LayerMaterials.tsx';
+import { WallHeightFields } from './WallHeightFields.tsx';
 import { RefLineSelect, TypeSelect } from './WallFields.tsx';
 import { useSession } from './use-session.ts';
 
@@ -25,6 +26,21 @@ const allHaveCore = (s: Session, walls: Wall[]) =>
     const t = s.model.wallTypes[w.typeId];
     return !!t && typeHasCore(t);
   });
+
+function WallActions({ s, ids }: { s: Session; ids: string[] }) {
+  return (
+    <>
+      <button data-testid="sel-flip" onClick={() => s.run('wall.flipSide', { wallIds: ids })}>
+        Přehodit stranu <kbd>Mezerník</kbd>
+      </button>
+      <Check
+        label="Dočasné kóty k osám"
+        checked={s.tempMode === 'axis'}
+        onSet={(v) => ((s.tempMode = v ? 'axis' : 'face'), s.changed())}
+      />
+    </>
+  );
+}
 
 function WallSection({ s }: { s: Session }) {
   const walls = s.selection.walls.map((id) => s.model.elements[id]).filter((w): w is Wall => !!w);
@@ -64,15 +80,9 @@ function WallSection({ s }: { s: Session }) {
           for (const id of ids) s.run('wall.setReferenceLine', { wallId: id, referenceLine: v });
         }}
       />
+      <WallHeightFields s={s} walls={walls} />
       {walls.length === 1 && <LayerMaterials s={s} wall={first} />}
-      <button data-testid="sel-flip" onClick={() => s.run('wall.flipSide', { wallIds: ids })}>
-        Přehodit stranu <kbd>Mezerník</kbd>
-      </button>
-      <Check
-        label="Dočasné kóty k osám"
-        checked={s.tempMode === 'axis'}
-        onSet={(v) => ((s.tempMode = v ? 'axis' : 'face'), s.changed())}
-      />
+      <WallActions s={s} ids={ids} />
     </section>
   );
 }

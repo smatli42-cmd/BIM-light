@@ -28,7 +28,7 @@ export default tseslint.config(
   },
   {
     // Jádro: bez DOM a bez API prohlížeče či disku (základy 9, 13).
-    files: ['packages/core/**/*.ts'],
+    files: ['packages/core/**/*.ts', 'packages/ifc/src/**/*.ts'],
     rules: {
       'no-restricted-globals': [
         'error',
