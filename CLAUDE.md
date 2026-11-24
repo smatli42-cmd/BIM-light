@@ -99,6 +99,16 @@ a `docs/STAV.md`.
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm run check:size`.
 - `npm run check` – vše kromě e2e najednou (před pushem).
 
+## Začátek na jiném počítači („pokračujeme“)
+
+Když uživatel napíše „pokračujeme“ (nebo začíná na počítači, kde ještě nic není), udělej sám:
+
+1. Repo: když chybí, `git clone https://github.com/smatli42-cmd/BIM-light.git`; jinak `git pull` na `main`.
+   Ověř `git status` (čisto) a že poslední commit odpovídá GitHubu.
+2. Node LTS (22+) a npm; `npm install` (nastaví i husky), `npx playwright install chromium`.
+3. `npm run check` a `npm run test:e2e` – musí být zelené. Když ne, nejdřív oprav a řekni uživateli.
+4. Přečti `docs/STAV.md` (hlavně „Další krok“) a pokračuj podle něj; náhled sandboxu přes `.claude/launch.json`.
+
 ## Etapa 0 – mimo rozsah
 
 Nástroj na kreslení oblouku (jen data a výpočty), okna a dveře, okótování celé stěny, Elektro, 3D,

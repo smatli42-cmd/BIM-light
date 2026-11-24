@@ -105,6 +105,11 @@ Krok 3:
 - **Osa** je kandidát přichycení s nejnižší prioritou (sama jen tam, kde v dosahu nic jiného není).
 - Prohlížečové testy ovládají sandbox přes `window.__bim` (čtení modelu, mm → px, příprava scény příkazy).
 
+## Další krok
+
+- Uživatel vyzkoušel krok 3 a našel několik závad; sepíše je po přechodu na druhý počítač (2026-11-24).
+  Nejdřív opravit tyto závady (každá: test, který ji chytí, pak oprava), teprve potom krok 4.
+
 ## Otevřené
 
 - Krok 4 (zobrazení v sandboxu): přepínač stylu, panel Vrstvy, skupiny anotací, nový pohled, měřítko.
