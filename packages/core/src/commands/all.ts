@@ -32,6 +32,8 @@ import { wallMoveEndpoint, wallSetLength } from './wall/endpoint.ts';
 import { wallMove, wallOffset, wallRotate } from './wall/move.ts';
 import { wallFlipSide, wallSetHeight, wallSetProperties, wallSetType } from './wall/properties.ts';
 import { wallSplit } from './wall/split.ts';
+import { wallDeleteNode } from './wall/merge.ts';
+import { selectionDelete } from './edit/delete.ts';
 import { wallSetReferenceLine, wallSetThickness } from './wall/thickness.ts';
 
 export const CORE_COMMANDS = [
@@ -52,6 +54,8 @@ export const CORE_COMMANDS = [
   wallSetHeight,
   wallSetProperties,
   wallSplit,
+  wallDeleteNode,
+  selectionDelete,
   wallConnect,
   wallCopy,
   wallPaste,
