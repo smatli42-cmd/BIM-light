@@ -240,7 +240,36 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 - Kóty, zámky a výběr zůstaly 2D beze změny (všechny dřívější testy zelené).
 - Testy: jádro, IFC a nástroje 432 (Vitest), prohlížeč 91 (Playwright), vše zelené.
 
+### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
+- **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
+  na papíře, opakované v rastru (dx, dy, posun řad, úhel). Rodina čar má navíc volitelný kolmý posun
+  (`shift`) pro střídání čar. Šrafa má příznak `derived` (základní / odvozená). Schéma projektu 5 → 6,
+  balíček zobrazení 2 → 3 (`hatch/migrate-v2.ts`); šrafy v knihovně mají verzi 2.
+- **Měřítko šraf ve stylu** (`hatchScale`, výchozí 1, rozsah 0,5–3, `hatch/scale.ts`): násobí všechny
+  rozměry šraf, tvar se nemění. Příkaz `style.setHatchScale`, v liště nahoře pole „Šrafy ×“.
+- **Knihovna přepsaná podle popisu**, rozteče a velikosti asi 1,6× větší; názvy a pořadí beze změny.
+- **Podařily se:** Obecné (plná + kratší střídavě), Terén, Zásypy, Zeminy – kamenivo / čárky / šipky,
+  Štěrk, Beton vyztužený a nevyztužený (plná + čerchovaná, u prostého řidčí), Beton – kroužky /
+  trojúhelníky / čárkovaná s kroužky, všechna Zdiva, Dílce, Sendvič (+ křížky a kroužky na pásech),
+  Izolace obecná (mřížka s kroužky), Akustická, Izolace – plástve / trojúhelníky / kroužky (šestiúhelníky),
+  proti vodě, Kámen, Kovy, Sklo, Ploché sklo (pásy ze tří čar), Plasty, Bourané (křížky +), Krytina.
+- **Zjednodušené:** Terén (rovnoměrné šikmé čáry bez zkrácení u horní hrany), Tepelná izolace (láhve
+  v řadách nad sebou, ne jedna souvislá křivka nahoru a dolů), Dřevo (řady „<“ bez nepravidelnosti),
+  Omítky / Sádrokarton / Anhydrit (náhodnost ze tří rastrů s nesoudělnými roztečemi, ne skutečně náhodně),
+  Kamenivo a Čárky (pevný vzor v buňce, opakuje se).
+- **Opraveno při kontrole:** záložky pravého panelu se po přidání „Podlaží“ nevešly (panel ujížděl
+  do strany); nyní se zalamují do dvou řádků.
+- Testy: jádro a nástroje 483 (Vitest, vč. kreslení všech 40 šraf v sandboxu), prohlížeč 91 (Playwright).
+
 ## Rozhodl Code (k potvrzení)
+
+Šrafy podle ČSN:
+- **Příznak odvozená** je podle katalogu šraf (13 položek). Podle normy by byly odvozené i Zdivo – mřížka,
+  Zdivo – hustá mřížka a Ploché sklo – katalog jsem neměnil, k rozhodnutí.
+- **Uložené projekty si nechávají své kopie šraf** (základ 21); nový vzhled dostane nový projekt nebo
+  šrafa znovu načtená z knihovny. Měřítko šraf se při migraci nastaví na 1.
+- Náhledy v knihovně šraf a v editoru typu kreslí šrafy v měřítku 1 (bez měřítka stylu).
+- Osa y motivu míří nahoru (na papíře), úhel jako u ostatních rodin.
 
 Stěny Z3:
 - **Vršek „podlaží + N“ se ukládá relativně** (N, ne id podlaží), jak říká zadání; úroveň N = úroveň N-tého
@@ -442,13 +471,14 @@ Krok 3:
 
 ## Další krok
 
+- Uživatel posoudí nové šrafy (záložka Šrafy, styl Projekt, pole „Šrafy ×“) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z3 (záložka Podlaží, výška vybrané stěny, Exportovat IFC a otevření v BIMvision).
   Potom stěny Z4 – otvory ve stěně (model Sonnet 5.5), stejnou větou „Pokračuj podle
   docs/instrukce-code-steny.md…“.
 
 ## Otevřené
 
-- **STAV.md je těsně pod limitem** (474 řádků, 39 KB). Návrh rozdělení: „Hotovo“ a „Rozhodl Code“
+- **STAV.md je na limitu** (přes 500 řádků). Návrh rozdělení: „Hotovo“ a „Rozhodl Code“
   etapy 0 (kroky 1–4, skupina A, šrafy) přesunout do `docs/STAV-etapa-0.md`, tady nechat odkaz – k souhlasu.
 
 - Připojení AI přes MCP (etapa 6): server nad jádrem a souborem projektu, nástroje Undo / Redo, uložení.

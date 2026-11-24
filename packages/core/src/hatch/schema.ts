@@ -4,6 +4,16 @@ import { S, type JsonSchema } from '../commands/schema.ts';
 const num: JsonSchema = { type: 'number' };
 const pos: JsonSchema = { type: 'number', exclusiveMinimum: 0 };
 
+const POINT: JsonSchema = S.object({ x: num, y: num }, ['x', 'y']);
+const CURVE: JsonSchema = S.object(
+  {
+    points: { type: 'array', items: POINT, minItems: 2 },
+    closed: { type: 'boolean' },
+    smooth: { type: 'boolean' },
+  },
+  ['points', 'closed', 'smooth'],
+);
+
 const FAMILY: JsonSchema = {
   oneOf: [
     S.object(
@@ -13,6 +23,7 @@ const FAMILY: JsonSchema = {
         spacing: pos,
         offset: num,
         dash: { type: 'array', items: pos },
+        shift: num,
       },
       ['kind', 'angle', 'spacing', 'offset', 'dash'],
     ),
@@ -39,6 +50,17 @@ const FAMILY: JsonSchema = {
       },
       ['kind', 'form', 'amplitude', 'wavelength', 'spacing', 'angle'],
     ),
+    S.object(
+      {
+        kind: S.enumOf(['motif'], 'motiv'),
+        curves: { type: 'array', items: CURVE, minItems: 1 },
+        dx: pos,
+        dy: pos,
+        rowShift: num,
+        angle: num,
+      },
+      ['kind', 'curves', 'dx', 'dy', 'rowShift', 'angle'],
+    ),
   ],
 };
 
@@ -49,10 +71,11 @@ export const HATCH_SCHEMA: JsonSchema = S.object(
     group: S.enumOf(['zeminy', 'beton', 'zdivo', 'izolace', 'drevo-kov-sklo', 'ostatni'], 'skupina'),
     order: { type: 'integer', minimum: 1 },
     variantOf: { type: 'string' },
+    derived: { type: 'boolean' },
     solid: { type: 'boolean' },
     families: { type: 'array', items: FAMILY },
     version: { type: 'integer', minimum: 1 },
     source: { type: 'object' },
   },
-  ['id', 'name', 'group', 'order', 'families', 'version'],
+  ['id', 'name', 'group', 'order', 'derived', 'families', 'version'],
 );

@@ -118,6 +118,8 @@ export interface Style {
   /** Popisky: co se popisuje (čísla místností, plochy…). */
   readonly labels: Readonly<Record<string, boolean>>;
   readonly defaultScale: number;
+  /** Měřítko šraf: násobí všechny rozměry šraf (0,5–3, výchozí 1). Mění velikost, ne tvar. */
+  readonly hatchScale: number;
   /** Skupina anotací, do které jde nová kóta. */
   readonly defaultAnnotationLayerId: Id;
   readonly source?: LibraryRef;

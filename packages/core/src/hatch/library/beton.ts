@@ -1,22 +1,29 @@
-// Knihovna šraf, skupina beton. Vzhled je návrh podle názvu (k porovnání s arditem).
-import { entry, lines, marks, type Hatch } from '../types.ts';
+// Knihovna šraf, skupina beton. Vzhled podle ČSN 01 3420: šikmé čáry 45° střídavě plné a čerchované,
+// odvozené s kroužky nebo trojúhelníčky mezi čarami. Rozměry v mm na papíře.
+import { entry, lines, motif, type Hatch } from '../types.ts';
+import { ring, tri } from './shapes.ts';
 
 const h = entry('beton');
-const PROSTY = [marks('dot', 0.25, 1.4, 1.2), marks('triangle', 0.6, 3.2, 2.8, 1.6, 15)];
+const S = 4.8;
+const FULL = lines(45, S);
 
 export const BETON: readonly Hatch[] = [
-  h(9, 'hatch.beton-vyztuzeny', 'Beton vyztužený (železobeton)', { families: [...PROSTY, lines(45, 2.5)] }),
-  h(10, 'hatch.beton-prosty', 'Beton nevyztužený (prostý)', { families: PROSTY }),
+  h(9, 'hatch.beton-vyztuzeny', 'Beton vyztužený (železobeton)', {
+    families: [FULL, lines(45, S, [3.2, 0.8, 0.3, 0.8], 0, S / 2)],
+  }),
+  h(10, 'hatch.beton-prosty', 'Beton nevyztužený (prostý)', {
+    families: [FULL, lines(45, S, [6.4, 1.2, 0.3, 1.2], 0, S / 2)],
+  }),
   h(11, 'hatch.beton-krouzky', 'Beton – kroužky', {
     variantOf: 'hatch.beton-prosty',
-    families: [marks('dot', 0.25, 1.4, 1.2), marks('circle', 0.8, 3.2, 2.8)],
+    families: [FULL, motif([ring(0, S / 2, 0.55)], 3.6, S, 0, 45)],
   }),
   h(12, 'hatch.beton-trojuhelniky', 'Beton – trojúhelníky', {
     variantOf: 'hatch.beton-prosty',
-    families: [marks('triangle', 0.6, 2, 1.8, 1, 15)],
+    families: [FULL, motif([tri(0, S / 2, 0.75)], 3.6, S, 0, 45)],
   }),
   h(13, 'hatch.beton-carkovana-krouzky', 'Beton – čárkovaná s kroužky', {
     variantOf: 'hatch.beton-prosty',
-    families: [lines(45, 2.5, [1.5, 1]), marks('circle', 0.8, 3.2, 2.8)],
+    families: [lines(45, S, [2.4, 1.2]), motif([ring(0, S / 2, 0.55)], 3.6, S, 1.8, 45)],
   }),
 ];

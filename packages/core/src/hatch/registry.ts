@@ -26,6 +26,13 @@ function familyErrors(f: HatchFamily, at: string): string[] {
     need(pos(f.size) && pos(f.dx) && pos(f.dy), 'velikost a rozteče musí být kladné');
   } else if (f.kind === 'wave') {
     need(pos(f.amplitude) && pos(f.wavelength) && pos(f.spacing), 'rozměry vlny musí být kladné');
+  } else if (f.kind === 'motif') {
+    need(pos(f.dx) && pos(f.dy), 'rozteče motivu musí být kladné');
+    need(f.curves.length > 0, 'motiv potřebuje aspoň jednu křivku');
+    const ok = f.curves.every(
+      (c) => c.points.length >= 2 && c.points.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y)),
+    );
+    need(ok, 'křivka motivu potřebuje aspoň 2 body s čísly x a y');
   } else out.push(`${at}: neznámý druh rodiny`);
   return out;
 }

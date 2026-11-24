@@ -96,6 +96,29 @@ function StyleSwitch({ s }: { s: Session }) {
   );
 }
 
+/** Měřítko šraf stylu (0,5–3): mění velikost všech šraf najednou, platí pro celý styl. */
+function HatchScale({ s }: { s: Session }) {
+  const style = styleOfView(s.model.display, s.view);
+  return (
+    <label class="muted" title="Násobí rozteče a velikosti všech šraf stylu (0,5–3)">
+      Šrafy ×
+      <input
+        data-testid="hatch-scale"
+        type="number"
+        min={0.5}
+        max={3}
+        step={0.1}
+        value={style.hatchScale}
+        style={{ width: '4.5em' }}
+        onChange={(e) => {
+          const v = Number(e.currentTarget.value);
+          if (v >= 0.5 && v <= 3) s.run('style.setHatchScale', { styleId: style.id, hatchScale: v });
+        }}
+      />
+    </label>
+  );
+}
+
 export function ViewBar({ session: s }: { session: Session }) {
   useSession(s);
   const [adding, setAdding] = useState(false);
@@ -123,6 +146,7 @@ export function ViewBar({ session: s }: { session: Session }) {
         onPick={(scale) => s.run('view.setScale', { viewId: v.id, scale })}
         testid="view-scale"
       />
+      <HatchScale s={s} />
       <label class="muted">
         Kóty do
         <select

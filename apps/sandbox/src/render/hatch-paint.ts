@@ -1,6 +1,15 @@
-// Kreslení šrafy z dat (základ 34): rodiny čar, značek a vlnovek v rastru se společným počátkem.
+// Kreslení šrafy z dat (základ 34): rodiny čar, značek, vlnovek a motivů v rastru se společným počátkem.
 // Rozměry jsou mm na papíře, na pixely je převádí `pxPerMm`. Kreslí do již oříznutého kontextu.
-import type { Hatch, HatchFamily, LineFamily, MarkFamily, Vec2, WaveFamily } from '@bim-light/core';
+import {
+  motifStrokes,
+  type Hatch,
+  type HatchFamily,
+  type LineFamily,
+  type MarkFamily,
+  type MotifFamily,
+  type Vec2,
+  type WaveFamily,
+} from '@bim-light/core';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -46,6 +55,7 @@ const at = (area: PaintArea, ex: Vec2, ey: Vec2, u: number, v: number): Vec2 => 
 function paintLines(ctx: Ctx, f: LineFamily, area: PaintArea) {
   const { ex, ey } = frame(f.angle);
   const s = f.spacing * area.pxPerMm;
+  const shift = (f.shift ?? 0) * area.pxPerMm;
   const r = localRange(area, ex, ey);
   if ((r.v1 - r.v0) / s > MAX_ITEMS) return;
   const dash = f.dash.map((d) => d * area.pxPerMm);
@@ -54,8 +64,8 @@ function paintLines(ctx: Ctx, f: LineFamily, area: PaintArea) {
   ctx.beginPath();
   for (let k = Math.floor(r.v0 / s); k <= Math.ceil(r.v1 / s); k++) {
     const u0 = r.u0 - ((f.offset * area.pxPerMm * k) % (period || 1));
-    const a = at(area, ex, ey, u0, k * s);
-    const b = at(area, ex, ey, r.u1, k * s);
+    const a = at(area, ex, ey, u0, k * s + shift);
+    const b = at(area, ex, ey, r.u1, k * s + shift);
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
   }
@@ -138,10 +148,28 @@ function paintWave(ctx: Ctx, f: WaveFamily, area: PaintArea) {
   ctx.stroke();
 }
 
+/** Motiv: lomené čáry z jádra (mm, osa y nahoru) převedené na obrazovku. */
+function paintMotif(ctx: Ctx, f: MotifFamily, area: PaintArea) {
+  const { ex, ey } = frame(f.angle);
+  const k = area.pxPerMm;
+  const rg = localRange(area, ex, ey);
+  const strokes = motifStrokes(f, { u0: rg.u0 / k, u1: rg.u1 / k, v0: -rg.v1 / k, v1: -rg.v0 / k });
+  ctx.beginPath();
+  for (const line of strokes) {
+    line.forEach((p, i) => {
+      const q = at(area, ex, ey, p.x * k, -p.y * k);
+      if (i) ctx.lineTo(q.x, q.y);
+      else ctx.moveTo(q.x, q.y);
+    });
+  }
+  ctx.stroke();
+}
+
 const PAINT: { [K in HatchFamily['kind']]: (ctx: Ctx, f: never, a: PaintArea) => void } = {
   lines: paintLines,
   marks: paintMarks,
   wave: paintWave,
+  motif: paintMotif,
 };
 
 /** Nakreslí šrafu do oříznutého kontextu (barvy a tloušťku čar nastaví volající). */

@@ -14,7 +14,7 @@ import { projectSetGeoreference, storeyCreate } from './project/storey.ts';
 import { storeyDelete, storeyUpdate } from './project/storey-edit.ts';
 import { CORE_QUERIES } from '../queries/all.ts';
 import { CommandRegistry } from './registry.ts';
-import { displayImport, displaySetPenWidth, styleSaveFromView } from './view/display.ts';
+import { displayImport, displaySetPenWidth, styleSaveFromView, styleSetHatchScale } from './view/display.ts';
 import { elementSetGraphicOverride } from './view/overrides.ts';
 import {
   viewCreate,
@@ -110,6 +110,7 @@ export const CORE_COMMANDS = [
   viewSetActiveAnnotationLayer,
   elementSetGraphicOverride,
   styleSaveFromView,
+  styleSetHatchScale,
   displayImport,
   displaySetPenWidth,
   materialCreate,

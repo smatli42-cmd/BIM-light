@@ -1,4 +1,4 @@
-// Příkazy nad nastavením zobrazení: Uložit jako styl, import balíčku, tabulka per.
+// Příkazy nad nastavením zobrazení: Uložit jako styl, import balíčku, tabulka per, měřítko šraf.
 // Žádný z nich nemění prvky modelu (základ 31).
 import type { Id } from '../../ids/index.ts';
 import { putView, setDisplay } from '../../model/update.ts';
@@ -10,6 +10,7 @@ import { detailOf, layerState } from '../../view/effective.ts';
 import { styleOf, viewOf } from '../lookup.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
+import { HATCH_SCALE_MAX, HATCH_SCALE_MIN } from '../../hatch/scale.ts';
 
 export const styleSaveFromView = defineCommand<{ viewId: Id; name: string }>({
   name: 'style.saveFromView',
@@ -82,5 +83,31 @@ export const displaySetPenWidth = defineCommand<{ pen: number; scale: number; mm
     } catch (e) {
       return fail('invalid', (e as Error).message);
     }
+  },
+});
+
+export const styleSetHatchScale = defineCommand<{ styleId: Id; hatchScale: number }>({
+  name: 'style.setHatchScale',
+  label: 'Měřítko šraf',
+  description:
+    'Nastaví měřítko šraf stylu (0,5–3, výchozí 1): násobí všechny rozteče a velikosti šraf najednou, ' +
+    'tvar se nemění. Platí pro všechny pohledy se stylem.',
+  group: 'Zobrazení',
+  params: S.object(
+    {
+      styleId: S.id,
+      hatchScale: S.number('násobek', { minimum: HATCH_SCALE_MIN, maximum: HATCH_SCALE_MAX }),
+    },
+    ['styleId', 'hatchScale'],
+  ),
+  run(model, p) {
+    const style = styleOf(model, p.styleId);
+    const d = model.display;
+    return {
+      model: setDisplay(model, {
+        ...d,
+        styles: { ...d.styles, [style.id]: { ...style, hatchScale: p.hatchScale } },
+      }),
+    };
   },
 });

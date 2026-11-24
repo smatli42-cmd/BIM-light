@@ -5,6 +5,7 @@ import { projectV1toV2 } from '../hatch/migrate-v1.ts';
 import { projectV2toV3 } from '../wall-type/migrate-v2.ts';
 import { projectV3toV4 } from '../junction/migrate-v3.ts';
 import { projectV4toV5 } from '../wall-height/migrate-v4.ts';
+import { projectV5toV6 } from '../hatch/migrate-v2.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -14,13 +15,14 @@ export const PROJECT_EXTENSION = '.bim';
 /**
  * Migrace projektu: klíč = verze, ze které se převádí. 1 → 2: šrafy jako knihovna (základ 34);
  * 2 → 3: prodloužení vrstev typu stěny (plán stěn Z1); 3 → 4: „nespojovat“ u napojení (Z2);
- * 4 → 5: vršek „podlaží + N“ a horní profil stěny (Z3).
+ * 4 → 5: vršek „podlaží + N“ a horní profil stěny (Z3); 5 → 6: měřítko šraf a odvozené šrafy.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
   2: projectV2toV3,
   3: projectV3toV4,
   4: projectV4toV5,
+  5: projectV5toV6,
 };
 
 export function serializeProject(model: Model): string {

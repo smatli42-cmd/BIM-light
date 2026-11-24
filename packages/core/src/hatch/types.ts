@@ -13,6 +13,8 @@ export interface LineFamily {
   readonly offset: number;
   /** Čárkování: střídavě čára / mezera (mm); prázdné = plná čára. */
   readonly dash: readonly number[];
+  /** Posun celé rodiny kolmo na čáry (mm); střídání dvou rodin se stejnou roztečí. */
+  readonly shift?: number;
 }
 
 export type MarkShape = 'dot' | 'circle' | 'triangle' | 'cross' | 'arrow' | 'hexagon';
@@ -42,7 +44,29 @@ export interface WaveFamily {
   readonly angle: number;
 }
 
-export type HatchFamily = LineFamily | MarkFamily | WaveFamily;
+/** Jedna křivka motivu: body v mm na papíře vůči středu motivu. */
+export interface MotifCurve {
+  readonly points: readonly { readonly x: number; readonly y: number }[];
+  /** Uzavřená (poslední bod se spojí s prvním). */
+  readonly closed: boolean;
+  /** Vyhlazená (oblá křivka přes body) místo lomené čáry. */
+  readonly smooth: boolean;
+}
+
+/**
+ * Motiv: jedna nebo více křivek (lomených nebo vyhlazených, otevřených nebo uzavřených) opakovaných
+ * v rastru s roztečí dx, dy, posunem každé druhé řady a úhlem (láhve tepelné izolace, „<“ dřeva…).
+ */
+export interface MotifFamily {
+  readonly kind: 'motif';
+  readonly curves: readonly MotifCurve[];
+  readonly dx: number;
+  readonly dy: number;
+  readonly rowShift: number;
+  readonly angle: number;
+}
+
+export type HatchFamily = LineFamily | MarkFamily | WaveFamily | MotifFamily;
 
 export type HatchGroup = 'zeminy' | 'beton' | 'zdivo' | 'izolace' | 'drevo-kov-sklo' | 'ostatni';
 
@@ -56,6 +80,8 @@ export interface Hatch {
   readonly order: number;
   /** Odvozená šrafa: varianta jiné šrafy (jen odkaz, žádný zvláštní druh). */
   readonly variantOf?: string;
+  /** Odvozené grafické označení (ČSN 01 3420 „odvozené“), jinak základní. */
+  readonly derived: boolean;
   /** Plná výplň barvou čar (vyčerněná izolace proti vodě). */
   readonly solid?: boolean;
   readonly families: readonly HatchFamily[];
@@ -65,13 +91,13 @@ export interface Hatch {
 }
 
 /** Pomocníci pro zápis dat knihovny. */
-export const lines = (angle: number, spacing: number, dash: number[] = [], offset = 0): LineFamily => ({
-  kind: 'lines',
-  angle,
-  spacing,
-  offset,
-  dash,
-});
+export const lines = (
+  angle: number,
+  spacing: number,
+  dash: number[] = [],
+  offset = 0,
+  shift = 0,
+): LineFamily => ({ kind: 'lines', angle, spacing, offset, dash, ...(shift ? { shift } : {}) });
 
 export const marks = (
   shape: MarkShape,
@@ -90,6 +116,28 @@ export const wave = (
   angle = 0,
 ): WaveFamily => ({ kind: 'wave', form, amplitude, wavelength, spacing, angle });
 
+type Pt = readonly [number, number];
+const curve = (pts: readonly Pt[], closed: boolean, smooth: boolean): MotifCurve => ({
+  points: pts.map(([x, y]) => ({ x, y })),
+  closed,
+  smooth,
+});
+/** Lomená čára motivu (otevřená). */
+export const polyline = (...pts: Pt[]): MotifCurve => curve(pts, false, false);
+/** Lomený uzavřený obrys motivu. */
+export const polygon = (...pts: Pt[]): MotifCurve => curve(pts, true, false);
+/** Vyhlazená křivka motivu (otevřená, nebo uzavřená smyčka). */
+export const smooth = (closed: boolean, ...pts: Pt[]): MotifCurve => curve(pts, closed, true);
+
+export const motif = (curves: MotifCurve[], dx: number, dy = dx, rowShift = 0, angle = 0): MotifFamily => ({
+  kind: 'motif',
+  curves,
+  dx,
+  dy,
+  rowShift,
+  angle,
+});
+
 /** Záznam knihovny ve skupině (pořadí, id, název, zbytek). */
 export const entry =
   (group: HatchGroup) =>
@@ -98,7 +146,8 @@ export const entry =
     name,
     group,
     order,
-    version: 1,
+    version: 2,
+    derived: !!rest.variantOf,
     families: [],
     ...rest,
   });

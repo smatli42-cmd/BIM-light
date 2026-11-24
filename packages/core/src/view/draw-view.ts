@@ -12,7 +12,9 @@ import { drawWalls as drawWallItems, type WallDrawItem } from '../wall/draw.ts';
 import type { DrawLookup } from '../wall/draw-hatch.ts';
 import { allWallGeometry } from '../wall/geometry.ts';
 import { allWalls } from '../wall/queries.ts';
-import { categoryState, detailOf, layerState } from './effective.ts';
+import { categoryState, detailOf, layerState, styleOfView } from './effective.ts';
+import { scaleHatch } from '../hatch/scale.ts';
+import type { Hatch } from '../hatch/types.ts';
 import type { View } from './types.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
@@ -36,9 +38,17 @@ function drawWalls(model: Model, view: View): Primitive[] {
   const detail = detailOf(model.display, view);
   const geoms = allWallGeometry(model, view.storeyId);
   const items: WallDrawItem[] = [];
+  const k = styleOfView(model.display, view).hatchScale ?? 1;
+  const scaled = new Map<string, Hatch | undefined>();
   const look: DrawLookup = {
     material: (id) => model.materials[id],
-    hatch: (id) => model.display.hatches[id],
+    hatch: (id) => {
+      if (!scaled.has(id)) {
+        const h = model.display.hatches[id];
+        scaled.set(id, h && scaleHatch(h, k));
+      }
+      return scaled.get(id);
+    },
   };
   for (const w of allWalls(model)) {
     const geom = geoms.get(w.id);

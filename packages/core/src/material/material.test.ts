@@ -18,7 +18,7 @@ describe('katalog-sraf-materialu / materiál odkazuje šrafu', () => {
     for (const m of Object.values(f.model.materials)) {
       const h = f.model.display.hatches[m.hatchId];
       expect(h, m.name).toBeTruthy();
-      expect(h?.source).toEqual({ libraryId: 'bim-light-hatches', itemId: m.hatchId, version: 1 });
+      expect(h?.source).toEqual({ libraryId: 'bim-light-hatches', itemId: m.hatchId, version: 2 });
     }
   });
 
