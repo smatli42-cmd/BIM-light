@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, etapa 0 / krok 3 – opravy závad po vyzkoušení.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, stěny Z1 – typ stěny a skladba.
 
 ## Hotovo
 
@@ -122,6 +122,31 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   u vybrané stěny materiály vrstev typu.
 - Testy: jádro a nástroje 316 (Vitest), prohlížeč 71 (Playwright).
 
+### Stěny: Z1 hotovo, 2026-11-24 (typ stěny a skladba)
+- **Složka `wall-type/`:** typ, pás a vrstva (přesunuté z `wall/types.ts`, ten je dál re-exportuje), vrstva má
+  nově prodloužení nahoře a dole (`extendTop`, `extendBottom`, výchozí 0; výpočet až Z3). Validace
+  (`validate.ts`: kladné tloušťky, existující materiály, jedno souvislé jádro, pásy), skladba
+  (`composition.ts`: jádro, stejná skladba, změna tloušťky), „Použití“ (`usage.ts`).
+- **Knihovna typů** (`wall-type/library.ts`, 8 vymyšlených typů): Zdivo 300, Příčka 125, Obvodová zateplená 465
+  (omítka 15 + zdivo 300 + EPS 150), Nosná zeď 330, Příčka 100, Příčka 150, ŽB stěna 200, SDK příčka 100.
+  Nový projekt dostane kopie všech s odkazem na původ (knihovna + klíč + verze, základ 21).
+- **Migrace projektu 2 → 3** (`wall-type/migrate-v2.ts`): vrstvy dostanou prodloužení 0. `SCHEMA_VERSION = 3`.
+- **Příkazy** (`commands/wall-type/`): `wallType.create`, `duplicate`, `rename`, `delete` (použitý jen
+  s náhradou), `purgeUnused`, `load` (z knihovny, chybějící materiály doplní), `addLayer`, `removeLayer`,
+  `moveLayer`, `updateLayer`. Každá změna typu prochází validací. `wall.setThickness` mění nejtlustší vrstvu
+  jádra (bez jádra nejtlustší vrstvu) a slučuje se s typem stejné skladby; `wall.setReferenceLine` odmítne
+  „líc jádra“ u typu bez jádra.
+- **Dotazy pro AI:** `wallType.list` (skladba, tloušťka, jádro, použití, původ), `wallType.library`;
+  krok scénáře AI (vlastní skladba, přiřazení, smazání s náhradou).
+- **Sandbox:** záložka **Typy stěn** (počet, hledání, tloušťka a použití v řádku, Nový typ, Vyčistit nepoužité,
+  Načíst z knihovny); **editor typu** (název, živý náhled řezu se šrafami a červenou referenční čarou, součet
+  tloušťky, vrstvy z popisu parametrů: materiál, tloušťka, funkce, prodloužení; ↑ ↓ ×, + Přidat vrstvu,
+  Použití, Duplikovat, Smazat s náhradou). Ve Vlastnostech je „Líc jádra“ zašedlý u typu bez jádra.
+- **Kresba:** beze změny z doplňku šraf – Projekt (střední) vrstvy se šrafami a čarami mezi vrstvami, Studie
+  (hrubá) jedna výplň; ověřeno testem. **Známé omezení:** každá stěna se kreslí zvlášť, rohy po vrstvách
+  nečistí (to je krok Z2).
+- Testy: jádro a nástroje 371 (Vitest), prohlížeč 84 (Playwright), vše zelené.
+
 #### Šrafy (návrh, k porovnání s arditem; rozměry mm na papíře)
 | # | Šrafa | Vzhled |
 |---|---|---|
@@ -167,6 +192,24 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 | 40 | Krytina | vodorovné 1,2 mm |
 
 ## Rozhodl Code (k potvrzení)
+
+Stěny Z1:
+- **Výškový pás** zůstává v datech jako {výška, vrstvy} (poslední pás výška null = do vršku); „od“ a „do“ se
+  počítají ze součtu (stejná informace, bez migrace).
+- **Nový projekt dostane všech 8 typů z knihovny** (jako šablona v Revitu); po „Vyčistit nepoužité“ jde typ
+  načíst zpět z knihovny. Vyčištění i smazání vždy nechá v projektu aspoň jeden typ.
+- **Názvy typů jsou v projektu jedinečné**; duplikát a nový typ po změně tloušťky dostanou „(2)“, „(3)“…
+  Duplikát nemá odkaz na knihovnu (je to nový typ).
+- **Referenční čára „líc jádra“ u typu bez jádra:** zvolit nejde (odmítne se, v UI zašedlé); když stěna typ
+  s jádrem ztratí (změna typu nebo vrstev), přepne se na „líc“ – poloha se nemění (bez jádra je to totéž).
+- **Úprava vrstev typu** (přidání, smazání, tloušťka) drží u stěn typu jejich referenční čáru na místě.
+- **Editor typu** volí referenční čáru pro náhled a pro nové stěny (referenční čára je vlastnost stěny,
+  ne typu). Nová vrstva se přidá na stranu tloušťky jako povrch 10 mm s materiálem poslední vrstvy.
+- **Prodloužení vrstvy** smí být i záporné (zkrácení); význam a kresba v kroku Z3.
+- **Klín a šikmé stěny (rozhodnutí A):** model nerovnoběžné líce nepřipouští (tvar jen přímá a oblouk).
+- Starý příkaz `wallType.setLayerMaterial` zůstává (panel Vlastnosti), nově s validací; obecný je
+  `wallType.updateLayer`.
+
 
 Krok 4:
 - Výběr pohledu je v liště nahoře (prohlížeč projektu přijde později); přepnutí pohledu zruší výběr.
@@ -269,8 +312,8 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel vyzkouší krok 4 a porovná knihovnu šraf s arditem. Potom stěny Z1 (`instrukce-code-steny.md`,
-  věta „Pokračuj podle docs/instrukce-code-steny.md…“).
+- Uživatel vyzkouší stěny Z1 (záložka Typy stěn). Potom stěny Z2 – napojování vrstev v rozích (model Opus 5.5),
+  stejnou větou „Pokračuj podle docs/instrukce-code-steny.md…“.
 
 ## Otevřené
 
@@ -281,14 +324,14 @@ Krok 3:
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
 - Jemná podrobnost (= střední); obtékání omítky v rozích různých typů; přerušení šrafy hostitele v T.
 
-## Největší soubory (po kroku 4 etapy 0)
+## Největší soubory (po stěnách Z1)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (259 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (278 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 246 | apps/sandbox/src/ui/PropertiesPanel.tsx |
 | 222 | apps/sandbox/src/interaction/tools/wall-tool.ts |
 | 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
 | 206 | apps/sandbox/e2e/kresleni.spec.ts |
+| 199 | apps/sandbox/src/ui/PropertiesPanel.tsx |
 | 192 | apps/sandbox/e2e/koty-docasne.spec.ts |
