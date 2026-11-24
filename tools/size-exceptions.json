@@ -1,0 +1,4 @@
+{
+  "$comment": "Výjimky z limitu velikosti (základ 33). Přidat jen se souhlasem uživatele: { file, limit, reason }.",
+  "exceptions": []
+}
