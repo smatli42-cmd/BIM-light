@@ -2,6 +2,7 @@
 // vybrané stěny). Každá změna modelu jde přes příkaz jádra (základ 6).
 import { bandThickness, parseNumber, type ReferenceLine, type Wall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
+import { LayerMaterials } from './LayerMaterials.tsx';
 import { useSession } from './use-session.ts';
 
 function TypeSelect(props: {
@@ -112,6 +113,7 @@ function WallSection({ s }: { s: Session }) {
           for (const id of ids) s.run('wall.setReferenceLine', { wallId: id, referenceLine: v });
         }}
       />
+      {walls.length === 1 && <LayerMaterials s={s} wall={first} />}
       <button data-testid="sel-flip" onClick={() => s.run('wall.flipSide', { wallIds: ids })}>
         Přehodit stranu <kbd>Mezerník</kbd>
       </button>
@@ -227,7 +229,7 @@ export function PropertiesPanel({ session }: { session: Session }) {
   const s = session;
   const dims = s.selection.dims.length;
   return (
-    <aside class="panel" data-testid="panel">
+    <>
       <WallSection s={s} />
       {dims > 0 && (
         <section>
@@ -239,6 +241,6 @@ export function PropertiesPanel({ session }: { session: Session }) {
       )}
       <NewWallSection s={s} />
       <OptionsSection s={s} />
-    </aside>
+    </>
   );
 }

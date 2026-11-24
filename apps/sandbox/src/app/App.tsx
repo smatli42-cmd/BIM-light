@@ -4,7 +4,7 @@ import { DrawingCanvas } from '../canvas/DrawingCanvas.tsx';
 import { Controller } from '../interaction/controller.ts';
 import { Session } from '../session/session.ts';
 import { CanvasOverlays, StatusBar } from '../ui/Overlays.tsx';
-import { PropertiesPanel } from '../ui/PropertiesPanel.tsx';
+import { SidePanel } from '../ui/SidePanel.tsx';
 import { Toolbar } from '../ui/Toolbar.tsx';
 import { installTestHook } from './test-hook.ts';
 
@@ -28,7 +28,7 @@ export function App() {
           <DrawingCanvas session={session} controller={controller} />
           <CanvasOverlays session={session} />
         </main>
-        <PropertiesPanel session={session} />
+        <SidePanel session={session} />
       </div>
       <StatusBar session={session} />
     </div>

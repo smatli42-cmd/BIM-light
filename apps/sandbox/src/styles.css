@@ -72,7 +72,7 @@ body,
   font-size: 0.8rem;
 }
 .panel {
-  width: 220px;
+  width: 260px;
   border-left: 1px solid var(--line);
 }
 .toolbar {
@@ -222,4 +222,64 @@ kbd {
   border: 1px solid #c62828;
   background: #ffffff;
   cursor: pointer;
+}
+
+/* Záložky pravého panelu, knihovna šraf a materiály (doplněk šraf a materiálů). */
+.panel .tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.panel .tabs button {
+  flex: 1;
+}
+.panel .tabs button.active {
+  background: #dbe8f6;
+  border-color: #7ea6d1;
+}
+.swatch {
+  display: block;
+  flex: none;
+}
+.hatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+.hatch-grid figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  text-align: center;
+}
+.material-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+.material-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+}
+.material-row .muted {
+  margin-left: auto;
+  font-size: 11px;
+}
+.material-detail,
+.layers {
+  padding: 6px 0 8px;
+}
+.layer-row {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+}
+.color-field {
+  display: flex;
+  gap: 4px;
 }
