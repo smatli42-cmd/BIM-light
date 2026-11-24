@@ -87,7 +87,11 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   během tažení se kreslí náhled celého modelu (navazující stěny jdou s uzlem) a dočasné kóty z něj.
 - **Mřížka** (katalog 2.6): ve Volbách, výchozí vypnutá, rozteč 100 mm; přichycení k uzlu mřížky má přednost
   před úhlovým krokem, konce / líce stěn před mřížkou.
-- Testy: jádro a nástroje 281 (Vitest), prohlížeč 67 (Playwright), vše zelené.
+- **Oprava napojení k jiné stěně:** bod ve vnějším rohu leží na lících dvou stěn; napojení v T si teď
+  vybere stěnu, která není s novou rovnoběžná (`connectionAt` dostává směr nové stěny).
+- **Rovné napojení** (stěny za sebou, i jiné tloušťky, i po rozdělení stěny): nový druh konce `straight`,
+  kolmé ukončení; čelo se kreslí jen v části, kterou navazující stěna nezakrývá.
+- Testy: jádro a nástroje 284 (Vitest), prohlížeč 68 (Playwright), vše zelené.
 
 ## Rozhodl Code (k potvrzení)
 
