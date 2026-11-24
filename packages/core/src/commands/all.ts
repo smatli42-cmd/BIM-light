@@ -36,6 +36,8 @@ import { wallFlipSide, wallSetHeight, wallSetProperties, wallSetType } from './w
 import { wallSplit } from './wall/split.ts';
 import { wallDeleteNode } from './wall/merge.ts';
 import { selectionDelete } from './edit/delete.ts';
+import { materialCreate, materialDelete, materialDuplicate, materialUpdate } from './material/edit.ts';
+import { wallTypeSetLayerMaterial } from './material/layer.ts';
 import { wallSetReferenceLine, wallSetThickness } from './wall/thickness.ts';
 
 export const CORE_COMMANDS = [
@@ -89,6 +91,11 @@ export const CORE_COMMANDS = [
   styleSaveFromView,
   displayImport,
   displaySetPenWidth,
+  materialCreate,
+  materialDuplicate,
+  materialUpdate,
+  materialDelete,
+  wallTypeSetLayerMaterial,
 ];
 
 /** Registr se všemi příkazy jádra. */

@@ -1,11 +1,12 @@
 // Přepis grafiky jednoho prvku (rozhodnutí 4): jen v tomto pohledu (patro 6) nebo všude (patro 5).
+import { withHatchOfEffect } from '../../hatch/project.ts';
 import type { Id } from '../../ids/index.ts';
 import { omitIds, putElements, putView } from '../../model/update.ts';
 import { EFFECT_SCHEMA } from '../../style/package-schema.ts';
 import type { GraphicEffect } from '../../style/types.ts';
 import { viewOf, wallOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
-import { defineCommand } from '../types.ts';
+import { defineCommand, fail } from '../types.ts';
 
 const IDS = { type: 'array', items: S.id, minItems: 1 } as JsonSchema;
 const EFFECT_OR_NULL: JsonSchema = { oneOf: [EFFECT_SCHEMA, { type: 'null' }] };
@@ -25,8 +26,11 @@ export const elementSetGraphicOverride = defineCommand<OverrideParams>({
     'null přepis zruší. Přepis prvku vždy vyhraje nad stylem i pravidly.',
   group: 'Zobrazení',
   params: S.object({ elementIds: IDS, effect: EFFECT_OR_NULL, viewId: S.id }, ['elementIds', 'effect']),
-  run(model, p) {
-    const walls = p.elementIds.map((id) => wallOf(model, id));
+  run(input, p) {
+    const walls = p.elementIds.map((id) => wallOf(input, id));
+    const display = withHatchOfEffect(input.display, p.effect);
+    if (!display) fail('not-found', 'Šrafa v přepisu neexistuje (viz hatch.list)');
+    const model = { ...input, display };
     if (p.viewId) {
       const v = viewOf(model, p.viewId);
       const effect = p.effect;
