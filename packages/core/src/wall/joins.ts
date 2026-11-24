@@ -21,7 +21,8 @@ import { connectionsOf, endToType, getWall, sidesFor, typeToEnd, wallSection } f
 import type { Wall } from './types.ts';
 import { leftOffsetOf } from './offset.ts';
 
-export type EndJoin = 'free' | 'corner' | 'tee' | 'multiple';
+/** straight = konce dvou rovnoběžných stěn za sebou (např. jiná tloušťka): kolmé ukončení. */
+export type EndJoin = 'free' | 'corner' | 'tee' | 'straight' | 'multiple';
 
 export interface EndCut {
   readonly join: EndJoin;
@@ -98,5 +99,5 @@ export function endCut(model: Model, wall: Wall, end: PathEnd): EndCut {
   const otherEnd = typeToEnd(other.at);
   if (otherEnd === null) return { join: 'tee', cut: teeCut(model, wall, end, otherWall) };
   const cut = cornerCut(model, wall, end, otherWall, otherEnd);
-  return cut ? { join: 'corner', cut } : square;
+  return cut ? { join: 'corner', cut } : { join: 'straight', cut: square.cut };
 }

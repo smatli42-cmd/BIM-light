@@ -103,11 +103,13 @@ export class WallTool implements Tool {
     if (!c || dist(c.pt, end) < 1) return;
     const closing = c.count >= 2 && dist(end, c.first) < 1 && c.firstWallId !== null;
     const conns: { end: 'start' | 'end'; wallId: Id; at: string }[] = [];
-    const startLink = c.lastWallId ? { wallId: c.lastWallId, at: 'ATEND' } : connectionAt(s, c.pt, []);
+    const startLink = c.lastWallId
+      ? { wallId: c.lastWallId, at: 'ATEND' }
+      : connectionAt(s, c.pt, [], sub(end, c.pt));
     if (startLink) conns.push({ end: 'start', ...startLink });
     const endLink = closing
       ? { wallId: c.firstWallId as Id, at: 'ATSTART' }
-      : connectionAt(s, end, c.lastWallId ? [c.lastWallId] : []);
+      : connectionAt(s, end, c.lastWallId ? [c.lastWallId] : [], sub(c.pt, end));
     if (endLink) conns.push({ end: 'end', ...endLink });
     const r = s.run('wall.create', {
       storeyId: s.storeyId,

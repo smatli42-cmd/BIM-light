@@ -1,7 +1,7 @@
 // Příkaz: nová stěna (katalog kreslení, část 1). Napojení na jiné stěny vzniká v témže kroku.
 import { endPoint, type Path, type PathEnd } from '../../geometry/index.ts';
 import type { Model } from '../../model/types.ts';
-import { connectionAt } from '../../wall/auto-connect.ts';
+import { connectionAt, inwardDir } from '../../wall/auto-connect.ts';
 import type { HeightBinding } from '../../model/height.ts';
 import { IFC_CLASS } from '../../model/categories.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
@@ -34,7 +34,7 @@ function withAuto(model: Model, storeyId: string, p: WallCreateParams) {
   if (!p.autoConnect) return out;
   for (const end of ['start', 'end'] as const) {
     if (out.some((c) => c.end === end)) continue;
-    const link = connectionAt(model, storeyId, endPoint(p.path, end));
+    const link = connectionAt(model, storeyId, endPoint(p.path, end), [], inwardDir(p.path, end));
     if (link) out.push({ end, ...link });
   }
   return out;

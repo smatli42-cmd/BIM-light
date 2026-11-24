@@ -1,9 +1,11 @@
 // Místa T napojení na hostiteli (základ 24, priorita materiálů): čáry hostitele (přivrácený líc a hranice
 // vrstev, kterými napojená stěna prochází) se mezi líci napojené stěny nekreslí – jeden souvislý řez.
+// U rovného napojení (stěny za sebou) se nekreslí část čela zakrytá navazující stěnou.
 import { carrierOf, endPoint, intersectNearest, paramOf, type Path } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import type { WallGeometry } from './geometry.ts';
+import { capPath } from './edges.ts';
 import { teeCutOffset } from './joins.ts';
 import { leftOffsetOf } from './offset.ts';
 import type { FaceGaps } from './outline.ts';
@@ -25,9 +27,32 @@ function gapOn(line: Path, g: WallGeometry, end: 'start' | 'end'): Interval | nu
   return a === b ? null : [Math.min(a, b), Math.max(a, b)];
 }
 
+/** Rovné napojení: část čela, kterou zakrývá čelo navazující stěny (parametry na vlastním čele). */
+function capGaps(model: Model, g: WallGeometry, geoms: ReadonlyMap<Id, WallGeometry>) {
+  const out: Partial<Record<'start' | 'end', Interval[]>> = {};
+  for (const c of connectionsOf(model, g.wallId)) {
+    const sd = sidesFor(c, g.wallId);
+    const own = typeToEnd(sd.own.at);
+    const other = typeToEnd(sd.other.at);
+    const og = geoms.get(sd.other.wallId);
+    if (!own || !other || !og || g.cuts[own].join !== 'straight') continue;
+    const mine = capPath(g, own);
+    const theirs = capPath(og, other);
+    const ts = [theirs.start, theirs.end].map((p) => Math.min(1, Math.max(0, paramOf(mine, p))));
+    const [a, b] = [Math.min(...ts), Math.max(...ts)];
+    if (b - a > 1e-9) (out[own] ??= []).push([a, b]);
+  }
+  return out;
+}
+
 /** Mezery v čarách hostitele podle stěn napojených na něj v T. */
 export function teeGaps(model: Model, host: WallGeometry, geoms: ReadonlyMap<Id, WallGeometry>): FaceGaps {
-  const out = { ref: [] as Interval[], opp: [] as Interval[], layers: {} as Record<number, Interval[]> };
+  const out = {
+    ref: [] as Interval[],
+    opp: [] as Interval[],
+    layers: {} as Record<number, Interval[]>,
+    caps: capGaps(model, host, geoms),
+  };
   const hostWall = getWall(model, host.wallId);
   const s = host.section;
   const lines: { key: 'ref' | 'opp' | number; offset: number; path: Path }[] = [

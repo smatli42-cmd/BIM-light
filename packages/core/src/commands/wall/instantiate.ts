@@ -7,7 +7,7 @@ import { IFC_CLASS } from '../../model/categories.ts';
 import type { Model, Status, VariantRef } from '../../model/types.ts';
 import { putElements, putRelations } from '../../model/update.ts';
 import type { ConnectionType, WallConnection } from '../../relation/types.ts';
-import { connectionAt, isFreeEnd } from '../../wall/auto-connect.ts';
+import { connectionAt, inwardDir, isFreeEnd } from '../../wall/auto-connect.ts';
 import { connectionsOf, endToType } from '../../wall/queries.ts';
 import type { ReferenceLine, Wall, WallSide } from '../../wall/types.ts';
 import { storeyOf, wallTypeOf } from '../lookup.ts';
@@ -64,7 +64,7 @@ function autoConnect(model: Model, newIds: readonly Id[], newId: IdGenerator): M
     for (const end of ['start', 'end'] as const) {
       const w = m.elements[id] as Wall;
       if (!isFreeEnd(m, id, end)) continue;
-      const link = connectionAt(m, w.storeyId, endPoint(w.path, end), [id]);
+      const link = connectionAt(m, w.storeyId, endPoint(w.path, end), [id], inwardDir(w.path, end));
       if (!link) continue;
       const rel: WallConnection = {
         id: newId(),

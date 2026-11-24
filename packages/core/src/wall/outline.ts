@@ -1,5 +1,6 @@
 // Obrysové čáry stěny: líce vždy, čelo konce jen u volného konce. Pokos v rohu ani čelo v T se
 // nekreslí a líc hostitele se v místě T napojení přeruší (napojené stěny = jeden souvislý řez).
+// U rovného napojení (stěny za sebou) se kreslí jen část čela, kterou nezakrývá navazující stěna.
 import { dist, pointAt, splitPath, tessellate, type Path, type Vec2 } from '../geometry/index.ts';
 import { capPath } from './edges.ts';
 import type { WallGeometry } from './geometry.ts';
@@ -14,6 +15,8 @@ export type GapList = readonly (readonly [number, number])[];
 export interface FaceGaps {
   readonly ref?: GapList;
   readonly opp?: GapList;
+  /** Mezery v čelech (rovné napojení: část čela, kterou zakrývá navazující stěna). */
+  readonly caps?: Readonly<Partial<Record<'start' | 'end', GapList>>>;
   /** Mezery v hranicích vrstev (index do `layerBoundaries`). */
   readonly layers?: Readonly<Record<number, GapList>>;
 }
@@ -67,9 +70,13 @@ function joinPieces(pieces: Vec2[][]): OutlineRun[] {
 /** Úseky obrysu; volné oba konce bez T = jeden uzavřený obrys. */
 export function outlineRuns(g: WallGeometry, gaps: FaceGaps = {}): OutlineRun[] {
   const pieces: Vec2[][] = [...facePieces(g.faces.ref, gaps.ref)];
-  if (g.cuts.end.join === 'free') pieces.push(tessellate(capPath(g, 'end')));
+  const capShown = (e: 'start' | 'end') => g.cuts[e].join === 'free' || g.cuts[e].join === 'straight';
+  if (capShown('end')) pieces.push(...facePieces(capPath(g, 'end'), gaps.caps?.end));
   const opp = facePieces(g.faces.opp, gaps.opp).map((p) => p.reverse());
   pieces.push(...opp.reverse());
-  if (g.cuts.start.join === 'free') pieces.push(tessellate(capPath(g, 'start')).reverse());
+  if (capShown('start')) {
+    const caps = facePieces(capPath(g, 'start'), gaps.caps?.start).map((p) => p.reverse());
+    pieces.push(...caps.reverse());
+  }
   return joinPieces(pieces);
 }

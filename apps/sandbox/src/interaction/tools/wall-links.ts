@@ -13,8 +13,8 @@ import type { Session } from '../../session/session.ts';
 export type Link = AutoLink;
 
 /** Kam se napojí konec nové stěny ležící v bodě `p` (nebo null). */
-export function connectionAt(s: Session, p: Vec2, exclude: readonly Id[]): Link | null {
-  return coreConnectionAt(s.model, s.storeyId, p, exclude);
+export function connectionAt(s: Session, p: Vec2, exclude: readonly Id[], dir?: Vec2): Link | null {
+  return coreConnectionAt(s.model, s.storeyId, p, exclude, dir);
 }
 
 /** Tloušťka typu stěny (první pás) pro náhled. */

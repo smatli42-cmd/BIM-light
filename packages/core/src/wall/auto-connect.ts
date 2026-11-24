@@ -1,6 +1,16 @@
 // Samočinné napojení konce stěny (základ 24), stejné pro myš i pro AI: konec na volném konci
 // jiné stěny = roh (ATSTART / ATEND), konec na líci nebo ose jiné stěny = T napojení (ATPATH).
-import { dist, endPoint, nearestOnPath, type PathEnd, type Vec2 } from '../geometry/index.ts';
+import {
+  cross,
+  dist,
+  endPoint,
+  mul,
+  nearestOnPath,
+  tangentAt,
+  type Path,
+  type PathEnd,
+  type Vec2,
+} from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import type { ConnectionType } from '../relation/types.ts';
@@ -19,12 +29,26 @@ export interface AutoLink {
 export const isFreeEnd = (m: Model, wallId: Id, end: PathEnd): boolean =>
   !connectionsOf(m, wallId).some((c) => sidesFor(c, wallId).own.at === endToType(end));
 
-/** Kam se napojí konec ležící v bodě `p` na podlaží; null = nikam. Roh má přednost před T. */
+/** Směr nové stěny od jejího konce dovnitř stěny (pro výběr hostitele v T). */
+export function inwardDir(path: Path, end: PathEnd): Vec2 {
+  const t = tangentAt(path, end);
+  return end === 'start' ? t : mul(t, -1);
+}
+
+/** Hostitel v T nesmí být se stěnou rovnoběžný (sin úhlu pod ~3°). */
+const PARALLEL = 0.05;
+
+/**
+ * Kam se napojí konec ležící v bodě `p` na podlaží; null = nikam. Roh má přednost před T.
+ * `dir` = směr nové stěny od tohoto konce: rovnoběžná stěna se jako hostitel v T přeskočí
+ * (bod ve vnějším rohu leží na lících dvou stěn, napojit se má na tu kolmou).
+ */
 export function connectionAt(
   model: Model,
   storeyId: Id,
   p: Vec2,
   exclude: readonly Id[] = [],
+  dir?: Vec2,
 ): AutoLink | null {
   const walls = allWalls(model).filter((w) => w.storeyId === storeyId && !exclude.includes(w.id));
   for (const w of walls)
@@ -39,7 +63,11 @@ export function connectionAt(
     const on = (['ref', 'opp', 'axis'] as const).some(
       (f) => nearestOnPath(g.faces[f], p).distance <= CONNECT_TOL,
     );
-    if (on) return { wallId: w.id, at: 'ATPATH' };
+    if (!on) continue;
+    const hit = nearestOnPath(w.path, p);
+    const t = tangentAt(w.path, hit.t < 0.5 ? 'start' : 'end');
+    if (dir && Math.abs(cross(t, dir)) < PARALLEL) continue;
+    return { wallId: w.id, at: 'ATPATH' };
   }
   return null;
 }

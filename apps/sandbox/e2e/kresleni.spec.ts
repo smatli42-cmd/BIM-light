@@ -180,3 +180,27 @@ test.describe('katalog-kresleni 2.6: mřížka', () => {
     expect(w?.path.end).toEqual({ x: 2500, y: 1000 });
   });
 });
+
+test.describe('závada: stěna k jiné stěně jiné šířky se někdy nenapojí', () => {
+  test('stěna nakreslená myší z vnějšího rohu se napojí v T na kolmou stěnu', async ({ page }) => {
+    const [, , , left] = await page.evaluate(() => {
+      const h = window.__bim!;
+      return h.run('wall.rectangle', {
+        storeyId: h.storeyId(),
+        typeId: h.typeId('Zdivo 300'),
+        a: { x: 0, y: 0 },
+        b: { x: 4000, y: 3000 },
+      });
+    });
+    await moveTo(page, 0, 0);
+    await page.keyboard.press('w');
+    await clickAt(page, -300, 3300);
+    await clickAt(page, -2000, 3300);
+    await page.keyboard.press('Escape');
+    const m = await model(page);
+    const rels = Object.values(m.relations);
+    const fresh = Object.values(m.elements).at(-1)!;
+    const link = rels.find((r) => r.related.wallId === fresh.id || r.relating.wallId === fresh.id);
+    expect(link?.relating).toEqual({ wallId: left, at: 'ATPATH' });
+  });
+});
