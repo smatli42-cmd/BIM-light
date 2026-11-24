@@ -93,6 +93,17 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   kolmé ukončení; čelo se kreslí jen v části, kterou navazující stěna nezakrývá.
 - Testy: jádro a nástroje 284 (Vitest), prohlížeč 68 (Playwright), vše zelené.
 
+### Krok 4 etapy 0 – zobrazení v sandboxu: hotovo, 2026-11-24 (etapa 0 tím hotová)
+- **Lišta pohledu nahoře** (`ui/ViewBar.tsx`): výběr pohledu, Nový pohled (podlaží + styl + měřítko, výchozí
+  měřítko ze stylu), přepínač stylu jedním klikem, „styl: Projekt (upraveno)“ s tlačítkem Vrátit, měřítko,
+  aktivní skupina anotací („Kóty do“).
+- **Panel Vrstvy** (záložka vpravo, `ui/LayersPanel.tsx`): kombinace vrstev stylu, oko a zámek u každé
+  vrstvy, hledání, × Zrušit úpravy, Uložit jako styl (pohled nový styl rovnou používá).
+- Vše přes příkazy jádra, které existovaly z kroku 2; nový dotaz pro AI `view.info` a krok scénáře AI.
+- Testy: jádro a nástroje 325 (Vitest), prohlížeč 78 (Playwright) podle katalogu pohledů (přepnutí stylu
+  nemění model ani kóty, kóta ze Studie skrytá v Projektu a po návratu beze změny, zamčená vrstva nejde
+  vybrat, upraveno a Vrátit, Uložit jako styl, nový pohled, měřítko, skupina anotací).
+
 ### Doplněk šraf a materiálů: hotovo, 2026-11-24
 - **Knihovna šraf** (`packages/core/src/hatch/`): šrafa = samostatná položka (id slug, název, skupina, pořadí,
   varianta, plná, rodiny čar / značek / vlnovek v mm na papíře, verze), žádná barva. 40 šraf v pořadí z arditu,
@@ -156,6 +167,11 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 | 40 | Krytina | vodorovné 1,2 mm |
 
 ## Rozhodl Code (k potvrzení)
+
+Krok 4:
+- Výběr pohledu je v liště nahoře (prohlížeč projektu přijde později); přepnutí pohledu zruší výběr.
+- Ikony oka a zámku jsou zatím znaky (👁, 🔒); kostka „zobrazit ve 3D“ přijde s 3D.
+- Skupina anotací se volí v liště („Kóty do“), ne v panelu Vrstvy, aby byla po ruce při kótování.
 
 Doplněk šraf a materiálů:
 - **Velikost šrafy na obrazovce:** podle zadání stejný koeficient jako tloušťky čar (mm papíru × 96/25,4 px),
@@ -253,22 +269,21 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel porovná knihovnu šraf s arditem (záložka Šrafy). Pak podle `instrukce-code-srafy.md`: krok 4
-  etapy 0 (zobrazení v sandboxu), potom stěny Z1 (`instrukce-code-steny.md`).
+- Uživatel vyzkouší krok 4 a porovná knihovnu šraf s arditem. Potom stěny Z1 (`instrukce-code-steny.md`,
+  věta „Pokračuj podle docs/instrukce-code-steny.md…“).
 
 ## Otevřené
 
 - Připojení AI přes MCP (etapa 6): server nad jádrem a souborem projektu, nástroje Undo / Redo, uložení.
 
-- Krok 4 (zobrazení v sandboxu): přepínač stylu, panel Vrstvy, skupiny anotací, nový pohled, měřítko.
 - Skupina zarovnaných kót zatím nedrží společnou polohu čáry po změně geometrie (kóty 4, druhá věta):
   poloha čáry je odsazení od středu líce, po prodloužení stěny se řada může rozejít. Návrh: uložit polohu
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
 - Jemná podrobnost (= střední); obtékání omítky v rozích různých typů; přerušení šrafy hostitele v T.
 
-## Největší soubory (po doplňku šraf a materiálů)
+## Největší soubory (po kroku 4 etapy 0)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (255 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (259 souborů).
 
 | Řádky | Soubor |
 |---|---|
