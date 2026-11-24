@@ -17,7 +17,8 @@ export function snapGeometry(model: Model, storeyId: Id, exclude?: ReadonlySet<I
 export function resolveSnap(geoms: readonly WallGeometry[], raw: Vec2, o: SnapOptions): SnapResult {
   if (o.disabled) return { point: raw, snap: null, guides: [] };
   const from = o.from ?? null;
-  const list = snapCandidates(geoms, raw, o.tolerance, from);
+  const ray = { prevDir: o.prevDir ?? null, orthoOnly: o.orthoOnly ?? false };
+  const list = snapCandidates(geoms, raw, o.tolerance, from, ray);
   if (list.length) {
     const i = (((o.cycle ?? 0) % list.length) + list.length) % list.length;
     const c = list[i];

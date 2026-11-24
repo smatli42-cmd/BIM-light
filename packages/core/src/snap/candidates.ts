@@ -18,6 +18,7 @@ import type { Id } from '../ids/index.ts';
 import { rulesFor } from '../rules/cross-rules.ts';
 import type { WallGeometry } from '../wall/geometry.ts';
 import type { WallFace } from '../wall/types.ts';
+import { rayFaceCandidates, roundOnFace } from './face-snap.ts';
 import type { SnapCandidate, SnapCandidateKind } from './types.ts';
 
 const LABELS: Record<SnapCandidateKind, string> = {
@@ -62,7 +63,7 @@ function wallCandidates(g: WallGeometry, raw: Vec2, tol: number, from: Vec2 | nu
     const m = pointAt(face, 0.5);
     if (near(m)) out.push(candidate(m, 'midpoint', g.wallId, f));
     const hit = nearestOnPath(face, raw);
-    if (hit.distance <= tol) out.push(candidate(hit.point, 'face', g.wallId, f));
+    if (hit.distance <= tol) out.push(candidate(roundOnFace(face, hit.point, from), 'face', g.wallId, f));
     const foot = from ? perpendicularFoot(face, from) : null;
     if (foot && near(foot)) out.push(candidate(foot, 'perpendicular', g.wallId, f));
   }
@@ -93,8 +94,13 @@ export function snapCandidates(
   raw: Vec2,
   tol: number,
   from: Vec2 | null = null,
+  ray?: { prevDir: number | null; orthoOnly: boolean },
 ): SnapCandidate[] {
   const all = [...geoms.flatMap((g) => wallCandidates(g, raw, tol, from)), ...intersections(geoms, raw, tol)];
+  if (from && ray) {
+    const priority = priorityOf('face') - 0.5;
+    all.push(...rayFaceCandidates(geoms, raw, tol, { from, ...ray, priority }));
+  }
   all.sort((a, b) => a.priority - b.priority || dist(a.point, raw) - dist(b.point, raw));
   const out: SnapCandidate[] = [];
   for (const c of all) {
