@@ -18,6 +18,7 @@ import {
   type Vec2,
   type View,
   type WallGeometry,
+  type ReferenceLine,
   type WallSide,
 } from '@bim-light/core';
 import { Viewport } from '../canvas/viewport.ts';
@@ -40,6 +41,8 @@ export class Session {
   tool: Tool;
   wallTypeId: Id;
   wallSide: WallSide = 'left';
+  /** Referenční čára nových stěn: podle ní se kreslí a od ní roste tloušťka (líc / osa / líc jádra). */
+  wallRefLine: ReferenceLine = 'face';
   tempMode: 'face' | 'axis' = 'face';
   /** Konec stěny, který se hýbe při změně délky (uchopený, nebo přepnutý trojúhelníkem). */
   lenEnd: PathEnd = 'end';

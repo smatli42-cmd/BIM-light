@@ -114,6 +114,7 @@ export class WallTool implements Tool {
       typeId: s.wallTypeId,
       path: { kind: 'line', start: c.pt, end },
       side: s.wallSide,
+      referenceLine: s.wallRefLine,
       connections: conns,
     });
     if (!r.ok) return;
@@ -185,7 +186,11 @@ export class WallTool implements Tool {
     if (!c || !this.end) return { snap, guides: r?.guides ?? [] };
     const t = typeThickness(this.s.model, this.s.wallTypeId);
     const n = mul(leftNormal(norm(sub(this.end, c.pt))), this.s.wallSide === 'left' ? t : -t);
-    const ghost = [c.pt, this.end, add(this.end, n), add(c.pt, n)];
+    // U osy leží nakreslená čára uprostřed tloušťky.
+    const back = this.s.wallRefLine === 'axis' ? mul(n, -0.5) : { x: 0, y: 0 };
+    const a = add(c.pt, back);
+    const b = add(this.end, back);
+    const ghost = [a, b, add(b, n), add(a, n)];
     return { snap, guides: r?.guides ?? [], ghosts: [ghost] };
   }
 

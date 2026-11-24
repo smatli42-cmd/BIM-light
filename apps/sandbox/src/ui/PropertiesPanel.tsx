@@ -1,6 +1,6 @@
 // Panel vlastností vpravo (pravidla-interakce: Výběr – typ, tloušťka a strana platí pro všechny
 // vybrané stěny). Každá změna modelu jde přes příkaz jádra (základ 6).
-import { bandThickness, parseNumber, type Wall } from '@bim-light/core';
+import { bandThickness, parseNumber, type ReferenceLine, type Wall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { useSession } from './use-session.ts';
 
@@ -23,6 +23,37 @@ function TypeSelect(props: {
         {Object.values(props.s.model.wallTypes).map((t) => (
           <option key={t.id} value={t.id}>
             {t.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+const REF_LINES: readonly [ReferenceLine, string][] = [
+  ['face', 'Líc'],
+  ['axis', 'Osa'],
+  ['core-face', 'Líc jádra'],
+];
+
+/** Referenční čára: zůstává na místě při změně tloušťky, stěna roste od ní (katalog kreslení 6.3). */
+function RefLineSelect(props: {
+  value: ReferenceLine | '';
+  testid: string;
+  onPick: (v: ReferenceLine) => void;
+}) {
+  return (
+    <label title="Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.">
+      Referenční čára
+      <select
+        data-testid={props.testid}
+        value={props.value}
+        onChange={(e) => props.onPick(e.currentTarget.value as ReferenceLine)}
+      >
+        {props.value === '' && <option value="">(různé)</option>}
+        {REF_LINES.map(([v, label]) => (
+          <option key={v} value={v}>
+            {label}
           </option>
         ))}
       </select>
@@ -74,6 +105,13 @@ function WallSection({ s }: { s: Session }) {
           onKeyDown={(e) => e.key === 'Enter' && setThickness(e.currentTarget.value)}
         />
       </label>
+      <RefLineSelect
+        value={walls.every((w) => w.referenceLine === first.referenceLine) ? first.referenceLine : ''}
+        testid="sel-refline"
+        onPick={(v) => {
+          for (const id of ids) s.run('wall.setReferenceLine', { wallId: id, referenceLine: v });
+        }}
+      />
       <button data-testid="sel-flip" onClick={() => s.run('wall.flipSide', { wallIds: ids })}>
         Přehodit stranu <kbd>Mezerník</kbd>
       </button>
@@ -96,6 +134,11 @@ function NewWallSection({ s }: { s: Session }) {
         mixed={false}
         testid="new-type"
         onPick={(id) => ((s.wallTypeId = id), s.changed())}
+      />
+      <RefLineSelect
+        value={s.wallRefLine}
+        testid="new-refline"
+        onPick={(v) => ((s.wallRefLine = v), s.changed())}
       />
       <p class="muted" data-testid="new-side">
         Tloušťka {s.wallSide === 'left' ? 'vlevo' : 'vpravo'} od směru kreslení (mezerník přehodí)
