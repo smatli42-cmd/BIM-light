@@ -4,6 +4,7 @@ import { hatchList, materialList } from './materials.ts';
 import { projectInfo } from './project.ts';
 import { viewInfo } from './views.ts';
 import { wallGet, wallList } from './walls.ts';
+import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 
 export const CORE_QUERIES = [
   projectInfo,
@@ -13,4 +14,6 @@ export const CORE_QUERIES = [
   hatchList,
   materialList,
   viewInfo,
+  wallTypeList,
+  wallTypeLibrary,
 ];

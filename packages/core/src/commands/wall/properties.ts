@@ -8,6 +8,7 @@ import { storeyOf, wallOf, wallTypeOf } from '../lookup.ts';
 import { S } from '../schema.ts';
 import { defineCommand } from '../types.ts';
 import { HEIGHT_SCHEMA, WALL_IDS } from './shared.ts';
+import { normalizeRefLines } from '../wall-type/shared.ts';
 
 const update = (ids: Id[], model: Parameters<typeof wallOf>[0], fn: (w: Wall) => Wall) =>
   putElements(
@@ -30,12 +31,13 @@ export const wallFlipSide = defineCommand<{ wallIds: Id[] }>({
 export const wallSetType = defineCommand<{ wallIds: Id[]; typeId: Id }>({
   name: 'wall.setType',
   label: 'Změnit typ',
-  description: 'Přiřadí stěnám jiný typ. Referenční čára zůstane na místě.',
+  description:
+    'Přiřadí stěnám jiný typ. Referenční čára zůstane na místě (u typu bez jádra se „líc jádra“ změní na „líc“).',
   group: 'Stěna',
   params: S.object({ wallIds: WALL_IDS, typeId: S.id }, ['wallIds', 'typeId']),
   run(model, p) {
     wallTypeOf(model, p.typeId);
-    return { model: update(p.wallIds, model, (w) => ({ ...w, typeId: p.typeId })) };
+    return { model: normalizeRefLines(update(p.wallIds, model, (w) => ({ ...w, typeId: p.typeId }))) };
   },
 });
 

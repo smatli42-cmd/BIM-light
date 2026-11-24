@@ -39,6 +39,20 @@ import { selectionDelete } from './edit/delete.ts';
 import { materialCreate, materialDelete, materialDuplicate, materialUpdate } from './material/edit.ts';
 import { wallTypeSetLayerMaterial } from './material/layer.ts';
 import { wallSetReferenceLine, wallSetThickness } from './wall/thickness.ts';
+import {
+  wallTypeCreate,
+  wallTypeDelete,
+  wallTypeDuplicate,
+  wallTypePurgeUnused,
+  wallTypeRename,
+} from './wall-type/edit.ts';
+import {
+  wallTypeAddLayer,
+  wallTypeMoveLayer,
+  wallTypeRemoveLayer,
+  wallTypeUpdateLayer,
+} from './wall-type/layers.ts';
+import { wallTypeLoad } from './wall-type/load.ts';
 
 export const CORE_COMMANDS = [
   storeyCreate,
@@ -96,6 +110,16 @@ export const CORE_COMMANDS = [
   materialUpdate,
   materialDelete,
   wallTypeSetLayerMaterial,
+  wallTypeCreate,
+  wallTypeDuplicate,
+  wallTypeRename,
+  wallTypeDelete,
+  wallTypePurgeUnused,
+  wallTypeLoad,
+  wallTypeAddLayer,
+  wallTypeRemoveLayer,
+  wallTypeMoveLayer,
+  wallTypeUpdateLayer,
 ];
 
 /** Registr se všemi příkazy jádra. */

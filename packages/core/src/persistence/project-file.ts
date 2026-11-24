@@ -2,14 +2,18 @@
 // Načtení projde migracemi podle SCHEMA_VERSION. Ruční uložení navíc vytvoří datovanou verzi.
 import { SCHEMA_VERSION, type Model } from '../model/types.ts';
 import { projectV1toV2 } from '../hatch/migrate-v1.ts';
+import { projectV2toV3 } from '../wall-type/migrate-v2.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
 export const PROJECT_FORMAT = 'bim-light-project';
 export const PROJECT_EXTENSION = '.bim';
 
-/** Migrace projektu: klíč = verze, ze které se převádí. 1 → 2: šrafy jako knihovna (základ 34). */
-export const PROJECT_MIGRATIONS: Migrations = { 1: projectV1toV2 };
+/**
+ * Migrace projektu: klíč = verze, ze které se převádí. 1 → 2: šrafy jako knihovna (základ 34);
+ * 2 → 3: prodloužení vrstev typu stěny (plán stěn Z1).
+ */
+export const PROJECT_MIGRATIONS: Migrations = { 1: projectV1toV2, 2: projectV2toV3 };
 
 export function serializeProject(model: Model): string {
   return JSON.stringify({ format: PROJECT_FORMAT, ...model });

@@ -132,4 +132,31 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     const w = row(c.ai.call<WallRow[]>('wall.list'), left!);
     expect(w.thickness).toBe(450);
   });
+
+  it('typ stěny přes AI: vlastní skladba, přiřazení stěně, smazání s náhradou (plán stěn Z1)', () => {
+    interface TypeRow {
+      id: string;
+      name: string;
+      thickness: number;
+      usage: number;
+    }
+    const c = start();
+    const [left] = room(c);
+    const mats = c.ai.call<{ id: string; name: string }[]>('material.list');
+    const m = (name: string) => mats.find((x) => x.name === name)!.id;
+    const [typeId] = c.ai.call<string[]>('wallType.create', {
+      name: 'Obvod AI',
+      layers: [
+        { materialId: m('Omítka'), thickness: 15, function: 'finish' },
+        { materialId: m('Zdivo keramické'), thickness: 300, function: 'core' },
+        { materialId: m('Tepelná izolace EPS'), thickness: 200, function: 'insulation' },
+      ],
+    });
+    c.ai.call('wall.setType', { wallIds: [left], typeId });
+    const t = c.ai.call<TypeRow[]>('wallType.list').find((x) => x.id === typeId)!;
+    expect([t.thickness, t.usage]).toEqual([515, 1]);
+    expect(row(c.ai.call<WallRow[]>('wall.list'), left!).thickness).toBe(515);
+    c.ai.call('wallType.delete', { typeId, replacementId: c.typeId });
+    expect(row(c.ai.call<WallRow[]>('wall.list'), left!).thickness).toBe(300);
+  });
 });

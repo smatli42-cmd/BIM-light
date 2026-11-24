@@ -6,6 +6,7 @@ export * from './model/index.ts';
 export * from './material/index.ts';
 export * from './hatch/index.ts';
 export * from './wall/index.ts';
+export * from './wall-type/index.ts';
 export * from './relation/index.ts';
 export * from './dimension/index.ts';
 export * from './constraints/index.ts';

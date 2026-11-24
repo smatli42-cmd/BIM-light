@@ -7,6 +7,7 @@ import { withHatchesFor } from '../hatch/project.ts';
 import { createDefaultDisplay } from '../style/presets/create.ts';
 import type { View } from '../view/types.ts';
 import type { WallType } from '../wall/types.ts';
+import { WALL_TYPE_LIBRARY, wallTypeFromLibrary } from '../wall-type/library.ts';
 import { SCHEMA_VERSION, type Model } from './types.ts';
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
@@ -20,32 +21,10 @@ function materials(newId: IdGenerator): Material[] {
   }));
 }
 
-/** Výchozí typy: zdivo 300 a příčka 125 (jedna vrstva), sendvič se zateplením (tři vrstvy). */
+/** Výchozí typy = kopie celé knihovny typů s odkazem na původ (základ 21). */
 function wallTypes(mats: Material[], newId: IdGenerator): WallType[] {
-  const mat = (name: string) => mats.find((m) => m.name === name)?.id ?? '';
-  const single = (name: string, material: string, t: number): WallType => ({
-    id: newId(),
-    name,
-    bands: [{ height: null, layers: [{ materialId: mat(material), thickness: t, function: 'core' }] }],
-  });
-  return [
-    single('Zdivo 300', 'Zdivo keramické', 300),
-    single('Příčka 125', 'Zdivo keramické', 125),
-    {
-      id: newId(),
-      name: 'Obvodová zateplená 465',
-      bands: [
-        {
-          height: null,
-          layers: [
-            { materialId: mat('Omítka'), thickness: 15, function: 'finish' },
-            { materialId: mat('Zdivo keramické'), thickness: 300, function: 'core' },
-            { materialId: mat('Tepelná izolace EPS'), thickness: 150, function: 'insulation' },
-          ],
-        },
-      ],
-    },
-  ];
+  const byKey = (key: string) => mats.find((m) => m.source?.itemId === key)?.id ?? '';
+  return WALL_TYPE_LIBRARY.map((item) => wallTypeFromLibrary(item, byKey, newId));
 }
 
 export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): Model {

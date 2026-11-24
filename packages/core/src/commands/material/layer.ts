@@ -1,6 +1,6 @@
 // Příkaz: materiál vrstvy ve skladbě typu stěny (vybraná stěna → okamžitý vzhled šrafy v řezu).
 // Mění typ, takže se projeví u všech stěn tohoto typu (jako v Revitu / Archicadu).
-import { putWallType } from '../../model/update.ts';
+import { putValidType } from '../wall-type/shared.ts';
 import { wallTypeOf } from '../lookup.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -37,6 +37,6 @@ export const wallTypeSetLayerMaterial = defineCommand<SetLayerMaterialParams>({
     if (!band.layers[p.layerIndex]) fail('not-found', `Pás nemá vrstvu ${p.layerIndex}`);
     const layers = band.layers.map((l, i) => (i === p.layerIndex ? { ...l, materialId: p.materialId } : l));
     const bands = t.bands.map((b, i) => (i === bi ? { ...b, layers } : b));
-    return { model: putWallType(model, { ...t, bands }) };
+    return { model: putValidType(model, { ...t, bands }) };
   },
 });
