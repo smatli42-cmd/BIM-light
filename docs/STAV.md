@@ -62,6 +62,20 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   i pro nové stěny; při změně tloušťky zůstává referenční čára na místě a stěna roste od ní.
 - Testy: jádro 178 (Vitest), prohlížeč 64 (Playwright), vše zelené.
 
+### Ovládání přes AI – doplněno (2026-11-24)
+- **Dotazy jen pro čtení** (`packages/core/src/queries/`): `project.info`, `wall.list`, `wall.get`,
+  `dimension.list`. Jsou v registru vedle příkazů; `toolDescriptions()` vrací obojí s příznakem `readOnly`;
+  `Editor.query()` čte bez Undo.
+- **Logika z UI přesunuta do jádra:** samočinné napojení konců (`wall/auto-connect.ts`: roh na volném konci,
+  T na líci / ose) používá nástroj Stěna i jádro; `wall.create` má `autoConnect`; nový příkaz `wall.chain`
+  (řetěz stěn po bodech, `closed` uzavře obrys) = totéž co klikání nástrojem Stěna. Vkládání sad stěn (kopie,
+  schránka, obdélník) teď napojuje i T, ne jen rohy.
+- **Testy z pohledu AI:** klient jen přes JSON (`testing/ai-client.ts`), scénář `ai/scenario.test.ts`
+  (místnost, příčka v T, stěna s volným koncem, kóta k čelu a změna jejího čísla, tloušťka a referenční čára),
+  `ai/tools.test.ts` (každý nástroj má popis a úplné schéma, čitelné chyby), hlídač `tools/ui-commands.test.mjs`
+  (obrazovka používá jen příkazy z registru). Pravidlo zapsané v `CLAUDE.md`.
+- Testy: jádro a nástroje 271 (Vitest).
+
 ## Rozhodl Code (k potvrzení)
 
 Opravy závad kroku 3:
@@ -72,6 +86,12 @@ Opravy závad kroku 3:
 - Délka stěny s nepřipojeným koncem se kótuje nástrojem Kóta: čelo volného konce + rovnoběžný líc (např. líc
   stěny v rohu na druhém konci). Kóta typu „délka“ přímo na čelo nejde (měřila by jen tloušťku).
 - Při kreslení s referenční čárou Osa leží kliknutá čára uprostřed stěny; Stěna z čáry a Obdélník berou dál líc.
+
+Ovládání přes AI:
+- `wall.create` napojuje samočinně jen s `autoConnect: true` (výchozí ne, aby AI mohla stěnu položit i bez
+  napojení); `wall.chain` napojuje vždy.
+- Dotazy vracejí souřadnice a délky zaokrouhlené na 0,1 mm.
+- Undo / Redo pro AI zatím není nástroj (je to funkce editoru, ne příkaz); přijde s připojením přes MCP.
 
 Krok 1:
 - Dokumenty v `docs/` nad limit dávají v `check:size` jen varování; `CLAUDE.md` nad 150 řádků je chyba.
@@ -135,6 +155,8 @@ Krok 3:
   potom krok 4.
 
 ## Otevřené
+
+- Připojení AI přes MCP (etapa 6): server nad jádrem a souborem projektu, nástroje Undo / Redo, uložení.
 
 - Krok 4 (zobrazení v sandboxu): přepínač stylu, panel Vrstvy, skupiny anotací, nový pohled, měřítko.
 - Skupina zarovnaných kót zatím nedrží společnou polohu čáry po změně geometrie (kóty 4, druhá věta):
