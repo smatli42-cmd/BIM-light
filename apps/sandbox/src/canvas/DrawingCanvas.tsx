@@ -83,7 +83,7 @@ export function DrawingCanvas({ session, controller }: { session: Session; contr
       }}
       onMouseMove={(e) => controller.move(raw(e, el()))}
       onDblClick={(e) => controller.dblclick(raw(e, el()))}
-      onMouseEnter={() => el().focus()}
+      onMouseEnter={() => !session.valueEdit && el().focus()}
       onMouseLeave={() => controller.leave()}
       onContextMenu={(e) => e.preventDefault()}
       onWheel={(e) => {

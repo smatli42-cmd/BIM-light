@@ -176,3 +176,18 @@ test.describe('pravidla-interakce / kóty 9: úhlová kóta', () => {
     expect(pp.x).toBeGreaterThan(0);
   });
 });
+
+test('kóty 5, 10: otevřené pole pro text zůstane, i když myš vjede na výkres', async ({ page }) => {
+  await three(page);
+  await chainThenSelect(page);
+  const [p] = await perms(page);
+  await page.mouse.click(p!.line.x, p!.line.y, { button: 'right' });
+  await page.getByRole('button', { name: 'Přepsat text kóty' }).click();
+  await page.mouse.move(5, 5);
+  await moveTo(page, 2000, 1500);
+  const input = page.getByTestId('value-edit');
+  await expect(input).toBeVisible();
+  await input.fill('cca 1 m');
+  await input.press('Enter');
+  expect((await dims(page)).some((d) => d.textOverride === 'cca 1 m')).toBe(true);
+});
