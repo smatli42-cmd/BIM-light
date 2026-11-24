@@ -1,0 +1,142 @@
+// Rozložení kóty v půdorysu: kótovací čára, odkazové čáry, místo pro číslo.
+// Velikosti značek a mezer jsou na papíře (základ 29): do mm modelu se násobí měřítkem.
+import {
+  add,
+  angleOf,
+  carrierOf,
+  dist,
+  endPoint,
+  leftNormal,
+  mul,
+  norm,
+  offsetPath,
+  pointAt,
+  projectOnCarrier,
+  rotate,
+  sub,
+  tangentAt,
+  tessellate,
+  type Vec2,
+} from '../geometry/index.ts';
+import type { Model } from '../model/types.ts';
+import type { PaperSizes } from '../style/types.ts';
+import { angleGeometry, facePath } from './measure.ts';
+import type { AngularDimension, Dimension, LengthDimension, LinearDimension } from './types.ts';
+
+export interface DimensionLayout {
+  /** Kótovací čára (u úhlové kóty oblouk rozložený na body). */
+  readonly line: readonly Vec2[];
+  /** Body pro značky (šikmé čárky) a směr čáry v nich. */
+  readonly ticks: readonly { readonly at: Vec2; readonly dir: Vec2 }[];
+  readonly extensions: readonly (readonly [Vec2, Vec2])[];
+  /** Střed čísla a natočení (čitelné zdola a zprava). */
+  readonly textAt: Vec2;
+  readonly textAngle: number;
+}
+
+/** Natočení textu tak, aby se četl zdola nebo zprava. */
+export function readableAngle(dir: Vec2): number {
+  let a = angleOf(dir);
+  if (a > Math.PI / 2 + 1e-9) a -= Math.PI;
+  if (a <= -Math.PI / 2 + 1e-9) a += Math.PI;
+  return a;
+}
+
+function extension(from: Vec2, to: Vec2, gap: number, over: number): [Vec2, Vec2] | null {
+  const l = dist(from, to);
+  if (l <= gap) return null;
+  const d = norm(sub(to, from));
+  return [add(from, mul(d, gap)), add(to, mul(d, over))];
+}
+
+function textPlace(a: Vec2, b: Vec2, k: number, paper: PaperSizes) {
+  const angle = readableAngle(sub(b, a));
+  const up = leftNormal({ x: Math.cos(angle), y: Math.sin(angle) });
+  const m = mul(add(a, b), 0.5);
+  return {
+    textAt: add(m, mul(up, (paper.dimensionTextGap + paper.dimensionText / 2) * k)),
+    textAngle: angle,
+  };
+}
+
+function straight(a: Vec2, b: Vec2, ext: [Vec2, Vec2][], k: number, paper: PaperSizes): DimensionLayout {
+  const dir = norm(sub(b, a));
+  return {
+    line: [a, b],
+    ticks: [
+      { at: a, dir },
+      { at: b, dir },
+    ],
+    extensions: ext,
+    ...textPlace(a, b, k, paper),
+  };
+}
+
+type Ext = (f: Vec2, t: Vec2) => [Vec2, Vec2] | null;
+const kept = (e: [Vec2, Vec2] | null): e is [Vec2, Vec2] => e !== null;
+
+function linearLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper: PaperSizes) {
+  const fa = facePath(model, d.refs[0]);
+  const pA = pointAt(fa, 0.5);
+  const base = add(pA, mul(tangentAt(fa, 'start'), d.offset));
+  const cb = carrierOf(facePath(model, d.refs[1]));
+  const pB = projectOnCarrier(base, cb);
+  return straight(base, pB, [ext(pA, base), ext(projectOnCarrier(pA, cb), pB)].filter(kept), k, paper);
+}
+
+function lengthLayout(model: Model, d: LengthDimension, ext: Ext, k: number, paper: PaperSizes) {
+  const face = facePath(model, d.ref);
+  const line = offsetPath(face, d.offset);
+  const exts = (['start', 'end'] as const).map((e) => ext(endPoint(face, e), endPoint(line, e))).filter(kept);
+  return {
+    ...straight(line.start, line.end, exts, k, paper),
+    line: tessellate(line),
+    ticks: [
+      { at: line.start, dir: tangentAt(line, 'start') },
+      { at: line.end, dir: tangentAt(line, 'end') },
+    ],
+  };
+}
+
+function angularLayout(
+  model: Model,
+  d: AngularDimension,
+  k: number,
+  paper: PaperSizes,
+): DimensionLayout | null {
+  const g = angleGeometry(model, d.wallIds);
+  if (!g) return null;
+  const [da, db] = g.dirs;
+  const a0 = add(g.vertex, mul(da, d.radius));
+  const sweep = Math.atan2(da.x * db.y - da.y * db.x, da.x * db.x + da.y * db.y);
+  const n = 24;
+  const line = Array.from({ length: n + 1 }, (_, i) => rotate(a0, g.vertex, (sweep * i) / n));
+  const bis = norm(add(da, db));
+  const textAt = add(g.vertex, mul(bis, d.radius + (paper.dimensionTextGap + paper.dimensionText / 2) * k));
+  const tangent = (p: Vec2) => leftNormal(norm(sub(p, g.vertex)));
+  const first = line[0] ?? a0;
+  const last = line[n] ?? a0;
+  return {
+    line,
+    ticks: [
+      { at: first, dir: tangent(first) },
+      { at: last, dir: tangent(last) },
+    ],
+    extensions: [],
+    textAt,
+    textAngle: readableAngle(leftNormal(bis)),
+  };
+}
+
+/** Rozložení kóty pro dané měřítko. */
+export function layoutDimension(
+  model: Model,
+  d: Dimension,
+  scale: number,
+  paper: PaperSizes,
+): DimensionLayout | null {
+  const ext: Ext = (f, t) => extension(f, t, paper.extensionGap * scale, paper.extensionOvershoot * scale);
+  if (d.kind === 'linear') return linearLayout(model, d, ext, scale, paper);
+  if (d.kind === 'length') return lengthLayout(model, d, ext, scale, paper);
+  return angularLayout(model, d, scale, paper);
+}
