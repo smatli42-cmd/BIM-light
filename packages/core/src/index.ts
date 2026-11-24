@@ -12,5 +12,7 @@ export * from './rules/index.ts';
 export * from './style/index.ts';
 export * from './view/index.ts';
 export * from './drawing/index.ts';
+export * from './snap/index.ts';
+export * from './selection/index.ts';
 export * from './commands/index.ts';
 export * from './persistence/index.ts';
