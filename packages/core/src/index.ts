@@ -1,2 +1,16 @@
 // Veřejné rozhraní jádra. Tento soubor jen exportuje (základ 33).
 export { CORE_NAME } from './meta/index.ts';
+export * from './ids/index.ts';
+export * from './geometry/index.ts';
+export * from './model/index.ts';
+export * from './material/index.ts';
+export * from './wall/index.ts';
+export * from './relation/index.ts';
+export * from './dimension/index.ts';
+export * from './constraints/index.ts';
+export * from './rules/index.ts';
+export * from './style/index.ts';
+export * from './view/index.ts';
+export * from './drawing/index.ts';
+export * from './commands/index.ts';
+export * from './persistence/index.ts';
