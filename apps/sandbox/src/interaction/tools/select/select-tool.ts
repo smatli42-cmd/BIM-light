@@ -11,7 +11,8 @@ import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../../ty
 import { PermDimDragMode, TempDimDragMode } from './dim-drag.ts';
 import { BoxMode, PressWallMode } from './drag-modes.ts';
 import { dimMenu, edgeMenu, nodeMenu, wallMenu } from './menus.ts';
-import { NodeMode, OffsetMode } from './wall-modes.ts';
+import { NodeMode } from './node-mode.ts';
+import { OffsetMode } from './wall-modes.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;

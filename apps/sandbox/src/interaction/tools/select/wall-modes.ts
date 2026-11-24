@@ -1,165 +1,23 @@
-// Přímá úprava vybrané stěny (katalog kreslení, část 5): uzel se posouvá klikem nebo tažením,
-// tažení líce stěnu odsadí (tloušťka zůstává), „Přidat bod“ ji rozdělí.
+// Přímá úprava vybrané stěny (katalog kreslení, část 5): tažení líce stěnu odsadí (tloušťka zůstává),
+// „Přidat bod“ ji rozdělí. Posun uzlu je v `node-mode.ts`.
 import {
   add,
   allWallGeometry,
   dist,
   dot,
-  endPoint,
   leftNormal,
   mul,
   nearestOnPath,
-  parseNumber,
   roundTo,
   sub,
   tangentAt,
   type Id,
-  type Model,
-  type PathEnd,
   type Vec2,
   type WallFace,
 } from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
-import { clearTyped, editTyped } from '../../../session/ui-state.ts';
-import { DRAG_PX, type Mode } from '../../mode.ts';
-import type { KeyInfo, Overlay, PointerInfo, TrackerField } from '../../types.ts';
-
-/** Volný konec jiné stěny pod bodem (přitažení uzlu = napojení, katalog kreslení 5). */
-function nodeTarget(s: Session, wallId: Id, p: Vec2, tol: number) {
-  for (const w of Object.values(s.model.elements)) {
-    if (w.id === wallId || w.storeyId !== s.storeyId) continue;
-    for (const end of ['start', 'end'] as const) {
-      if (dist(endPoint(w.path, end), p) <= tol)
-        return { wallId: w.id, at: end === 'start' ? ('ATSTART' as const) : ('ATEND' as const) };
-    }
-  }
-  return null;
-}
-
-abstract class ClickOrDrag implements Mode {
-  active = true;
-  protected moved = false;
-  protected last: PointerInfo;
-  private readonly startScreen: Vec2;
-
-  constructor(
-    protected readonly s: Session,
-    start: PointerInfo,
-    protected dragging: boolean,
-  ) {
-    this.last = start;
-    this.startScreen = start.screen;
-  }
-
-  move(p: PointerInfo) {
-    const d = Math.hypot(p.screen.x - this.startScreen.x, p.screen.y - this.startScreen.y);
-    if (this.dragging && d > DRAG_PX) this.moved = true;
-    this.update(p);
-  }
-
-  up(p: PointerInfo) {
-    if (!this.dragging) return;
-    this.dragging = false;
-    if (this.moved) this.finish(p);
-  }
-
-  down(p: PointerInfo): boolean {
-    if (p.button !== 0) {
-      this.escape();
-      return true;
-    }
-    this.update(p);
-    this.finish(p);
-    return true;
-  }
-
-  key(k: KeyInfo): boolean {
-    if (k.key === 'Enter') {
-      this.finish(this.last);
-      return true;
-    }
-    if (editTyped(this.s.typed, k.key, false)) {
-      this.update(this.last);
-      return true;
-    }
-    return false;
-  }
-
-  escape() {
-    this.active = false;
-    clearTyped(this.s.typed);
-  }
-
-  protected done() {
-    this.active = false;
-    clearTyped(this.s.typed);
-  }
-
-  protected typedValue(): number | null {
-    const v = parseNumber(this.s.typed.len);
-    return this.s.typed.len !== '' && Number.isFinite(v) ? v : null;
-  }
-
-  protected abstract update(p: PointerInfo): void;
-  protected abstract finish(p: PointerInfo): void;
-  abstract overlay(): Overlay;
-}
-
-/** Posun uzlu: pohne se uchopený konec, stěny v rohu jdou s ním (základ 25). */
-export class NodeMode extends ClickOrDrag {
-  readonly hint = 'Klikni nebo pusť uzel na nové místo (přichytává se). U uzlu jiné stěny se konec napojí.';
-  private point: Vec2;
-  private preview: Model | null = null;
-
-  constructor(
-    s: Session,
-    private readonly wallId: Id,
-    private readonly end: PathEnd,
-    start: PointerInfo,
-    drag: boolean,
-  ) {
-    super(s, start, drag);
-    s.lenEnd = end;
-    const w = s.model.elements[wallId];
-    this.point = w ? endPoint(w.path, end) : start.world;
-  }
-
-  protected update(p: PointerInfo) {
-    this.last = p;
-    // Jako při kreslení: od pevného konce platí úhlové kroky a délka se zaokrouhluje na 10 mm.
-    const w = this.s.model.elements[this.wallId];
-    const from = w ? endPoint(w.path, this.end === 'start' ? 'end' : 'start') : null;
-    const opts = { alt: p.alt, orthoOnly: p.shift, from, exclude: new Set([this.wallId]) };
-    this.point = this.s.snap(p.world, opts).point;
-    // Náhled celé změny (navazující stěny, dočasné kóty – katalog kreslení 5.2), nic se neukládá.
-    this.preview =
-      this.moved || !this.dragging ? this.s.editor.preview('wall.moveEndpoint', this.params()) : null;
-  }
-
-  private params() {
-    const target = nodeTarget(this.s, this.wallId, this.point, this.s.viewport.px(14));
-    return {
-      wallId: this.wallId,
-      end: this.end,
-      point: this.point,
-      ...(target ? { connectTo: target } : {}),
-    };
-  }
-
-  protected finish() {
-    this.done();
-    this.preview = null;
-    this.s.run('wall.moveEndpoint', this.params());
-  }
-
-  overlay(): Overlay {
-    const w = this.s.model.elements[this.wallId];
-    if (!w) return {};
-    const other = endPoint(w.path, this.end === 'start' ? 'end' : 'start');
-    if (this.preview) return { previewModel: this.preview, markers: [this.point] };
-    return { lines: [[other, this.point]], markers: [this.point] };
-  }
-}
+import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
+import { ClickOrDrag } from './click-or-drag.ts';
 
 /** Odsazení stěny tažením líce nebo z nabídky (číslo = vzdálenost, směr podle myši). */
 export class OffsetMode extends ClickOrDrag {
