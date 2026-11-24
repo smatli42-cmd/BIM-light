@@ -19,6 +19,11 @@ export default tseslint.config(
     rules: {
       // Funkce cíl do 50 řádků (základ 33); varování, ne chyba.
       'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true, skipComments: true }],
+      // Proměnné začínající „_“ jsou záměrně nepoužité (vynechání vlastnosti z objektu).
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+      ],
     },
   },
   {
@@ -53,7 +58,7 @@ export default tseslint.config(
   },
   {
     files: ['**/*.test.ts', '**/*.spec.ts'],
-    rules: { 'max-lines-per-function': 'off' },
+    rules: { 'max-lines-per-function': 'off', '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
     files: ['tools/**/*.mjs', '*.config.{js,ts}', 'apps/*/*.config.ts'],
