@@ -8,3 +8,4 @@ export * from './propagate.ts';
 export * from './draw.ts';
 export * from './edges.ts';
 export * from './outline.ts';
+export * from './auto-connect.ts';

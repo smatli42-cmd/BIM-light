@@ -1,5 +1,7 @@
 // Příkaz: nová stěna (katalog kreslení, část 1). Napojení na jiné stěny vzniká v témže kroku.
-import type { Path, PathEnd } from '../../geometry/index.ts';
+import { endPoint, type Path, type PathEnd } from '../../geometry/index.ts';
+import type { Model } from '../../model/types.ts';
+import { connectionAt } from '../../wall/auto-connect.ts';
 import type { HeightBinding } from '../../model/height.ts';
 import { IFC_CLASS } from '../../model/categories.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
@@ -22,6 +24,20 @@ export interface WallCreateParams {
   status?: Status;
   discipline?: string;
   connections?: { end: PathEnd; wallId: string; at: ConnectionType }[];
+  /** Napojit konce bez zadaného napojení samočinně (roh / T), jako při kreslení myší. */
+  autoConnect?: boolean;
+}
+
+/** Zadaná napojení + samočinná pro konce, které žádné nemají. */
+function withAuto(model: Model, storeyId: string, p: WallCreateParams) {
+  const out = [...(p.connections ?? [])];
+  if (!p.autoConnect) return out;
+  for (const end of ['start', 'end'] as const) {
+    if (out.some((c) => c.end === end)) continue;
+    const link = connectionAt(model, storeyId, endPoint(p.path, end));
+    if (link) out.push({ end, ...link });
+  }
+  return out;
 }
 
 export const wallCreate = defineCommand<WallCreateParams>({
@@ -29,7 +45,8 @@ export const wallCreate = defineCommand<WallCreateParams>({
   label: 'Stěna',
   description:
     'Nakreslí stěnu po referenční čáře (výchozí vnitřní líc, tloušťka doleva od směru kreslení). ' +
-    'Volitelně ji napojí na jiné stěny (roh nebo T).',
+    'Napojení na jiné stěny (roh nebo T) zadej v connections, nebo autoConnect: true napojí konce ' +
+    'ležící na volném konci jiné stěny (roh) nebo na jejím líci / ose (T) samo, jako při kreslení myší.',
   group: 'Stěna',
   icon: 'wall',
   shortcut: 'W',
@@ -44,6 +61,7 @@ export const wallCreate = defineCommand<WallCreateParams>({
       status: S.enumOf(STATUSES, 'stav: stávající / bourání / nový'),
       discipline: { type: 'string' },
       connections: { type: 'array', items: CONNECTION_SCHEMA },
+      autoConnect: { type: 'boolean', description: 'samočinné napojení konců (výchozí ne)' },
     },
     ['storeyId', 'typeId', 'path'],
   ),
@@ -69,7 +87,7 @@ export const wallCreate = defineCommand<WallCreateParams>({
         top: { kind: 'height', value: storey.height },
       },
     };
-    const relations: WallConnection[] = (p.connections ?? []).map((c) => {
+    const relations: WallConnection[] = withAuto(model, storey.id, p).map((c) => {
       wallOf(model, c.wallId);
       return {
         id: ctx.newId(),

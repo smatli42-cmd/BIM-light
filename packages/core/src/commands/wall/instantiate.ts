@@ -1,13 +1,14 @@
 // Vložení sady stěn (kopie, pole, zrcadlení, schránka): nové stěny, jejich vzájemná napojení
-// a samočinné napojení volných konců, které se kryjí s volným koncem jiné stěny (roh).
-import { dist, endPoint, type Path, type PathEnd } from '../../geometry/index.ts';
+// a samočinné napojení volných konců na jiné stěny (roh na volném konci, T na líci).
+import { endPoint, type Path } from '../../geometry/index.ts';
 import type { Id, IdGenerator } from '../../ids/index.ts';
 import type { HeightBinding } from '../../model/height.ts';
 import { IFC_CLASS } from '../../model/categories.ts';
 import type { Model, Status, VariantRef } from '../../model/types.ts';
 import { putElements, putRelations } from '../../model/update.ts';
 import type { ConnectionType, WallConnection } from '../../relation/types.ts';
-import { allWalls, connectionsOf, endToType, sidesFor } from '../../wall/queries.ts';
+import { connectionAt, isFreeEnd } from '../../wall/auto-connect.ts';
+import { connectionsOf, endToType } from '../../wall/queries.ts';
 import type { ReferenceLine, Wall, WallSide } from '../../wall/types.ts';
 import { storeyOf, wallTypeOf } from '../lookup.ts';
 import { assertPath } from './shared.ts';
@@ -56,32 +57,22 @@ export function connectionsWithin(model: Model, ids: readonly Id[]): SpecConnect
   return out;
 }
 
-const isFreeEnd = (m: Model, wallId: Id, end: PathEnd) =>
-  !connectionsOf(m, wallId).some((c) => sidesFor(c, wallId).own.at === endToType(end));
-
-/** Volné konce nových stěn, které leží na volném konci jiné stěny, se napojí rohem. */
+/** Volné konce nových stěn se napojí na volný konec jiné stěny (roh) nebo na její líc (T). */
 function autoConnect(model: Model, newIds: readonly Id[], newId: IdGenerator): Model {
   let m = model;
   for (const id of newIds)
     for (const end of ['start', 'end'] as const) {
       const w = m.elements[id] as Wall;
       if (!isFreeEnd(m, id, end)) continue;
-      const p = endPoint(w.path, end);
-      for (const o of allWalls(m)) {
-        if (o.id === id || o.storeyId !== w.storeyId) continue;
-        const oe = (['start', 'end'] as const).find(
-          (e) => dist(endPoint(o.path, e), p) < 1 && isFreeEnd(m, o.id, e),
-        );
-        if (!oe) continue;
-        const rel: WallConnection = {
-          id: newId(),
-          kind: 'wall-connection',
-          relating: { wallId: o.id, at: endToType(oe) },
-          related: { wallId: id, at: endToType(end) },
-        };
-        m = putRelations(m, [rel]);
-        break;
-      }
+      const link = connectionAt(m, w.storeyId, endPoint(w.path, end), [id]);
+      if (!link) continue;
+      const rel: WallConnection = {
+        id: newId(),
+        kind: 'wall-connection',
+        relating: link,
+        related: { wallId: id, at: endToType(end) },
+      };
+      m = putRelations(m, [rel]);
     }
   return m;
 }
