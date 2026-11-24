@@ -2,12 +2,11 @@
 // Stěna nevolí barvu, šrafu ani pero sama: vše dostane z funkce grafiky.
 // Hrubá: obrys + jedna výplň. Střední (a zatím jemná): čáry vrstev + šrafa materiálu.
 import type { Primitive, Stroke } from '../drawing/primitives.ts';
-import { tessellate } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Material } from '../material/types.ts';
 import type { Detail, ResolvedEffect } from '../style/types.ts';
 import type { LayerGeometry, WallGeometry } from './geometry.ts';
-import { outlineRuns } from './outline.ts';
+import { facePieces, outlineRuns, type FaceGaps } from './outline.ts';
 
 type MaterialLookup = (id: Id) => Material | undefined;
 
@@ -45,6 +44,7 @@ export function drawWall(
   detail: Detail,
   g: ResolvedEffect,
   materials: MaterialLookup,
+  gaps: FaceGaps = {},
 ): Primitive[] {
   if (!g.visible) return [];
   const id = geom.wallId;
@@ -53,17 +53,19 @@ export function drawWall(
   if (detail !== 'coarse') {
     for (const layer of geom.layers) out.push(...hatchFor(layer, g, materials, id));
     const layerStroke: Stroke = { pen: g.layerPen, color: g.lineColor, lineType: g.lineType };
-    for (const b of geom.layerBoundaries) {
-      out.push({
-        kind: 'line',
-        points: tessellate(b),
-        closed: false,
-        stroke: layerStroke,
-        source: { elementId: id, role: 'hranice vrstvy' },
-      });
-    }
+    geom.layerBoundaries.forEach((b, i) => {
+      for (const points of facePieces(b, gaps.layers?.[i])) {
+        out.push({
+          kind: 'line',
+          points,
+          closed: false,
+          stroke: layerStroke,
+          source: { elementId: id, role: 'hranice vrstvy' },
+        });
+      }
+    });
   }
-  for (const run of outlineRuns(geom)) {
+  for (const run of outlineRuns(geom, gaps)) {
     out.push({ kind: 'line', ...run, stroke: outline, source: { elementId: id, role: 'obrys' } });
   }
   return out;

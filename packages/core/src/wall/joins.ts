@@ -53,12 +53,36 @@ function cornerCut(model: Model, w: Wall, end: PathEnd, x: Wall, xEnd: PathEnd):
   return { kind: 'line', p: pl, d: norm(sub(pr, pl)) };
 }
 
-function teeCut(model: Model, w: Wall, end: PathEnd, host: Wall): Carrier {
+/** Nejvyšší priorita napojování materiálů stěny (obvykle jádro). */
+function wallPriority(model: Model, w: Wall): number {
+  const prio = wallSection(model, w).layers.map(
+    (l) => model.materials[l.layer.materialId]?.joinPriority ?? 0,
+  );
+  return Math.max(0, ...prio);
+}
+
+/**
+ * Offset čáry na hostiteli, kde končí stěna napojená v T (priorita materiálů, rozhodnutí 5):
+ * od přivráceného líce projde povrchovými vrstvami a izolací hostitele s nižší prioritou, jádro nikdy.
+ */
+export function teeCutOffset(model: Model, w: Wall, end: PathEnd, host: Wall): number {
   const far: Vec2 = endPoint(w.path, end === 'start' ? 'end' : 'start');
   const side = Math.sign(leftOffsetOf(host.path, far)) || 1;
   const s = wallSection(model, host);
-  const face = side * s.faces.ref > side * s.faces.opp ? s.faces.ref : s.faces.opp;
-  return carrierOf(offsetPath(host.path, face));
+  const p = wallPriority(model, w);
+  const nearness = (l: (typeof s.layers)[number]) => Math.max(side * l.from, side * l.to);
+  const layers = [...s.layers].sort((a, b) => nearness(b) - nearness(a));
+  let cut = side * s.faces.ref > side * s.faces.opp ? s.faces.ref : s.faces.opp;
+  for (const l of layers) {
+    const prio = model.materials[l.layer.materialId]?.joinPriority ?? 0;
+    if (l.layer.function === 'core' || prio >= p) break;
+    cut = side * l.from < side * l.to ? l.from : l.to;
+  }
+  return cut;
+}
+
+function teeCut(model: Model, w: Wall, end: PathEnd, host: Wall): Carrier {
+  return carrierOf(offsetPath(host.path, teeCutOffset(model, w, end, host)));
 }
 
 /** Zakončení jednoho konce stěny. */

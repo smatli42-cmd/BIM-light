@@ -10,6 +10,7 @@ import { elementFacts, type ElementFacts } from '../style/conditions.ts';
 import { resolveGraphics } from '../style/graphics.ts';
 import { drawWall } from '../wall/draw.ts';
 import { allWallGeometry } from '../wall/geometry.ts';
+import { teeGaps } from '../wall/tee-gaps.ts';
 import { allWalls } from '../wall/queries.ts';
 import { categoryState, detailOf, layerState } from './effective.ts';
 import type { View } from './types.ts';
@@ -40,7 +41,8 @@ function drawWalls(model: Model, view: View): Primitive[] {
     if (!geom || w.variant.kind !== 'main') continue;
     if (!categoryState(model.display, view, w.category).visible) continue;
     const g = resolveGraphics(model.display, view, elementFacts(model, w)).effect;
-    out.push(...drawWall(geom, detail, g, (id) => model.materials[id]));
+    const gaps = teeGaps(model, geom, geoms);
+    out.push(...drawWall(geom, detail, g, (id) => model.materials[id], gaps));
   }
   return out;
 }
