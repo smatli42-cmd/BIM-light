@@ -219,7 +219,54 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 | 39 | Bourané konstrukce | čárkovaná mřížka 45° + 135° |
 | 40 | Krytina | vodorovné 1,2 mm |
 
+### Stěny: Z3 hotovo, 2026-11-24 (výška, svislé vazby, minimální export IFC)
+- **Výška stěny** (`model/height.ts`, `model/storeys.ts`): spodek = podlaží + odsazení; vršek = pevná výška
+  („nespojeno“) nebo **podlaží + N** + odsazení (jako Archicad Home + N). Stěna přes dvě podlaží = N = 2.
+  Nová stěna má vršek podlaží + 1. Příkaz `wall.setHeight` odmítne výšku ≤ 0 a N mimo budovu.
+- **Podlaží:** `storey.update` posune podlaží nad ním (změna výšky i úrovně), `storey.delete` smaže prázdné
+  podlaží i s pohledy, jinak odmítne a řekne počet prvků a kót (počítá i stěnu, která podlažím prochází).
+- **Složka `wall-height/`:** výška stěny, pásů a vrstev včetně prodloužení nahoře a dole (`resolve.ts`),
+  horní profil {rovný | polygon} s validací (`top-profile.ts`, příkaz `wall.setTopProfile`, bez nástroje),
+  migrace 4 → 5 (`migrate-v4.ts`). `SCHEMA_VERSION = 5`.
+- **Dotazy pro AI:** `wall.list` vrací spodek, vršek, výšku a horní profil, `wall.get` i výšky vrstev;
+  `project.info` podlaží odspodu. Krok scénáře AI (přes dvě podlaží, změna 1.NP, odmítnuté smazání).
+- **Balíček `packages/ifc`:** `exportIfc(model)` → text IFC4: projekt, pozemek, budova, podlaží, IfcWall
+  s osou a tělem (vytažený obrys po napojení z Z2), IfcWallType, IfcMaterialLayerSet + Usage, materiály,
+  Pset_WallCommon.Status. GlobalId z modelu, ostatní odvozené z pevného klíče → opakovaný export dá stejný
+  soubor. Test otevře soubor knihovnou web-ifc 0.0.78 (devDependency) a spočítá entity i geometrii.
+- **Sandbox:** u vybrané stěny pole výšky (odsazení spodku, Vršek: Nespojeno / Podlaží + 0–3, odsazení
+  nebo výška, výsledek v mm); záložka **Podlaží** (úroveň, výška, + Nové podlaží s pohledem, Otevřít,
+  Smazat); tlačítko **Exportovat IFC** (stažení přes rozhraní Platform, `apps/sandbox/src/platform/`).
+- Kóty, zámky a výběr zůstaly 2D beze změny (všechny dřívější testy zelené).
+- Testy: jádro, IFC a nástroje 432 (Vitest), prohlížeč 91 (Playwright), vše zelené.
+
 ## Rozhodl Code (k potvrzení)
+
+Stěny Z3:
+- **Vršek „podlaží + N“ se ukládá relativně** (N, ne id podlaží), jak říká zadání; úroveň N = úroveň N-tého
+  podlaží nad spodním, nad nejvyšším podlažím jeho vršek (úroveň + výška). Vložení podlaží mezi změní,
+  kam vršek míří (jako Archicad). Migrace převede staré „id podlaží“ na N; vršek pod spodním → pevná výška.
+- **Podlaží jsou naskládaná (Archicad):** změna výšky posune všechna podlaží nad ním; změna úrovně posune
+  podlaží i ta nad ním a podlaží pod ním změní výšku (jen když na něj navazovalo). Úroveň nesmí klesnout
+  pod podlaží pod ním.
+- **Spodní podlaží stěny = podlaží stěny**; `wall.setHeight` ho nemění. Kopie na jiné podlaží si nese
+  odsazení i N vůči novému podlaží.
+- **Výchozí vršek nové stěny = podlaží + 1** (dřív pevná výška podlaží), aby změna výšky podlaží stěny
+  přepočítala.
+- **Smazání podlaží** smaže i jeho pohledy; poslední podlaží smazat nejde. Sandbox po „+ Nové podlaží“
+  vytvoří i pohled (dva kroky Undo).
+- **Prodloužení vrstvy:** dole platí pro nejspodnější pás, nahoře pro pás, který končí vrškem.
+- **Horní profil polygon:** body {x po referenční čáře od začátku, z nad spodkem stěny}; výpočty a export
+  zatím berou rovný vršek.
+- **Zapisovač IFC: vlastní textový STEP** (~100 řádků) místo knihovny: entit je málo, výstup je
+  deterministický a čitelný, žádná závislost za běhu (web-ifc je wasm ~4 MB a slouží jen k ověření
+  v testech). Schéma IFC4, jednotky mm, čeština kódovaná \X2\…\X0\.
+- **IFC podrobnosti:** tělo = obrys stěny po napojení vytažený na výšku (bez prodloužení vrstev a bez
+  horního profilu); oblouk zatím jako lomená čára (přesně Z5); pozemek „Pozemek“ s výškou ±0 v Bpv;
+  georeference (IfcMapConversion) zatím ne; vrstvy z pásu v rovině řezu; exportuje se jen hlavní model
+  (varianty ne). Status: NEW / EXISTING / DEMOLISH.
+- **Export pro AI:** export nemění model, proto není příkaz v registru jádra (balíček IFC je mimo jádro).
+  AI ho dostane s připojením přes MCP (etapa 6) jako nástroj nad `exportIfc`.
 
 Stěny Z2 – návrh algoritmu napojení (složka `packages/core/src/junction/`):
 - **Vrstva = pás** mezi dvěma rovnoběžnými čarami (offsety z příčného řezu). Na každém konci ho omezí
@@ -395,11 +442,14 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel vyzkouší stěny Z2 (galerie `#galerie`, rohy v běžné kresbě, Nespojovat na uzlu). Potom stěny
-  Z3 – výška a svislé vazby, minimální export IFC (model Sonnet 5.5), stejnou větou „Pokračuj podle
+- Uživatel vyzkouší stěny Z3 (záložka Podlaží, výška vybrané stěny, Exportovat IFC a otevření v BIMvision).
+  Potom stěny Z4 – otvory ve stěně (model Sonnet 5.5), stejnou větou „Pokračuj podle
   docs/instrukce-code-steny.md…“.
 
 ## Otevřené
+
+- **STAV.md je těsně pod limitem** (474 řádků, 39 KB). Návrh rozdělení: „Hotovo“ a „Rozhodl Code“
+  etapy 0 (kroky 1–4, skupina A, šrafy) přesunout do `docs/STAV-etapa-0.md`, tady nechat odkaz – k souhlasu.
 
 - Připojení AI přes MCP (etapa 6): server nad jádrem a souborem projektu, nástroje Undo / Redo, uložení.
 
@@ -411,15 +461,17 @@ Krok 3:
 ## Chybělo
 
 - Z2: nic z pozdějších kroků nebylo potřeba; desky (rozhodnutí E) se napojení v půdorysu netýkají.
+- Z3 (rozhodnutí E): **desky** – vršek stěny nejde přichytit ke stropu, „omítka pod strop“ je jen číslo
+  prodloužení. **Ukládání projektu v sandboxu** – Platform v prohlížeči umí jen stažení (export IFC).
 
-## Největší soubory (po stěnách Z2)
+## Největší soubory (po stěnách Z3)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (298 souborů). Největší v `junction/`: edges.ts 122 řádků.
+Výstup `npm run check:size`: varování 0, chyb 0 (325 souborů). Balíček `packages/ifc`: největší wall.ts.
 
 | Řádky | Soubor |
 |---|---|
-| 222 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 223 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 217 | apps/sandbox/e2e/kresleni.spec.ts |
 | 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 206 | apps/sandbox/e2e/kresleni.spec.ts |
-| 199 | apps/sandbox/src/ui/PropertiesPanel.tsx |
-| 192 | apps/sandbox/e2e/koty-docasne.spec.ts |
+| 211 | packages/core/src/ai/scenario.test.ts |
+| 209 | apps/sandbox/src/ui/PropertiesPanel.tsx |

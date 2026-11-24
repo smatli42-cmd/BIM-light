@@ -3,6 +3,7 @@
 import type { Session } from '../session/session.ts';
 import type { ToolId } from '../interaction/types.ts';
 import { zoomTo } from '../interaction/keyboard.ts';
+import { ExportIfc } from './ExportIfc.tsx';
 import { useSession } from './use-session.ts';
 
 interface ToolDef {
@@ -88,6 +89,7 @@ export function Toolbar({ session }: { session: Session }) {
           Okno
         </button>
       </div>
+      <ExportIfc s={s} />
     </nav>
   );
 }
