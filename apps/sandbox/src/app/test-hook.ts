@@ -55,7 +55,7 @@ export function installTestHook(s: Session) {
     toPage: (x, y) => page(s.viewport.toScreen({ x, y })),
     overlay: () => s.tool.overlay(),
     temps: () =>
-      tempDimViews(s).map((t) => ({
+      tempDimViews(s, s.tool.overlay().previewModel ?? s.model).map((t) => ({
         key: t.key,
         value: t.temp.value,
         text: page(centre(t.textRect)),

@@ -1,8 +1,16 @@
 // Jeden snímek výkresu: kresba pohledu z jádra (základ 4), výběr, náhledy a pomocné značky.
-import { dimensionFacts, drawDimension, drawView, resolveGraphics, type Primitive } from '@bim-light/core';
+import {
+  dimensionFacts,
+  drawDimension,
+  drawView,
+  resolveGraphics,
+  type Model,
+  type Primitive,
+} from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { gripViews, permDimViews } from '../interaction/hits.ts';
 import { tempDimViews } from '../interaction/temp-layout.ts';
+import { drawGrid } from './grid.ts';
 import { drawDrawing, drawPrimitive, type RenderContext } from './primitives.ts';
 import {
   AUX,
@@ -15,8 +23,8 @@ import {
   SELECT,
 } from './overlay.ts';
 
-function drawModel(r: RenderContext, s: Session, hidden: readonly string[]) {
-  const drawing = drawView(s.model, s.viewId);
+function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly string[]) {
+  const drawing = drawView(model, s.viewId);
   const sel = new Set(s.selection.dims);
   const flash = new Set(s.flashDims);
   const plain: Primitive[] = [];
@@ -36,11 +44,13 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   const v = s.viewport;
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, v.width, v.height);
+  if (s.options.grid) drawGrid(ctx, v, s.options.grid);
   const o = s.tool.overlay();
   const hidden = o.hiddenDims ?? [];
   const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: s.view.scale };
-  drawModel(r, s, hidden);
-  drawWallOutlines(ctx, s, s.selection.walls, SELECT, 2);
+  const model = o.previewModel ?? s.model;
+  drawModel(r, s, model, hidden);
+  drawWallOutlines(ctx, s, s.selection.walls, SELECT, 2, model);
   for (const d of o.draftDims ?? []) {
     const g = resolveGraphics(s.model.display, s.view, dimensionFacts(d)).effect;
     for (const p of drawDimension(s.model, d, s.view.scale, s.model.display.paperSizes, g))
@@ -49,7 +59,7 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   if (s.tool.id === 'select') {
     const flash = new Set(s.flashDims);
     for (const d of permDimViews(s, hidden)) drawLock(ctx, d, flash.has(d.id));
-    for (const t of tempDimViews(s)) drawTempDim(ctx, t);
+    for (const t of tempDimViews(s, model)) drawTempDim(ctx, t);
     drawGrips(ctx, gripViews(s));
   }
   drawOverlay(ctx, s, o);

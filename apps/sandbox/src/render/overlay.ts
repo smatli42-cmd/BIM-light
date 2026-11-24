@@ -1,6 +1,6 @@
 // Pomocné značky přes výkres: světle modré [R, katalog kreslení 2] – přichycení, pomocné čáry,
 // uzly, dočasné kóty, zámky a kolečka. Jsou to prvky rozhraní, ne kresba modelu.
-import { allWallGeometry, edgePath, tessellate, type Id, type Vec2 } from '@bim-light/core';
+import { allWallGeometry, edgePath, tessellate, type Id, type Vec2, type Model } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import type { GripView, PermDimView } from '../interaction/hits.ts';
 import type { TempDimView } from '../interaction/temp-layout.ts';
@@ -31,8 +31,15 @@ function poly(ctx: Ctx, s: Session, pts: readonly Vec2[], closed = true) {
 }
 
 /** Obrysy stěn (výběr, zvýraznění pod kurzorem). */
-export function drawWallOutlines(ctx: Ctx, s: Session, ids: readonly Id[], color: string, width: number) {
-  const geoms = allWallGeometry(s.model, s.storeyId);
+export function drawWallOutlines(
+  ctx: Ctx,
+  s: Session,
+  ids: readonly Id[],
+  color: string,
+  width: number,
+  model: Model = s.model,
+) {
+  const geoms = allWallGeometry(model, s.storeyId);
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
   for (const id of ids) {

@@ -14,6 +14,7 @@ import {
   sub,
   tangentAt,
   type Id,
+  type Model,
   type PathEnd,
   type Vec2,
   type WallFace,
@@ -108,6 +109,7 @@ abstract class ClickOrDrag implements Mode {
 export class NodeMode extends ClickOrDrag {
   readonly hint = 'Klikni nebo pusť uzel na nové místo (přichytává se). U uzlu jiné stěny se konec napojí.';
   private point: Vec2;
+  private preview: Model | null = null;
 
   constructor(
     s: Session,
@@ -124,24 +126,37 @@ export class NodeMode extends ClickOrDrag {
 
   protected update(p: PointerInfo) {
     this.last = p;
-    this.point = this.s.snap(p.world, { alt: p.alt, exclude: new Set([this.wallId]) }).point;
+    // Jako při kreslení: od pevného konce platí úhlové kroky a délka se zaokrouhluje na 10 mm.
+    const w = this.s.model.elements[this.wallId];
+    const from = w ? endPoint(w.path, this.end === 'start' ? 'end' : 'start') : null;
+    const opts = { alt: p.alt, orthoOnly: p.shift, from, exclude: new Set([this.wallId]) };
+    this.point = this.s.snap(p.world, opts).point;
+    // Náhled celé změny (navazující stěny, dočasné kóty – katalog kreslení 5.2), nic se neukládá.
+    this.preview =
+      this.moved || !this.dragging ? this.s.editor.preview('wall.moveEndpoint', this.params()) : null;
   }
 
-  protected finish() {
-    this.done();
+  private params() {
     const target = nodeTarget(this.s, this.wallId, this.point, this.s.viewport.px(14));
-    this.s.run('wall.moveEndpoint', {
+    return {
       wallId: this.wallId,
       end: this.end,
       point: this.point,
       ...(target ? { connectTo: target } : {}),
-    });
+    };
+  }
+
+  protected finish() {
+    this.done();
+    this.preview = null;
+    this.s.run('wall.moveEndpoint', this.params());
   }
 
   overlay(): Overlay {
     const w = this.s.model.elements[this.wallId];
     if (!w) return {};
     const other = endPoint(w.path, this.end === 'start' ? 'end' : 'start');
+    if (this.preview) return { previewModel: this.preview, markers: [this.point] };
     return { lines: [[other, this.point]], markers: [this.point] };
   }
 }

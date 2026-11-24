@@ -12,6 +12,7 @@ import {
   tangentAt,
   temporaryDimensions,
   type Id,
+  type Model,
   type TempDimension,
   type Vec2,
 } from '@bim-light/core';
@@ -48,8 +49,8 @@ function crossView(s: Session, t: Extract<TempDimension, { kind: 'cross' }>, fac
   return finish(s, key, t, A, B, [t.from, t.to], face, t.parallel);
 }
 
-function lengthView(s: Session, t: TempDimension, wallId: Id): TempDimView | null {
-  const g = allWallGeometry(s.model, s.storeyId).get(wallId);
+function lengthView(s: Session, m: Model, t: TempDimension, wallId: Id): TempDimView | null {
+  const g = allWallGeometry(m, s.storeyId).get(wallId);
   if (!g || g.faces.ref.kind !== 'line') return null;
   const out = norm(sub(pointAt(g.faces.ref, 0.5), pointAt(g.faces.opp, 0.5)));
   const off = s.tempOffsets.len ?? s.viewport.px(30);
@@ -98,18 +99,21 @@ function finish(
   };
 }
 
-/** Dočasné kóty pro jednu vybranou stěnu (při více vybraných se nezobrazují). */
-export function tempDimViews(s: Session): TempDimView[] {
+/**
+ * Dočasné kóty pro jednu vybranou stěnu (při více vybraných se nezobrazují). `model` = náhled
+ * během tažení uzlu (katalog kreslení 5.2), jinak skutečný model.
+ */
+export function tempDimViews(s: Session, model: Model = s.model): TempDimView[] {
   const id = s.selection.single;
   if (!id || s.tool.id !== 'select') return [];
-  const geoms = allWallGeometry(s.model, s.storeyId);
+  const geoms = allWallGeometry(model, s.storeyId);
   const g = geoms.get(id);
   if (!g) return [];
   const out: TempDimView[] = [];
   for (const t of temporaryDimensions(g, [...geoms.values()], s.tempMode)) {
     if (t.kind === 'cross') out.push(crossView(s, t, tangentAt(edgePath(g, t.own.face), 'start')));
     else {
-      const l = lengthView(s, t, id);
+      const l = lengthView(s, model, t, id);
       if (l) out.push(l);
     }
   }

@@ -91,6 +91,22 @@ export class Editor {
     return { ok: true, created: result.created ?? [] };
   }
 
+  /**
+   * Zkušební běh příkazu: vrátí model po změně, ale nic neuloží (náhled při tažení myší).
+   * Chyba nebo porušený zámek = null.
+   */
+  preview(name: string, params: unknown): Model | null {
+    const def = this.options.registry.get(name);
+    if (!def || validate(def.params, params).length) return null;
+    try {
+      const m = def.run(this.current, params, { newId: this.options.newId, variant: this.variant }).model;
+      return lockViolations(m).length ? null : m;
+    } catch (e) {
+      if (e instanceof CommandFailure) return null;
+      throw e;
+    }
+  }
+
   /** Spustí dotaz (jen čtení, bez Undo) podle jména s parametry v JSON. */
   query(name: string, params: unknown): QueryResult {
     const def = this.options.registry.getQuery(name);
