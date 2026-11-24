@@ -102,6 +102,28 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     expect(row(c.ai.call<WallRow[]>('wall.list'), free!).length).toBe(2000);
   });
 
+  it('zobrazení přes AI: přepnutí stylu, skrytí vrstvy, „upraveno“ a Vrátit', () => {
+    const c = start();
+    interface ViewRow {
+      style: { name: string };
+      modified: boolean;
+      detail: string;
+      layers: { id: string; name: string; visible: boolean }[];
+    }
+    const info = c.ai.call<{ styles: { id: string; name: string }[] }>('project.info');
+    const projekt = info.styles.find((s) => s.name === 'Projekt')!.id;
+    c.ai.call('view.setStyle', { viewId: c.viewId, styleId: projekt });
+    const v = c.ai.call<ViewRow>('view.info', { viewId: c.viewId });
+    expect([v.style.name, v.detail, v.modified]).toEqual(['Projekt', 'medium', false]);
+    const walls = v.layers.find((l) => l.name === 'Stěny a sloupy')!;
+    c.ai.call('view.setLayerState', { viewId: c.viewId, layerId: walls.id, visible: false });
+    expect(c.ai.call<ViewRow>('view.info', { viewId: c.viewId }).modified).toBe(true);
+    c.ai.call('view.resetToStyle', { viewId: c.viewId });
+    const back = c.ai.call<ViewRow>('view.info', { viewId: c.viewId });
+    expect(back.modified).toBe(false);
+    expect(back.layers.find((l) => l.id === walls.id)?.visible).toBe(true);
+  });
+
   it('změna tloušťky a referenční čáry přes AI', () => {
     const c = start();
     const [left] = room(c);

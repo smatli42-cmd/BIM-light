@@ -2,6 +2,15 @@
 import { dimensionList } from './dimensions.ts';
 import { hatchList, materialList } from './materials.ts';
 import { projectInfo } from './project.ts';
+import { viewInfo } from './views.ts';
 import { wallGet, wallList } from './walls.ts';
 
-export const CORE_QUERIES = [projectInfo, wallList, wallGet, dimensionList, hatchList, materialList];
+export const CORE_QUERIES = [
+  projectInfo,
+  wallList,
+  wallGet,
+  dimensionList,
+  hatchList,
+  materialList,
+  viewInfo,
+];
