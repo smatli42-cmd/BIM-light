@@ -227,11 +227,13 @@ kbd {
 /* Záložky pravého panelu, knihovna šraf a materiály (doplněk šraf a materiálů). */
 .panel .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
   margin-bottom: 8px;
 }
 .panel .tabs button {
-  flex: 1;
+  flex: 1 1 30%;
+  justify-content: center;
 }
 .panel .tabs button.active {
   background: #dbe8f6;
