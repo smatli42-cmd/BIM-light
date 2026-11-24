@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, etapa 0 / krok 3 (interakce v sandboxu).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, etapa 0 / krok 3 – opravy závad po vyzkoušení.
 
 ## Hotovo
 
@@ -47,7 +47,31 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 - **Testy:** jádro + nástroje 164 (Vitest), prohlížeč 62 (Playwright) podle kontrolního seznamu pravidel
   a regresí z prototypu.
 
+### Krok 3 – opravy závad z vyzkoušení (2026-11-24)
+- **Přichytávání na protější líc:** stěna kreslená mezi dvěma stěnami drží úhlový krok (rovně / pravý úhel,
+  i se Shift) i po dojetí na protější líc; bod = průsečík směru s lícem („líc + rovně“) – `snap/face-snap.ts`.
+- **Zaokrouhlení 10 mm:** bod přichycený k líci se zaokrouhlí – délka stěny od předchozího bodu, bez
+  předchozího bodu poloha po líci.
+- **Výplň a obrys:** světle šedá výplň stěn `#d9d9d9` (Studie i Projekt, v Projektu pod šrafou), obrys černý,
+  pero řezu stěny a sloupu 6 (0,7 mm, velmi tlustá podle ČSN 01 3420).
+- **Pokos se nekreslí:** obrys = líce + čelo jen u volného konce (`wall/outline.ts`); v rohu ani v T se čelo
+  nekreslí; šev mezi výplněmi v sandboxu zakrývá okraj výplně stejnou barvou.
+- **Kóta k volnému konci:** kóta jde navázat i na čelo nepřipojeného konce (`FaceRef.face` = `start` / `end`,
+  `wall/edges.ts`); změna čísla takové kóty stěnu na tomto konci prodlouží / zkrátí.
+- **Referenční čára v panelu:** přepínač Líc / Osa / Líc jádra pro vybrané stěny (`wall.setReferenceLine`)
+  i pro nové stěny; při změně tloušťky zůstává referenční čára na místě a stěna roste od ní.
+- Testy: jádro 178 (Vitest), prohlížeč 64 (Playwright), vše zelené.
+
 ## Rozhodl Code (k potvrzení)
+
+Opravy závad kroku 3:
+- **Pero řezu stěny 6 (0,7 mm)** místo 5 (0,5) podle pokynu „tučné podle ČSN“. Katalog pohledů (Tloušťky čar)
+  zatím uvádí „velmi tlustá = pero 5“ – k potvrzení, případně upravit dokument.
+- Šedá výplň je i v Projektu pod šrafou materiálu (ne jen ve Studii).
+- Čelo konce, který se později napojí, se v kótě dál měří jako čára mezi konci líců (kóta nezmizí).
+- Délka stěny s nepřipojeným koncem se kótuje nástrojem Kóta: čelo volného konce + rovnoběžný líc (např. líc
+  stěny v rohu na druhém konci). Kóta typu „délka“ přímo na čelo nejde (měřila by jen tloušťku).
+- Při kreslení s referenční čárou Osa leží kliknutá čára uprostřed stěny; Stěna z čáry a Obdélník berou dál líc.
 
 Krok 1:
 - Dokumenty v `docs/` nad limit dávají v `check:size` jen varování; `CLAUDE.md` nad 150 řádků je chyba.
@@ -107,8 +131,8 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel vyzkoušel krok 3 a našel několik závad; sepíše je po přechodu na druhý počítač (2026-11-24).
-  Nejdřív opravit tyto závady (každá: test, který ji chytí, pak oprava), teprve potom krok 4.
+- Uživatel vyzkouší opravy závad kroku 3 (první dávka opravena 2026-11-24); případné další závady opravit,
+  potom krok 4.
 
 ## Otevřené
 
@@ -120,14 +144,14 @@ Krok 3:
 - Mřížka (katalog kreslení 2.6) zatím není ani jako volba.
 - Napojení vrstev v rozích podle priority materiálů; přerušení čáry hostitele v T; jemná podrobnost = střední.
 
-## Největší soubory (po kroku 3)
+## Největší soubory (po opravách kroku 3)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (193 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (200 souborů).
 
 | Řádky | Soubor |
 |---|---|
 | 242 | apps/sandbox/src/interaction/tools/select/wall-modes.ts |
 | 225 | apps/sandbox/e2e/prikazy.spec.ts |
-| 215 | apps/sandbox/src/interaction/tools/wall-tool.ts |
-| 192 | apps/sandbox/e2e/koty-docasne.spec.ts |
-| 192 | apps/sandbox/src/interaction/tools/commands/edit-tools.ts |
+| 220 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 212 | apps/sandbox/src/ui/PropertiesPanel.tsx |
+| 193 | apps/sandbox/e2e/koty-trvale.spec.ts |
