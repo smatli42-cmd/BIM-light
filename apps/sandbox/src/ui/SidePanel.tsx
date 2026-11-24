@@ -2,13 +2,15 @@
 import { useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
 import { HatchLibrary } from './HatchLibrary.tsx';
+import { LayersPanel } from './LayersPanel.tsx';
 import { MaterialsPanel } from './MaterialsPanel.tsx';
 import { PropertiesPanel } from './PropertiesPanel.tsx';
 import { useSession } from './use-session.ts';
 
-type Tab = 'props' | 'materials' | 'hatches';
+type Tab = 'props' | 'layers' | 'materials' | 'hatches';
 const TABS: [Tab, string][] = [
   ['props', 'Vlastnosti'],
+  ['layers', 'Vrstvy'],
   ['materials', 'Materiály'],
   ['hatches', 'Šrafy'],
 ];
@@ -31,6 +33,7 @@ export function SidePanel({ session }: { session: Session }) {
         ))}
       </nav>
       {tab === 'props' && <PropertiesPanel session={session} />}
+      {tab === 'layers' && <LayersPanel s={session} />}
       {tab === 'materials' && <MaterialsPanel s={session} />}
       {tab === 'hatches' && <HatchLibrary />}
     </aside>

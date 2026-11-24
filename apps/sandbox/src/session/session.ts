@@ -75,6 +75,8 @@ export class Session {
     this.wallTypeId = Object.values(m.wallTypes)[0]?.id ?? '';
     this.tool = createTool('select', this);
     this.editor.subscribe(() => {
+      // Pohled mohl zmizet (Undo nového pohledu): přepne se na první existující.
+      if (!this.model.views[this.viewId]) this.viewId = Object.keys(this.model.views)[0] as Id;
       this.selection.prune(this.model);
       this.changed();
     });
@@ -90,6 +92,14 @@ export class Session {
 
   get storeyId(): Id {
     return this.view.storeyId;
+  }
+
+  /** Přepne aktivní pohled (výběr se zruší, jiný pohled může mít jiné podlaží). */
+  setView(id: Id) {
+    if (!this.model.views[id] || id === this.viewId) return;
+    this.viewId = id;
+    this.selection.set([]);
+    this.changed();
   }
 
   subscribe(fn: () => void): () => void {

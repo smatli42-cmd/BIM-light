@@ -6,6 +6,7 @@ import { Session } from '../session/session.ts';
 import { CanvasOverlays, StatusBar } from '../ui/Overlays.tsx';
 import { SidePanel } from '../ui/SidePanel.tsx';
 import { Toolbar } from '../ui/Toolbar.tsx';
+import { ViewBar } from '../ui/ViewBar.tsx';
 import { installTestHook } from './test-hook.ts';
 
 export function App() {
@@ -21,6 +22,7 @@ export function App() {
         <span class="muted" data-testid="core-name">
           {CORE_NAME}
         </span>
+        <ViewBar session={session} />
       </header>
       <div class="main">
         <Toolbar session={session} />

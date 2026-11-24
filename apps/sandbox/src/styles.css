@@ -24,7 +24,7 @@ body,
 }
 .topbar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--line);
@@ -282,4 +282,41 @@ kbd {
 .color-field {
   display: flex;
   gap: 4px;
+}
+
+/* Lišta pohledu a panel Vrstvy (krok 4 etapy 0). */
+.viewbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: 1rem;
+  font-size: 0.8rem;
+}
+.viewbar button.active {
+  background: #dbe8f6;
+  border-color: #7ea6d1;
+}
+.style-switch,
+.new-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.layer-list {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.panel .layer-item button {
+  width: 26px;
+  justify-content: center;
+}
+.layer-item button.off {
+  opacity: 0.5;
 }
