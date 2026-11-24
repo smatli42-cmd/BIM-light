@@ -147,6 +147,37 @@ function NewWallSection({ s }: { s: Session }) {
   );
 }
 
+/** Naposledy zvolená rozteč mřížky (po vypnutí a zapnutí se vrátí). */
+let gridStep = 100;
+
+/** Mřížka: zapnutí a rozteč (katalog kreslení 2.6). */
+function GridOption({ s }: { s: Session }) {
+  const set = (fn: () => void) => (fn(), s.changed());
+  return (
+    <>
+      <Check
+        label="Mřížka"
+        testid="opt-grid"
+        checked={s.options.grid > 0}
+        onSet={(v) => set(() => (s.options.grid = v ? gridStep : 0))}
+      />
+      {s.options.grid > 0 && (
+        <label>
+          Rozteč mřížky (mm)
+          <input
+            data-testid="opt-grid-step"
+            type="number"
+            min={10}
+            step={10}
+            value={s.options.grid}
+            onChange={(e) => set(() => (s.options.grid = gridStep = Number(e.currentTarget.value) || 100))}
+          />
+        </label>
+      )}
+    </>
+  );
+}
+
 function OptionsSection({ s }: { s: Session }) {
   const set = (fn: () => void) => (fn(), s.changed());
   return (
@@ -186,6 +217,7 @@ function OptionsSection({ s }: { s: Session }) {
         checked={s.options.arrayRadial}
         onSet={(v) => set(() => (s.options.arrayRadial = v))}
       />
+      <GridOption s={s} />
     </section>
   );
 }

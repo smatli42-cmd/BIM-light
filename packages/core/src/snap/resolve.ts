@@ -1,4 +1,5 @@
-// Výsledný bod pod kurzorem: kandidát přichycení (C střídá) → úhlový krok → pomocná čára → volný bod.
+// Výsledný bod pod kurzorem: kandidát přichycení (C střídá) → uzel mřížky (je-li zapnutá) → úhlový krok
+// → pomocná čára → volný bod.
 // Alt přichytávání vypne (katalog kreslení 2.7); zadané číslo má vždy přednost (řeší volající, 2.5).
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
@@ -33,6 +34,12 @@ export function resolveSnap(geoms: readonly WallGeometry[], raw: Vec2, o: SnapOp
       };
       return { point: c.point, snap, guides: [] };
     }
+  }
+  const g = o.grid && o.grid > 0 ? o.grid : null;
+  if (g) {
+    const node = { x: Math.round(raw.x / g) * g, y: Math.round(raw.y / g) * g };
+    if (Math.hypot(node.x - raw.x, node.y - raw.y) <= o.tolerance)
+      return { point: node, snap: { kind: 'grid', label: 'mřížka', index: 0, count: 1 }, guides: [] };
   }
   const corners = outlineCorners(geoms);
   if (from) {

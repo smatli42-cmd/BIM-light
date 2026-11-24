@@ -43,3 +43,21 @@ describe('katalog-kresleni / část 2: líc při kreslení stěny', () => {
     expect(Math.abs(l - Math.round(l / 10) * 10)).toBeLessThan(1e-6);
   });
 });
+
+describe('katalog-kresleni 2.6: mřížka jde zapnout', () => {
+  it('bez mřížky volný bod jen zaokrouhlí na 10 mm, se zapnutou se přichytí k uzlu', () => {
+    const f = fixture();
+    const off = snapPoint(f.model, f.storeyId, vec(1034, 2468), { tolerance: 80 });
+    expect(off.point).toEqual(vec(1030, 2470));
+    const on = snapPoint(f.model, f.storeyId, vec(1034, 2468), { tolerance: 80, grid: 500 });
+    expect(on.snap?.kind).toBe('grid');
+    expect(on.point).toEqual(vec(1000, 2500));
+  });
+
+  it('konec stěny má přednost před mřížkou', () => {
+    const f = fixture();
+    f.line(vec(0, 0), vec(1230, 0));
+    const r = snapPoint(f.model, f.storeyId, vec(1220, 10), { tolerance: 50, grid: 1000 });
+    expect(r.snap?.kind).toBe('endpoint');
+  });
+});

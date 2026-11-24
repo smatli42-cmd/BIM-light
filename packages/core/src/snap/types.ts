@@ -31,12 +31,14 @@ export interface SnapOptions {
   readonly disabled?: boolean;
   /** Kolikátý kandidát (klávesa C střídá). */
   readonly cycle?: number;
+  /** Rozteč mřížky v mm (katalog kreslení 2.6: zapíná se v nastavení); null / chybí = bez mřížky. */
+  readonly grid?: number | null;
   /** Stěny, ke kterým se nepřichytává (právě se hýbou). */
   readonly exclude?: ReadonlySet<Id>;
 }
 
 export interface SnapInfo {
-  readonly kind: SnapCandidateKind | 'angle' | 'guide';
+  readonly kind: SnapCandidateKind | 'angle' | 'guide' | 'grid';
   readonly label: string;
   /** Pořadí kandidáta a počet kandidátů (např. „konec 2/4“). */
   readonly index: number;

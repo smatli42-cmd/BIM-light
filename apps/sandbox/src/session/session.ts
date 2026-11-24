@@ -49,7 +49,8 @@ export class Session {
   tempOffsets: Record<string, number> = {};
   filter: SelectionFilter = ALL_CATEGORIES;
   clipboard: Clipboard | null = null;
-  options = { copy: false, arrayCount: 3, arrayRadial: false };
+  /** grid = rozteč mřížky v mm, 0 = vypnutá (katalog kreslení 2.6: mřížka není, jde zapnout). */
+  options = { copy: false, arrayCount: 3, arrayRadial: false, grid: 0 };
   typed: TypedInput = { field: 'len', len: '', ang: '' };
   menu: MenuState | null = null;
   valueEdit: ValueEditState | null = null;
@@ -156,6 +157,7 @@ export class Session {
   /** Přichytí bod (základ 20); tolerance z px, Alt vypne, C střídá kandidáty. */
   snap(raw: Vec2, o: Partial<SnapOptions> & { alt?: boolean } = {}): SnapResult {
     return resolveSnap(this.geometry(o.exclude), raw, {
+      grid: this.options.grid || null,
       ...o,
       tolerance: this.viewport.px(SNAP_PX),
       disabled: o.alt ?? o.disabled ?? false,

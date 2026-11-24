@@ -164,3 +164,19 @@ test.describe('pravidla-interakce / kontrolní seznam: vybrat čáru → stěna'
     expect(ws[1]?.path.start.y).toBeCloseTo(300, 6);
   });
 });
+
+test.describe('katalog-kresleni 2.6: mřížka', () => {
+  test('mřížka je vypnutá; po zapnutí v Volbách se body stěny přichytí k jejím uzlům', async ({ page }) => {
+    await expect(page.getByTestId('opt-grid')).not.toBeChecked();
+    await page.getByTestId('opt-grid').check();
+    await page.getByTestId('opt-grid-step').fill('500');
+    await moveTo(page, 0, 0);
+    await page.keyboard.press('w');
+    await clickAt(page, 1040, 520);
+    await clickAt(page, 2460, 1030);
+    await page.keyboard.press('Escape');
+    const [w] = await walls(page);
+    expect(w?.path.start).toEqual({ x: 1000, y: 500 });
+    expect(w?.path.end).toEqual({ x: 2500, y: 1000 });
+  });
+});
