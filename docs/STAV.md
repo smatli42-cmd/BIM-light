@@ -171,6 +171,9 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 - **Polygonová knihovna:** žádná. Každý kousek vrstvy = pás ∩ poloroviny (ořez přímkou), mezera = dvě
   poloroviny; slévání a obrysy přes společné hrany. Krok Z4 udělá otvor jako mezeru ve všech vrstvách.
 - Testy: jádro a nástroje 398 (Vitest), prohlížeč 86 (Playwright), vše zelené.
+- **Oprava po vyzkoušení:** stěna nakreslená myší přes jinou zůstala oddělená (nástroj Stěna předává
+  napojení konců sám a kříž se zapínal jen s `autoConnect`). `wall.create` má volbu `autoCross`, nástroje
+  Stěna a Stěna z čáry ji zapínají. Test v prohlížeči (`kresleni.spec.ts`), celkem 87.
 
 #### Šrafy (návrh, k porovnání s arditem; rozměry mm na papíře)
 | # | Šrafa | Vzhled |

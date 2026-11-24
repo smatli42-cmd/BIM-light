@@ -203,4 +203,15 @@ test.describe('závada: stěna k jiné stěně jiné šířky se někdy nenapoj�
     const link = rels.find((r) => r.related.wallId === fresh.id || r.relating.wallId === fresh.id);
     expect(link?.relating).toEqual({ wallId: left, at: 'ATPATH' });
   });
+  test('plan-steny / Z2 (závada): stěna nakreslená myší přes jinou stěnu se s ní napojí křížem', async ({
+    page,
+  }) => {
+    await wall(page, { x: -2000, y: 0 }, { x: 2000, y: 0 });
+    await page.keyboard.press('w');
+    await clickAt(page, 0, -2000);
+    await clickAt(page, 0, 2000);
+    await page.keyboard.press('Escape');
+    const rels = Object.values((await model(page)).relations);
+    expect(rels.filter((r) => r.relating.at === 'ATPATH' && r.related.at === 'ATPATH')).toHaveLength(1);
+  });
 });

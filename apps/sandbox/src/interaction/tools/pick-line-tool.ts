@@ -34,6 +34,7 @@ export class PickLineTool implements Tool {
       typeId: s.wallTypeId,
       path: edgePath(g, f.face),
       side: s.wallSide,
+      autoCross: true,
     });
   }
 

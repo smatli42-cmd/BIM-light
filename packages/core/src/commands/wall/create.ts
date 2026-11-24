@@ -26,6 +26,8 @@ export interface WallCreateParams {
   connections?: { end: PathEnd; wallId: string; at: ConnectionType }[];
   /** Napojit konce bez zadaného napojení samočinně (roh / T), jako při kreslení myší. */
   autoConnect?: boolean;
+  /** Napojit křížem X stěny, které nová stěna protíná uprostřed (kreslení myší, plán stěn Z2). */
+  autoCross?: boolean;
 }
 
 /** Kříž X se stěnami, které nová stěna protíná uprostřed (plán stěn Z2). */
@@ -57,8 +59,8 @@ export const wallCreate = defineCommand<WallCreateParams>({
   description:
     'Nakreslí stěnu po referenční čáře (výchozí vnitřní líc, tloušťka doleva od směru kreslení). ' +
     'Napojení na jiné stěny (roh nebo T) zadej v connections, nebo autoConnect: true napojí konce ' +
-    '(a stěny, které nová stěna protíná uprostřed, křížem X) ' +
-    'ležící na volném konci jiné stěny (roh) nebo na jejím líci / ose (T) samo, jako při kreslení myší.',
+    'ležící na volném konci jiné stěny (roh) nebo na jejím líci / ose (T) samo, jako při kreslení myší. ' +
+    'autoCross: true (výchozí jako autoConnect) napojí křížem X stěny, které nová stěna protíná uprostřed.',
   group: 'Stěna',
   icon: 'wall',
   shortcut: 'W',
@@ -74,6 +76,10 @@ export const wallCreate = defineCommand<WallCreateParams>({
       discipline: { type: 'string' },
       connections: { type: 'array', items: CONNECTION_SCHEMA },
       autoConnect: { type: 'boolean', description: 'samočinné napojení konců (výchozí ne)' },
+      autoCross: {
+        type: 'boolean',
+        description: 'kříž se stěnami, které nová protne (výchozí jako autoConnect)',
+      },
     },
     ['storeyId', 'typeId', 'path'],
   ),
@@ -109,7 +115,7 @@ export const wallCreate = defineCommand<WallCreateParams>({
       };
     });
     let m = putRelations(putElements(model, [wall]), relations);
-    if (p.autoConnect) m = withCrossings(m, wall, ctx.newId);
+    if (p.autoCross ?? p.autoConnect) m = withCrossings(m, wall, ctx.newId);
     const created = Object.keys(m.relations).filter((id) => !model.relations[id]);
     return { model: m, created: [wall.id, ...created] };
   },

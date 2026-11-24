@@ -118,6 +118,7 @@ export class WallTool implements Tool {
       side: s.wallSide,
       referenceLine: s.wallRefLine,
       connections: conns,
+      autoCross: true,
     });
     if (!r.ok) return;
     const id = r.created[0] as Id;
