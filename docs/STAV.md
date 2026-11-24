@@ -76,6 +76,19 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   (obrazovka používá jen příkazy z registru). Pravidlo zapsané v `CLAUDE.md`.
 - Testy: jádro a nástroje 271 (Vitest).
 
+### Stěny – skupina A (2026-11-24)
+- **T napojení:** líc hostitele se v místě T přeruší (`wall/tee-gaps.ts`, obrys po kusech v `wall/outline.ts`).
+- **Priorita materiálů v T:** napojená stěna projde povrchovými vrstvami a izolací hostitele s nižší prioritou
+  až k jeho jádru (jádro na jádro), jádro hostitele nikdy (`teeCutOffset` v `wall/joins.ts`); přerušují se
+  i hranice vrstev, kterými prochází.
+- **Desetinná čísla:** tažený uzel se přichytává od pevného konce jako při kreslení (úhlové kroky, Shift,
+  délka po 10 mm).
+- **Dočasné kóty při tažení uzlu** (katalog 5.2): `Editor.preview()` = zkušební běh příkazu bez uložení;
+  během tažení se kreslí náhled celého modelu (navazující stěny jdou s uzlem) a dočasné kóty z něj.
+- **Mřížka** (katalog 2.6): ve Volbách, výchozí vypnutá, rozteč 100 mm; přichycení k uzlu mřížky má přednost
+  před úhlovým krokem, konce / líce stěn před mřížkou.
+- Testy: jádro a nástroje 281 (Vitest), prohlížeč 67 (Playwright), vše zelené.
+
 ## Rozhodl Code (k potvrzení)
 
 Opravy závad kroku 3:
@@ -86,6 +99,14 @@ Opravy závad kroku 3:
 - Délka stěny s nepřipojeným koncem se kótuje nástrojem Kóta: čelo volného konce + rovnoběžný líc (např. líc
   stěny v rohu na druhém konci). Kóta typu „délka“ přímo na čelo nejde (měřila by jen tloušťku).
 - Při kreslení s referenční čárou Osa leží kliknutá čára uprostřed stěny; Stěna z čáry a Obdélník berou dál líc.
+
+Skupina A:
+- Napojená stěna v T končí na jedné čáře pro všechny své vrstvy (i její omítka dojde k jádru hostitele).
+  Šrafa omítky hostitele se v místě T zatím nepřerušuje (je pod výplní; doladí se s jemnou podrobností).
+- Rohy mezi stěnami různých typů zůstávají pokos přes celou tloušťku (u stejných typů to dává vrstvu na
+  vrstvu); obtékání omítky kolem rohu u různých typů – s jemnou podrobností.
+- **Jemná podrobnost** se podle katalogu pohledů („Jemná: později“) nedělá; kreslí jako střední.
+- Mřížka: světle modrá, čára se skryje pod 8 px, každá desátá výraznější.
 
 Ovládání přes AI:
 - `wall.create` napojuje samočinně jen s `autoConnect: true` (výchozí ne, aby AI mohla stěnu položit i bez
@@ -151,8 +172,8 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel vyzkouší opravy závad kroku 3 (první dávka opravena 2026-11-24); případné další závady opravit,
-  potom krok 4.
+- Uživatel vyzkouší skupinu A na webu a pošle případné další chyby stěn; pak kóty (rozhodnuto: nejdřív
+  stěny, potom kóty), potom krok 4.
 
 ## Otevřené
 
@@ -162,18 +183,17 @@ Krok 3:
 - Skupina zarovnaných kót zatím nedrží společnou polohu čáry po změně geometrie (kóty 4, druhá věta):
   poloha čáry je odsazení od středu líce, po prodloužení stěny se řada může rozejít. Návrh: uložit polohu
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
-- Při tažení uzlu se zatím neukazují dočasné kóty (katalog kreslení 5.2), jen náhled a přichytávání.
-- Mřížka (katalog kreslení 2.6) zatím není ani jako volba.
-- Napojení vrstev v rozích podle priority materiálů; přerušení čáry hostitele v T; jemná podrobnost = střední.
+- Jemná podrobnost (= střední); obtékání omítky v rozích různých typů; přerušení šrafy hostitele v T.
 
-## Největší soubory (po opravách kroku 3)
+## Největší soubory (po skupině A)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (200 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (219 souborů). Rozděleno: `select/wall-modes.ts` →
+`click-or-drag.ts` + `node-mode.ts` + `wall-modes.ts`; `e2e/prikazy.spec.ts` → + `e2e/uzly.spec.ts`.
 
 | Řádky | Soubor |
 |---|---|
-| 242 | apps/sandbox/src/interaction/tools/select/wall-modes.ts |
-| 225 | apps/sandbox/e2e/prikazy.spec.ts |
+| 244 | apps/sandbox/src/ui/PropertiesPanel.tsx |
 | 220 | apps/sandbox/src/interaction/tools/wall-tool.ts |
-| 212 | apps/sandbox/src/ui/PropertiesPanel.tsx |
 | 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 192 | apps/sandbox/e2e/koty-docasne.spec.ts |
+| 192 | apps/sandbox/src/interaction/tools/commands/edit-tools.ts |
