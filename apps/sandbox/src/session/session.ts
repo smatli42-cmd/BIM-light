@@ -7,6 +7,7 @@ import {
   Editor,
   snapGeometry,
   resolveSnap,
+  typeHasCore,
   ALL_CATEGORIES,
   type ExecuteResult,
   type Id,
@@ -77,9 +78,17 @@ export class Session {
     this.editor.subscribe(() => {
       // Pohled mohl zmizet (Undo nového pohledu): přepne se na první existující.
       if (!this.model.views[this.viewId]) this.viewId = Object.keys(this.model.views)[0] as Id;
+      this.keepNewWallType();
       this.selection.prune(this.model);
       this.changed();
     });
+  }
+
+  /** Typ nových stěn mohl zmizet (smazání, vyčištění); bez jádra nejde „líc jádra“ (plán stěn Z1). */
+  private keepNewWallType() {
+    if (!this.model.wallTypes[this.wallTypeId]) this.wallTypeId = Object.keys(this.model.wallTypes)[0] ?? '';
+    const t = this.model.wallTypes[this.wallTypeId];
+    if (this.wallRefLine === 'core-face' && t && !typeHasCore(t)) this.wallRefLine = 'face';
   }
 
   get model(): Model {

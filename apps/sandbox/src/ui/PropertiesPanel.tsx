@@ -1,66 +1,10 @@
 // Panel vlastností vpravo (pravidla-interakce: Výběr – typ, tloušťka a strana platí pro všechny
 // vybrané stěny). Každá změna modelu jde přes příkaz jádra (základ 6).
-import { bandThickness, parseNumber, type ReferenceLine, type Wall } from '@bim-light/core';
+import { bandThickness, parseNumber, typeHasCore, type Wall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { LayerMaterials } from './LayerMaterials.tsx';
+import { RefLineSelect, TypeSelect } from './WallFields.tsx';
 import { useSession } from './use-session.ts';
-
-function TypeSelect(props: {
-  s: Session;
-  value: string;
-  mixed: boolean;
-  testid: string;
-  onPick: (id: string) => void;
-}) {
-  return (
-    <label>
-      Typ
-      <select
-        data-testid={props.testid}
-        value={props.mixed ? '' : props.value}
-        onChange={(e) => props.onPick(e.currentTarget.value)}
-      >
-        {props.mixed && <option value="">(různé)</option>}
-        {Object.values(props.s.model.wallTypes).map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-const REF_LINES: readonly [ReferenceLine, string][] = [
-  ['face', 'Líc'],
-  ['axis', 'Osa'],
-  ['core-face', 'Líc jádra'],
-];
-
-/** Referenční čára: zůstává na místě při změně tloušťky, stěna roste od ní (katalog kreslení 6.3). */
-function RefLineSelect(props: {
-  value: ReferenceLine | '';
-  testid: string;
-  onPick: (v: ReferenceLine) => void;
-}) {
-  return (
-    <label title="Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.">
-      Referenční čára
-      <select
-        data-testid={props.testid}
-        value={props.value}
-        onChange={(e) => props.onPick(e.currentTarget.value as ReferenceLine)}
-      >
-        {props.value === '' && <option value="">(různé)</option>}
-        {REF_LINES.map(([v, label]) => (
-          <option key={v} value={v}>
-            {label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
 
 function Check(props: { label: string; testid?: string; checked: boolean; onSet: (v: boolean) => void }) {
   return (
@@ -75,6 +19,12 @@ function Check(props: { label: string; testid?: string; checked: boolean; onSet:
     </label>
   );
 }
+
+const allHaveCore = (s: Session, walls: Wall[]) =>
+  walls.every((w) => {
+    const t = s.model.wallTypes[w.typeId];
+    return !!t && typeHasCore(t);
+  });
 
 function WallSection({ s }: { s: Session }) {
   const walls = s.selection.walls.map((id) => s.model.elements[id]).filter((w): w is Wall => !!w);
@@ -109,6 +59,7 @@ function WallSection({ s }: { s: Session }) {
       <RefLineSelect
         value={walls.every((w) => w.referenceLine === first.referenceLine) ? first.referenceLine : ''}
         testid="sel-refline"
+        coreAllowed={allHaveCore(s, walls)}
         onPick={(v) => {
           for (const id of ids) s.run('wall.setReferenceLine', { wallId: id, referenceLine: v });
         }}
@@ -127,6 +78,7 @@ function WallSection({ s }: { s: Session }) {
 }
 
 function NewWallSection({ s }: { s: Session }) {
+  const newType = s.model.wallTypes[s.wallTypeId];
   return (
     <section>
       <h2>Nová stěna</h2>
@@ -140,6 +92,7 @@ function NewWallSection({ s }: { s: Session }) {
       <RefLineSelect
         value={s.wallRefLine}
         testid="new-refline"
+        coreAllowed={!!newType && typeHasCore(newType)}
         onPick={(v) => ((s.wallRefLine = v), s.changed())}
       />
       <p class="muted" data-testid="new-side">

@@ -320,3 +320,35 @@ kbd {
 .layer-item button.off {
   opacity: 0.5;
 }
+
+/* Typy stěn a editor skladby (stěny Z1). */
+.type-editor {
+  padding: 6px 0 8px;
+}
+.type-preview {
+  display: block;
+  margin: 4px 0;
+  border: 1px solid #c9d1d9;
+  background: #ffffff;
+}
+.type-layer {
+  border-top: 1px solid #e1e4e8;
+  padding: 4px 0;
+}
+.type-layer-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.type-layer-head span {
+  flex: 1;
+}
+.type-layer .schema-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 6px;
+}
+.row {
+  display: flex;
+  gap: 4px;
+}
