@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, etapa 0 / krok 2 (jádro).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, etapa 0 / krok 3 (interakce v sandboxu).
 
 ## Hotovo
 
@@ -11,7 +11,7 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 - Kontrola velikosti souborů `npm run check:size` (pre-commit hook i CI).
 - GitHub Actions: kontroly, testy, e2e, sestavení, nasazení na Pages: https://smatli42-cmd.github.io/BIM-light/
 
-### Krok 2 – jádro bez UI (2026-11-24) – čeká na schválení architektury
+### Krok 2 – jádro bez UI (2026-11-24)
 - **Model ve tvaru IFC** (`model/`): Projekt → Budova → Podlaží → prvek, GlobalId (22 znaků IFC), kategorie,
   profese, stav, varianta, typ + instance, výška vázaná na podlaží, georeference, `SCHEMA_VERSION`.
 - **Stěna** (`wall/`): typ = výškové pásy × vrstvy (materiál, tloušťka, funkce), referenční čára líc / osa /
@@ -30,6 +30,22 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   migrace.
 - Testy: 123 (jádro + nástroje), dělené podle zdroje pravidla; nový hlídač „generátory bez pevných barev a per“
   (`tools/generator-rules.test.mjs`).
+
+### Krok 3 – interakce v sandboxu (2026-11-24)
+- **Jádro doplněno:** služba přichytávání (`snap/`: konec → průsečík → střed → líc / kolmo → osa podle tabulky
+  pravidel, C střídá, úhlové kroky, pomocné čáry, 10 mm, tracker), služba výběru (`selection/`: zásah, Tab,
+  rámeček celé / protnuté, filtr kategorií), dočasné kóty a zarovnání kót (`dimension/temporary.ts`, `align.ts`).
+- **Nové příkazy jádra:** `wall.copy` (kopie, pole, radiální pole, otočení s kopií, zrcadlení, nahrazení),
+  `wall.paste`, `wall.trimToCorner`, `wall.align`, `wall.rectangle`, `wall.deleteNode`, `selection.delete`,
+  `dimension.place`, `dimension.createSet` (řada kót = jeden krok Undo), `dimension.flipSide`,
+  `dimension.equalize` (EQ); `wall.moveEndpoint` umí napojit přitažený konec.
+- **Sandbox** (`apps/sandbox/src/interaction/`, po modulech): Výběr (klik, Shift, rámeček, Tab, Ctrl+A, Del,
+  tažení výběru, uzly, líce, nabídky na pravém tlačítku), Stěna (řetěz, tracker, Tab, Enter, uzavření,
+  Backspace, mezerník), Stěna z čáry, Kóta (řetěz jako v Revitu), Úhel, Přesun, Kopie, Otočit, Zrcadlit,
+  Pole, Zarovnat, Do rohu, Rozdělit, Obdélník, Okno, Vložit; Undo / Redo, schránka, šipky, Home, Z.
+- **Vykreslení:** kresba z jádra (pera přes tabulku per, šrafy a texty na papíře), pomocné značky světle modře.
+- **Testy:** jádro + nástroje 164 (Vitest), prohlížeč 62 (Playwright) podle kontrolního seznamu pravidel
+  a regresí z prototypu.
 
 ## Rozhodl Code (k potvrzení)
 
@@ -67,22 +83,46 @@ Krok 2:
 - **Varianty:** kreslí se zatím jen hlavní model; příkaz zapisuje do varianty, kterou má editor nastavenou.
 - ESLint: proměnné začínající `_` jsou záměrně nepoužité; v testech je povolené `!`.
 
+Krok 3:
+- **Tloušťka čáry na obrazovce** je stálá (pero × měřítko → mm na papíře × 96/25,4 px), se zoomem se nemění
+  (jako Revit); texty a šrafy jsou na papíře, takže se se zoomem zvětšují.
+- **Nová kóta se nese na myši a vznikne až kliknutím** (náhled není v modelu); řada kót = jeden příkaz
+  `dimension.createSet` = jeden krok Undo. Po usazení řady zůstává nástroj Kóta aktivní (Esc = Výběr).
+- **Zarovnání kót** se nabízí do 12 px od čáry rovnoběžné kóty (a do 5 m podél); zarovnaná kóta jde do skupiny.
+  Kolečko u dočasné kóty dává kótu bez zarovnání v místě myši (regrese: nepřichytí se sama).
+- **Klik na číslo trvalé kóty** výběr nemění, jen otevře pole; pohne se stěna vybraná v okamžiku kliknutí.
+  Klik na čáru kóty kótu vybere.
+- **Líc vybrané stěny má při tažení přednost** před čárou dočasné kóty, která na něm začíná.
+- **Tažení stěny myší** posouvá celý výběr; vektor se zaokrouhluje na 10 mm (Alt = bez zaokrouhlení).
+- **Délková dočasná kóta** leží na straně referenčního líce (do místnosti); trojúhelník u ní volí konec, který
+  se hýbe při zadání čísla; tažení uzlu tento konec nastaví.
+- **Kopie** napojí konce, které padnou na volný konec jiné stěny (roh). Zrcadlení přehodí stranu tloušťky.
+- **Pole:** počet včetně originálu (výchozí 3); lineární = rozteč, radiální = úhel mezi kopiemi.
+- **Otočit kopii:** volba v panelu nebo Ctrl při posledním kliku. **Ctrl+D** = do schránky a hned vkládat.
+- **„Vybrat čáru → stěna“** = nástroj Stěna z čáry (V): klik na líc vytvoří stěnu po něm. Až budou 2D čáry
+  (základ 22), bude brát i je.
+- **Odmítnutá změna kvůli zámku:** hláška s tlačítkem „Odemknout kótu“, bránící kóty červeně.
+- **Osa** je kandidát přichycení s nejnižší prioritou (sama jen tam, kde v dosahu nic jiného není).
+- Prohlížečové testy ovládají sandbox přes `window.__bim` (čtení modelu, mm → px, příprava scény příkazy).
+
 ## Otevřené
 
-- Schválení architektury kroku 2 (datové typy, příkazy, struktura složek) – pak krok 3 v nové session.
-- Krok 3 doplní v jádře příkazy: kopie, zrcadlení, pole, ořez do rohu, zarovnání, obdélník, Rozdělit
-  rovnoměrně (EQ) a službu přichytávání a výběru (zásahy do kresby, kandidáti podle tabulky pravidel).
-- Napojení vrstev v rozích podle priority materiálů (data jsou připravená); přerušení čáry hostitele v T.
-- Jemná podrobnost zatím kreslí jako střední.
+- Krok 4 (zobrazení v sandboxu): přepínač stylu, panel Vrstvy, skupiny anotací, nový pohled, měřítko.
+- Skupina zarovnaných kót zatím nedrží společnou polohu čáry po změně geometrie (kóty 4, druhá věta):
+  poloha čáry je odsazení od středu líce, po prodloužení stěny se řada může rozejít. Návrh: uložit polohu
+  skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
+- Při tažení uzlu se zatím neukazují dočasné kóty (katalog kreslení 5.2), jen náhled a přichytávání.
+- Mřížka (katalog kreslení 2.6) zatím není ani jako volba.
+- Napojení vrstev v rozích podle priority materiálů; přerušení čáry hostitele v T; jemná podrobnost = střední.
 
-## Největší soubory (po kroku 2)
+## Největší soubory (po kroku 3)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (123 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (193 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 162 | packages/core/src/dimension/dimension.test.ts |
-| 156 | packages/core/src/style/package-schema.ts |
-| 153 | packages/core/src/commands/view/view.ts |
-| 146 | packages/core/src/view/view.test.ts |
-| 143 | packages/core/src/style/types.ts |
+| 242 | apps/sandbox/src/interaction/tools/select/wall-modes.ts |
+| 225 | apps/sandbox/e2e/prikazy.spec.ts |
+| 215 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 192 | apps/sandbox/e2e/koty-docasne.spec.ts |
+| 192 | apps/sandbox/src/interaction/tools/commands/edit-tools.ts |
