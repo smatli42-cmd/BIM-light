@@ -1,0 +1,98 @@
+// Zásahy myší do ovládacích prvků výkresu: trvalé kóty (čára, číslo, zámek), dočasné kóty,
+// kolečka, trojúhelník délky a uzly vybrané stěny. Vše v px, počítá se ze stavu (ne z kreslení).
+import {
+  dimensionText,
+  layoutDimension,
+  measureDimension,
+  isDimensionVisible,
+  type Dimension,
+  type Id,
+  type PathEnd,
+  type Vec2,
+} from '@bim-light/core';
+import type { Session } from '../session/session.ts';
+import { inRect, near, screenText, segDist, type ScreenRect } from './screen.ts';
+import { tempDimViews, type TempDimView } from './temp-layout.ts';
+
+export interface PermDimView {
+  readonly id: Id;
+  readonly dim: Dimension;
+  readonly segs: readonly (readonly [Vec2, Vec2])[];
+  readonly textRect: ScreenRect;
+  readonly lock: Vec2;
+  readonly locked: boolean;
+}
+
+export interface GripView {
+  readonly wallId: Id;
+  readonly end: PathEnd;
+  readonly at: Vec2;
+}
+
+export type Hit =
+  | { readonly kind: 'pin' | 'temp-text' | 'temp-line' | 'len-end'; readonly temp: TempDimView }
+  | { readonly kind: 'lock' | 'dim-text' | 'dim-line'; readonly dim: PermDimView }
+  | { readonly kind: 'grip'; readonly grip: GripView };
+
+/** Rozložení trvalé kóty v px (číslo, čáry, zámek u čísla, katalog kreslení 4.5). */
+export function permDimView(s: Session, d: Dimension): PermDimView | null {
+  const v = s.viewport;
+  const paper = s.model.display.paperSizes;
+  const lay = layoutDimension(s.model, d, s.view.scale, paper);
+  if (!lay) return null;
+  const pts = lay.line.map((p) => v.toScreen(p));
+  const segs: [Vec2, Vec2][] = [];
+  for (let i = 0; i + 1 < pts.length; i++) segs.push([pts[i] as Vec2, pts[i + 1] as Vec2]);
+  for (const [a, b] of lay.extensions) segs.push([v.toScreen(a), v.toScreen(b)]);
+  const textPx = Math.max(9, paper.dimensionText * s.view.scale * v.s);
+  const text = dimensionText(d, measureDimension(s.model, d));
+  const at = v.toScreen(lay.textAt);
+  const dir = { x: Math.cos(-lay.textAngle), y: Math.sin(-lay.textAngle) };
+  const st = screenText(
+    { x: at.x - dir.x, y: at.y - dir.y },
+    { x: at.x + dir.x, y: at.y + dir.y },
+    text,
+    textPx,
+    0,
+  );
+  const lock = { x: at.x + st.dir.x * (st.width / 2 + 12), y: at.y + st.dir.y * (st.width / 2 + 12) };
+  return { id: d.id, dim: d, segs, textRect: st.rect, lock, locked: d.locked };
+}
+
+export function permDimViews(s: Session, hidden: readonly Id[] = []): PermDimView[] {
+  const out: PermDimView[] = [];
+  for (const d of Object.values(s.model.dimensions)) {
+    if (hidden.includes(d.id) || !isDimensionVisible(s.model, s.view, d)) continue;
+    const pv = permDimView(s, d);
+    if (pv) out.push(pv);
+  }
+  return out;
+}
+
+/** Uzly (koncové čtverečky) jediné vybrané stěny. */
+export function gripViews(s: Session): GripView[] {
+  const id = s.selection.single;
+  const w = id ? s.model.elements[id] : undefined;
+  if (!w || s.tool.id !== 'select') return [];
+  return (['start', 'end'] as const).map((end) => ({
+    wallId: w.id,
+    end,
+    at: s.viewport.toScreen(w.path[end]),
+  }));
+}
+
+/** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */
+export function hitAt(s: Session, p: Vec2, hidden: readonly Id[] = []): Hit | null {
+  const temps = tempDimViews(s);
+  const perms = s.tool.id === 'select' ? permDimViews(s, hidden) : [];
+  for (const t of temps) if (t.pin && near(p, t.pin, 9)) return { kind: 'pin', temp: t };
+  for (const d of perms) if (near(p, d.lock, 9)) return { kind: 'lock', dim: d };
+  for (const t of temps) if (t.lenEnd && near(p, t.lenEnd, 8)) return { kind: 'len-end', temp: t };
+  for (const g of gripViews(s)) if (near(p, g.at, 9)) return { kind: 'grip', grip: g };
+  for (const t of temps) if (inRect(p, t.textRect)) return { kind: 'temp-text', temp: t };
+  for (const d of perms) if (inRect(p, d.textRect)) return { kind: 'dim-text', dim: d };
+  for (const t of temps) if (segDist(p, t.a, t.b) <= 5) return { kind: 'temp-line', temp: t };
+  for (const d of perms)
+    if (d.segs.some(([a, b]) => segDist(p, a, b) <= 5)) return { kind: 'dim-line', dim: d };
+  return null;
+}

@@ -1,0 +1,96 @@
+// Nabídky na pravé tlačítko (katalog kreslení 5 [R]; pravidla-interakce: kóty 6, Výběr).
+import { allWalls, type Id, type PathEnd, type Vec2, type WallFace } from '@bim-light/core';
+import type { Session } from '../../../session/session.ts';
+import type { MenuItem } from '../../../session/ui-state.ts';
+import type { PermDimView } from '../../hits.ts';
+import type { Mode } from '../../mode.ts';
+import type { PointerInfo } from '../../types.ts';
+import { editText } from '../../value-edit.ts';
+import { AddPointMode, OffsetMode } from './wall-modes.ts';
+
+type SetMode = (m: Mode) => void;
+
+function open(s: Session, title: string, at: Vec2, items: MenuItem[]) {
+  s.menu = { title, at, items };
+}
+
+export function dimMenu(s: Session, view: PermDimView, at: Vec2) {
+  const d = view.dim;
+  const del = s.selection.dims.includes(d.id) ? s.selection.dims : [d.id];
+  const grouped = d.alignGroupId !== null;
+  const items: MenuItem[] = [
+    {
+      label: d.locked ? 'Odemknout' : 'Zamknout',
+      action: () => s.run('dimension.setLocked', { dimensionId: d.id, locked: !d.locked }),
+    },
+  ];
+  if (grouped)
+    items.push({
+      label: 'Vyjmout ze skupiny zarovnání',
+      action: () => s.run('dimension.setAlignGroup', { dimensionIds: [d.id], groupId: null }),
+    });
+  if (grouped && d.kind === 'linear')
+    items.push({
+      label: 'Rozdělit rovnoměrně',
+      action: () => s.run('dimension.equalize', { dimensionId: d.id }),
+    });
+  if (d.kind !== 'angular')
+    items.push({
+      label: 'Přepnout stranu kóty',
+      action: () => s.run('dimension.flipSide', { dimensionIds: [d.id] }),
+    });
+  items.push({ label: 'Přepsat text kóty', action: () => editText(s, view) });
+  if (d.textOverride !== null)
+    items.push({
+      label: 'Vrátit skutečnou hodnotu',
+      action: () => s.run('dimension.setText', { dimensionId: d.id, text: null }),
+    });
+  items.push({ label: 'Smazat kótu', action: () => s.run('dimension.delete', { dimensionIds: del }) });
+  open(s, 'Kóta', at, items);
+}
+
+export function nodeMenu(s: Session, wallId: Id, end: PathEnd, at: Vec2) {
+  open(s, 'Uzel', at, [
+    {
+      label: 'Odpojit roh',
+      action: () => {
+        if (s.run('wall.disconnect', { wallId, end }).ok) s.toast('Roh odpojen. Stěna má vlastní konec.');
+      },
+    },
+    { label: 'Smazat uzel', action: () => s.run('wall.deleteNode', { wallId, end }) },
+  ]);
+}
+
+export function edgeMenu(s: Session, wallId: Id, face: WallFace, p: PointerInfo, setMode: SetMode) {
+  open(s, 'Hrana (líc)', p.screen, [
+    { label: 'Odsadit', action: () => setMode(new OffsetMode(s, wallId, face, p, false)) },
+    { label: 'Přidat bod', action: () => setMode(new AddPointMode(s, wallId, p)) },
+  ]);
+}
+
+export function wallMenu(s: Session, wallId: Id, at: Vec2) {
+  const n = s.selection.walls.length;
+  const cmd = (label: string, tool: Parameters<Session['setTool']>[0]) => ({
+    label,
+    action: () => s.setTool(tool),
+  });
+  open(s, n > 1 ? `Stěna (${n} vybraných)` : 'Stěna', at, [
+    {
+      label: 'Vybrat stejný typ',
+      action: () => {
+        const type = s.model.elements[wallId]?.typeId;
+        s.selection.set(
+          allWalls(s.model)
+            .filter((w) => w.typeId === type && w.storeyId === s.storeyId)
+            .map((w) => w.id),
+        );
+      },
+    },
+    cmd('Přesunout (M)', 'move'),
+    cmd('Kopírovat (K)', 'copy'),
+    cmd('Otočit (R)', 'rotate'),
+    cmd('Zrcadlit (F)', 'mirror'),
+    cmd('Pole (P)', 'array'),
+    { label: 'Smazat (Del)', action: () => s.run('selection.delete', { wallIds: s.selection.walls }) },
+  ]);
+}
