@@ -1,5 +1,6 @@
 // Výchozí grafika projektu (patro 1) a velikosti na papíře. Data, ne kód generátoru (základy 11, 29, 32).
 // Přiřazení per podle katalogu pohledů: řez 5 (0,5), pohled 3 (0,25), značky 2, tenké 1 (kóty, šrafy).
+// Obrys řezu stěny a sloupu = pero 6 (0,7), velmi tlustá podle ČSN 01 3420 (pokyn uživatele 2026-11-24).
 import type { CategoryGraphics, PaperSizes, ResolvedEffect } from '../types.ts';
 
 export const BASE_GRAPHICS: ResolvedEffect = {
@@ -15,8 +16,8 @@ export const BASE_GRAPHICS: ResolvedEffect = {
 };
 
 export const CATEGORY_GRAPHICS: CategoryGraphics = {
-  wall: { cutPen: 5, projectionPen: 3, layerPen: 1, hatch: 'material' },
-  column: { cutPen: 5, projectionPen: 3, layerPen: 1, hatch: 'material' },
+  wall: { cutPen: 6, projectionPen: 3, layerPen: 1, hatch: 'material' },
+  column: { cutPen: 6, projectionPen: 3, layerPen: 1, hatch: 'material' },
   window: { projectionPen: 3 },
   door: { projectionPen: 3 },
   symbol: { projectionPen: 2 },

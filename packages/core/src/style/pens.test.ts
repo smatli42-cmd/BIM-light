@@ -35,13 +35,13 @@ describe('katalog-pohledy / základ 32: tloušťka čáry je jen číslo pera, t
     const f = fixture();
     f.line({ x: 0, y: 0 }, { x: 5000, y: 0 });
     f.line({ x: 0, y: 2000 }, { x: 5000, y: 2000 });
-    f.run('display.setPenWidth', { pen: 5, scale: 100, mm: 0.6 });
+    f.run('display.setPenWidth', { pen: 6, scale: 100, mm: 0.8 });
     const outlines = drawView(f.model, f.viewId).primitives.filter(
       (p) => p.kind === 'line' && p.source.role === 'obrys',
     );
     expect(outlines).toHaveLength(2);
     for (const o of outlines) {
-      if (o.kind === 'line') expect(penWidthMm(f.model.display.penTable, o.stroke.pen, 100)).toBe(0.6);
+      if (o.kind === 'line') expect(penWidthMm(f.model.display.penTable, o.stroke.pen, 100)).toBe(0.8);
     }
   });
 

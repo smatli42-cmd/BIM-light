@@ -57,7 +57,7 @@ describe('katalog-pohledy-styly / První pískoviště: testy', () => {
     const project = prims(f);
     expect(wallGeometry(f.model, f.wall(id))).toEqual(geomStudy);
     expect(kinds(study)).toEqual(['fill', 'line']);
-    expect(kinds(project)).toEqual(['hatch', 'line']);
+    expect(kinds(project)).toEqual(['fill', 'hatch', 'line']);
     expect(project.filter((p) => p.source.role === 'hranice vrstvy')).toHaveLength(2);
     expect(project.filter((p) => p.kind === 'hatch')).toHaveLength(3);
   });

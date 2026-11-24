@@ -39,17 +39,17 @@ const rule = (id: string, name: string, lineColor: string, extra: Partial<Rule> 
 });
 
 describe('rozhodnutí 4 / základ 11: funkce grafiky, pevné pořadí 6 pater', () => {
-  it('patro 1: výchozí pero řezu stěny je 5 (velmi tlustá), šrafa z materiálu', () => {
+  it('patro 1 + ČSN 01 3420: výchozí pero řezu stěny je 6 (velmi tlustá 0,7)', () => {
     const f = fixture();
     const g = graphics(f, f.line({ x: 0, y: 0 }, { x: 5000, y: 0 }));
-    expect(g.effect.cutPen).toBe(5);
+    expect(g.effect.cutPen).toBe(6);
     expect(g.why.cutPen.level).toBe(1);
   });
 
-  it('patro 2: styl Studie dá stěně tmavou výplň a řekne proč', () => {
+  it('patro 2: styl Studie dá stěně světle šedou výplň a řekne proč', () => {
     const f = fixture();
     const g = graphics(f, f.line({ x: 0, y: 0 }, { x: 5000, y: 0 }));
-    expect(g.effect.fillColor).toBe('#3d3d3d');
+    expect(g.effect.fillColor).toBe('#d9d9d9');
     expect(g.why.fillColor).toEqual({ level: 2, levelName: 'styl', source: 'styl Studie' });
   });
 

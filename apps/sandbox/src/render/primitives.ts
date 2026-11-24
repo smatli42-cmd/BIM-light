@@ -80,6 +80,10 @@ export function drawPrimitive(r: RenderContext, p: Primitive, color?: string) {
     ctx.globalAlpha = 1 - p.transparency / 100;
     ctx.fillStyle = p.color;
     ctx.fill();
+    // Tenký okraj stejnou barvou zakryje šev mezi sousedními výplněmi (pokos v rohu).
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = 1;
+    ctx.stroke();
     ctx.globalAlpha = 1;
     return;
   }
