@@ -33,7 +33,7 @@ export const dimensionSetLocked = defineCommand<{ dimensionId: Id; locked: boole
 export const dimensionDelete = defineCommand<{ dimensionIds: Id[] }>({
   name: 'dimension.delete',
   label: 'Smazat kótu',
-  description: 'Smaže vybrané kóty (i více najednou).',
+  description: 'Smaže kóty podle id (i více najednou); stěny zůstanou beze změny.',
   group: 'Kóta',
   params: S.object({ dimensionIds: IDS }, ['dimensionIds']),
   run(model, p) {

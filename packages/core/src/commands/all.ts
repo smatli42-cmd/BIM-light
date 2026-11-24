@@ -11,6 +11,7 @@ import { dimensionSetValue } from './dimension/set-value.ts';
 import { dimensionEqualize } from './dimension/equalize.ts';
 import { dimensionCreateSet, dimensionFlipSide, dimensionPlace } from './dimension/place.ts';
 import { projectSetGeoreference, storeyCreate, storeyUpdate } from './project/storey.ts';
+import { CORE_QUERIES } from '../queries/all.ts';
 import { CommandRegistry } from './registry.ts';
 import { displayImport, displaySetPenWidth, styleSaveFromView } from './view/display.ts';
 import { elementSetGraphicOverride } from './view/overrides.ts';
@@ -26,6 +27,7 @@ import {
 } from './view/view.ts';
 import { wallConnect, wallDelete, wallDisconnect } from './wall/connect.ts';
 import { wallCreate } from './wall/create.ts';
+import { wallChain } from './wall/chain.ts';
 import { wallCopy, wallPaste } from './wall/copy.ts';
 import { wallAlign, wallRectangle, wallTrimToCorner } from './wall/corner.ts';
 import { wallMoveEndpoint, wallSetLength } from './wall/endpoint.ts';
@@ -41,6 +43,7 @@ export const CORE_COMMANDS = [
   storeyUpdate,
   projectSetGeoreference,
   wallCreate,
+  wallChain,
   wallDelete,
   wallMove,
   wallRotate,
@@ -92,5 +95,6 @@ export const CORE_COMMANDS = [
 export function createCoreRegistry(): CommandRegistry {
   const r = new CommandRegistry();
   for (const c of CORE_COMMANDS) r.register(c);
+  for (const q of CORE_QUERIES) r.registerQuery(q);
   return r;
 }

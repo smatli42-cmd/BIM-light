@@ -7,6 +7,9 @@ import type { CommandRegistry } from './registry.ts';
 import { validate } from './schema.ts';
 import { CommandFailure, type CommandError, type CommandResult } from './types.ts';
 
+export type QueryResult =
+  { readonly ok: true; readonly data: unknown } | { readonly ok: false; readonly error: CommandError };
+
 export type ExecuteResult =
   | { readonly ok: true; readonly created: readonly string[] }
   | { readonly ok: false; readonly error: CommandError };
@@ -86,6 +89,21 @@ export class Editor {
     }
     this.commit(def.label, result.model);
     return { ok: true, created: result.created ?? [] };
+  }
+
+  /** Spustí dotaz (jen čtení, bez Undo) podle jména s parametry v JSON. */
+  query(name: string, params: unknown): QueryResult {
+    const def = this.options.registry.getQuery(name);
+    if (!def) return { ok: false, error: { code: 'unknown-command', message: `Neznámý dotaz ${name}` } };
+    const problems = validate(def.params, params);
+    if (problems.length)
+      return { ok: false, error: { code: 'invalid-params', message: problems.join('; ') } };
+    try {
+      return { ok: true, data: def.run(this.current, params) };
+    } catch (e) {
+      if (e instanceof CommandFailure) return { ok: false, error: { code: e.code, message: e.message } };
+      throw e;
+    }
   }
 
   private commit(label: string, after: Model) {
