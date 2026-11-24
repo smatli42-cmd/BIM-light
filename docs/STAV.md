@@ -147,6 +147,31 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   nečistí (to je krok Z2).
 - Testy: jádro a nástroje 371 (Vitest), prohlížeč 84 (Playwright), vše zelené.
 
+### Stěny: Z2 hotovo, 2026-11-24 (napojování vrstev v rozích)
+- **Složka `junction/`** (algoritmus viz „Rozhodl Code“ níže): `half-plane` (polorovina, ořez), `frame`
+  (rám stěny v uzlu), `travel` (pořadí vrstev, buňky), `corner` (L), `tee` (T a kříž X), `multi` (v přímce,
+  tři a více konců), `free-end` (uzavřené čelo), `nodes` (uzly z uložených vztahů), `solve` (mezipaměť uzlů),
+  `wall` (obrys každé vrstvy a stěny), `trim` (líce), `edges` + `chain` (svaření bodů, sousední hrany, obrysy).
+- **Přesunuto / nahrazeno:** `wall/joins.ts` (pokos, T, priorita) → `junction/corner.ts`, `tee.ts`, `multi.ts`;
+  `wall/tee-gaps.ts` a `wall/outline.ts` (mezery v čarách) → mezery ve vrstvách (`Gap`) a hledání hran
+  v `junction/edges.ts`; `wall/draw.ts` kreslí všechny stěny najednou. Testy `tee-gaps`, `outline`,
+  `tee-priority` převedeny do `junction/*.test.ts`.
+- **Výstup:** `WallGeometry.layers[i].polygons` (obrys vrstvy po napojení), `outlines` / `outline` (obrys
+  stěny), líce oříznuté podle krajních vrstev. Nic se neukládá; mezipaměť podle identity vstupů.
+- **Data:** napojení má `noJoin` („nespojovat“), kříž = vztah ATPATH–ATPATH. Schéma 3 → 4
+  (`junction/migrate-v3.ts`, data beze změny).
+- **Příkazy:** `wall.setJoin` (nespojovat / spojovat), `wall.cross` (kříž); `wall.create` s autoConnect,
+  řetěz, kopie a obdélník uloží kříž samy, když stěna jinou protne uprostřed. Dotaz `wall.get` vrací
+  i obrys každé vrstvy (materiál, funkce, plocha, body), `wall.list` příznak noJoin. Krok scénáře AI.
+- **Kresba:** hrubá = sjednocený obrys všech viditelných stěn + jedna výplň; střední = vrstvy se šrafou,
+  čára jen mezi různými materiály (pokos stejného materiálu bez čáry). Obrys je jedna souvislá čára přes
+  napojené stěny (stejné pero) – roh bez zubu. Šrafa omítky hostitele se v T přeruší.
+- **Sandbox:** pravé tlačítko na uzlu – Nespojovat / Spojovat (vyčistit roh); **galerie napojení**
+  `…/BIM-light/#galerie` (odkaz nahoře): 16 příkladů, přepínač Studie / Projekt, detail uzlu / celek.
+- **Polygonová knihovna:** žádná. Každý kousek vrstvy = pás ∩ poloroviny (ořez přímkou), mezera = dvě
+  poloroviny; slévání a obrysy přes společné hrany. Krok Z4 udělá otvor jako mezeru ve všech vrstvách.
+- Testy: jádro a nástroje 398 (Vitest), prohlížeč 86 (Playwright), vše zelené.
+
 #### Šrafy (návrh, k porovnání s arditem; rozměry mm na papíře)
 | # | Šrafa | Vzhled |
 |---|---|---|
@@ -192,6 +217,61 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 | 40 | Krytina | vodorovné 1,2 mm |
 
 ## Rozhodl Code (k potvrzení)
+
+Stěny Z2 – návrh algoritmu napojení (složka `packages/core/src/junction/`):
+- **Vrstva = pás** mezi dvěma rovnoběžnými čarami (offsety z příčného řezu). Na každém konci ho omezí
+  jedna nebo více **polorovin** („čára řezu + strana, kde vrstva zůstává“); hostitel v T a v kříži dostane
+  navíc **mezery** (pás jiné vrstvy, který jím projde). Kousky jsou tak vždy průnik pásu a polorovin –
+  stačí jednoduché ořezání mnohoúhelníku přímkou, **žádná knihovna** (polygon-clipping by kvůli společným
+  hranám vrstev potřebovala zaokrouhlování a dělala by drobné střípky). Kousky jedné vrstvy (např. zahnutá
+  omítka na volném konci) se slijí podle společných hran.
+- **Roh L** (dva konce, ne v přímce): vrstvy se zpracují od nejvyšší priority materiálu. Vrstva „jede“ od
+  své stěny přes uzel napříč vrstvami druhé stěny a zastaví se na první vrstvě, která tam skutečně je
+  a má **vyšší** prioritu (na její bližší hranici). Stejná priorita = **pokos** úhlopříčkou buňky, kde se
+  potkají (stejný materiál = bez čáry). Nezastaví-li ji nic, dojde k vnějšímu líci druhé stěny.
+  Výsledek: jádro na jádro pokosem, izolace na izolaci kolem vnějšího rohu, omítka obteče vnitřní roh.
+- **T** (konec na hostiteli): vrstva napojené stěny projde vrstvami hostitele s nižší prioritou a zastaví se
+  na první s vyšší nebo stejnou prioritou, **na jádru hostitele vždy** (jádro hostitele se nikdy neprořízne,
+  skupina A). Hostitel dostane mezery jen ve vrstvách, kterými něco prošlo. Nově: omítka napojené stěny
+  končí na omítce hostitele (stejná priorita), omítka hostitele „obteče“ roh až k jádru napojené stěny.
+- **Kříž X** (dvě stěny se protínají uprostřed, nový vztah ATPATH–ATPATH): v každé buňce dvou vrstev
+  vyhraje vyšší priorita, při shodě hostitel (relating). Vznikne příkazem `wall.cross` nebo samočinně při
+  kreslení stěny přes jinou.
+- **V přímce** (dva konce ~180°, odchylka do 2°): všechny vrstvy kolmo v uzlu; stejný materiál bez čáry.
+- **Tři a více konců:** jsou-li dva konce v přímce, tvoří „hostitele“ a ostatní se na ně napojí jako T
+  (při dvou dvojicích vyhraje dvojice s vyšší prioritou jádra). Bez dvojice v přímce: pokos ke středu
+  uzlu bez priority (tvar Y, vzácné).
+- **Volný konec:** povrchové vrstvy každé strany zahnou přes čelo až do poloviny jádra (vnější omítka
+  nejvíc ven); jádro a izolace se zkrátí o tloušťku omítek. Typ bez povrchových vrstev nebo jen z nich:
+  kolmé čelo.
+- **Nespojovat** (`noJoin` na napojení, jako Disallow Join): konec se počítá jako volný, obrysy se jen
+  překryjí. Schéma 3 → 4 (nové volitelné pole).
+- **Kresba:** čára se kreslí na hraně, za kterou je nic (obrys, pero řezu) nebo jiný materiál (pero vrstvy,
+  jen střední podrobnost); mezi stejnými materiály se nekreslí. Hrubá: jen obrys sjednocený přes všechny
+  viditelné stěny. Hrany se hledají po „svaření“ bodů (tolerance 0,001 mm) a rozdělení v cizích bodech.
+- **Mezipaměť:** výsledek uzlu se drží podle identity vstupů (stěny, typy, materiály, vztahy); po změně
+  se přepočítají jen uzly, kterých se změna týká. Nic se neukládá (základ 4).
+- Oblouk: struktura s ním počítá (pás z rozložené křivky, čáry řezu z tečny v uzlu); přesné napojení Z5.
+
+Stěny Z2 – výsledky konfigurací (podle testů `junction/*.test.ts` a galerie):
+- **L, stejná skladba** (omítka 15 + zdivo 300 + EPS 150): jádra pokosem bez čáry, EPS spojitě kolem
+  vnějšího rohu, omítky pokosem ve vnitřním rohu. Jádro prořízne omítku druhé stěny.
+- **L, zateplená × Zdivo 300:** EPS podjede jádro druhé stěny až k jejímu vnějšímu líci; omítka končí na
+  jádře druhé stěny. **L, zdivo × ŽB:** ŽB (priorita 70) projede zdivem až k vnějšímu líci.
+- **T zevnitř** (Příčka 100 na zateplenou): jádro příčky projde omítkou hostitele k jeho jádru (zdivo na
+  zdivo bez čáry), omítka příčky končí na líci omítky hostitele, omítka hostitele obteče roh. **T zvenku:**
+  stěna projde izolací a končí na jádře hostitele (jádro hostitele nikdy).
+- **X:** v buňce vyhraje vyšší priorita (ŽB projede příčku celou), při shodě hostitel; omítky se v koutech
+  potkají. Kříž se ukládá jen příkazem nebo při kreslení přes stěnu – starší protínající se stěny se
+  nečistí, dokud se nenapojí.
+- **V přímce:** kolmý řez v uzlu; **oblouk navazující tečně na přímku je také „v přímce“** (dříve roh).
+- **Tři a více konců:** dvojice v přímce = hostitel (při dvou dvojicích vyšší priorita jádra, pak menší id),
+  ostatní jako T. Bez dvojice: pokos ke středu uzlu bez priority (Y).
+- **Volný konec:** omítky každé strany zahnou do poloviny těla; **má-li povrch jen jedna strana**
+  (zateplená bez vnější omítky), zahne přes celé čelo.
+- **Nespojovat:** oba konce jako volné (s uzavřeným čelem), roh zůstane prázdný nebo se překryje.
+- **Čára mezi dvěma stěnami** stejného materiálu se nekreslí ani u různých typů (zdivo 300 × zdivo 330).
+- Velmi ostrý roh (pod ~2° od přímky) se bere jako „v přímce“; pokos by byl nekonečně dlouhý.
 
 Stěny Z1:
 - **Výškový pás** zůstává v datech jako {výška, vrstvy} (poslední pás výška null = do vršku); „od“ a „do“ se
@@ -312,8 +392,9 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel vyzkouší stěny Z1 (záložka Typy stěn). Potom stěny Z2 – napojování vrstev v rozích (model Opus 5.5),
-  stejnou větou „Pokračuj podle docs/instrukce-code-steny.md…“.
+- Uživatel vyzkouší stěny Z2 (galerie `#galerie`, rohy v běžné kresbě, Nespojovat na uzlu). Potom stěny
+  Z3 – výška a svislé vazby, minimální export IFC (model Sonnet 5.5), stejnou větou „Pokračuj podle
+  docs/instrukce-code-steny.md…“.
 
 ## Otevřené
 
@@ -322,11 +403,15 @@ Krok 3:
 - Skupina zarovnaných kót zatím nedrží společnou polohu čáry po změně geometrie (kóty 4, druhá věta):
   poloha čáry je odsazení od středu líce, po prodloužení stěny se řada může rozejít. Návrh: uložit polohu
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
-- Jemná podrobnost (= střední); obtékání omítky v rozích různých typů; přerušení šrafy hostitele v T.
+- Jemná podrobnost (= střední), podle plánu krok Z6.
 
-## Největší soubory (po stěnách Z1)
+## Chybělo
 
-Výstup `npm run check:size`: varování 0, chyb 0 (278 souborů).
+- Z2: nic z pozdějších kroků nebylo potřeba; desky (rozhodnutí E) se napojení v půdorysu netýkají.
+
+## Největší soubory (po stěnách Z2)
+
+Výstup `npm run check:size`: varování 0, chyb 0 (298 souborů). Největší v `junction/`: edges.ts 122 řádků.
 
 | Řádky | Soubor |
 |---|---|
