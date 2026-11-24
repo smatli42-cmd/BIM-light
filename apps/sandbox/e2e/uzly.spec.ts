@@ -70,4 +70,20 @@ test.describe('katalog-kresleni / část 5 a základ 25: uzel a hrana', () => {
     expect((await walls(page)).length).toBe(5);
     expect((await wallById(page, left)).path.end.y).toBeCloseTo(1000, 6);
   });
+
+  test('plan-steny / Z2: pravé tlačítko na uzlu – Nespojovat a zpět Spojovat', async ({ page }) => {
+    await room(page);
+    await clickAt(page, -150, 1500);
+    const g = (await page.evaluate(() => window.__bim!.grips())).find((x) => x.end === 'end')!;
+    const noJoin = async () =>
+      Object.values((await page.evaluate(() => window.__bim!.model())).relations).filter((r) => r.noJoin)
+        .length;
+    await page.mouse.click(g.at.x, g.at.y, { button: 'right' });
+    await page.getByRole('button', { name: 'Nespojovat' }).click();
+    expect(await noJoin()).toBe(1);
+    await clickAt(page, -150, 1500);
+    await page.mouse.click(g.at.x, g.at.y, { button: 'right' });
+    await page.getByRole('button', { name: 'Spojovat (vyčistit roh)' }).click();
+    expect(await noJoin()).toBe(0);
+  });
 });

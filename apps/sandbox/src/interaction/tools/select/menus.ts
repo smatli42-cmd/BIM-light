@@ -1,5 +1,14 @@
 // Nabídky na pravé tlačítko (katalog kreslení 5 [R]; pravidla-interakce: kóty 6, Výběr).
-import { allWalls, type Id, type PathEnd, type Vec2, type WallFace } from '@bim-light/core';
+import {
+  allWalls,
+  connectionsOf,
+  endToType,
+  sidesFor,
+  type Id,
+  type PathEnd,
+  type Vec2,
+  type WallFace,
+} from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import type { MenuItem } from '../../../session/ui-state.ts';
 import type { PermDimView } from '../../hits.ts';
@@ -57,8 +66,22 @@ export function nodeMenu(s: Session, wallId: Id, end: PathEnd, at: Vec2) {
         if (s.run('wall.disconnect', { wallId, end }).ok) s.toast('Roh odpojen. Stěna má vlastní konec.');
       },
     },
+    ...joinItem(s, wallId, end),
     { label: 'Smazat uzel', action: () => s.run('wall.deleteNode', { wallId, end }) },
   ]);
+}
+
+/** Přepínač „nespojovat“ napojeného konce (plán stěn Z2, jako Disallow Join). */
+function joinItem(s: Session, wallId: Id, end: PathEnd): MenuItem[] {
+  const here = connectionsOf(s.model, wallId).filter((c) => sidesFor(c, wallId).own.at === endToType(end));
+  if (here.length === 0) return [];
+  const off = here.some((c) => c.noJoin);
+  return [
+    {
+      label: off ? 'Spojovat (vyčistit roh)' : 'Nespojovat',
+      action: () => s.run('wall.setJoin', { wallId, end, join: off }),
+    },
+  ];
 }
 
 export function edgeMenu(s: Session, wallId: Id, face: WallFace, p: PointerInfo, setMode: SetMode) {

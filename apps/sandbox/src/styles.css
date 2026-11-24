@@ -352,3 +352,31 @@ kbd {
   display: flex;
   gap: 4px;
 }
+
+/* Galerie napojení stěn (plán stěn Z2). */
+.gallery {
+  height: 100%;
+  overflow: auto;
+}
+.gallery .topbar button.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+.gallery-card {
+  margin: 0;
+  border: 1px solid var(--line);
+}
+.gallery-card canvas {
+  display: block;
+}
+.gallery-card figcaption {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0.6rem;
+}

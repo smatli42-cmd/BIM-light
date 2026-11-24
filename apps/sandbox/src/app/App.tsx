@@ -23,6 +23,9 @@ export function App() {
           {CORE_NAME}
         </span>
         <ViewBar session={session} />
+        <a class="muted" href="#galerie">
+          Galerie napojení
+        </a>
       </header>
       <div class="main">
         <Toolbar session={session} />
