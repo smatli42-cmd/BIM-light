@@ -1,7 +1,7 @@
 # BIM-light – katalog rozhodnutí (průběžný)
 
 Značení: **[R]** = rozhodl uživatel, **(já)** = Claude podle Revitu/Archicadu, platí, dokud uživatel nesouhlasí jinak.
-Stav 2026-11-24: základy 1–33. Podrobnosti: základ 25 v `pravidla-interakce-bim-light.md`, základy 23–24 v `katalog-kresleni-sten-kotovani.md`, základy 26–32 v `katalog-pohledy-styly-zobrazeni.md` (tady jen stručně).
+Stav 2026-11-24: základy 1–34. Podrobnosti: základ 25 v `pravidla-interakce-bim-light.md`, základy 23–24 v `katalog-kresleni-sten-kotovani.md`, základy 26–32 v `katalog-pohledy-styly-zobrazeni.md`, základ 34 v `katalog-sraf-materialu.md` (tady jen stručně).
 
 ## ⚠ ZÁKLADY OD PRVNÍHO DNE (později se mění velmi těžko)
 
@@ -33,6 +33,7 @@ Tyto body musí být v kódu od začátku, i když se jejich funkce ukáže až 
 31. **Nastavení zobrazení je přenositelný textový soubor** (JSON se schématem, verze, migrace): styly, kombinace vrstev, pravidla, kombinace přepisů, skupiny anotací, tabulka tlouštěk čar. AI ho umí číst i psát. Import nikdy nemění prvky modelu. [R] → 4
 32. **Tloušťka čáry se nikdy neukládá v mm, vždy jako číslo pera.** Tabulka tlouštěk (pero × měřítko → mm na papíře) je nastavení projektu; výchozí řada ISO 128, 7 per 0,13 až 1,0 mm. [R] → 4
 33. **Velikost souborů se hlídá automaticky a soubory se dělí včas.** BIM-light bude velký program. Zdrojový soubor má jednu odpovědnost, cíl do 250 řádků, tvrdý limit 400 (testy stejně); funkce cíl do 50 řádků. Každý prvek (stěna, kóta, pohled, později okno…) má vlastní složku s modulem a `index.ts` jen s exporty. Kontrolu dělá skript `npm run check:size` v každém commitu a v GitHub Actions: nad 250 řádků varování (dělit hned při dalším doteku), nad 400 chyba (build neprojde). Výjimka jen zapsaná i s důvodem a schválená uživatelem. Dokumenty v `docs/` do ~40 KB / 500 řádků, `CLAUDE.md` do 150 řádků. Knihovny dat (šrafy, symboly) po jednom souboru na skupinu. [R] → metoda
+34. **Šrafa je samostatná položka knihovny a materiál ji jen odkazuje; barva je u materiálu, ne u šrafy.** Šrafa = seznam čárových, bodových a vlnových rodin s rozměry v mm na papíře (základ 29). Materiál nese odkaz na šrafu, barvu čar, barvu výplně a číslo pera (základ 32). Knihovna šraf je otevřený seznam dat: přidání šrafy nevyžaduje změnu kódu. Projekt drží kopie použitých šraf s odkazem na původ (základ 21). Změna šrafy v knihovně se projeví u všech materiálů, které ji používají. Šrafa nikdy není zabudovaná do materiálu ani kopírovaná po jednom kuse na materiál. [R] → 4, 5 (viz `katalog-sraf-materialu.md`)
 11. **Grafika prvku se počítá jednou funkcí přes pevné pořadí pater přepisů** (materiál/kategorie → sada → pravidla → úprava pohledu → přepis prvku na prvku → přepis prvku v pohledu). Generátory nikdy nevolí barvu/čáru/šrafu samy, vždy se ptají této funkce. Funkce umí vrátit i „proč“ (které patro rozhodlo). → 4
 12. **Výška prvku může být vázaná na podlaží**, nejen pevné číslo: spodek = podlaží + odsazení, vršek = pevná výška NEBO jiné podlaží + odsazení (stěna „po strop 2.NP“, schodiště 1.NP → 2.NP, okap střechy). Při změně výšky podlaží se prvky přizpůsobí samy. Jeden mechanismus pro všechny prvky. → 7, 11
 13. **Přístup k souborům a systému přes jedno rozhraní („platforma“).** Jádro ani UI nikdy nevolají přímo API prohlížeče nebo disku. Ukládání, otevírání, export, zálohy a MCP jdou přes jednu vrstvu se dvěma implementacemi: prohlížeč (teď) a desktopová obálka Tauri (později). Díky tomu se aplikace zabalí do instalace bez přepisování. Součástí vrstvy je i ukládání a zálohy (umístění nastavitelné uživatelem, zápis bezpečný proti výpadku: nejdřív dočasný soubor, pak nahrazení). → 8, 17
@@ -51,7 +52,7 @@ Tyto body musí být v kódu od začátku, i když se jejich funkce ukáže až 
 | `rozhodnuti-prvky-stavby.md` | 7 Schodiště a zábradlí · 9 Místnosti a povrchy · 11 Střechy a krovy · 12 Terén a zemní práce · 13 Složené stěny a skleněný plášť · 15 Otvory v deskách a střechách, vikýře |
 | `rozhodnuti-platforma-ui-vystupy.md` | 8 Platforma · 10 Ovládání (UI) · 14 3D, kamery, render, export do 3ds Max · 16 Kreslení a kótování · 17 Ukládání a zálohy · 18 Katalog a výběr typů · 19 Dokumentace pro povolení stavby · 20 2D výkresy |
 
-Základy 1–33 jsou jen v tomto souboru a zůstávají v jednom kuse. Novou sekci přidávej do souboru podle tématu; když soubor přeroste ~40 KB, rozděl ho a doplň rejstřík.
+Základy 1–34 jsou jen v tomto souboru a zůstávají v jednom kuse. Novou sekci přidávej do souboru podle tématu; když soubor přeroste ~40 KB, rozděl ho a doplň rejstřík.
 
 ## Otevřené (k probrání)
 - Z checklistu DPS: základy (pasy, patky, deska), okolní zástavba (hmoty), import katastrální mapy a podkladu ČÚZK, prvky situace (zpevněné plochy, komunikace, vegetace, hranice staveniště, zábory, přípojky), výkresové listy + razítko + PDF, požárně nebezpečný prostor.
