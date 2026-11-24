@@ -7,6 +7,7 @@ import type { Id } from '../ids/index.ts';
 import type { Material } from '../material/types.ts';
 import type { Detail, ResolvedEffect } from '../style/types.ts';
 import type { LayerGeometry, WallGeometry } from './geometry.ts';
+import { outlineRuns } from './outline.ts';
 
 type MaterialLookup = (id: Id) => Material | undefined;
 
@@ -62,12 +63,8 @@ export function drawWall(
       });
     }
   }
-  out.push({
-    kind: 'line',
-    points: geom.outline,
-    closed: true,
-    stroke: outline,
-    source: { elementId: id, role: 'obrys' },
-  });
+  for (const run of outlineRuns(geom)) {
+    out.push({ kind: 'line', ...run, stroke: outline, source: { elementId: id, role: 'obrys' } });
+  }
   return out;
 }
