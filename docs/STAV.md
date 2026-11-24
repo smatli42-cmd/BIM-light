@@ -13,6 +13,7 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 - GitHub Actions (`.github/workflows/ci.yml`): typecheck, lint, formátování, velikost, testy, e2e, sestavení;
   po zelených testech nasazení na GitHub Pages.
 - `CLAUDE.md`, `README.md`, tento soubor.
+- GitHub Pages zapnuté (Source: GitHub Actions): https://smatli42-cmd.github.io/BIM-light/
 
 ## Rozhodl Code (k potvrzení)
 
@@ -26,7 +27,6 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
 
 ## Otevřené
 
-- Nastavit GitHub Pages: Settings → Pages → Build and deployment → Source: **GitHub Actions** (jednorázově).
 - Krok 2: jádro (model, stěna, příkazy, zobrazení) – v nové session, model Opus.
 
 ## Největší soubory (po kroku 1)
