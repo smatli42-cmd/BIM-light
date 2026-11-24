@@ -1,8 +1,9 @@
 // Nový prázdný projekt: budova, podlaží 1.NP, knihovní materiály, výchozí typy stěn,
-// nastavení zobrazení (Studie, Projekt) a pohled. Ukázková data jsou vymyšlená.
+// nastavení zobrazení (Studie, Projekt) s kopiemi použitých šraf a pohled. Ukázková data jsou vymyšlená.
 import type { Id, IdGenerator } from '../ids/index.ts';
 import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
 import type { Material } from '../material/types.ts';
+import { withHatchesFor } from '../hatch/project.ts';
 import { createDefaultDisplay } from '../style/presets/create.ts';
 import type { View } from '../view/types.ts';
 import type { WallType } from '../wall/types.ts';
@@ -51,7 +52,7 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
   const buildingId = newId();
   const storeyId = newId();
   const mats = materials(newId);
-  const display = createDefaultDisplay(newId);
+  const display = withHatchesFor(createDefaultDisplay(newId), mats);
   const study = Object.values(display.styles)[0];
   if (!study) throw new Error('Chybí výchozí styl');
   const view: View = {

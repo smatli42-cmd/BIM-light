@@ -57,8 +57,9 @@ describe('rozhodnutí / základy 9, 13 a sekce 17: ukládání přes platformu, 
   it('základ 9: projekt s vlastní migrací se načte ve verzi programu', () => {
     const f = fixture();
     const old = JSON.parse(serializeProject(f.model)) as Record<string, unknown>;
-    const json = JSON.stringify({ ...old, schemaVersion: 0, projectName: f.model.project.name });
-    const r = parseProject(json, { 0: ({ projectName: _n, ...rest }) => rest });
+    const prev = f.model.schemaVersion - 1;
+    const json = JSON.stringify({ ...old, schemaVersion: prev, projectName: f.model.project.name });
+    const r = parseProject(json, { [prev]: ({ projectName: _n, ...rest }) => rest });
     expect(r.ok && r.model).toEqual(f.model);
   });
 

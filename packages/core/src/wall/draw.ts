@@ -1,29 +1,12 @@
 // Generátor půdorysu stěny (základy 5, 11; katalog pohledů: „Stěna: smlouva s kreslením“).
 // Stěna nevolí barvu, šrafu ani pero sama: vše dostane z funkce grafiky.
-// Hrubá: obrys + jedna výplň. Střední (a zatím jemná): čáry vrstev + šrafa materiálu.
+// Hrubá: obrys + jedna výplň. Střední (a zatím jemná): čáry vrstev + výplň a šrafa materiálu.
 import type { Primitive, Stroke } from '../drawing/primitives.ts';
 import type { Id } from '../ids/index.ts';
-import type { Material } from '../material/types.ts';
 import type { Detail, ResolvedEffect } from '../style/types.ts';
-import type { LayerGeometry, WallGeometry } from './geometry.ts';
+import { layerHatch, type DrawLookup } from './draw-hatch.ts';
+import type { WallGeometry } from './geometry.ts';
 import { facePieces, outlineRuns, type FaceGaps } from './outline.ts';
-
-type MaterialLookup = (id: Id) => Material | undefined;
-
-function hatchFor(
-  layer: LayerGeometry,
-  g: ResolvedEffect,
-  materials: MaterialLookup,
-  wallId: Id,
-): Primitive[] {
-  if (g.hatch === 'none') return [];
-  const h = g.hatch === 'material' ? materials(layer.span.layer.materialId)?.hatch : g.hatch;
-  if (!h || h.patternId === 'none') return [];
-  const source = { elementId: wallId, role: 'šrafa' };
-  return [
-    { kind: 'hatch', polygon: layer.polygon, patternId: h.patternId, pen: h.pen, color: h.color, source },
-  ];
-}
 
 function fill(points: WallGeometry['outline'], g: ResolvedEffect, wallId: Id): Primitive[] {
   if (g.fillColor === null) return [];
@@ -43,7 +26,7 @@ export function drawWall(
   geom: WallGeometry,
   detail: Detail,
   g: ResolvedEffect,
-  materials: MaterialLookup,
+  look: DrawLookup,
   gaps: FaceGaps = {},
 ): Primitive[] {
   if (!g.visible) return [];
@@ -51,7 +34,7 @@ export function drawWall(
   const outline: Stroke = { pen: g.cutPen, color: g.lineColor, lineType: g.lineType };
   const out: Primitive[] = [...fill(geom.outline, g, id)];
   if (detail !== 'coarse') {
-    for (const layer of geom.layers) out.push(...hatchFor(layer, g, materials, id));
+    for (const layer of geom.layers) out.push(...layerHatch(layer, g, look, id));
     const layerStroke: Stroke = { pen: g.layerPen, color: g.lineColor, lineType: g.lineType };
     geom.layerBoundaries.forEach((b, i) => {
       for (const points of facePieces(b, gaps.layers?.[i])) {

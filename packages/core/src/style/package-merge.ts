@@ -99,5 +99,10 @@ export function mergeDisplay(
     baseGraphics: globals.baseGraphics,
     categoryGraphics: globals.categoryGraphics,
     paperSizes: globals.paperSizes,
+    // Šrafy mají stabilní id (slug): „nahradit“ vezme importované, „ponechat obě“ nechá projektové.
+    hatches:
+      mode === 'replace'
+        ? { ...current.hatches, ...incoming.hatches }
+        : { ...incoming.hatches, ...current.hatches },
   };
 }

@@ -1,17 +1,20 @@
 // Nastavení zobrazení jako data (základy 26–32). Celé jde exportovat a importovat jako JSON (základ 31).
 import type { Id } from '../ids/index.ts';
 import type { Category } from '../model/categories.ts';
+import type { Hatch } from '../hatch/types.ts';
 import type { LibraryRef } from '../model/types.ts';
 
 /** Podrobnost kresby (základ 5): hrubá / střední / jemná. */
 export type Detail = 'coarse' | 'medium' | 'fine';
 export type LineType = 'solid' | 'dashed' | 'dotted' | 'dash-dot';
 
-/** Šrafa nastavená přímo (ne z materiálu). */
+/** Šrafa nastavená přímo pravidlem nebo přepisem (ne z materiálu); barvy null = z materiálu. */
 export interface HatchEffect {
-  readonly patternId: string;
+  /** Id šrafy v projektu (knihovna šraf, základ 34). */
+  readonly hatchId: string;
   readonly pen: number;
-  readonly color: string;
+  readonly lineColor: string | null;
+  readonly fillColor?: string | null;
 }
 
 /**
@@ -140,4 +143,6 @@ export interface DisplaySettings {
   readonly baseGraphics: ResolvedEffect;
   readonly categoryGraphics: CategoryGraphics;
   readonly paperSizes: PaperSizes;
+  /** Kopie šraf použitých v projektu s odkazem na původ (základy 21, 34); jsou součástí balíčku. */
+  readonly hatches: Readonly<Record<string, Hatch>>;
 }

@@ -1,9 +1,9 @@
 // Předvolby stylů Studie a Projekt (katalog pohledů: tabulka vzorů z arditu). Jsou to jen data.
 // Studie: hrubě, světle šedá výplň + černý obrys, 1:100, vlastní skupina kót.
-// Projekt: středně, světle šedá výplň pod šrafou materiálu, 1:50, kóty DSP a PPS + PPS.
+// Projekt: středně, vrstvy s výplní a šrafou materiálu (barvy z materiálu), 1:50, kóty DSP a PPS + PPS.
 import type { CategoryGraphics, Detail } from '../types.ts';
 
-/** Světle šedá výplň řezu stěny (dokud není šrafa, i pod ní). */
+/** Světle šedá výplň řezu stěny ve Studii (hrubá podrobnost, jedna výplň bez šrafy). */
 export const WALL_FILL = '#d9d9d9';
 
 export interface StylePreset {
@@ -39,7 +39,7 @@ export const STYLE_PRESETS: readonly StylePreset[] = [
     visibleAnnotations: ['drawing-2d', 'dims-dsp', 'dims-pps'],
     defaultAnnotationKey: 'dims-dsp',
     comboKey: 'none',
-    categoryGraphics: { wall: { fillColor: WALL_FILL, hatch: 'material' } },
+    categoryGraphics: { wall: { fillColor: null, hatch: 'material' } },
     labels: { roomNumber: true, roomName: true, roomArea: true, elevations: true },
   },
 ];

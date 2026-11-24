@@ -13,13 +13,15 @@ import {
   RULE_SCHEMA,
   STYLE_SCHEMA,
 } from './package-schema.ts';
+import { displayV1toV2 } from '../hatch/migrate-v1.ts';
+import { HATCH_SCHEMA } from '../hatch/schema.ts';
 import { DISPLAY_SCHEMA_VERSION } from './presets/create.ts';
 import type { DisplaySettings, Rule } from './types.ts';
 
 export const DISPLAY_PACKAGE_FORMAT = 'bim-light-display';
 
-/** Migrace balíčku zobrazení (zatím žádná, verze 1 je první). */
-export const DISPLAY_MIGRATIONS: Migrations = {};
+/** Migrace balíčku zobrazení. 1 → 2: kopie šraf a id šrafy v efektech (základ 34). */
+export const DISPLAY_MIGRATIONS: Migrations = { 1: displayV1toV2 };
 
 export function exportDisplayPackage(display: DisplaySettings): string {
   return JSON.stringify({ format: DISPLAY_PACKAGE_FORMAT, ...display }, null, 2);
@@ -35,6 +37,7 @@ const COLLECTIONS: [keyof DisplaySettings, JsonSchema][] = [
   ['rules', RULE_SCHEMA],
   ['overrideCombinations', OVERRIDE_COMBINATION_SCHEMA],
   ['styles', STYLE_SCHEMA],
+  ['hatches', HATCH_SCHEMA],
 ];
 
 function checkCollections(s: Record<string, unknown>): string[] {

@@ -8,7 +8,7 @@ import { COMBO_PRESETS, RULE_PRESETS } from './rules.ts';
 import { STYLE_PRESETS, type StylePreset } from './styles.ts';
 
 /** Verze schématu balíčku zobrazení (základ 31). */
-export const DISPLAY_SCHEMA_VERSION = 1;
+export const DISPLAY_SCHEMA_VERSION = 2;
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
   Object.fromEntries(items.map((i) => [i.id, i]));
@@ -94,6 +94,7 @@ export function createDefaultDisplay(newId: IdGenerator): DisplaySettings {
     baseGraphics: BASE_GRAPHICS,
     categoryGraphics: CATEGORY_GRAPHICS,
     paperSizes: PAPER_SIZES,
+    hatches: {},
   };
 }
 

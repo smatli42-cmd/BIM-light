@@ -57,7 +57,7 @@ describe('katalog-pohledy-styly / První pískoviště: testy', () => {
     const project = prims(f);
     expect(wallGeometry(f.model, f.wall(id))).toEqual(geomStudy);
     expect(kinds(study)).toEqual(['fill', 'line']);
-    expect(kinds(project)).toEqual(['fill', 'hatch', 'line']);
+    expect(kinds(project)).toEqual(['hatch', 'line']);
     expect(project.filter((p) => p.source.role === 'hranice vrstvy')).toHaveLength(2);
     expect(project.filter((p) => p.kind === 'hatch')).toHaveLength(3);
   });
@@ -76,7 +76,7 @@ describe('katalog-pohledy-styly / První pískoviště: testy', () => {
       ps.filter((p) => p.kind === 'text').map((p) => p.kind === 'text' && p.heightMm);
     expect(texts(at100.primitives)).toEqual(texts(at50));
     const hatches = (ps: readonly Primitive[]) =>
-      ps.filter((p) => p.kind === 'hatch').map((p) => p.kind === 'hatch' && p.patternId);
+      ps.filter((p) => p.kind === 'hatch').map((p) => p.kind === 'hatch' && p.hatch);
     expect(hatches(at100.primitives)).toEqual(hatches(at50));
     const pens = (ps: readonly Primitive[]) => ps.flatMap((p) => (p.kind === 'line' ? [p.stroke.pen] : []));
     expect(pens(at100.primitives)).toEqual(pens(at50));

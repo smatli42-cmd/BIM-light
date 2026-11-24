@@ -1,6 +1,7 @@
 // Kresba, kterou jádro vrací (základy 4, 11, 32): seznam primitiv v mm modelu.
 // Čáry nesou jen číslo pera (tloušťku v mm určí až tabulka per a měřítko při vykreslení).
 // Texty a šrafy mají velikost v mm na papíře (základ 29). Jádro nezná canvas.
+import type { Hatch } from '../hatch/types.ts';
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { LineType } from '../style/types.ts';
@@ -37,9 +38,14 @@ export type Primitive =
   | {
       readonly kind: 'hatch';
       readonly polygon: readonly Vec2[];
-      readonly patternId: string;
+      /** Definice šrafy (tvar, mm na papíře); primitivum je soběstačné i pro DXF / PDF. */
+      readonly hatch: Hatch;
       readonly pen: number;
-      readonly color: string;
+      readonly lineColor: string;
+      /** Výplň pod šrafou; null = bez výplně. */
+      readonly fillColor: string | null;
+      /** Počátek rastru v souřadnicích modelu (společný pro celý výkres). */
+      readonly origin: Vec2;
       readonly source: PrimitiveSource;
     }
   | {

@@ -18,11 +18,15 @@ const effect: JsonSchema = {
     hatch: {
       oneOf: [
         S.enumOf(['material', 'none'], 'šrafa'),
-        S.object({ patternId: str, pen: { type: 'integer', minimum: 1 }, color: str }, [
-          'patternId',
-          'pen',
-          'color',
-        ]),
+        S.object(
+          {
+            hatchId: str,
+            pen: { type: 'integer', minimum: 1 },
+            lineColor: { oneOf: [str, { type: 'null' }] },
+            fillColor: { oneOf: [str, { type: 'null' }] },
+          },
+          ['hatchId', 'pen', 'lineColor'],
+        ),
       ],
     },
     transparency: { type: 'number', minimum: 0, maximum: 100 },
@@ -102,6 +106,7 @@ export const DISPLAY_SETTINGS_SCHEMA: JsonSchema = {
     'baseGraphics',
     'categoryGraphics',
     'paperSizes',
+    'hatches',
   ],
   properties: {
     schemaVersion: { type: 'integer', minimum: 1 },
@@ -110,6 +115,7 @@ export const DISPLAY_SETTINGS_SCHEMA: JsonSchema = {
     rules: { type: 'object' },
     overrideCombinations: { type: 'object' },
     styles: { type: 'object' },
+    hatches: { type: 'object' },
     penTable: S.object(
       {
         scales: { type: 'array', items: { type: 'number', exclusiveMinimum: 0 }, minItems: 1 },

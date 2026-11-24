@@ -79,7 +79,8 @@ describe('rozhodnutí / základy 1–3, 9, 12, 17: model ve tvaru IFC', () => {
     expect(t?.bands).toHaveLength(1);
     expect(t?.bands[0]?.layers.map((l) => l.function)).toEqual(['finish', 'core', 'insulation']);
     const m = Object.values(f.model.materials)[0];
-    expect(m?.hatch.pen).toBeGreaterThan(0);
+    expect(f.model.display.hatches[m!.hatchId]).toBeTruthy();
+    expect(m?.hatchPen).toBeGreaterThan(0);
     expect(m?.joinPriority).toBeGreaterThan(0);
     expect(m?.source?.libraryId).toBe('bim-light-basic');
   });
