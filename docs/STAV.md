@@ -154,4 +154,4 @@ Výstup `npm run check:size`: varování 0, chyb 0 (200 souborů).
 | 225 | apps/sandbox/e2e/prikazy.spec.ts |
 | 220 | apps/sandbox/src/interaction/tools/wall-tool.ts |
 | 212 | apps/sandbox/src/ui/PropertiesPanel.tsx |
-| 193 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
