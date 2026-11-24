@@ -93,7 +93,84 @@ Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-24, 
   kolmé ukončení; čelo se kreslí jen v části, kterou navazující stěna nezakrývá.
 - Testy: jádro a nástroje 284 (Vitest), prohlížeč 68 (Playwright), vše zelené.
 
+### Doplněk šraf a materiálů: hotovo, 2026-11-24
+- **Knihovna šraf** (`packages/core/src/hatch/`): šrafa = samostatná položka (id slug, název, skupina, pořadí,
+  varianta, plná, rodiny čar / značek / vlnovek v mm na papíře, verze), žádná barva. 40 šraf v pořadí z arditu,
+  po souborech podle skupin (`hatch/library/`), validace při startu, nová šrafa = nový záznam.
+- **Materiál** (`material/`): název, kategorie, barva (3D), šrafa (id), pero šrafy, přepsané 2D barvy, průhledný
+  ve 3D, priorita protínání, poznámka. 2D barvy se odvozují z barvy (`material/colors.ts`). Použití se počítá.
+  15 výchozích materiálů. Projekt drží kopie použitých šraf s odkazem na původ (`display.hatches`).
+- **Migrace:** projekt 1 → 2 a balíček zobrazení 1 → 2 (`hatch/migrate-v1.ts`); staré vzory → id šraf.
+- **Grafika:** primitivum šrafy {polygon, šrafa, pero, barva čar, barva výplně, počátek rastru}; střední
+  podrobnost kreslí vrstvy s výplní a šrafou materiálu, hrubá jednu výplň. Přepis šrafy pravidlem / prvkem
+  ({hatchId, pen, lineColor, fillColor}) doplní kopii šrafy do projektu.
+- **Příkazy:** `material.create / duplicate / update / delete` (použitý jen s náhradou),
+  `wallType.setLayerMaterial`; dotazy pro AI `hatch.list`, `material.list`.
+- **Sandbox:** pravý panel se záložkami Vlastnosti / Materiály / Šrafy; knihovna šraf (mřížka náhledů, barva
+  náhledu), panel Materiály (hledání, rozbalení s poli z popisu parametrů, Použití, Duplikovat, Smazat),
+  u vybrané stěny materiály vrstev typu.
+- Testy: jádro a nástroje 316 (Vitest), prohlížeč 71 (Playwright).
+
+#### Šrafy (návrh, k porovnání s arditem; rozměry mm na papíře)
+| # | Šrafa | Vzhled |
+|---|---|---|
+| 1 | bez šrafy | nic |
+| 2 | Obecné | šikmé čáry 45°, 3 mm |
+| 3 | Terén (zemina) | čárkované šikmé 45° (3 / 1,2), 2 mm |
+| 4 | Zásypy a násypy | řídké čárky 45° + tečky v rastru 1,5 mm |
+| 5 | Zeminy – kamenivo (var. 3) | terén + kroužky 3 mm |
+| 6 | Zeminy – čárky (var. 3) | krátké čárky 45° |
+| 7 | Zeminy – šipky (var. 3) | terén + šipky 45° |
+| 8 | Štěrk | kroužky v rastru s posunem řad |
+| 9 | Beton vyztužený | prostý beton + šikmé čáry 45°, 2,5 mm |
+| 10 | Beton nevyztužený | tečky + malé trojúhelníky |
+| 11 | Beton – kroužky (var. 10) | tečky + kroužky |
+| 12 | Beton – trojúhelníky (var. 10) | husté trojúhelníky |
+| 13 | Beton – čárkovaná s kroužky (var. 10) | čárkované 45° + kroužky |
+| 14 | Zdivo | šikmé čáry 45°, 2 mm |
+| 15 | Zdivo – mřížka | 45° + 135°, 2 mm |
+| 16 | Zdivo – čárkovaná (var. 14) | čárkované 45° |
+| 17 | Zdivo – hustá mřížka | 45° + 135°, 1 mm |
+| 18 | Zdivo – svislice a šikmé (var. 14) | svislé + 45° |
+| 19 | Dílce | svislé čáry 3 mm |
+| 20 | Dřevo | vodorovná vlnovka |
+| 21 | Sendvičové konstrukce | vodorovné + 45° |
+| 22 | Sendvič – křížky (var. 21) | vodorovné + křížky |
+| 23 | Sendvič – kroužky (var. 21) | vodorovné + kroužky |
+| 24 | Tepelná izolace | cik-cak |
+| 25 | Izolace obecná | kosočtverce (60° + 120°) |
+| 26 | Akustická izolace | vlnovka |
+| 27 | Izolace – plástve (var. 24) | šestiúhelníky |
+| 28 | Izolace – trojúhelníky (var. 24) | trojúhelníky |
+| 29 | Izolace – kroužky (var. 24) | kroužky |
+| 30 | Izolace proti vodě | plná (vyčerněná) |
+| 31 | Kámen | 30° + čárkované 120° |
+| 32 | Kovy | jemné 45°, 1 mm |
+| 33 | Sklo | krátké řídké čárky 45° |
+| 34 | Ploché sklo | vodorovné 1 mm |
+| 35 | Omítky, sádra, stěrky | husté tečky |
+| 36 | Sádrokarton | jemné čárkované 45° |
+| 37 | Anhydrit | malé trojúhelníky + tečky |
+| 38 | Plasty, pryž | 45° + čárkované 135° |
+| 39 | Bourané konstrukce | čárkovaná mřížka 45° + 135° |
+| 40 | Krytina | vodorovné 1,2 mm |
+
 ## Rozhodl Code (k potvrzení)
+
+Doplněk šraf a materiálů:
+- **Velikost šrafy na obrazovce:** podle zadání stejný koeficient jako tloušťky čar (mm papíru × 96/25,4 px),
+  šrafa se tedy se zoomem nemění (dřív se zvětšovala). Kreslí se přímo čarami a značkami oříznutými
+  mnohoúhelníkem, ne dlaždicí: obecné úhly a značky se do svislé dlaždice nevejdou bez chyb.
+- **Odvození 2D barev:** výplň = barva smíchaná 65 % s bílou, čáry = 70 % s černou (`material/colors.ts`).
+- **Výchozí priority:** Kov 80, Železobeton 70, Beton a potěry 60, Anhydrit 55, Zdivo 50, Dřevo 40,
+  Sklo a Ostatní 30, Izolace 20, Sádrokarton 15, Omítky 10, Zemina 5.
+- **Šrafy jsou v nastavení zobrazení** (`display.hatches`), proto jsou součástí balíčku (základ 31); import
+  „nahradit“ vezme importované, „ponechat obě“ nechá projektové (id je stabilní slug).
+- Styl Projekt už nemá šedou výplň stěny: výplň a šrafu dává materiál vrstvy (fillColor null = z materiálu).
+  Studie má dál světle šedou jednu výplň bez šrafy.
+- Šrafa rodiny vlnovka má navíc tvar sinus / cik-cak (izolace potřebuje cik-cak).
+- Změna materiálu vrstvy u vybrané stěny mění typ (všechny stěny typu); úplný editor skladby je krok Z1.
+
 
 Opravy závad kroku 3:
 - **Pero řezu stěny 6 (0,7 mm)** místo 5 (0,5) podle pokynu „tučné podle ČSN“. Katalog pohledů (Tloušťky čar)
@@ -176,8 +253,8 @@ Krok 3:
 
 ## Další krok
 
-- Uživatel vyzkouší skupinu A na webu a pošle případné další chyby stěn; pak kóty (rozhodnuto: nejdřív
-  stěny, potom kóty), potom krok 4.
+- Uživatel porovná knihovnu šraf s arditem (záložka Šrafy). Pak podle `instrukce-code-srafy.md`: krok 4
+  etapy 0 (zobrazení v sandboxu), potom stěny Z1 (`instrukce-code-steny.md`).
 
 ## Otevřené
 
@@ -189,15 +266,14 @@ Krok 3:
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
 - Jemná podrobnost (= střední); obtékání omítky v rozích různých typů; přerušení šrafy hostitele v T.
 
-## Největší soubory (po skupině A)
+## Největší soubory (po doplňku šraf a materiálů)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (219 souborů). Rozděleno: `select/wall-modes.ts` →
-`click-or-drag.ts` + `node-mode.ts` + `wall-modes.ts`; `e2e/prikazy.spec.ts` → + `e2e/uzly.spec.ts`.
+Výstup `npm run check:size`: varování 0, chyb 0 (255 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 244 | apps/sandbox/src/ui/PropertiesPanel.tsx |
-| 220 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 246 | apps/sandbox/src/ui/PropertiesPanel.tsx |
+| 222 | apps/sandbox/src/interaction/tools/wall-tool.ts |
 | 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 206 | apps/sandbox/e2e/kresleni.spec.ts |
 | 192 | apps/sandbox/e2e/koty-docasne.spec.ts |
-| 192 | apps/sandbox/src/interaction/tools/commands/edit-tools.ts |

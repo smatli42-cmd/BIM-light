@@ -70,6 +70,7 @@ a `docs/STAV.md`.
 31. Nastavení zobrazení je přenositelný JSON se schématem, verzí a migracemi; import nemění model.
 32. Tloušťka čáry se ukládá jen jako číslo pera; tabulka pero × měřítko → mm (ISO 128, 7 per).
 33. Velikost souborů se hlídá automaticky a soubory se dělí včas (viz níže).
+34. Šrafa je samostatná položka knihovny (jen tvar, mm na papíře), materiál ji odkazuje; barva je u materiálu (`docs/katalog-sraf-materialu.md`).
 
 ## Velikost souborů (základ 33)
 
