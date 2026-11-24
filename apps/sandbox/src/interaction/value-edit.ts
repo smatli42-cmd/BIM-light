@@ -51,7 +51,8 @@ export function moverOf(d: Dimension, selected: readonly Id[]): 0 | 1 | undefine
 }
 
 /** Pole pro číslo trvalé kóty. */
-export function editPerm(s: Session, view: PermDimView) {
+/** `selected` = stěny vybrané v okamžiku kliknutí na číslo (určují, co se pohne). */
+export function editPerm(s: Session, view: PermDimView, selected: readonly Id[] = s.selection.walls) {
   const d = view.dim;
   const value = measureDimension(s.model, d);
   s.valueEdit = {
@@ -61,8 +62,8 @@ export function editPerm(s: Session, view: PermDimView) {
     commit: (text) => {
       const v = parseNumber(text);
       if (!(v > 0)) return;
-      const moveRef = moverOf(d, s.selection.walls);
-      const end = d.kind === 'length' && s.selection.walls.includes(d.ref.wallId) ? s.lenEnd : undefined;
+      const moveRef = moverOf(d, selected);
+      const end = d.kind === 'length' && selected.includes(d.ref.wallId) ? s.lenEnd : undefined;
       s.run('dimension.setValue', {
         dimensionId: d.id,
         value: v,

@@ -7,6 +7,7 @@ import { AlignTool, RectTool, SplitTool, TrimTool, ZoomWindowTool } from './comm
 import { PasteTool } from './commands/paste-tool.ts';
 import { CopyTool, MirrorTool, MoveTool, RotateTool } from './commands/transform-tools.ts';
 import { DimensionTool } from './dimension-tool.ts';
+import { PickLineTool } from './pick-line-tool.ts';
 import { SelectTool } from './select/select-tool.ts';
 import { WallTool } from './wall-tool.ts';
 
@@ -26,6 +27,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   rect: (s) => new RectTool(s),
   zoomwin: (s) => new ZoomWindowTool(s),
   paste: (s) => new PasteTool(s),
+  pickline: (s) => new PickLineTool(s),
 };
 
 /** Nástroje, které pracují s vybranými stěnami. */

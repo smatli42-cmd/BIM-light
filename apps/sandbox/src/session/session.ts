@@ -25,7 +25,7 @@ import type { Clipboard } from '../interaction/clipboard.ts';
 import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { Selection } from './selection.ts';
-import type { MenuState, Toast, ToastKind, TypedInput, ValueEditState } from './ui-state.ts';
+import type { MenuState, Toast, ToastAction, ToastKind, TypedInput, ValueEditState } from './ui-state.ts';
 
 /** Tolerance přichycení a výběru v px (katalog kreslení 2, pravidla-interakce kóty 7). */
 export const SNAP_PX = 10;
@@ -102,8 +102,10 @@ export class Session {
   run(name: string, params: unknown): ExecuteResult {
     const r = this.editor.execute(name, params);
     if (!r.ok) {
-      this.toast(r.error.message, 'bad');
-      this.flashDims = [...(r.error.dimensionIds ?? [])];
+      const ids = [...(r.error.dimensionIds ?? [])];
+      const unlock = ids.length ? { label: 'Odemknout kótu', run: () => this.unlock(ids) } : undefined;
+      this.toast(r.error.message, 'bad', unlock);
+      this.flashDims = ids;
       this.changed();
     } else this.flashDims = [];
     return r;
@@ -118,14 +120,25 @@ export class Session {
     this.changed();
   }
 
-  toast(text: string, kind: ToastKind = 'ok') {
-    const id = ++this.toastSeq;
-    this.toasts = [...this.toasts.slice(-2), { id, text, kind }];
+  /** Odemkne kóty, které bránily změně (katalog kreslení 4: nabídne se odemknutí). */
+  private unlock(ids: readonly Id[]) {
+    for (const id of ids) this.run('dimension.setLocked', { dimensionId: id, locked: false });
+    this.flashDims = [];
+    this.toasts = [];
     this.changed();
-    setTimeout(() => {
-      this.toasts = this.toasts.filter((t) => t.id !== id);
-      this.changed();
-    }, 4000);
+  }
+
+  toast(text: string, kind: ToastKind = 'ok', action?: ToastAction) {
+    const id = ++this.toastSeq;
+    this.toasts = [...this.toasts.slice(-2), { id, text, kind, action }];
+    this.changed();
+    setTimeout(
+      () => {
+        this.toasts = this.toasts.filter((t) => t.id !== id);
+        this.changed();
+      },
+      action ? 8000 : 4000,
+    );
   }
 
   /** Geometrie stěn podlaží pro přichytávání (mezipaměť podle modelu). */

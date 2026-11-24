@@ -45,8 +45,11 @@ export class SelectTool implements Tool {
     if (p.button === 2) return this.context(p);
     if (p.button !== 0) return;
     const hit = hitAt(this.s, p.screen);
-    if (hit) return this.onHit(hit, p);
+    const onLine = hit?.kind === 'temp-line' || hit?.kind === 'dim-line';
+    if (hit && !onLine) return this.onHit(hit, p);
+    // Líc vybrané stěny má přednost před čárou kóty, která na něm začíná.
     if (this.faceOfSelected(p, (face, id) => (this.mode = new OffsetMode(this.s, id, face, p, true)))) return;
+    if (hit) return this.onHit(hit, p);
     const id = this.wallsUnder(p)[0];
     if (id && p.shift) return this.s.selection.toggleWall(id);
     if (id) {

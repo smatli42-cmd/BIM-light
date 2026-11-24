@@ -92,6 +92,11 @@ export function CanvasOverlays({ session }: { session: Session }) {
         {s.toasts.map((t) => (
           <div key={t.id} class={`toast ${t.kind}`} data-testid="toast">
             {t.text}
+            {t.action && (
+              <button data-testid="toast-action" onClick={() => t.action?.run()}>
+                {t.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>

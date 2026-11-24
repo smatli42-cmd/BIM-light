@@ -26,10 +26,17 @@ export interface ValueEditState {
 
 export type ToastKind = 'ok' | 'bad';
 
+export interface ToastAction {
+  readonly label: string;
+  readonly run: () => void;
+}
+
 export interface Toast {
   readonly id: number;
   readonly text: string;
   readonly kind: ToastKind;
+  /** Nabídnutá náprava (např. odemknout kótu, která brání změně). */
+  readonly action?: ToastAction | undefined;
 }
 
 /** Čísla napsaná do trackeru nebo příkazu (katalog kreslení 1.4). */

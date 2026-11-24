@@ -214,3 +214,12 @@ kbd {
   border-top: 1px solid var(--line);
   font-size: 0.8rem;
 }
+.toast button {
+  pointer-events: auto;
+  margin-left: 8px;
+  font: inherit;
+  color: #1a1a1a;
+  border: 1px solid #c62828;
+  background: #ffffff;
+  cursor: pointer;
+}

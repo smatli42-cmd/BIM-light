@@ -34,7 +34,8 @@ export type ToolId =
   | 'split'
   | 'rect'
   | 'zoomwin'
-  | 'paste';
+  | 'paste'
+  | 'pickline';
 
 /** Co nástroj kreslí přes výkres (světle modré pomocné značky, katalog kreslení 2). */
 export interface Overlay {
