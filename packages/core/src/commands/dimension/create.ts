@@ -32,7 +32,7 @@ function checkFace(model: Model, ref: FaceRef) {
     fail('invalid', `Na líc ${ref.face} nejde kótovat`);
 }
 
-function annotationLayerFor(model: Model, p: DimensionCreateParams): Id {
+export function annotationLayerFor(model: Model, p: { annotationLayerId?: Id; viewId?: Id }): Id {
   if (p.annotationLayerId) {
     const layer = model.display.layers[p.annotationLayerId];
     if (!layer || layer.kind !== 'annotation') fail('invalid', 'Skupina anotací neexistuje');
@@ -42,7 +42,7 @@ function annotationLayerFor(model: Model, p: DimensionCreateParams): Id {
   return fail('invalid-params', 'Chybí skupina anotací (annotationLayerId nebo viewId)');
 }
 
-function buildDimension(model: Model, p: DimensionCreateParams, id: Id, layerId: Id): Dimension {
+export function buildDimension(model: Model, p: DimensionCreateParams, id: Id, layerId: Id): Dimension {
   const base = {
     id,
     annotationLayerId: layerId,

@@ -8,6 +8,8 @@ import {
   dimensionSetText,
 } from './dimension/edit.ts';
 import { dimensionSetValue } from './dimension/set-value.ts';
+import { dimensionEqualize } from './dimension/equalize.ts';
+import { dimensionCreateSet, dimensionFlipSide, dimensionPlace } from './dimension/place.ts';
 import { projectSetGeoreference, storeyCreate, storeyUpdate } from './project/storey.ts';
 import { CommandRegistry } from './registry.ts';
 import { displayImport, displaySetPenWidth, styleSaveFromView } from './view/display.ts';
@@ -24,6 +26,8 @@ import {
 } from './view/view.ts';
 import { wallConnect, wallDelete, wallDisconnect } from './wall/connect.ts';
 import { wallCreate } from './wall/create.ts';
+import { wallCopy, wallPaste } from './wall/copy.ts';
+import { wallAlign, wallRectangle, wallTrimToCorner } from './wall/corner.ts';
 import { wallMoveEndpoint, wallSetLength } from './wall/endpoint.ts';
 import { wallMove, wallOffset, wallRotate } from './wall/move.ts';
 import { wallFlipSide, wallSetHeight, wallSetProperties, wallSetType } from './wall/properties.ts';
@@ -49,6 +53,11 @@ export const CORE_COMMANDS = [
   wallSetProperties,
   wallSplit,
   wallConnect,
+  wallCopy,
+  wallPaste,
+  wallTrimToCorner,
+  wallAlign,
+  wallRectangle,
   wallDisconnect,
   dimensionCreate,
   dimensionDelete,
@@ -57,6 +66,10 @@ export const CORE_COMMANDS = [
   dimensionSetOffset,
   dimensionSetText,
   dimensionSetAlignGroup,
+  dimensionPlace,
+  dimensionCreateSet,
+  dimensionFlipSide,
+  dimensionEqualize,
   viewCreate,
   viewSetStyle,
   viewSetScale,
