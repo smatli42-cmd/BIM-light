@@ -16,7 +16,7 @@ import {
 import type { Session } from '../../../session/session.ts';
 import { clearTyped, editTyped } from '../../../session/ui-state.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, ToolId, TrackerField } from '../../types.ts';
-import { snapLabel } from '../wall-tool.ts';
+import { snapLabel } from '../wall-chain.ts';
 
 export abstract class PointCommand implements Tool {
   abstract readonly id: ToolId;
