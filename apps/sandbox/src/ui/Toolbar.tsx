@@ -17,6 +17,7 @@ const GROUPS: readonly (readonly ToolDef[])[] = [
   [
     { tool: 'select', label: 'Výběr', key: 'Esc' },
     { tool: 'wall', command: 'wall.create' },
+    { tool: 'arc', label: 'Oblouková stěna', key: 'A' },
     { tool: 'pickline', label: 'Stěna z čáry', key: 'V' },
     { tool: 'rect', command: 'wall.rectangle' },
     { tool: 'opening', command: 'opening.create' },

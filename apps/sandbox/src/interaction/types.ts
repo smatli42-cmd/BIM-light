@@ -36,7 +36,8 @@ export type ToolId =
   | 'zoomwin'
   | 'paste'
   | 'pickline'
-  | 'opening';
+  | 'opening'
+  | 'arc';
 
 /** Co nástroj kreslí přes výkres (světle modré pomocné značky, katalog kreslení 2). */
 export interface Overlay {

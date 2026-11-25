@@ -91,6 +91,19 @@ export function edgeMenu(s: Session, wallId: Id, face: WallFace, p: PointerInfo,
   ]);
 }
 
+/** Položky jen pro obloukovou stěnu (Z5): Vyrovnat, kóta poloměru a tětivy. */
+function arcItems(s: Session, wallId: Id) {
+  const w = s.model.elements[wallId];
+  if (!w || w.path.kind !== 'arc' || Math.abs(w.path.bulge) < 1e-9) return [];
+  const dim = (measure: 'radius' | 'chord') => () =>
+    s.run('dimension.create', { kind: 'length', ref: { wallId, face: 'ref' }, measure, viewId: s.viewId });
+  return [
+    { label: 'Vyrovnat stěnu', action: () => s.run('wall.straighten', { wallIds: s.selection.walls }) },
+    { label: 'Kóta poloměru', action: dim('radius') },
+    { label: 'Kóta tětivy', action: dim('chord') },
+  ];
+}
+
 export function wallMenu(s: Session, wallId: Id, at: Vec2) {
   const n = s.selection.walls.length;
   const cmd = (label: string, tool: Parameters<Session['setTool']>[0]) => ({
@@ -118,6 +131,7 @@ export function wallMenu(s: Session, wallId: Id, at: Vec2) {
       label: 'Okótovat celou stěnu',
       action: () => s.run('dimension.wholeWall', { wallId, side: 'opp', viewId: s.viewId }),
     },
+    ...arcItems(s, wallId),
     { label: 'Smazat (Del)', action: () => s.run('selection.delete', { wallIds: s.selection.walls }) },
   ]);
 }

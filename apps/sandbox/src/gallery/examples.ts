@@ -8,6 +8,7 @@ import {
   type Id,
   type Vec2,
 } from '@bim-light/core';
+import { ARC_RECIPES } from './arc-examples.ts';
 
 export interface Example {
   readonly title: string;
@@ -16,11 +17,13 @@ export interface Example {
   readonly viewId: Id;
 }
 
-interface Ctx {
+export interface Ctx {
   readonly ed: Editor;
   readonly storeyId: Id;
   type(name: string): Id;
   wall(a: Vec2, b: Vec2, type: string, connections?: unknown[]): Id;
+  /** Oblouková stěna se středovým úhlem `deg` (kladný = proti směru hodin, Z5). */
+  arc(a: Vec2, b: Vec2, deg: number, type: string, connections?: unknown[]): Id;
   run(name: string, params: unknown): void;
 }
 
@@ -47,11 +50,18 @@ function context(): { ctx: Ctx; viewId: Id } {
         path: { kind: 'line', start: a, end: b },
         connections,
       })[0] as Id,
+    arc: (a, b, deg, t, connections = []) =>
+      run('wall.create', {
+        storeyId,
+        typeId: type(t),
+        path: { kind: 'arc', start: a, end: b, bulge: Math.tan((deg * Math.PI) / 720) },
+        connections,
+      })[0] as Id,
   };
   return { ctx, viewId };
 }
 
-const v = (x: number, y: number): Vec2 => ({ x, y });
+export const v = (x: number, y: number): Vec2 => ({ x, y });
 const at = (deg: number, r: number): Vec2 =>
   v(r * Math.cos((deg * Math.PI) / 180), r * Math.sin((deg * Math.PI) / 180));
 
@@ -85,7 +95,7 @@ function three(c: Ctx, host: string, t: string, four = false) {
   if (four) c.wall(v(0, 0), v(0, 2000), t, [{ end: 'start', wallId: a, at: 'ATEND' }]);
 }
 
-const RECIPES: readonly [string, string, (c: Ctx) => void][] = [
+const RECIPES: readonly Recipe[] = [
   [
     'L – zateplená × zateplená',
     'jádro na jádro, izolace kolem vnějšího rohu, omítka ve vnitřním',
@@ -146,8 +156,10 @@ const RECIPES: readonly [string, string, (c: Ctx) => void][] = [
   ],
 ];
 
+export type Recipe = readonly [string, string, (c: Ctx) => void];
+
 export function buildExamples(): Example[] {
-  return RECIPES.map(([title, note, build]) => {
+  return [...RECIPES, ...ARC_RECIPES].map(([title, note, build]) => {
     const { ctx, viewId } = context();
     build(ctx);
     return { title, note, editor: ctx.ed, viewId };

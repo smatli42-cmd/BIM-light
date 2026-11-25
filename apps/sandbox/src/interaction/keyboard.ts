@@ -8,6 +8,7 @@ import type { KeyInfo, ToolId } from './types.ts';
 /** Zkratky nástrojů (písmena z pravidel interakce). */
 export const TOOL_KEYS: Readonly<Record<string, ToolId>> = {
   w: 'wall',
+  a: 'arc',
   v: 'pickline',
   d: 'dimension',
   u: 'angle',

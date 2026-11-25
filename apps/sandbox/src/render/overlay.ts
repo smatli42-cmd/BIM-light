@@ -193,6 +193,13 @@ export function drawGrips(ctx: Ctx, grips: readonly GripView[]) {
   ctx.strokeStyle = AUX;
   ctx.lineWidth = 1.5;
   for (const g of grips) {
+    if (g.end === 'mid') {
+      ctx.beginPath();
+      ctx.arc(g.at.x, g.at.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      continue;
+    }
     ctx.fillRect(g.at.x - 4, g.at.y - 4, 8, 8);
     ctx.strokeRect(g.at.x - 4, g.at.y - 4, 8, 8);
   }

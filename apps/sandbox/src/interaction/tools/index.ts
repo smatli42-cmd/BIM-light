@@ -2,6 +2,7 @@
 import type { Session } from '../../session/session.ts';
 import type { Tool, ToolId } from '../types.ts';
 import { AngleTool } from './angle-tool.ts';
+import { ArcWallTool } from './arc-wall-tool.ts';
 import { ArrayTool } from './commands/array-tool.ts';
 import { AlignTool, RectTool, SplitTool, TrimTool, ZoomWindowTool } from './commands/edit-tools.ts';
 import { PasteTool } from './commands/paste-tool.ts';
@@ -15,6 +16,7 @@ import { WallTool } from './wall-tool.ts';
 const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   select: (s) => new SelectTool(s),
   wall: (s) => new WallTool(s),
+  arc: (s) => new ArcWallTool(s),
   dimension: (s) => new DimensionTool(s),
   angle: (s) => new AngleTool(s),
   move: (s) => new MoveTool(s),

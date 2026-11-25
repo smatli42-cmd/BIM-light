@@ -4,11 +4,14 @@ import {
   dimensionText,
   layoutDimension,
   measureDimension,
+  pointAt,
+  wallGeometry,
   isDimensionVisible,
   type Dimension,
   type Id,
   type PathEnd,
   type Vec2,
+  type Wall,
 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { inRect, near, screenText, segDist, type ScreenRect } from './screen.ts';
@@ -25,7 +28,8 @@ export interface PermDimView {
 
 export interface GripView {
   readonly wallId: Id;
-  readonly end: PathEnd;
+  /** Uzel na konci, nebo kolečko uprostřed (tažení = zakřivení, Z5). */
+  readonly end: PathEnd | 'mid';
   readonly at: Vec2;
 }
 
@@ -69,16 +73,29 @@ export function permDimViews(s: Session, hidden: readonly Id[] = []): PermDimVie
   return out;
 }
 
-/** Uzly (koncové čtverečky) jediné vybrané stěny. */
+/**
+ * Kolečko zakřivení (Z5): 16 px za středem protilehlého líce, mimo stěnu – nepřekryje klik do stěny
+ * ani tažení líce.
+ */
+function curveGripAt(s: Session, w: Wall): Vec2 {
+  const g = wallGeometry(s.model, w);
+  const ref = s.viewport.toScreen(pointAt(g.faces.ref, 0.5));
+  const opp = s.viewport.toScreen(pointAt(g.faces.opp, 0.5));
+  const d = Math.hypot(opp.x - ref.x, opp.y - ref.y) || 1;
+  return { x: opp.x + ((opp.x - ref.x) / d) * 16, y: opp.y + ((opp.y - ref.y) / d) * 16 };
+}
+
+/** Uzly (koncové čtverečky) a kolečko zakřivení jediné vybrané stěny. */
 export function gripViews(s: Session): GripView[] {
   const id = s.selection.single;
   const w = id ? s.model.elements[id] : undefined;
   if (!w || s.tool.id !== 'select') return [];
-  return (['start', 'end'] as const).map((end) => ({
+  const ends = (['start', 'end'] as const).map((end) => ({
     wallId: w.id,
     end,
     at: s.viewport.toScreen(w.path[end]),
   }));
+  return [...ends, { wallId: w.id, end: 'mid' as const, at: curveGripAt(s, w) }];
 }
 
 /** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */
