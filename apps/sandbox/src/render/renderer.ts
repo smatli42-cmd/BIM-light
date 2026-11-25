@@ -13,6 +13,7 @@ import { tempDimViews } from '../interaction/temp-layout.ts';
 import { drawGrid } from './grid.ts';
 import { PAPER_BG } from './paper.ts';
 import { drawDrawing, drawPrimitive, type RenderContext } from './primitives.ts';
+import { drawMain, drawRevealed, drawTrace } from './screen-layers.ts';
 import {
   AUX,
   drawGrips,
@@ -25,7 +26,7 @@ import {
 } from './overlay.ts';
 
 function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly string[]) {
-  const drawing = drawView(model, s.viewId);
+  const drawing = drawView(model, s.viewId, { mergeMaterials: s.screen.mergeMaterials });
   const sel = new Set(s.selection.dims);
   const flash = new Set(s.flashDims);
   const plain: Primitive[] = [];
@@ -37,8 +38,9 @@ function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly 
     else if (dim && sel.has(dim)) marked.push([p, SELECT]);
     else plain.push(p);
   }
-  drawDrawing(r, { scale: drawing.scale, primitives: plain });
+  drawMain(r, s, { scale: drawing.scale, primitives: plain });
   for (const [p, c] of marked) drawPrimitive(r, p, c);
+  drawRevealed(r, s, model, drawing);
 }
 
 export function render(ctx: CanvasRenderingContext2D, s: Session) {
@@ -48,9 +50,18 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   if (s.options.grid) drawGrid(ctx, v, s.options.grid, s.paper);
   const o = s.tool.overlay();
   const hidden = o.hiddenDims ?? [];
-  const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: s.view.scale, paper: s.paper };
+  const r: RenderContext = {
+    ctx,
+    v,
+    pens: s.model.display.penTable,
+    scale: s.view.scale,
+    paper: s.paper,
+    hairline: !s.screen.trueWeight,
+  };
   const model = o.previewModel ?? s.model;
+  if (!s.screen.trace.over) drawTrace(r, s, model);
   drawModel(r, s, model, hidden);
+  if (s.screen.trace.over) drawTrace(r, s, model);
   drawWallOutlines(ctx, s, [...s.selection.walls, ...s.selection.openings], SELECT, 2, model);
   for (const d of o.draftDims ?? []) {
     const g = resolveGraphics(s.model.display, s.view, dimensionFacts(d)).effect;
@@ -64,4 +75,22 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
     drawGrips(ctx, gripViews(s));
   }
   drawOverlay(ctx, s, o);
+}
+
+/** Neaktivní okno: jen kresba jeho pohledu (bez nástrojů, výběru a pomocných značek). */
+export function renderPassive(ctx: CanvasRenderingContext2D, s: Session, index: number) {
+  const w = s.windows[index];
+  const view = w ? s.model.views[w.viewId] : undefined;
+  if (!w || !view) return;
+  ctx.fillStyle = PAPER_BG[s.paper];
+  ctx.fillRect(0, 0, w.viewport.width, w.viewport.height);
+  const r: RenderContext = {
+    ctx,
+    v: w.viewport,
+    pens: s.model.display.penTable,
+    scale: view.scale,
+    paper: s.paper,
+    hairline: !s.screen.trueWeight,
+  };
+  drawDrawing(r, drawView(s.model, view.id, { mergeMaterials: s.screen.mergeMaterials }));
 }

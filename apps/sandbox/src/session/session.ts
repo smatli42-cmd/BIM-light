@@ -30,6 +30,8 @@ import { wallToolFor, type WallMethod } from '../interaction/tools/wall-method.t
 import { Selection } from './selection.ts';
 import type { OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
+import { DEFAULT_SCREEN, type ScreenOptions } from './screen.ts';
+import type { WindowState } from './screen.ts';
 import { applyTheme, loadUi, saveUi, type Theme } from '../ui/theme.ts';
 import type { MenuState, Toast, ToastAction, ToastKind, TypedInput, ValueEditState } from './ui-state.ts';
 
@@ -40,9 +42,10 @@ export const FACE_PX = 12;
 export class Session {
   readonly editor: Editor;
   readonly registry = createCoreRegistry();
-  readonly viewport = new Viewport();
+  /** Okna vedle sebe (koncepce rozhraní, část 2 E, G); nástroje pracují v aktivním. */
+  readonly windows: WindowState[] = [{ viewId: '', viewport: new Viewport() }];
+  active = 0;
   readonly selection = new Selection();
-  viewId: Id;
   tool: Tool;
   wallTypeId: Id;
   wallSide: WallSide = 'left';
@@ -77,6 +80,8 @@ export class Session {
     world: { x: 0, y: 0 },
     inside: false,
   };
+  /** Volby zobrazení okna ze spodní lišty (session/screen.ts). */
+  screen: ScreenOptions = structuredClone(DEFAULT_SCREEN);
   /** Zvolená sada zobrazení (styl) – filtruje Obsah (session/sets.ts); null = podle pracovního okna. */
   setStyleId: Id | null = null;
   /** Geometrická metoda nástroje Stěna (koncepce rozhraní, část 2 D). */
@@ -100,7 +105,8 @@ export class Session {
     this.paper = ui.paper;
     this.editor.subscribe(() => {
       // Pohled mohl zmizet (Undo nového pohledu): přepne se na první existující.
-      if (!this.model.views[this.viewId]) this.viewId = Object.keys(this.model.views)[0] as Id;
+      for (const w of this.windows)
+        if (!this.model.views[w.viewId]) w.viewId = Object.keys(this.model.views)[0] as Id;
       this.keepNewWallType();
       this.selection.prune(this.model);
       this.changed();
@@ -125,6 +131,20 @@ export class Session {
 
   get model(): Model {
     return this.editor.model;
+  }
+
+  /** Výřez aktivního okna. */
+  get viewport(): Viewport {
+    return (this.windows[this.active] as WindowState).viewport;
+  }
+
+  /** Pohled aktivního okna. */
+  get viewId(): Id {
+    return (this.windows[this.active] as WindowState).viewId;
+  }
+
+  set viewId(id: Id) {
+    (this.windows[this.active] as WindowState).viewId = id;
   }
 
   get view(): View {
@@ -210,12 +230,14 @@ export class Session {
 
   /** Přichytí bod (základ 20); tolerance z px, Alt vypne, C střídá kandidáty. */
   snap(raw: Vec2, o: Partial<SnapOptions> & { alt?: boolean } = {}): SnapResult {
-    return resolveSnap(this.geometry(o.exclude), raw, {
-      grid: this.options.grid || null,
+    const r = resolveSnap(this.geometry(o.exclude), raw, {
+      grid: this.options.grid || this.screen.step || null,
       ...o,
       tolerance: this.viewport.px(SNAP_PX),
-      disabled: o.alt ?? o.disabled ?? false,
+      // Přichytávání vypnuté ve spodní liště = jako trvale držený Alt (krok kurzoru zůstává).
+      disabled: (o.alt ?? o.disabled ?? false) || !this.screen.snap,
       cycle: this.snapCycle,
     });
+    return this.screen.guides ? r : { ...r, guides: [] };
   }
 }

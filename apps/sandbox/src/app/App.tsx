@@ -11,7 +11,20 @@ import { InfoBox } from '../ui/layout/InfoBox.tsx';
 import { ToolPalette } from '../ui/layout/ToolPalette.tsx';
 import { ViewWindow } from '../ui/layout/ViewWindow.tsx';
 import { applyTheme } from '../ui/theme.ts';
+import { useSession } from '../ui/use-session.ts';
 import { installTestHook } from './test-hook.ts';
+
+/** Okna pohledů vedle sebe (koncepce rozhraní, část 2 E). */
+function Windows({ s, controller }: { s: Session; controller: Controller }) {
+  useSession(s);
+  return (
+    <div class="windows">
+      {s.windows.map((_, i) => (
+        <ViewWindow key={i} s={s} controller={controller} index={i} />
+      ))}
+    </div>
+  );
+}
 
 export function App() {
   const { session, controller } = useMemo(() => {
@@ -27,7 +40,7 @@ export function App() {
       <div class="main">
         <ToolPalette s={session} />
         <InfoBox s={session} />
-        <ViewWindow s={session} controller={controller} />
+        <Windows s={session} controller={controller} />
         <ContentPanel s={session} />
       </div>
       <BottomBar s={session} />

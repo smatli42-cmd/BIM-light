@@ -187,3 +187,10 @@ body,
   border-radius: 3px;
   pointer-events: none;
 }
+
+/* Okna vedle sebe (koncepce rozhraní, část 2 E). */
+.windows {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}

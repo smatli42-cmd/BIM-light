@@ -542,3 +542,90 @@
   border: 0;
   color: var(--accent);
 }
+
+/* Spodní lišta: rozbalovací volby a dialog per (koncepce rozhraní, část 2 G). */
+.bottombar {
+  gap: 6px;
+}
+.bottombar .tool-group + .tool-group,
+.bottombar > .bar-menu {
+  border-left: 1px solid var(--line);
+  padding-left: 6px;
+}
+.bar-menu {
+  position: relative;
+  display: inline-flex;
+}
+.bottombar .bar-btn,
+.bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bar-btn:hover {
+  background: var(--hover);
+}
+.bar-pop {
+  position: absolute;
+  bottom: 32px;
+  left: 0;
+  z-index: 40;
+  min-width: 190px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+.bar-sec-title {
+  padding: 4px 8px 2px;
+  font-weight: 700;
+}
+.bottombar .bar-pop button,
+.bar-pop button {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.bar-pop button:hover:not(:disabled) {
+  background: var(--hover);
+}
+.bar-pop button:disabled {
+  color: var(--muted);
+}
+.check-mark {
+  width: 14px;
+  color: var(--accent);
+}
+.dialog-back {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+}
+.dialog {
+  width: min(900px, 90vw);
+  max-height: 80vh;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.pen-table input {
+  width: 64px !important;
+}

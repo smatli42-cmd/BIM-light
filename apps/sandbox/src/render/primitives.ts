@@ -30,6 +30,8 @@ export interface RenderContext {
   readonly scale: number;
   /** Podklad výkresu; na tmavém se barvy jen pro zobrazení přemapují (render/paper.ts). */
   readonly paper?: Paper;
+  /** Vlasové čáry místo skutečné tloušťky (volba okna, koncepce rozhraní 2 G). */
+  readonly hairline?: boolean;
 }
 
 export function pathOf(r: RenderContext, pts: readonly Vec2[], closed: boolean) {
@@ -47,7 +49,7 @@ function line(r: RenderContext, p: Extract<Primitive, { kind: 'line' }>, color?:
   const { ctx } = r;
   pathOf(r, p.points, p.closed);
   ctx.strokeStyle = color ?? p.stroke.color;
-  ctx.lineWidth = Math.max(0.8, penWidthMm(r.pens, p.stroke.pen, r.scale) * PX_PER_PAPER_MM);
+  ctx.lineWidth = r.hairline ? 1 : Math.max(0.8, penWidthMm(r.pens, p.stroke.pen, r.scale) * PX_PER_PAPER_MM);
   ctx.setLineDash(DASH[p.stroke.lineType]);
   ctx.stroke();
   ctx.setLineDash([]);

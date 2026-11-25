@@ -1,7 +1,14 @@
 // Nástroj Výběr (pravidla-interakce: Výběr; katalog kreslení 3–5; základ 25).
 // Klik vybere, Shift přidá/ubere, tažení z prázdna = rámeček, tažení stěny = přesun výběru,
 // uzel a líc vybrané stěny se táhnou hned, kóty se táhnou a čísla se mění kliknutím.
-import { openingAt, pickFace, selectableWallGeometry, wallsAt, type Id } from '@bim-light/core';
+import {
+  allWallGeometry,
+  openingAt,
+  pickFace,
+  selectableWallGeometry,
+  wallsAt,
+  type Id,
+} from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import { hitAt, type Hit } from '../../hits.ts';
 import type { Mode } from '../../mode.ts';
@@ -42,11 +49,18 @@ export class SelectTool implements Tool {
 
   /** Otvor pod kurzorem má přednost před stěnou, ve které leží (plán stěn Z4). */
   private openingUnder(p: PointerInfo): Id | null {
+    if (this.s.screen.isolate) return null;
     return openingAt(this.s.model, this.s.view, p.world, this.s.viewport.px(3));
   }
 
+  /** Stěny pod kurzorem; izolované popisy = žádné, Odhalit = i skryté (koncepce rozhraní 2 G). */
   private wallsUnder(p: PointerInfo): Id[] {
-    return wallsAt(selectableWallGeometry(this.s.model, this.s.view), p.world, this.s.viewport.px(2));
+    const s = this.s;
+    if (s.screen.isolate) return [];
+    const geoms = s.screen.reveal
+      ? [...allWallGeometry(s.model, s.storeyId, s.view.cutPlane).values()]
+      : selectableWallGeometry(s.model, s.view);
+    return wallsAt(geoms, p.world, s.viewport.px(2));
   }
 
   down(p: PointerInfo) {

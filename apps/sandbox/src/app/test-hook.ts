@@ -28,6 +28,8 @@ export interface TestHook {
   tool(): string;
   storeyId(): string;
   viewId(): string;
+  /** Index aktivního okna (koncepce rozhraní, část 2 E). */
+  activeWindow(): number;
   typeId(name: string): string;
   /** Nastaví zvětšení a polohu počátku (px na mm, počátek v px). */
   setView(s: number, ox: number, oy: number): void;
@@ -93,6 +95,7 @@ export function installTestHook(s: Session) {
     tool: () => s.tool.id,
     storeyId: () => s.storeyId,
     viewId: () => s.viewId,
+    activeWindow: () => s.active,
     typeId: (name) => Object.values(s.model.wallTypes).find((t) => t.name === name)?.id ?? '',
     setView(scale, ox, oy) {
       s.viewport.s = scale;
