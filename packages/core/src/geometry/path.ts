@@ -1,5 +1,6 @@
 // Tvar osy / referenční čáry: úsečka nebo kruhový oblouk (základ 23, IFC IfcTrimmedCurve).
 // Oblouk se ukládá jako začátek, konec a „bulge“ = tan(středový úhel / 4); kladný = proti směru hodin.
+import { arcPoints } from './arc-grid.ts';
 import type { Carrier } from './carrier.ts';
 import { add, angleOf, dist, leftNormal, mid, mul, norm, rotate, sub, type Vec2, EPS } from './vec.ts';
 
@@ -120,12 +121,12 @@ export function rotatePath(p: Path, center: Vec2, angle: number): Path {
   return p.kind === 'line' ? { kind: 'line', start, end } : { kind: 'arc', start, end, bulge: p.bulge };
 }
 
-/** Rozloží křivku na body (oblouk po nejvýš `maxStepDeg` stupních). */
-export function tessellate(p: Path, maxStepDeg = 3): Vec2[] {
+/** Rozloží křivku na body (oblouk po společné mřížce úhlů, chyba do ARC_TOLERANCE). */
+export function tessellate(p: Path): Vec2[] {
   if (!isArc(p)) return [p.start, p.end];
   const a = arcData(p);
-  const n = Math.max(2, Math.ceil(Math.abs(a.sweep) / ((maxStepDeg * Math.PI) / 180)));
-  const pts: Vec2[] = [];
-  for (let i = 0; i <= n; i++) pts.push(i === n ? p.end : rotate(p.start, a.center, (a.sweep * i) / n));
+  const pts = arcPoints(a.center, a.radius, angleOf(sub(p.start, a.center)), a.sweep);
+  pts[0] = p.start;
+  pts[pts.length - 1] = p.end;
   return pts;
 }

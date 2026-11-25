@@ -2,8 +2,9 @@
 // V přímce: všechny vrstvy kolmo v uzlu. Tři a více: dva konce v přímce tvoří „hostitele“ a ostatní se
 // na ně napojí jako T; bez dvojice v přímce pokos ke středu uzlu (tvar Y).
 import { add, angleOf, cross, dot, leftNormal, mul, sub, type Vec2 } from '../geometry/index.ts';
-import { armKey, lineAt, outSides, reachOf, type Arm } from './frame.ts';
-import { halfPlane, lineX, type HalfPlane } from './half-plane.ts';
+import { meet } from './curve.ts';
+import { armKey, curveAt, outSides, reachOf, type Arm } from './frame.ts';
+import { halfPlane, type HalfPlane } from './half-plane.ts';
 import { teeTravel } from './tee.ts';
 import { sameCut, type EndResult, type Gap, type NodeResult } from './types.ts';
 
@@ -65,9 +66,9 @@ function solveY(arms: readonly Arm[], reach: number): NodeResult {
   const n = sorted.length;
   const qs = sorted.map((a, i) => {
     const next = sorted[(i + 1) % n] as Arm;
-    const l = lineAt(a, outSides(a, a).left);
-    const r = lineAt(next, outSides(next, next).right);
-    return lineX(l.p, l.d, r.p, r.d);
+    const l = curveAt(a, outSides(a, a).left);
+    const r = curveAt(next, outSides(next, next).right);
+    return meet(l, r, a.origin);
   });
   const valid = qs.filter((q): q is Vec2 => q !== null);
   const c = mul(

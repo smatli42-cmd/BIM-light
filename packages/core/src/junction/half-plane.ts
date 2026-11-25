@@ -1,6 +1,8 @@
 // Polorovina a ořez mnohoúhelníku přímkou (Sutherland–Hodgman). Jediná „polygonová“ operace, kterou
-// napojení vrstev potřebuje: každý kousek vrstvy je průnik pásu a polorovin (návrh Z2 ve STAV.md).
+// napojení vrstev potřebuje: každý kousek vrstvy je průnik pásu a řezů (návrh Z2 ve STAV.md). Řez je
+// polorovina, nebo u obloukové stěny vnitřek / vnějšek kružnice (Z5, circle-cut.ts).
 import { add, cross, dot, leftNormal, mul, norm, sub, type Vec2 } from '../geometry/index.ts';
+import { circleSide, clipCircle, type CircleCut } from './circle-cut.ts';
 
 /** Polorovina { x : (x − p) · n ≥ 0 }; `n` míří do strany, která zůstává. */
 export interface HalfPlane {
@@ -14,16 +16,32 @@ export function halfPlane(p: Vec2, d: Vec2, toward: Vec2): HalfPlane {
   return { p, n: dot(n, toward) >= 0 ? n : mul(n, -1) };
 }
 
-/** Opačná polorovina (doplněk). */
-export const flip = (h: HalfPlane): HalfPlane => ({ p: h.p, n: mul(h.n, -1) });
+export type { CircleCut } from './circle-cut.ts';
 
-export const side = (h: HalfPlane, x: Vec2): number => dot(sub(x, h.p), h.n);
+/** Řez: polorovina, nebo strana kružnice. */
+export type Cut = HalfPlane | CircleCut;
+
+export const isCircle = (h: Cut): h is CircleCut => 'r' in h;
+
+/** Opačná strana řezu (doplněk). */
+export function flip<T extends Cut>(h: T): T {
+  return (isCircle(h) ? { ...h, inside: !h.inside } : { p: h.p, n: mul(h.n, -1) }) as T;
+}
+
+/** Vzdálenost od hranice řezu se znaménkem; kladná = strana, která zůstává. */
+export const side = (h: Cut, x: Vec2): number => (isCircle(h) ? circleSide(h, x) : dot(sub(x, h.p), h.n));
 
 /** Směr hraniční přímky. */
 export const lineDir = (h: HalfPlane): Vec2 => ({ x: h.n.y, y: -h.n.x });
 
-/** Ořízne mnohoúhelník polorovinou; vrací body (může být prázdné). */
-export function clip(poly: readonly Vec2[], h: HalfPlane): Vec2[] {
+/** Ořízne mnohoúhelník řezem; vrací části (řez kružnicí může dát víc částí). */
+export function clip(poly: readonly Vec2[], h: Cut): Vec2[][] {
+  if (isCircle(h)) return clipCircle(signedArea(poly) >= 0 ? poly : [...poly].reverse(), h);
+  return [clipLine(poly, h)];
+}
+
+/** Ořez polorovinou (Sutherland–Hodgman); vrací body (může být prázdné). */
+function clipLine(poly: readonly Vec2[], h: HalfPlane): Vec2[] {
   const out: Vec2[] = [];
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i] as Vec2;
@@ -36,8 +54,9 @@ export function clip(poly: readonly Vec2[], h: HalfPlane): Vec2[] {
   return out;
 }
 
-export const clipAll = (poly: readonly Vec2[], hs: readonly HalfPlane[]): Vec2[] =>
-  hs.reduce<Vec2[]>((p, h) => (p.length < 3 ? [] : clip(p, h)), [...poly]);
+/** Ořízne mnohoúhelník všemi řezy; vrací části s nenulovou plochou. */
+export const clipAll = (poly: readonly Vec2[], hs: readonly Cut[]): Vec2[][] =>
+  hs.reduce<Vec2[][]>((ps, h) => ps.flatMap((p) => (p.length < 3 ? [] : clip(p, h))), [[...poly]]);
 
 /** Plocha se znaménkem (kladná = proti směru hodin). */
 export function signedArea(poly: readonly Vec2[]): number {

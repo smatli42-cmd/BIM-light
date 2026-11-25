@@ -2,9 +2,9 @@
 // šířka otvoru je stavební otvor v jádru. Povrchové vrstvy obou stran zahnou do ostění, každá strana do
 // poloviny těla (jádro + izolace) jako u volného konce (Z2); vrstva u jádra jde nejblíž k jádru.
 // Nika vyřízne jen to, co leží do hloubky od zvoleného líce; bez obalení.
-import type { Vec2 } from '../geometry/index.ts';
-import { frameLayers, type FrameLayer } from '../junction/frame.ts';
-import { halfPlane, type HalfPlane } from '../junction/half-plane.ts';
+import { angleOf, arcData, arcPoints, sub, type Vec2 } from '../geometry/index.ts';
+import { boundary, frameLayers, frameNear, type FrameLayer } from '../junction/frame.ts';
+import { halfPlane, signedArea, type HalfPlane } from '../junction/half-plane.ts';
 import type { Gap } from '../junction/types.ts';
 import type { Model } from '../model/types.ts';
 import { wallSection } from '../wall/queries.ts';
@@ -19,10 +19,29 @@ function across(wall: Wall, s: number, dir: -1 | 1): HalfPlane {
   return halfPlane(st.point, st.normal, { x: st.tangent.x * dir, y: st.tangent.y * dir });
 }
 
-/** Obdélník (u oblouku čtyřúhelník) mezi vzdálenostmi `a`, `b` a offsety `lo`, `hi`. */
+/**
+ * Mimo úsek [a, b]: dvě nepřekrývající se oblasti (před `a`; za `a` i za `b`). U oblouku tak klín
+ * ze středu nezasáhne protější stranu kružnice (Z5).
+ */
+const outside = (wall: Wall, a: number, b: number) => [
+  [across(wall, a, -1)],
+  [across(wall, a, 1), across(wall, b, 1)],
+];
+
+/** Obdélník (u oblouku výseč mezikruží) mezi vzdálenostmi `a`, `b` a offsety `lo`, `hi`. */
 function quad(wall: Wall, a: number, b: number, lo: number, hi: number): Vec2[] {
   const at = (s: number, o: number) => pointAtStation(wall.path, s, o);
-  return [at(a, lo), at(b, lo), at(b, hi), at(a, hi)];
+  const p = wall.path;
+  if (p.kind !== 'arc' || Math.abs(p.bulge) < 1e-9) return [at(a, lo), at(b, lo), at(b, hi), at(a, hi)];
+  const arc = arcData(p);
+  const c = arc.center;
+  const rAt = (o: number) => arc.radius - Math.sign(arc.sweep) * o;
+  const a0 = angleOf(sub(at(a, 0), c));
+  let sw = angleOf(sub(at(b, 0), c)) - a0;
+  if (sw > Math.PI) sw -= 2 * Math.PI;
+  if (sw < -Math.PI) sw += 2 * Math.PI;
+  const poly = [...arcPoints(c, rAt(lo), a0, sw), ...arcPoints(c, rAt(hi), a0 + sw, -sw)];
+  return signedArea(poly) >= 0 ? poly : poly.reverse();
 }
 
 interface Wrap {
@@ -73,7 +92,7 @@ function throughGaps(model: Model, wall: Wall, o: Opening): Gap[] {
   return layers.map((l) => {
     const wr = w.get(l.index);
     const r = wr?.reach ?? 0;
-    const keep = [[across(wall, s0 + r, -1)], [across(wall, s1 - r, 1)]];
+    const keep = outside(wall, s0 + r, s1 - r);
     if (!wr || wr.reach - wr.from < 1e-6) return { layer: l.index, keep };
     const extras = [
       quad(wall, s0 + wr.from, s0 + wr.reach, wr.lo, wr.hi),
@@ -89,15 +108,13 @@ function nicheGaps(model: Model, wall: Wall, o: Opening): Gap[] {
   const face = o.side === 'ref' ? faces.ref : faces.opp;
   const into = Math.sign((o.side === 'ref' ? faces.opp : faces.ref) - face);
   const st = stationAt(wall.path, (s0 + s1) / 2);
-  const depthLine = pointAtStation(wall.path, (s0 + s1) / 2, face + into * o.depth);
-  const beyond = halfPlane(depthLine, st.tangent, { x: st.normal.x * into, y: st.normal.y * into });
+  const beyond = boundary(frameNear(model, wall, st.point), face + into * o.depth, {
+    x: st.normal.x * into,
+    y: st.normal.y * into,
+  });
   return frameLayers(model, wall).map((l) => ({
     layer: l.index,
-    keep: [
-      [across(wall, s0, -1)],
-      [across(wall, s1, 1)],
-      [across(wall, s0, 1), across(wall, s1, -1), beyond],
-    ],
+    keep: [...outside(wall, s0, s1), [across(wall, s0, 1), across(wall, s1, -1), beyond]],
   }));
 }
 

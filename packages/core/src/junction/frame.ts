@@ -1,9 +1,11 @@
 // Místní rám stěny v uzlu: bod na referenční čáře, směr kreslení, levá normála a vrstvy jako pásy
-// offsetů. Přímka hranice vrstvy = bod + normála × offset, směr = tečna (u oblouku tečna v uzlu, Z5).
+// offsetů. Hranice vrstvy = přímka bod + normála × offset ve směru tečny; u obloukové stěny (Z5)
+// soustředná kružnice o poloměru R − s·offset (s = +1 proti směru hodin, normála míří ke středu).
 import {
   add,
   arcData,
   dist,
+  dot,
   endPoint,
   leftNormal,
   mul,
@@ -11,6 +13,7 @@ import {
   norm,
   sub,
   tangentAt,
+  type Path,
   type PathEnd,
   type Vec2,
 } from '../geometry/index.ts';
@@ -18,7 +21,7 @@ import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
-import { halfPlane, type HalfPlane } from './half-plane.ts';
+import { halfPlane, type Cut } from './half-plane.ts';
 
 export interface FrameLayer {
   readonly index: number;
@@ -31,8 +34,19 @@ export interface FrameLayer {
   readonly materialId: Id;
 }
 
+/** Kružnice obloukové stěny: poloměr v offsetu o = R − s·o. */
+export interface FrameArc {
+  readonly c: Vec2;
+  readonly R: number;
+  readonly s: 1 | -1;
+}
+
+export const radiusAt = (a: FrameArc, o: number): number => a.R - a.s * o;
+
 export interface Frame {
   readonly wall: Wall;
+  /** Jen u obloukové stěny. */
+  readonly arc?: FrameArc;
   readonly origin: Vec2;
   readonly tangent: Vec2;
   readonly normal: Vec2;
@@ -60,18 +74,26 @@ export function frameLayers(model: Model, wall: Wall): FrameLayer[] {
   }));
 }
 
+const isArc = (p: Path): p is Extract<Path, { kind: 'arc' }> => p.kind === 'arc' && Math.abs(p.bulge) > 1e-9;
+
+function arcOf(p: Path): FrameArc | undefined {
+  if (!isArc(p)) return undefined;
+  const a = arcData(p);
+  return { c: a.center, R: a.radius, s: a.sweep > 0 ? 1 : -1 };
+}
+
 function frameOf(model: Model, wall: Wall, origin: Vec2, tangent: Vec2): Frame {
   const layers = frameLayers(model, wall);
   const lo = Math.min(...layers.map((l) => l.lo));
   const hi = Math.max(...layers.map((l) => l.hi));
-  return { wall, origin, tangent, normal: leftNormal(tangent), layers, lo, hi };
+  const arc = arcOf(wall.path);
+  return { wall, origin, tangent, normal: leftNormal(tangent), layers, lo, hi, ...(arc ? { arc } : {}) };
 }
 
 /** Rám průběžné stěny (hostitel v T, kříž) poblíž bodu. */
 export function frameNear(model: Model, wall: Wall, near: Vec2): Frame {
   const p = wall.path;
-  if (p.kind === 'line' || Math.abs(p.bulge) < 1e-9)
-    return frameOf(model, wall, p.start, tangentAt(p, 'start'));
+  if (!isArc(p)) return frameOf(model, wall, p.start, tangentAt(p, 'start'));
   const hit = nearestOnPath(p, near);
   const a = arcData(p);
   const r = norm(sub(hit.point, a.center));
@@ -85,16 +107,22 @@ export function armOf(model: Model, wall: Wall, end: PathEnd): Arm {
   return { ...f, end, out: end === 'start' ? t : mul(t, -1) };
 }
 
-/** Bod a směr přímky v offsetu `o` rámu. */
-export const lineAt = (f: Frame, o: number): { p: Vec2; d: Vec2 } => ({
-  p: add(f.origin, mul(f.normal, o)),
-  d: f.tangent,
-});
+/** Hranice vrstvy jako křivka: přímka (bod + směr), nebo kružnice. */
+export type Curve =
+  | { readonly kind: 'line'; readonly p: Vec2; readonly d: Vec2 }
+  | { readonly kind: 'circle'; readonly c: Vec2; readonly r: number };
 
-/** Polorovina hranice v offsetu `o`, která drží stranu ve směru `toward`. */
-export function boundary(f: Frame, o: number, toward: Vec2): HalfPlane {
-  const l = lineAt(f, o);
-  return halfPlane(l.p, l.d, toward);
+/** Hranice v offsetu `o` rámu. */
+export function curveAt(f: Frame, o: number): Curve {
+  const p = add(f.origin, mul(f.normal, o));
+  return f.arc ? { kind: 'circle', c: f.arc.c, r: radiusAt(f.arc, o) } : { kind: 'line', p, d: f.tangent };
+}
+
+/** Řez hranicí v offsetu `o`, který drží stranu ve směru `toward` (měřeno v uzlu). */
+export function boundary(f: Frame, o: number, toward: Vec2): Cut {
+  const p = add(f.origin, mul(f.normal, o));
+  if (!f.arc) return halfPlane(p, f.tangent, toward);
+  return { c: f.arc.c, r: radiusAt(f.arc, o), inside: dot(sub(p, f.arc.c), toward) < 0 };
 }
 
 /** Offset „vlevo“ a „vpravo“ vrstvy vůči směru z uzlu do stěny. */

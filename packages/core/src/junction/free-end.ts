@@ -2,9 +2,10 @@
 // ho, každá strana do poloviny „těla“ (jádro + izolace); vnější omítka jde nejvíc ven. Tělo se zkrátí
 // o tloušťku omítek své strany. Povrch jen na jedné straně zahne přes celé čelo.
 // Typ bez povrchových vrstev, nebo jen z nich: kolmé čelo.
-import { add, mul, type Vec2 } from '../geometry/index.ts';
-import type { Arm, FrameLayer } from './frame.ts';
-import { halfPlane, type HalfPlane } from './half-plane.ts';
+import { add, angleOf, arcPoints, mul, pathLength, sub, type Vec2 } from '../geometry/index.ts';
+import { stationAt } from '../opening/along.ts';
+import { boundary, radiusAt, type Arm, type FrameLayer } from './frame.ts';
+import { halfPlane, signedArea, type HalfPlane } from './half-plane.ts';
 import { sameCut, type EndResult, type LayerEnd } from './types.ts';
 
 interface Side {
@@ -30,11 +31,37 @@ function sides(arm: Arm): { low: Side; high: Side; body: FrameLayer[] } | null {
 
 const total = (ls: readonly FrameLayer[]) => ls.reduce((s, l) => s + l.hi - l.lo, 0);
 
+/** Místo `d` mm od konce po referenční čáře směrem do stěny (u oblouku po oblouku, Z5). */
+function station(arm: Arm, d: number) {
+  const len = pathLength(arm.wall.path);
+  return stationAt(arm.wall.path, arm.end === 'start' ? d : len - d);
+}
+
+/** Kousek mezi vzdálenostmi `d0`, `d1` od konce a offsety `lo`, `hi` (u oblouku výseč mezikruží). */
+function piece(arm: Arm, d0: number, d1: number, lo: number, hi: number): Vec2[] {
+  const at = (d: number, o: number) => {
+    const st = station(arm, d);
+    return add(st.point, mul(st.normal, o));
+  };
+  if (!arm.arc) return [at(d0, lo), at(d1, lo), at(d1, hi), at(d0, hi)];
+  const c = arm.arc.c;
+  const ang = (d: number) => angleOf(sub(station(arm, d).point, c));
+  let sweep = ang(d1) - ang(d0);
+  if (sweep > Math.PI) sweep -= 2 * Math.PI;
+  if (sweep < -Math.PI) sweep += 2 * Math.PI;
+  const poly = [
+    ...arcPoints(c, radiusAt(arm.arc, lo), ang(d0), sweep),
+    ...arcPoints(c, radiusAt(arm.arc, hi), ang(d0) + sweep, -sweep),
+  ];
+  return signedArea(poly) >= 0 ? poly : poly.reverse();
+}
+
 export function freeEnd(arm: Arm): EndResult {
-  const t = mul(arm.out, -1);
-  const at = (u: number, v: number): Vec2 => add(add(arm.origin, mul(t, u)), mul(arm.normal, v));
   /** Vrstva končí `d` mm před koncem referenční čáry. */
-  const back = (d: number): HalfPlane => halfPlane(at(-d, 0), arm.normal, arm.out);
+  const back = (d: number): HalfPlane => {
+    const st = station(arm, d);
+    return halfPlane(st.point, st.normal, arm.end === 'start' ? st.tangent : mul(st.tangent, -1));
+  };
   const s = sides(arm);
   if (!s) return { join: 'free', layers: sameCut([back(0)], 0, arm.layers.length) };
   const bodyLo = Math.min(...s.body.map((l) => l.lo));
@@ -47,14 +74,14 @@ export function freeEnd(arm: Arm): EndResult {
     for (const l of side.finishes) {
       const a = l.hi - l.lo;
       const inner = side.dir < 0 ? l.hi : l.lo;
-      const wrap = [at(-depth, inner), at(-depth - a, inner), at(-depth - a, mid), at(-depth, mid)];
+      const wrap = piece(arm, depth, depth + a, inner, mid);
       ends.set(l.index, { variants: [[back(depth)]], extend: 0, extras: [wrap] });
       depth += a;
     }
   }
   const [dl, dh] = [total(s.low.finishes), total(s.high.finishes)];
-  const lowHalf = halfPlane(at(0, mid), arm.tangent, mul(arm.normal, -1));
-  const highHalf = halfPlane(at(0, mid), arm.tangent, arm.normal);
+  const lowHalf = boundary(arm, mid, mul(arm.normal, -1));
+  const highHalf = boundary(arm, mid, arm.normal);
   for (const l of s.body) {
     const variants =
       Math.abs(dl - dh) < 1e-9

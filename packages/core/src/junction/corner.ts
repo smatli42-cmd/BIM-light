@@ -2,8 +2,9 @@
 // Vrstvy se řeší od nejvyšší priority: vrstva jede přes uzel napříč vrstvami druhé stěny a zastaví se
 // na první, která tam skutečně je a má vyšší prioritu. Stejná priorita = pokos úhlopříčkou buňky.
 import { dist, sub } from '../geometry/index.ts';
-import { armKey, lineAt, outSides, reachOf, type Arm, type FrameLayer } from './frame.ts';
-import { halfPlane, lineX, type HalfPlane } from './half-plane.ts';
+import { meet } from './curve.ts';
+import { armKey, curveAt, outSides, reachOf, type Arm, type FrameLayer } from './frame.ts';
+import { halfPlane, type Cut } from './half-plane.ts';
 import { cell, crossOrder, occupies, stopAt, type CrossOrder } from './travel.ts';
 import type { EndResult, NodeResult } from './types.ts';
 
@@ -16,7 +17,7 @@ interface Entry {
 
 interface Ctx {
   readonly orders: readonly [CrossOrder, CrossOrder];
-  readonly cuts: Map<string, HalfPlane[]>;
+  readonly cuts: Map<string, Cut[]>;
   readonly reach: number;
 }
 
@@ -24,7 +25,7 @@ const key = (side: number, index: number) => `${side}:${index}`;
 const indexIn = (o: CrossOrder, layerIndex: number) => o.order.findIndex((c) => c.layer.index === layerIndex);
 
 /** Kam vrstva dojede, když nepočítáme vrstvy stejné priority (index v pořadí a polorovina). */
-function hardReach(e: Entry, ctx: Ctx): { idx: number; cut: HalfPlane } {
+function hardReach(e: Entry, ctx: Ctx): { idx: number; cut: Cut } {
   const o = ctx.orders[e.side];
   for (const [i, c] of o.order.entries()) {
     if (c.layer.prio <= e.layer.prio) continue;
@@ -36,12 +37,17 @@ function hardReach(e: Entry, ctx: Ctx): { idx: number; cut: HalfPlane } {
 }
 
 /** Pokos dvou vrstev: úhlopříčka jejich buňky (rohy levá–pravá a pravá–levá). */
-export function miter(a: Arm, x: FrameLayer, b: Arm, y: FrameLayer): [HalfPlane, HalfPlane] | null {
+export function miter(a: Arm, x: FrameLayer, b: Arm, y: FrameLayer): [Cut, Cut] | null {
   const sx = outSides(a, x);
   const sy = outSides(b, y);
-  const [la, ra, lb, rb] = [lineAt(a, sx.left), lineAt(a, sx.right), lineAt(b, sy.left), lineAt(b, sy.right)];
-  const q1 = lineX(la.p, la.d, rb.p, rb.d);
-  const q2 = lineX(ra.p, ra.d, lb.p, lb.d);
+  const [la, ra, lb, rb] = [
+    curveAt(a, sx.left),
+    curveAt(a, sx.right),
+    curveAt(b, sy.left),
+    curveAt(b, sy.right),
+  ];
+  const q1 = meet(la, rb, a.origin);
+  const q2 = meet(ra, lb, a.origin);
   if (!q1 || !q2 || dist(q1, q2) < 1e-6) return null;
   const d = sub(q2, q1);
   return [halfPlane(q1, d, a.out), halfPlane(q1, d, b.out)];
@@ -83,7 +89,7 @@ function resolveLevel(level: readonly Entry[], ctx: Ctx) {
     }
     return r.cut;
   });
-  rest.forEach((e, i) => ctx.cuts.set(key(e.side, e.layer.index), [found[i] as HalfPlane]));
+  rest.forEach((e, i) => ctx.cuts.set(key(e.side, e.layer.index), [found[i] as Cut]));
 }
 
 export function solveCorner(a: Arm, b: Arm): NodeResult {

@@ -1,8 +1,8 @@
 // „Jízda“ vrstvy přes uzel: v jakém pořadí potká vrstvy druhé stěny, kde je jejich bližší hranice,
 // a jestli vrstva druhé stěny v dané buňce skutečně je (po svém vlastním ořezu).
-import { add, dot, mul, type Vec2 } from '../geometry/index.ts';
-import { boundary, type Arm, type Frame, type FrameLayer } from './frame.ts';
-import { clipAll, MIN_AREA, signedArea, type HalfPlane } from './half-plane.ts';
+import { add, angleOf, arcPoints, dot, mul, sub, type Vec2 } from '../geometry/index.ts';
+import { boundary, radiusAt, type Arm, type Frame, type FrameLayer } from './frame.ts';
+import { clipAll, MIN_AREA, signedArea, type Cut } from './half-plane.ts';
 
 export interface Crossing {
   readonly layer: FrameLayer;
@@ -26,16 +26,30 @@ export function crossOrder(a: Arm, other: Frame): CrossOrder {
 }
 
 /** Polorovina „zastav na offsetu `o` druhé stěny“ (zůstává strana k tělu ramene). */
-export const stopAt = (a: Arm, other: Frame, o: number): HalfPlane => boundary(other, o, a.out);
+export const stopAt = (a: Arm, other: Frame, o: number): Cut => boundary(other, o, a.out);
+
+/** Pás vrstvy ramene kolem uzlu (u oblouku výseč mezikruží, nejvýš ±60°). */
+function strip(a: Frame, lo: number, hi: number, reach: number): Vec2[] {
+  if (!a.arc) {
+    const at = (u: number, v: number) => add(add(a.origin, mul(a.tangent, u)), mul(a.normal, v));
+    return [at(-reach, lo), at(reach, lo), at(reach, hi), at(-reach, hi)];
+  }
+  const [r1, r2] = [radiusAt(a.arc, lo), radiusAt(a.arc, hi)];
+  const ang = angleOf(sub(a.origin, a.arc.c));
+  const span = Math.min(Math.PI / 3, reach / Math.max(r1, r2, 1));
+  const poly = [
+    ...arcPoints(a.arc.c, r1, ang - span, 2 * span),
+    ...arcPoints(a.arc.c, r2, ang + span, -2 * span),
+  ];
+  return signedArea(poly) >= 0 ? poly : poly.reverse();
+}
 
 /** Buňka = průnik pásu vrstvy `x` ramene `a` a pásu vrstvy `y` stěny `other` (kolem uzlu). */
-export function cell(a: Arm, x: FrameLayer, other: Frame, y: FrameLayer, reach: number): Vec2[] {
-  const at = (u: number, v: number) => add(add(a.origin, mul(a.tangent, u)), mul(a.normal, v));
-  const quad = [at(-reach, x.lo), at(reach, x.lo), at(reach, x.hi), at(-reach, x.hi)];
+export function cell(a: Arm, x: FrameLayer, other: Frame, y: FrameLayer, reach: number): Vec2[][] {
   const n = other.normal;
-  return clipAll(quad, [boundary(other, y.lo, n), boundary(other, y.hi, mul(n, -1))]);
+  return clipAll(strip(a, x.lo, x.hi, reach), [boundary(other, y.lo, n), boundary(other, y.hi, mul(n, -1))]);
 }
 
 /** Leží vrstva s ořezem `cuts` (aspoň kouskem) v buňce? */
-export const occupies = (cellPoly: readonly Vec2[], cuts: readonly HalfPlane[]): boolean =>
-  cellPoly.length >= 3 && Math.abs(signedArea(clipAll(cellPoly, cuts))) > MIN_AREA;
+export const occupies = (cellPolys: readonly (readonly Vec2[])[], cuts: readonly Cut[]): boolean =>
+  cellPolys.some((c) => clipAll(c, cuts).some((p) => p.length >= 3 && Math.abs(signedArea(p)) > MIN_AREA));

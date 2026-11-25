@@ -1,7 +1,7 @@
 // Výsledek napojení (základ 4: počítá se z modelu, neukládá se).
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
-import type { HalfPlane } from './half-plane.ts';
+import type { Cut } from './half-plane.ts';
 
 /** Druh konce stěny: volný, roh, T, v přímce, tři a více konců v uzlu. */
 export type EndJoin = 'free' | 'corner' | 'tee' | 'straight' | 'multiple';
@@ -12,7 +12,7 @@ export type EndJoin = 'free' | 'corner' | 'tee' | 'straight' | 'multiple';
  * `extras` = kousky navíc (omítka zahnutá přes čelo).
  */
 export interface LayerEnd {
-  readonly variants: readonly (readonly HalfPlane[])[];
+  readonly variants: readonly (readonly Cut[])[];
   readonly extend: number;
   readonly extras: readonly (readonly Vec2[])[];
 }
@@ -29,7 +29,7 @@ export interface EndResult {
  */
 export interface Gap {
   readonly layer: number;
-  readonly keep: readonly (readonly HalfPlane[])[];
+  readonly keep: readonly (readonly Cut[])[];
   readonly extras?: readonly (readonly Vec2[])[];
 }
 
@@ -39,5 +39,5 @@ export interface NodeResult {
   readonly gaps: ReadonlyMap<Id, readonly Gap[]>;
 }
 
-export const sameCut = (cuts: readonly HalfPlane[], extend: number, count: number): LayerEnd[] =>
+export const sameCut = (cuts: readonly Cut[], extend: number, count: number): LayerEnd[] =>
   Array.from({ length: count }, () => ({ variants: [cuts], extend, extras: [] }));
