@@ -23,6 +23,8 @@ export interface LayerGeometry {
 export interface WallGeometry {
   readonly wallId: Id;
   readonly section: CrossSection;
+  /** Referenční čára stěny (osa pro šrafy přes šířku vrstvy). */
+  readonly path: Path;
   /** Druh napojení na každém konci. */
   readonly cuts: Readonly<Record<PathEnd, { readonly join: EndJoin }>>;
   /** Líce a osa oříznuté podle napojení vrstev. */
@@ -61,6 +63,7 @@ export function wallGeometry(model: Model, wall: Wall): WallGeometry {
   const outline = [...outlines].sort((a, b) => Math.abs(signedArea(b)) - Math.abs(signedArea(a)))[0] ?? [];
   return {
     wallId: wall.id,
+    path: wall.path,
     section,
     cuts: { start: { join: j.joins.start }, end: { join: j.joins.end } },
     faces,

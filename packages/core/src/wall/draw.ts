@@ -7,7 +7,7 @@ import { chain } from '../junction/chain.ts';
 import { neighbours, subEdges, type SubEdge } from '../junction/edges.ts';
 import type { Id } from '../ids/index.ts';
 import type { Detail, ResolvedEffect } from '../style/types.ts';
-import { layerHatch, type DrawLookup } from './draw-hatch.ts';
+import { layerBandFrame, layerHatch, type DrawLookup } from './draw-hatch.ts';
 import type { WallGeometry } from './geometry.ts';
 
 export interface WallDrawItem {
@@ -33,7 +33,8 @@ export function drawWallFills(item: WallDrawItem, detail: Detail, look: DrawLook
   }
   if (detail !== 'coarse') {
     for (const layer of geom.layers)
-      for (const p of layer.polygons) out.push(...layerHatch(layer, p, g, look, id));
+      for (const p of layer.polygons)
+        out.push(...layerHatch(layer, p, g, look, id, layerBandFrame(geom, layer)));
   }
   return out;
 }

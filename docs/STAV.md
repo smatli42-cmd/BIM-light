@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, velikost šraf podle praxe k ČSN 01 3406.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, tepelná izolace přes celou šířku vrstvy.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 
@@ -101,6 +101,18 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
   do strany); nyní se zalamují do dvou řádků.
 - Testy: jádro a nástroje 483 (Vitest, vč. kreslení všech 40 šraf v sandboxu), prohlížeč 91 (Playwright).
 
+### Tepelná izolace přes celou šířku vrstvy: hotovo, 2026-11-25
+- **Nová rodina šrafy „pás“** (`band`, `hatch/band.ts`): cik-cak přes celou šířku vrstvy s očkem u obou
+  líců (podle Arditu a detailu uživatele; Revit / Archicad „izolace podle tloušťky“). Rozměry jsou poměry
+  k šířce vrstvy: smyčka 0,65 × šířka, očko 0,3 × šířka – šrafa se přizpůsobí každé tloušťce. Měřítko šraf
+  stylu ji nemění.
+- Jádro spočítá křivku podél osy stěny (úsečka i oblouk, základ 23) v souřadnicích modelu
+  (`curves` v primitivu šrafy); kresba ji jen ořízne obrysem vrstvy, takže roh je čistý pokos.
+  `WallGeometry` nese `path` (referenční čáru).
+- **Tepelná izolace** v knihovně = pás (verze šrafy 4); láhve v mm na papíře zrušeny. Náhledy (knihovna
+  šraf, editor typu) kreslí pás přes kratší stranu obdélníku.
+- Testy: `hatch/band.test.ts`, `wall/band-hatch.test.ts`; jádro a nástroje 548, prohlížeč 91, vše zelené.
+
 ### Velikost šraf podle praxe k ČSN 01 3406: hotovo, 2026-11-25
 - **Chyba „šrafy jsou velmi jemné“:** sandbox kreslil šrafy pevnou velikostí na obrazovce (3,8 px na mm
   papíru), takže se při přiblížení nezvětšovaly. Teď 1 mm papíru = měřítko × zoom (`hatchPxPerMm`
@@ -114,6 +126,12 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
 - Šrafy v knihovně mají verzi 3; uložené projekty si drží své kopie (základ 21).
 
 ## Rozhodl Code (k potvrzení)
+
+Tepelná izolace (2026-11-25):
+- Poměry 0,65 / 0,3 jsem odečetl z obrázku Arditu. Očka jsou na obou lících stejná, takže nezáleží na
+  tom, ze které strany je jádro.
+- Pás zatím jen pro Tepelnou izolaci; Akustická a varianty izolace (plástve, kroužky…) zůstávají v mm na
+  papíře. Do editoru šraf patří později i pás (poměry smyčky a očka).
 
 Velikost šraf (2026-11-25):
 - Rozteč volím 2 mm (horní hranice 1,5–2), zdivo a beton tak v příčce 100 mm v 1 : 50 mají 2–3 čáry.
@@ -232,7 +250,8 @@ Stěny Z1:
 
 ## Další krok
 
-- Uživatel posoudí šrafy po opravě velikosti (přiblížit stěnu ve stylu Projekt) a řekne, které doladit.
+- Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
+  Projekt) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z3 (záložka Podlaží, výška vybrané stěny, Exportovat IFC a otevření v BIMvision).
   Potom stěny Z4 – otvory ve stěně (model Sonnet 5.5), stejnou větou „Pokračuj podle
   docs/instrukce-code-steny.md…“.

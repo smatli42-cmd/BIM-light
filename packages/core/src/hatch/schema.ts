@@ -61,6 +61,15 @@ const FAMILY: JsonSchema = {
       },
       ['kind', 'curves', 'dx', 'dy', 'rowShift', 'angle'],
     ),
+    S.object(
+      {
+        kind: S.enumOf(['band'], 'pás přes šířku vrstvy'),
+        form: S.enumOf(['coil'], 'tvar křivky'),
+        pitch: pos,
+        loop: { type: 'number', exclusiveMinimum: 0, maximum: 1 },
+      },
+      ['kind', 'form', 'pitch', 'loop'],
+    ),
   ],
 };
 

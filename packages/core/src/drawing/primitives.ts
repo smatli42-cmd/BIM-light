@@ -46,6 +46,8 @@ export type Primitive =
       readonly fillColor: string | null;
       /** Počátek rastru v souřadnicích modelu (společný pro celý výkres). */
       readonly origin: Vec2;
+      /** Křivky pásu přes šířku vrstvy (rodina „band“) v souřadnicích modelu; kresba je jen ořízne. */
+      readonly curves?: readonly (readonly Vec2[])[];
       readonly source: PrimitiveSource;
     }
   | {

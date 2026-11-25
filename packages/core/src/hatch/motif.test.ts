@@ -55,7 +55,7 @@ describe('katalog-sraf-materialu / šrafy podle ČSN 01 3420: rodina motiv', () 
 
 describe('katalog-sraf-materialu: měřítko šraf ve stylu', () => {
   it('měřítko šraf mění rozměr, ne tvar: motiv ×2 = body ×2', () => {
-    const h = lib('hatch.tepelna-izolace');
+    const h = lib('hatch.drevo');
     const f = h.families[0] as MotifFamily;
     const g = scaleHatch(h, 2).families[0] as MotifFamily;
     const a = motifStrokes(f, RANGE);
@@ -68,8 +68,8 @@ describe('katalog-sraf-materialu: měřítko šraf ve stylu', () => {
 
   it('měřítko násobí rozteče čar, čárkování, značky i vlny; úhly zůstanou', () => {
     for (const h of HATCH_LIBRARY) {
-      const s = JSON.stringify(scaleHatch(h, 1.5).families.map((f) => f.angle));
-      expect(s).toBe(JSON.stringify(h.families.map((f) => f.angle)));
+      const s = JSON.stringify(scaleHatch(h, 1.5).families.map((f) => ('angle' in f ? f.angle : null)));
+      expect(s).toBe(JSON.stringify(h.families.map((f) => ('angle' in f ? f.angle : null))));
     }
     const beton = scaleHatch(lib('hatch.beton-vyztuzeny'), 2);
     expect(beton.families[1]).toMatchObject({ spacing: 8, shift: 4, dash: [6.4, 1.6, 0.6, 1.6] });

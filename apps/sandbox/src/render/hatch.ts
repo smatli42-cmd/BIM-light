@@ -41,6 +41,17 @@ export function drawHatch(r: RenderContext, p: Extract<Primitive, { kind: 'hatch
     y1: Math.max(...ys),
     origin: v.toScreen(p.origin),
     pxPerMm,
+    bands: false,
   });
+  if (p.curves) {
+    ctx.beginPath();
+    for (const c of p.curves)
+      c.forEach((q, i) => {
+        const s = v.toScreen(q);
+        if (i) ctx.lineTo(s.x, s.y);
+        else ctx.moveTo(s.x, s.y);
+      });
+    ctx.stroke();
+  }
   ctx.restore();
 }

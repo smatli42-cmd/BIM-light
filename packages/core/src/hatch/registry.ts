@@ -18,6 +18,11 @@ const pos = (v: number) => Number.isFinite(v) && v > 0;
 function familyErrors(f: HatchFamily, at: string): string[] {
   const out: string[] = [];
   const need = (ok: boolean, what: string) => ok || out.push(`${at}: ${what}`);
+  if (f.kind === 'band') {
+    need(pos(f.pitch), 'délka smyčky musí být kladná');
+    need(pos(f.loop) && f.loop <= 1, 'hloubka očka musí být mezi 0 a 1');
+    return out;
+  }
   if (!Number.isFinite(f.angle)) out.push(`${at}: úhel není číslo`);
   if (f.kind === 'lines') {
     need(pos(f.spacing), 'rozteč musí být kladná');

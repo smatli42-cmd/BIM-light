@@ -66,7 +66,21 @@ export interface MotifFamily {
   readonly angle: number;
 }
 
-export type HatchFamily = LineFamily | MarkFamily | WaveFamily | MotifFamily;
+/**
+ * Pás přes celou šířku vrstvy (tepelná izolace, „vata“ jako v Revitu / Archicadu): souvislá smyčková
+ * křivka podél osy stěny, na jednom líci očka, na druhém oblouky. Rozměry jsou poměry k šířce vrstvy,
+ * takže se šrafa přizpůsobí každé tloušťce; měřítko šraf stylu ji nemění.
+ */
+export interface BandFamily {
+  readonly kind: 'band';
+  readonly form: 'coil';
+  /** Délka jedné smyčky podél stěny / šířka vrstvy. */
+  readonly pitch: number;
+  /** Hloubka očka od líce / šířka vrstvy (0..1). */
+  readonly loop: number;
+}
+
+export type HatchFamily = LineFamily | MarkFamily | WaveFamily | MotifFamily | BandFamily;
 
 export type HatchGroup = 'zeminy' | 'beton' | 'zdivo' | 'izolace' | 'drevo-kov-sklo' | 'ostatni';
 
@@ -136,6 +150,13 @@ export const motif = (curves: MotifCurve[], dx: number, dy = dx, rowShift = 0, a
   dy,
   rowShift,
   angle,
+});
+
+export const band = (pitch: number, loop: number): BandFamily => ({
+  kind: 'band',
+  form: 'coil',
+  pitch,
+  loop,
 });
 
 /** Záznam knihovny ve skupině (pořadí, id, název, zbytek). */

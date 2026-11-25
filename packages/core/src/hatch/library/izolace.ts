@@ -1,29 +1,22 @@
-// Knihovna šraf, skupina izolace. Vzhled podle ČSN 01 3420: tepelná = svislé štíhlé smyčky,
+// Knihovna šraf, skupina izolace. Vzhled podle ČSN 01 3420: tepelná = cik-cak s očky přes celou
+// šířku vrstvy (jako Revit / Archicad / Ardit),
 // akustická = vysoký cik-cak, obecná = mřížka s kroužky, proti vodě = vyčerněná. Rozměry v mm na papíře.
-import { entry, lines, motif, smooth, wave, type Hatch } from '../types.ts';
+import { band, entry, lines, motif, wave, type Hatch } from '../types.ts';
 import { hex, ring, tri } from './shapes.ts';
 
 const h = entry('izolace');
 
-/** Štíhlá svislá smyčka („láhev“): úzké hrdlo nahoře, širší břicho dole. */
-const BOTTLE = smooth(
-  true,
-  [0, 3.9],
-  [0.75, 3.1],
-  [0.45, 1.0],
-  [1.15, -2.2],
-  [0, -3.9],
-  [-1.15, -2.2],
-  [-0.45, 1.0],
-  [-0.75, 3.1],
-);
 const G = 3.2;
 /** Plástve: šestiúhelníky o poloměru R těsně vedle sebe. */
 const R = 0.9;
 const W = R * Math.sqrt(3);
 
 export const IZOLACE: readonly Hatch[] = [
-  h(24, 'hatch.tepelna-izolace', 'Tepelná izolace', { families: [motif([BOTTLE], 2.8, 8.4)] }),
+  h(24, 'hatch.tepelna-izolace', 'Tepelná izolace', {
+    /** Smyčka 0,65 × šířka vrstvy, očko 0,3 × šířka (podle Arditu). */
+    families: [band(0.65, 0.3)],
+    version: 4,
+  }),
   h(25, 'hatch.izolace-obecna', 'Izolace obecná', {
     families: [lines(45, G), lines(135, G), motif([ring(G / 2, G / 2, 0.45)], G, G, 0, 45)],
   }),

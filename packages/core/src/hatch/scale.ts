@@ -1,5 +1,6 @@
 // Měřítko šraf stylu (katalog šraf): jedno číslo násobí všechny rozměry šrafy najednou – rozteče,
-// čárkování, velikosti značek, vlny i body motivů. Tvar (úhly, poměry) zůstane stejný.
+// čárkování, velikosti značek, vlny i body motivů. Tvar (úhly, poměry) zůstane stejný. Pás přes šířku
+// vrstvy se nemění (jeho velikost dává tloušťka vrstvy).
 import type { Hatch, HatchFamily } from './types.ts';
 
 /** Povolený rozsah měřítka šraf ve stylu. */
@@ -8,6 +9,8 @@ export const HATCH_SCALE_MAX = 3;
 
 function scaleFamily(f: HatchFamily, k: number): HatchFamily {
   switch (f.kind) {
+    case 'band':
+      return f;
     case 'lines':
       return {
         ...f,

@@ -1,7 +1,9 @@
 // Kreslení šrafy z dat (základ 34): rodiny čar, značek, vlnovek a motivů v rastru se společným počátkem.
 // Rozměry jsou mm na papíře, na pixely je převádí `pxPerMm`. Kreslí do již oříznutého kontextu.
 import {
+  coilCurve,
   motifStrokes,
+  type BandFamily,
   type Hatch,
   type HatchFamily,
   type LineFamily,
@@ -22,6 +24,11 @@ export interface PaintArea {
   /** Počátek rastru v px. */
   readonly origin: Vec2;
   readonly pxPerMm: number;
+  /**
+   * Pás přes šířku vrstvy (rodina „band“) kreslit přes kratší stranu obdélníku (náhledy). Výkres ho
+   * nekreslí zde, ale z hotových křivek jádra (`false`).
+   */
+  readonly bands?: boolean;
 }
 
 const MAX_ITEMS = 40000;
@@ -165,11 +172,29 @@ function paintMotif(ctx: Ctx, f: MotifFamily, area: PaintArea) {
   ctx.stroke();
 }
 
+/** Pás přes kratší stranu obdélníku, očka u levého / horního okraje (náhled šrafy a skladby). */
+function paintBand(ctx: Ctx, f: BandFamily, area: PaintArea) {
+  if (area.bands === false) return;
+  const w = area.x1 - area.x0;
+  const h = area.y1 - area.y0;
+  const across = Math.min(w, h);
+  const pts = coilCurve(f, across, 0, Math.max(w, h));
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    const x = w <= h ? area.x0 + p.a * across : area.x0 + p.s;
+    const y = w <= h ? area.y0 + p.s : area.y0 + p.a * across;
+    if (i) ctx.lineTo(x, y);
+    else ctx.moveTo(x, y);
+  });
+  ctx.stroke();
+}
+
 const PAINT: { [K in HatchFamily['kind']]: (ctx: Ctx, f: never, a: PaintArea) => void } = {
   lines: paintLines,
   marks: paintMarks,
   wave: paintWave,
   motif: paintMotif,
+  band: paintBand,
 };
 
 /** Nakreslí šrafu do oříznutého kontextu (barvy a tloušťku čar nastaví volající). */
