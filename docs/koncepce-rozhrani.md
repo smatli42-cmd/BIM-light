@@ -50,7 +50,8 @@ k dřívějším rozporům jsou v části 11.
 ```
 
 ### A – Horní lišta aplikace
-- Vlevo název programu a projektu; přepínač **sady zobrazení** Studie / Projekt / Elektro (část 4).
+- Vlevo název programu a projektu; přepínač **sad** Studie / Projekt / Elektro (část 4: překreslí
+  pracovní okno a filtruje Obsah), vedle později přepínač variant.
 - Zpět / Znovu (s historií v bublině), Nový projekt, Otevřít, Uložit a stav („Uloženo“ / „Neuloženo“),
   export IFC.
 - Vpravo: motiv (světlý / tmavý / podle systému), celá obrazovka, nápověda a průvodce, jazyk (později).
@@ -101,9 +102,13 @@ k dřívějším rozporům jsou v části 11.
 - Rozvržení oken (1 / 2 vedle sebe / 2 nad sebou…) se volí ve spodní liště.
 
 ### F – Obsah projektu (vpravo) a F' lišta sekcí
-- **Obsah** se záložkami Projekt / Pohledy / Výkresy / Export a hledáním: podlaží (s úrovní), situace,
-  řezy, pohledy, 3D, výkazy. Dvojklik otevře pohled v aktivním okně.
-- Pod seznamem **nastavení vybrané položky** (u podlaží název, úroveň, výška, + nad / + pod, smazat).
+- **Obsah** se záložkami Projekt / Pohledy / Výkresy / Export a hledáním (část 4). Projekt: podlaží
+  (s úrovní), situace, řezy, pohledy, 3D, výpisy – otevře pracovní okno. Pohledy: uložené pohledy aktuální
+  sady s měřítkem, „+ Uložit pohled“ – otevře uložený pohled (okno to ukáže štítkem). Vpravo nahoře tlačítko
+  Organizátor (etapa 7).
+- Pod seznamem **nastavení vybrané položky**: u podlaží název, úroveň, výška, + nad / + pod, smazat; u pohledu
+  název, zdroj, kombinace vrstev (styl), měřítko, řezná rovina, fáze, varianta, přiblížení, složka,
+  „Načíst nastavení aktuálního okna“, smazat pohled.
 - **F' svislá lišta ikon** úplně vpravo přepíná sekce panelu: Obsah, Vrstvy, Typy stěn (skladby),
   Materiály, Šrafy, Styly, Podlaží, později Organizátor výkresů. Panel jde skrýt (více místa pro okna).
 
@@ -140,17 +145,59 @@ Platí pro aktivní okno (základ 26: pohled má svůj styl); každá položka j
 | Stavový řádek dole | G vpravo + nápověda u kurzoru |
 | Galerie napojení (odkaz nahoře) | zůstává jako vývojářská stránka mimo hlavní rozhraní |
 
-## 4. Studie / Projekt / Elektro a styl pohledu
+## 4. Sady, pohledy, výkresy, fáze a varianty
 
-Rozhodnuto (uživatel, 2026-11-25), princip jako šablony pohledů v Revitu:
-- **Každý pohled má svůj styl** (základy 26, 27). Studie / Projekt / Elektro jsou jen první předvolby;
-  uživatel si časem nastaví **vlastní styly podle svých představ** a přepínač je nabídne stejně.
-- Přepínač v liště A nastaví styl **aktivnímu oknu**. Kdo chce mít stejné podlaží zároveň ve dvou
-  podobách, vytvoří **kopii pohledu** (jako duplikát půdorysu v Revitu) s jiným stylem; kopie jde
-  v Obsahu (F) i z nabídky okna.
-- Přepínač ukazuje styl aktivního okna; je-li vlastní nebo upravený, zobrazí jeho název / „upraveno“.
-- **Přepisy vzhledu** (pravidla grafiky, patra přepisů, základy 11 a 30) jsou samostatná disciplína,
-  kterou uživatel ještě promýšlí – rozhraní pro jejich úpravu se navrhne zvlášť, se screenshotem.
+Rozhodnuto s uživatelem 2026-11-25 (princip jako Archicad a vzor; nahrazuje dřívější „přepínač = styl
+aktivního okna“).
+
+### Model je jeden, všechno ostatní je zobrazení
+- Vše, co se nakreslí, je v jednom modelu a patří do všech sad (Studie, Projekt, Elektro…). Sady se liší
+  jen tím, **co je vidět a jak** (vrstvy, pera, pravidla grafiky, podrobnost – styl, základy 26, 27, 30).
+- **Kóty a popisy** patří podlaží a mají **skupinu anotací** (základ 28), např. „Kóty a popisy studie“,
+  „Kóty a popisy DSP a PPS“. Styl sady určí, které skupiny jsou vidět. Kóty pro studii a pro projekt se
+  tedy kreslí zvlášť, každé do své skupiny (aktivní skupina = „Kóty do“ ve spodní liště G).
+
+### Čtyři úrovně (Obsah F, později Organizátor)
+| Úroveň | Co to je | Archicad / Revit |
+|---|---|---|
+| **Projekt** | Místa v modelu: podlaží, situace, řezy, pohledy, 3D, výpisy. Otevřením vznikne **pracovní okno**; jeho nastavení se nikam neukládá. | Mapa projektu / Project Browser |
+| **Pohledy** | **Uložené pohledy**: místo + pevné nastavení (sada a styl, měřítko, řezná rovina, fáze, varianta, přiblížení, složka). „+ Uložit pohled“ vezme nastavení pracovního okna; „Načíst nastavení aktuálního okna“ ho přepíše. | Mapa pohledů / pohled s View Template |
+| **Výkresy** | Listy; vkládají se na ně jen uložené pohledy (a výpisy). Změna uloženého pohledu změní výkres. | Kniha výkresů / Sheets |
+| **Export** | Sady pro odevzdání: PDF se seznamem výkresů, model IFC, výpisy XLSX. | Sady publikování |
+
+Výkresy, Export a **Organizátor** (čtyři sloupce vedle sebe, přetažení Projekt → Pohledy uloží pohled,
+Pohled → Výkresy umístí pohled na výkres) přijdou s etapou 7. Kdo je zvyklý na Revit, může pracovat jen
+v uložených pohledech.
+
+### Přepínač sad nahoře (lišta A)
+Klik na **Elektro** (nebo jinou sadu):
+1. **pracovní okno** se překreslí stylem sady;
+2. **Obsah i Organizátor** ukážou pohledy, výkresy a exporty této sady (ostatní sady se skryjí);
+3. co se nově uloží („+ Uložit pohled“, nový výkres), patří do této sady.
+Uložené pohledy a výkresy jiných sad se **nemění** – po přepnutí zpět jsou stejné. Studie / Projekt /
+Elektro jsou jen první sady; uživatel si přidá vlastní (např. „Bourací práce“, „Pro statika“).
+
+### Tři nezávislé osy uloženého pohledu
+Každý uložený pohled si pamatuje, každou buď **pevně**, nebo **„podle okna“** (bere to, co je přepnuté
+nahoře):
+1. **sadu / styl** – jak to vypadá a které anotace jsou vidět;
+2. **fázi (filtr rekonstrukce)** – Stávající / Bourací práce / Nový / Srovnávací / Vše (sekce 6 rozhodnutí);
+3. **variantu** – hlavní model, nebo varianta (např. „Kuchyně – A“).
+Výkres „Půdorys 1.NP – kuchyně A“ a „… – kuchyně B“ jsou dva uložené pohledy s pevnou variantou.
+
+### Varianty návrhu (sekce 6 rozhodnutí; ovládání je samostatná etapa)
+- Prvek patří hlavnímu modelu, nebo jedné variantě; varianty jsou v nezávislých sadách (Kuchyně A/B/C,
+  Koupelna A/B). Data má prvek od začátku (základ 2).
+- **Přepínač variant nahoře** vedle sad („Kuchyně: [A] B C“); ve variantě barevný rámeček kolem výkresu
+  „Kreslíš do: Kuchyně – B“.
+- Úprava prvku hlavního modelu uvnitř varianty = automatická kopie do varianty; originál zůstane pro
+  ostatní. Varianta a stav jsou nezávislé. „Přijmout variantu“ sloučí do hlavního modelu. Výkazy po
+  variantách.
+- V UI3 se připraví jen místo pro přepínač variant a pole „Fáze“ a „Varianta“ v nastavení pohledu.
+
+### Přepisy vzhledu
+Pravidla grafiky a patra přepisů (základy 11, 30) jsou samostatná disciplína, kterou uživatel ještě
+promýšlí – rozhraní pro jejich úpravu se navrhne zvlášť, se screenshotem.
 
 ## 5. Motivy (světlý a tmavý)
 
@@ -204,7 +251,7 @@ Rozhodnuto (uživatel, 2026-11-25), princip jako šablony pohledů v Revitu:
 |---|---|---|
 | UI1 kostra | rozložení A–G (prázdné oblasti), motivy světlý / tmavý, podklad výkresu, komponenta ikony + prvních ~30 ikon | sandbox běží v novém rozložení v obou motivech, testy zelené |
 | UI2 nástroje a info box | paleta C, info box D z popisu parametrů (nástroj i výběr), metoda geometrie, sloučení Stěna + Oblouková stěna | vše z dnešní levé lišty a panelu Vlastnosti je v C a D |
-| UI3 příkazy a Obsah | lišta B, hledání Ctrl+K, Obsah F (podlaží, pohledy) a lišta sekcí F' | dnešní pravé záložky jsou v F/F' |
+| UI3 příkazy a Obsah | lišta B, hledání Ctrl+K, Obsah F se záložkami Projekt / Pohledy (pracovní okno podlaží, uložené pohledy, + Uložit pohled, nastavení pohledu s fází a variantou), přepínač sad filtruje Obsah, lišta sekcí F' | dnešní pravé záložky a výběr pohledu jsou v F/F' |
 | UI4 spodní lišta a okna | lišta G (zoom, přichytávání, vrstvy, styl, měřítko, rovina řezu), více oken vedle sebe, aktivní okno | dnešní horní lišta pohledu zmizí |
 | UI5 plovoucí prvky | tracker ΔX/ΔY, nabídka metody po prvním kliku, kontextová paleta u uzlu a hrany, průvodce prostředím | kreslení a úpravy bez levého panelu |
 

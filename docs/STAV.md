@@ -134,9 +134,11 @@ Velikost šraf (2026-11-25):
   s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2 (info box, metoda Stěny, nabídka úseku řetězu, rychlý výběr typu).
-- Potom **UI3 – lišta příkazů a Obsah**: hledání příkazů Ctrl+K, Obsah projektu vpravo se záložkami
-  (podlaží, pohledy…), lišta sekcí. Před začátkem si vyžádat screenshot Obsahu a hledání z Arditu.
-  Pak UI4–UI5, až po nich stěny Z6.
+- Potom **UI3 – lišta příkazů a Obsah** podle `koncepce-rozhrani.md` (části 2 F a 4, rozhodnuto
+  2026-11-25 se screenshoty Obsahu a Organizátoru): záložky Projekt (pracovní okno podlaží) a Pohledy
+  (uložené pohledy aktuální sady, + Uložit pohled, nastavení pohledu: styl, měřítko, řezná rovina, fáze,
+  varianta „podle okna“ / pevně), přepínač sad filtruje Obsah, hledání příkazů Ctrl+K. Chybí ještě
+  screenshot hledání (lupa vlevo nahoře). Pak UI4–UI5, až po nich stěny Z6.
 
 ## Otevřené
 
