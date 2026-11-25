@@ -1,10 +1,26 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, rozhraní UI1 – kostra.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, rozhraní UI2 – paleta a info box.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 
 ## Hotovo
+
+### Rozhraní: UI2 hotovo, 2026-11-25 (paleta a info box)
+- **Info box po sekcích** (`ui/infobox/`): sbalitelné sekce s (i); přepínač **Instance / Typ** (Typ =
+  editor skladby typu). Obsah podle situace: příkaz nad výběrem → jeho volby (kopie, pole); výběr →
+  vlastnosti (stěny: typ, referenční čára, konstrukce, výška a úroveň, zobrazení; otvory; kóty); nástroj
+  Stěna → „Výchozí nastavení nových prvků“ (typ, metoda, referenční čára, souhrn skladby); Výběr bez
+  výběru → metoda výběru a mřížka.
+- **Metoda Stěny** (jen u stěny): jedna stěna / řetěz / obdélník / oblouk třemi body; zkratky B a A
+  přepnou metodu, v paletě zůstává jedno tlačítko Stěna (Oblouková stěna a Obdélník z palety zmizely).
+- **Řetěz – plovoucí nabídka druhu úseku** po prvním kliku: úsečka / tečný oblouk (navazuje na předchozí
+  úsek) / oblouk bodem (bod na oblouku, pak konec); M přepíná, Esc zruší rozkliknutý bod oblouku.
+- **Rychlý výběr typu**: podržení, dvojklik nebo pravé tlačítko na nástroji Stěna otevře typy stěn.
+- **Referenční čára jako ikony** (líc / osa / líc jádra) + přehození strany; **bubliny jen „název –
+  zkratka“**.
+- Rozdělení: stav řetězu a napojení úseku do `wall-chain.ts`. Testy: jádro 639, prohlížeč 106 (nové
+  `rozhrani.spec.ts`; volby příkazů se v testech nastavují až při aktivním příkazu).
 
 ### Rozhraní: UI1 hotovo, 2026-11-25 (kostra podle `docs/koncepce-rozhrani.md`)
 - **Rozložení A–G** (`apps/sandbox/src/ui/layout/`): A horní lišta (název, projekt, sady Studie / Projekt /
@@ -400,10 +416,10 @@ Stěny Z1:
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
   s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
   body „Rozhodl Code“ u Z4 a Z5.
-- Uživatel vyzkouší kostru UI1 (světlý a tmavý motiv, podklad výkresu, skrytí panelu, bubliny ikon).
-- Potom **UI2 – paleta a info box**: info box po sekcích z popisu parametrů (vzor: screenshot info boxu
-  stěny v Arditu – Instance / Typ, skladba, referenční čára, výška a úroveň, napojení), metoda geometrie,
-  sloučení Stěna + Oblouková stěna. Pak UI3–UI5, až po nich stěny Z6.
+- Uživatel vyzkouší UI2 (info box, metoda Stěny, nabídka úseku řetězu, rychlý výběr typu).
+- Potom **UI3 – lišta příkazů a Obsah**: hledání příkazů Ctrl+K, Obsah projektu vpravo se záložkami
+  (podlaží, pohledy…), lišta sekcí. Před začátkem si vyžádat screenshot Obsahu a hledání z Arditu.
+  Pak UI4–UI5, až po nich stěny Z6.
 
 ## Otevřené
 
@@ -420,6 +436,8 @@ Stěny Z1:
   do nového `docs/STAV-steny.md` – k rozhodnutí.
 - UI1: hledání příkazů (Ctrl+K) je zatím jen neaktivní ikona (UI3); panel Podlaží je provizorní místo
   Obsahu (UI3); úpravy Studie / Projekt jsou zatím jen dva styly bez Elektro.
+- UI2: metody natočený obdélník a oblouk středem (jsou ve vzoru) zatím nejsou; tracker u tečného oblouku
+  a oblouku bodem jen ukazuje poloměr a úhel (číslo napsat nejde); rychlý výběr typu zatím jen u Stěny.
 - Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).
 - Přepisy vzhledu (pravidla grafiky, vlastní styly) – uživatel je ještě promýšlí; rozhraní pro ně se
   navrhne zvlášť (koncepce rozhraní, část 4).
