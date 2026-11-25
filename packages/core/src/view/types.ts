@@ -24,6 +24,8 @@ export interface View {
   readonly local: ViewLocalOverrides;
   /** Aktivní skupina anotací; null = výchozí podle stylu. */
   readonly activeAnnotationLayerId: Id | null;
+  /** Rovina řezu půdorysu nad úrovní podlaží (mm, výchozí 1000; plán stěn Z4, Z6). */
+  readonly cutPlane: number;
   /** Přepis prvku „jen v tomto pohledu“ (patro 6). */
   readonly elementOverrides: Readonly<Record<Id, GraphicEffect>>;
 }

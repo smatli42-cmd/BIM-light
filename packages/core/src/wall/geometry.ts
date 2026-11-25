@@ -44,8 +44,9 @@ function layerAt(section: CrossSection, o: number): number {
   return Math.max(0, i);
 }
 
-export function wallGeometry(model: Model, wall: Wall): WallGeometry {
-  const j = wallJunction(model, wall);
+/** Geometrie stěny; `cutPlane` = rovina řezu pohledu nad podlažím (otvory v ní stěnu přeruší, Z4). */
+export function wallGeometry(model: Model, wall: Wall, cutPlane?: number): WallGeometry {
+  const j = wallJunction(model, wall, cutPlane);
   const section = wallSection(model, wall);
   const empty: LayerEnd = { variants: [[]], extend: 0, extras: [] };
   const face = (o: number, i: number) =>
@@ -74,10 +75,10 @@ export function wallGeometry(model: Model, wall: Wall): WallGeometry {
 }
 
 /** Geometrie všech stěn modelu (případně jen jednoho podlaží). */
-export function allWallGeometry(model: Model, storeyId?: Id): Map<Id, WallGeometry> {
+export function allWallGeometry(model: Model, storeyId?: Id, cutPlane?: number): Map<Id, WallGeometry> {
   const out = new Map<Id, WallGeometry>();
   for (const w of allWalls(model)) {
-    if (storeyId === undefined || w.storeyId === storeyId) out.set(w.id, wallGeometry(model, w));
+    if (storeyId === undefined || w.storeyId === storeyId) out.set(w.id, wallGeometry(model, w, cutPlane));
   }
   return out;
 }

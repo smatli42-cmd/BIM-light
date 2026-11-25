@@ -208,4 +208,22 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     expect(h().top).toBe(5900);
     expect(() => c.ai.call('storey.delete', { storeyId: s2 })).toThrow(/prvků/);
   });
+
+  it('otvory přes AI: otvor, výřez, niky, kóty celé stěny, odmítnutí (plán stěn Z4)', () => {
+    const c = start();
+    const [, top] = room(c);
+    const [o] = c.ai.call<string[]>('opening.create', { wallId: top, offset: 1000, width: 1200 });
+    c.ai.call('opening.create', { wallId: top, offset: 4000, width: 800, kind: 'niche', depth: 100 });
+    const list = c.ai.call<{ id: string; plan: string; offset: number }[]>('opening.list', { wallId: top });
+    expect(list.map((x) => [x.offset, x.plan])).toEqual([
+      [1000, 'cut'],
+      [4000, 'cut'],
+    ]);
+    const dims = c.ai.call<string[]>('dimension.wholeWall', { wallId: top, side: 'ref', viewId: c.viewId });
+    const rows = c.ai.call<DimRow[]>('dimension.list');
+    expect(dims.map((d) => rows.find((r) => r.id === d)!.value)).toEqual([1000, 1200, 1800, 800, 1200, 6000]);
+    expect(c.ai.raw('opening.move', { openingIds: [o], distance: 5000 }).error?.message).toMatch(/vyčníval/);
+    c.ai.call('opening.delete', { openingIds: [o] });
+    expect(c.ai.call<unknown[]>('opening.list')).toHaveLength(1);
+  });
 });

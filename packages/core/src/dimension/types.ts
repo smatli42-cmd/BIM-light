@@ -4,10 +4,14 @@
 import type { Id } from '../ids/index.ts';
 import type { WallEdge } from '../wall/edges.ts';
 
-/** Odkaz na líc stěny nebo na čelo jejího volného konce ('start' / 'end'). */
+/**
+ * Odkaz na líc stěny nebo na čelo jejího volného konce ('start' / 'end'). S `openingId` je to hrana
+ * otvoru v této stěně (plán stěn Z4): 'start' = počátek, 'end' = konec otvoru; `wallId` = hostitel.
+ */
 export interface FaceRef {
   readonly wallId: Id;
   readonly face: WallEdge;
+  readonly openingId?: Id;
 }
 
 interface DimensionBase {

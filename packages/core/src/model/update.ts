@@ -1,6 +1,7 @@
 // Pomocníci pro neměnné úpravy modelu. Používají je jen příkazy (základ 6).
 import type { Dimension } from '../dimension/types.ts';
 import type { Id } from '../ids/index.ts';
+import type { Opening } from '../opening/types.ts';
 import type { Relation } from '../relation/types.ts';
 import type { DisplaySettings } from '../style/types.ts';
 import type { View } from '../view/types.ts';
@@ -24,6 +25,15 @@ export const putElements = (m: Model, els: readonly Element[]): Model => ({
 export const removeElements = (m: Model, ids: Iterable<Id>): Model => ({
   ...m,
   elements: drop(m.elements, ids),
+});
+
+export const putOpenings = (m: Model, ops: readonly Opening[]): Model => ({
+  ...m,
+  openings: ops.reduce(put, m.openings),
+});
+export const removeOpenings = (m: Model, ids: Iterable<Id>): Model => ({
+  ...m,
+  openings: drop(m.openings, ids),
 });
 
 export const putRelations = (m: Model, rels: readonly Relation[]): Model => ({

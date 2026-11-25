@@ -8,6 +8,7 @@ import { createDefaultDisplay } from '../style/presets/create.ts';
 import type { View } from '../view/types.ts';
 import type { WallType } from '../wall/types.ts';
 import { WALL_TYPE_LIBRARY, wallTypeFromLibrary } from '../wall-type/library.ts';
+import { DEFAULT_CUT_HEIGHT } from '../wall/layers.ts';
 import { SCHEMA_VERSION, type Model } from './types.ts';
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
@@ -43,6 +44,7 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     styleId: study.id,
     local: {},
     activeAnnotationLayerId: null,
+    cutPlane: DEFAULT_CUT_HEIGHT,
     elementOverrides: {},
   };
   return {
@@ -53,6 +55,7 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     materials: byId(mats),
     wallTypes: byId(wallTypes(mats, newId)),
     elements: {},
+    openings: {},
     relations: {},
     dimensions: {},
     variantSets: {},

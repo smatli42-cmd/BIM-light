@@ -7,10 +7,11 @@ import type { Relation } from '../relation/types.ts';
 import type { Dimension } from '../dimension/types.ts';
 import type { DisplaySettings, GraphicEffect } from '../style/types.ts';
 import type { View } from '../view/types.ts';
+import type { Opening } from '../opening/types.ts';
 import type { Category } from './categories.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -99,6 +100,8 @@ export interface Model {
   readonly materials: Readonly<Record<Id, Material>>;
   readonly wallTypes: Readonly<Record<Id, WallType>>;
   readonly elements: Readonly<Record<Id, Element>>;
+  /** Otvory v hostitelích (základ 19, plán stěn Z4); hostitel je uložený odkaz `hostId`. */
+  readonly openings: Readonly<Record<Id, Opening>>;
   /** Vztahy jako samostatné objekty (základ 1, 24). */
   readonly relations: Readonly<Record<Id, Relation>>;
   /** Kóty patří podlaží a mají skupinu anotací (základ 28). */

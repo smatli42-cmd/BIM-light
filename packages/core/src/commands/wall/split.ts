@@ -1,6 +1,16 @@
 // Příkaz: rozdělit stěnu v bodě na dvě samostatné stěny (katalog kreslení 5.3).
 // Typ a výška se zdědí; napojení na konci přejde na druhou část; obě části se spojí rohem.
-import { endPoint, pointAt, projectOnCarrier, carrierOf, type Vec2 } from '../../geometry/index.ts';
+// Otvory za bodem rozdělení přejdou na druhou část; rozdělení přes otvor se odmítne (Z4).
+import {
+  endPoint,
+  pathLength,
+  pointAt,
+  projectOnCarrier,
+  carrierOf,
+  type Vec2,
+} from '../../geometry/index.ts';
+import { openingsOf } from '../../opening/geometry.ts';
+import { rehostOpenings } from '../../opening/rehost.ts';
 import { paramOf, splitPath } from '../../geometry/split.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
@@ -45,9 +55,16 @@ export const wallSplit = defineCommand<{ wallId: Id; point: Vec2 }>({
     const at = projectOnCarrier(p.point, carrierOf(w.path));
     const t = paramOf(w.path, at);
     if (!(t > 0.001 && t < 0.999)) fail('invalid', 'Bod rozdělení musí ležet uvnitř stěny');
+    const sSplit = t * pathLength(w.path);
+    const ops = openingsOf(model, w.id);
+    if (ops.some((o) => o.offset < sSplit && o.offset + o.width > sSplit))
+      fail('invalid', 'Stěnu nejde rozdělit přes otvor; posuňte bod rozdělení mimo otvor');
     const [pa, pb] = splitPath(w.path, pointAt(w.path, t));
     const a: Wall = { ...w, path: pa };
     const b: Wall = { ...w, id: ctx.newId(), path: pb };
+    const rehosted = ops
+      .filter((o) => o.offset >= sSplit)
+      .map((o) => ({ ...o, hostId: b.id, offset: o.offset - sSplit }));
     const moved = reassign(model, w, b, t);
     const join: WallConnection = {
       id: ctx.newId(),
@@ -55,7 +72,7 @@ export const wallSplit = defineCommand<{ wallId: Id; point: Vec2 }>({
       relating: { wallId: a.id, at: 'ATEND' },
       related: { wallId: b.id, at: 'ATSTART' },
     };
-    const m = putRelations(putElements(model, [a, b]), [...moved, join]);
+    const m = rehostOpenings(putRelations(putElements(model, [a, b]), [...moved, join]), rehosted);
     return { model: m, created: [b.id, join.id] };
   },
 });

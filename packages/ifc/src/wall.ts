@@ -1,6 +1,6 @@
 // Stěna v IFC: IfcWall s osou (Axis), tělem vytaženým z obrysu po napojení (Body), skladbou
-// (IfcMaterialLayerSetUsage) a stavem (Pset_WallCommon.Status). Otvory a oblouk přesně až Z4 a Z5:
-// oblouk se zatím zapíše jako lomená čára.
+// (IfcMaterialLayerSetUsage) a stavem (Pset_WallCommon.Status). Tělo je stěna bez otvorů; otvory ji
+// vyříznou přes IfcRelVoidsElement (Z4). Oblouk přesně až Z5: zatím se zapíše jako lomená čára.
 import {
   leftNormal,
   norm,
@@ -17,6 +17,7 @@ import {
 import { placement, point2, type IfcContext } from './context.ts';
 import { derivedGlobalId, modelGlobalId } from './guid.ts';
 import { exportBand, type TypeRefs } from './materials.ts';
+import { writeOpenings } from './opening.ts';
 import { en, str, typed, type Raw } from './step.ts';
 
 const STATUS: Record<Status, string> = { existing: 'EXISTING', demolished: 'DEMOLISH', new: 'NEW' };
@@ -43,7 +44,8 @@ function shape(c: IfcContext, m: Model, w: Wall, height: number): Raw {
   const axis = polyline(c, tessellate(w.path).map(to), false);
   const axisRep = c.w.add('IfcShapeRepresentation', [c.axis, str('Axis'), str('Curve2D'), [axis]]);
   const up = c.w.add('IfcDirection', [[0, 0, 1]]);
-  const solids = wallGeometry(m, w)
+  // Rovina řezu pod vším: žádný otvor obrys nepřeruší, otvory řeže IfcOpeningElement.
+  const solids = wallGeometry(m, w, Number.NEGATIVE_INFINITY)
     .outlines.filter((loop) => loop.length >= 3)
     .map((loop) => {
       const profile = c.w.add('IfcArbitraryClosedProfileDef', [
@@ -133,5 +135,6 @@ export function writeWall(
     usage,
   ]);
   statusPset(c, wall, w);
+  writeOpenings(c, m, w, wall, place, localFrame(w).to);
   return wall;
 }

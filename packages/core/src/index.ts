@@ -8,6 +8,7 @@ export * from './hatch/index.ts';
 export * from './wall/index.ts';
 export * from './wall-type/index.ts';
 export * from './wall-height/index.ts';
+export * from './opening/index.ts';
 export * from './relation/index.ts';
 export * from './dimension/index.ts';
 export * from './constraints/index.ts';

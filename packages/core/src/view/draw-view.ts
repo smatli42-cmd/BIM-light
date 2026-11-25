@@ -16,6 +16,7 @@ import { categoryState, detailOf, layerState, styleOfView } from './effective.ts
 import { scaleHatch } from '../hatch/scale.ts';
 import type { Hatch } from '../hatch/types.ts';
 import type { View } from './types.ts';
+import { drawOpening, openingFacts } from '../opening/draw.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -36,7 +37,7 @@ export const isDimensionVisible = (model: Model, view: View, d: Dimension): bool
 
 function drawWalls(model: Model, view: View): Primitive[] {
   const detail = detailOf(model.display, view);
-  const geoms = allWallGeometry(model, view.storeyId);
+  const geoms = allWallGeometry(model, view.storeyId, view.cutPlane);
   const items: WallDrawItem[] = [];
   const k = styleOfView(model.display, view).hatchScale ?? 1;
   const scaled = new Map<string, Hatch | undefined>();
@@ -60,11 +61,23 @@ function drawWalls(model: Model, view: View): Primitive[] {
   return drawWallItems(items, detail, look);
 }
 
+/** Otvory mimo rovinu řezu (čárkovaně, plán stěn Z4). */
+function drawOpenings(model: Model, view: View): Primitive[] {
+  const out: Primitive[] = [];
+  for (const o of Object.values(model.openings)) {
+    if (o.storeyId !== view.storeyId || o.variant.kind !== 'main') continue;
+    if (!categoryState(model.display, view, 'opening').visible) continue;
+    const g = resolveGraphics(model.display, view, openingFacts(o)).effect;
+    if (g.visible) out.push(...drawOpening(model, o, view.cutPlane, g));
+  }
+  return out;
+}
+
 /** Kresba pohledu jako seznam primitiv. */
 export function drawView(model: Model, viewId: Id): Drawing {
   const view = model.views[viewId];
   if (!view) throw new Error(`Pohled ${viewId} neexistuje`);
-  const out = drawWalls(model, view);
+  const out = [...drawWalls(model, view), ...drawOpenings(model, view)];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;
@@ -79,6 +92,11 @@ export function isSelectable(model: Model, view: View, id: Id): boolean {
   if (el) {
     const s = categoryState(model.display, view, el.category);
     return rulesFor(el.category).selectable && el.storeyId === view.storeyId && s.visible && !s.locked;
+  }
+  const o = model.openings[id];
+  if (o) {
+    const s = categoryState(model.display, view, 'opening');
+    return rulesFor('opening').selectable && o.storeyId === view.storeyId && s.visible && !s.locked;
   }
   const d = model.dimensions[id];
   if (!d) return false;

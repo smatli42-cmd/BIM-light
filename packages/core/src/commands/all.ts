@@ -9,6 +9,7 @@ import {
 } from './dimension/edit.ts';
 import { dimensionSetValue } from './dimension/set-value.ts';
 import { dimensionEqualize } from './dimension/equalize.ts';
+import { dimensionWholeWall } from './dimension/whole-wall.ts';
 import { dimensionCreateSet, dimensionFlipSide, dimensionPlace } from './dimension/place.ts';
 import { projectSetGeoreference, storeyCreate } from './project/storey.ts';
 import { storeyDelete, storeyUpdate } from './project/storey-edit.ts';
@@ -39,6 +40,10 @@ import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
 import { wallSplit } from './wall/split.ts';
 import { wallDeleteNode } from './wall/merge.ts';
 import { selectionDelete } from './edit/delete.ts';
+import { openingCreate } from './opening/create.ts';
+import { openingDelete, openingMove, openingUpdate } from './opening/edit.ts';
+import { openingCopy, openingMirror } from './opening/copy.ts';
+import { viewSetCutPlane } from './view/cut-plane.ts';
 import { materialCreate, materialDelete, materialDuplicate, materialUpdate } from './material/edit.ts';
 import { wallTypeSetLayerMaterial } from './material/layer.ts';
 import { wallSetReferenceLine, wallSetThickness } from './wall/thickness.ts';
@@ -89,6 +94,12 @@ export const CORE_COMMANDS = [
   wallDisconnect,
   wallSetJoin,
   wallCross,
+  openingCreate,
+  openingMove,
+  openingUpdate,
+  openingDelete,
+  openingCopy,
+  openingMirror,
   dimensionCreate,
   dimensionDelete,
   dimensionSetLocked,
@@ -100,6 +111,7 @@ export const CORE_COMMANDS = [
   dimensionCreateSet,
   dimensionFlipSide,
   dimensionEqualize,
+  dimensionWholeWall,
   viewCreate,
   viewSetStyle,
   viewSetScale,
@@ -108,6 +120,7 @@ export const CORE_COMMANDS = [
   viewSetDetail,
   viewResetToStyle,
   viewSetActiveAnnotationLayer,
+  viewSetCutPlane,
   elementSetGraphicOverride,
   styleSaveFromView,
   styleSetHatchScale,

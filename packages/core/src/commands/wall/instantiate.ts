@@ -6,7 +6,8 @@ import type { HeightBinding } from '../../model/height.ts';
 import { FLAT_TOP, type TopProfile } from '../../wall-height/top-profile.ts';
 import { IFC_CLASS } from '../../model/categories.ts';
 import type { Model, Status, VariantRef } from '../../model/types.ts';
-import { putElements, putRelations } from '../../model/update.ts';
+import { putElements, putOpenings, putRelations } from '../../model/update.ts';
+import { openingFromSpec, openingSpecsOf, type OpeningSpec } from '../../opening/spec.ts';
 import type { ConnectionType, WallConnection } from '../../relation/types.ts';
 import { connectionAt, inwardDir, isFreeEnd } from '../../wall/auto-connect.ts';
 import { connectionsOf, endToType } from '../../wall/queries.ts';
@@ -25,6 +26,8 @@ export interface WallSpec {
   topProfile?: TopProfile;
   status?: Status;
   discipline?: string;
+  /** Otvory stěny (jdou s ní při kopii, zrcadlení, poli i vložení, Z4). */
+  openings?: OpeningSpec[];
 }
 
 /** Napojení uvnitř sady: indexy stěn v sadě. */
@@ -33,8 +36,11 @@ export interface SpecConnection {
   related: { index: number; at: ConnectionType };
 }
 
-export function specOf(w: Wall): WallSpec {
+/** Popis stěny; s modelem i s jejími otvory. */
+export function specOf(w: Wall, model?: Model): WallSpec {
+  const openings = model ? openingSpecsOf(model, w.id) : [];
   return {
+    ...(openings.length ? { openings } : {}),
     typeId: w.typeId,
     path: w.path,
     side: w.side,
@@ -123,6 +129,10 @@ export function instantiateWalls(
     related: { wallId: id(c.related.index), at: c.related.at },
   }));
   const ids = walls.map((w) => w.id);
-  const m = autoConnect(putRelations(putElements(model, walls), rels), ids, ctx.newId);
+  const openings = walls.flatMap((w, i) =>
+    (specs[i]?.openings ?? []).map((o) => openingFromSpec(o, w, ctx.newId, ctx.variant)),
+  );
+  const placed = putOpenings(putRelations(putElements(model, walls), rels), openings);
+  const m = autoConnect(placed, ids, ctx.newId);
   return { model: m, ids };
 }

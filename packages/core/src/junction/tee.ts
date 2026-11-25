@@ -11,7 +11,7 @@ import type { EndResult, Gap, NodeResult } from './types.ts';
 /** Mezera „pás vrstvy `x` rámu `f`“: zůstane, co leží pod jeho spodní nebo nad horní hranicí. */
 export const stripGap = (layer: number, f: Frame, x: FrameLayer): Gap => ({
   layer,
-  outside: [boundary(f, x.lo, mul(f.normal, -1)), boundary(f, x.hi, f.normal)],
+  keep: [[boundary(f, x.lo, mul(f.normal, -1))], [boundary(f, x.hi, f.normal)]],
 });
 
 /** Konec napojené stěny a mezery hostitele. */

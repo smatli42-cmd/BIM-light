@@ -13,12 +13,18 @@ import {
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
+import { openingEdgePath } from '../opening/edges.ts';
 import { edgePath } from '../wall/edges.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { getWall } from '../wall/queries.ts';
 import type { AngularDimension, Dimension, FaceRef } from './types.ts';
 
 export function facePath(model: Model, ref: FaceRef) {
+  if (ref.openingId) {
+    const o = model.openings[ref.openingId];
+    if (!o) throw new Error(`Otvor ${ref.openingId} neexistuje`);
+    return openingEdgePath(model, o, ref.face === 'end' ? 'end' : 'start');
+  }
   return edgePath(wallGeometry(model, getWall(model, ref.wallId)), ref.face);
 }
 
@@ -55,6 +61,13 @@ export function measureDimension(model: Model, d: Dimension): number {
   if (d.kind === 'linear') return faceDistance(model, d.refs[0], d.refs[1]);
   if (d.kind === 'length') return pathLength(facePath(model, d.ref));
   return angularValue(model, d);
+}
+
+/** Otvory, na které kóta odkazuje (hrany otvoru). */
+export function dimensionOpeningIds(d: Dimension): Id[] {
+  if (d.kind === 'linear') return d.refs.flatMap((r) => (r.openingId ? [r.openingId] : []));
+  if (d.kind === 'length') return d.ref.openingId ? [d.ref.openingId] : [];
+  return [];
 }
 
 /** Stěny, na které kóta odkazuje. */

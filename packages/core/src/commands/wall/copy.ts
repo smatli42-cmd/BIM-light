@@ -93,7 +93,7 @@ export const wallCopy = defineCommand<CopyParams>({
   run(model, p, ctx) {
     const walls = p.wallIds.map((id) => wallOf(model, id));
     const storeyId = (walls[0] ?? fail('invalid', 'Nic není vybráno')).storeyId;
-    const specs = walls.map(specOf);
+    const specs = walls.map((w) => specOf(w, model));
     const conns = connectionsWithin(model, p.wallIds);
     let m = p.replace ? deleteElements(model, p.wallIds) : model;
     const created: Id[] = [];
@@ -122,6 +122,7 @@ const SPEC_SCHEMA = S.object(
     topProfile: { type: 'object' },
     status: { type: 'string' },
     discipline: { type: 'string' },
+    openings: { type: 'array', items: { type: 'object' } },
   },
   ['typeId', 'path', 'side', 'referenceLine'],
 );

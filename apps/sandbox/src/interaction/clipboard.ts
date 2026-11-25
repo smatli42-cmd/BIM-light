@@ -24,7 +24,7 @@ export function copyWalls(model: Model, ids: readonly Id[]): Clipboard | null {
   if (!walls.length) return null;
   const b = boundsOf(walls.flatMap((w) => [w.path.start, w.path.end]));
   return {
-    walls: walls.map(specOf),
+    walls: walls.map((w) => specOf(w, model)),
     connections: connectionsWithin(
       model,
       walls.map((w) => w.id),

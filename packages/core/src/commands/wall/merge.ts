@@ -1,5 +1,5 @@
 // Příkaz: smazat uzel (katalog kreslení 5): dvě stěny stejného typu v jedné přímce, spojené
-// v uzlu, se sloučí do jedné. Napojení na vzdálených koncích zůstanou.
+// v uzlu, se sloučí do jedné. Napojení na vzdálených koncích zůstanou; otvory obou stěn zůstanou na místě.
 import { cross, endPoint, tangentAt, type PathEnd } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import { dimensionWallIds } from '../../dimension/measure.ts';
@@ -11,6 +11,8 @@ import {
   removeRelations,
 } from '../../model/update.ts';
 import type { WallConnection } from '../../relation/types.ts';
+import { openingsOf } from '../../opening/geometry.ts';
+import { offsetOn, rehostOpenings } from '../../opening/rehost.ts';
 import { connectionsOf, endToType, sidesFor, typeToEnd } from '../../wall/queries.ts';
 import { wallOf } from '../lookup.ts';
 import { S } from '../schema.ts';
@@ -46,7 +48,12 @@ export const wallDeleteNode = defineCommand<{ wallId: Id; end: PathEnd }>({
         const at = c[which].at === endToType(other(bEnd)) ? endToType(p.end) : c[which].at;
         return { ...c, [which]: { wallId: a.id, at } };
       });
-    let m = removeRelations(model, [conn.id, ...moved.map((c) => c.id)]);
+    const rehosted = openingsOf(model, b.id).map((o) => ({
+      ...o,
+      hostId: a.id,
+      offset: offsetOn(o, b.path, merged.path),
+    }));
+    let m = rehostOpenings(removeRelations(model, [conn.id, ...moved.map((c) => c.id)]), rehosted);
     m = putRelations(putElements(removeElements(m, [b.id]), [merged]), moved);
     const dims = Object.values(m.dimensions).filter((d) => dimensionWallIds(d).includes(b.id));
     m = removeDimensions(

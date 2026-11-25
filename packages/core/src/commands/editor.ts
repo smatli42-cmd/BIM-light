@@ -2,6 +2,8 @@
 // Každý úspěšný příkaz = jeden krok zpět. Model je neměnný, snímek je předchozí model.
 import { describeViolation, lockViolations } from '../constraints/locks.ts';
 import type { IdGenerator } from '../ids/index.ts';
+import { followOpenings } from '../opening/follow.ts';
+import { describeOpeningViolation, openingViolations } from '../opening/validate.ts';
 import { MAIN_MODEL, type Model, type VariantRef } from '../model/types.ts';
 import type { CommandRegistry } from './registry.ts';
 import { validate } from './schema.ts';
@@ -78,7 +80,8 @@ export class Editor {
       if (e instanceof CommandFailure) return { ok: false, error: { code: e.code, message: e.message } };
       throw e;
     }
-    const violations = lockViolations(result.model);
+    const model = followOpenings(this.current, result.model);
+    const violations = lockViolations(model);
     const first = violations[0];
     if (first) {
       const dimensionIds = violations.map((v) => v.dimensionId);
@@ -87,7 +90,9 @@ export class Editor {
         error: { code: 'lock-violation', message: describeViolation(first), dimensionIds },
       };
     }
-    this.commit(def.label, result.model);
+    const bad = openingViolations(this.current, model)[0];
+    if (bad) return { ok: false, error: { code: 'invalid', message: describeOpeningViolation(bad) } };
+    this.commit(def.label, model);
     return { ok: true, created: result.created ?? [] };
   }
 
@@ -99,8 +104,9 @@ export class Editor {
     const def = this.options.registry.get(name);
     if (!def || validate(def.params, params).length) return null;
     try {
-      const m = def.run(this.current, params, { newId: this.options.newId, variant: this.variant }).model;
-      return lockViolations(m).length ? null : m;
+      const run = def.run(this.current, params, { newId: this.options.newId, variant: this.variant }).model;
+      const m = followOpenings(this.current, run);
+      return lockViolations(m).length || openingViolations(this.current, m).length ? null : m;
     } catch (e) {
       if (e instanceof CommandFailure) return null;
       throw e;

@@ -3,13 +3,13 @@
 // Nový typ prvku = nový řádek tabulky.
 import type { WallEdge } from '../wall/edges.ts';
 
-export type ElementKind = 'wall' | 'dimension';
+export type ElementKind = 'wall' | 'opening' | 'dimension';
 
 /** Druhy bodů a čar pro přichytávání (katalog kreslení, část 2, pořadí priorit). */
 export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'face' | 'axis';
 
 /** Co se při smazání prvku smaže s ním. */
-export type DeleteCascade = 'dimensions' | 'connections';
+export type DeleteCascade = 'dimensions' | 'connections' | 'openings';
 
 export interface CrossRules {
   /** Na co jde navázat kóta (líce, osa, čela volných konců). */
@@ -28,7 +28,7 @@ export interface CrossRules {
   readonly offsettable: boolean;
   readonly deletable: boolean;
   readonly onDelete: readonly DeleteCascade[];
-  /** Co může tento prvek hostit (napojení konce, později otvory). */
+  /** Co může tento prvek hostit (napojení konce, otvory). */
   readonly hosts: readonly ElementKind[];
   /** Lze vybrat ve výkresu (pokud vrstva není zamčená). */
   readonly selectable: boolean;
@@ -44,8 +44,21 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     movable: true,
     offsettable: true,
     deletable: true,
-    onDelete: ['dimensions', 'connections'],
-    hosts: ['wall'],
+    onDelete: ['dimensions', 'connections', 'openings'],
+    hosts: ['wall', 'opening'],
+    selectable: true,
+  },
+  opening: {
+    dimensionFaces: ['start', 'end'],
+    lengthDimension: false,
+    angularDimension: false,
+    lockable: true,
+    snaps: ['endpoint', 'midpoint'],
+    movable: true,
+    offsettable: false,
+    deletable: true,
+    onDelete: ['dimensions'],
+    hosts: [],
     selectable: true,
   },
   dimension: {

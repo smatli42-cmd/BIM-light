@@ -14,7 +14,11 @@ import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 
 export const FACE_REF_SCHEMA: JsonSchema = S.object(
-  { wallId: S.id, face: S.enumOf(['ref', 'opp', 'axis', 'start', 'end'], 'líc stěny nebo čelo konce') },
+  {
+    wallId: S.id,
+    face: S.enumOf(['ref', 'opp', 'axis', 'start', 'end'], 'líc stěny nebo čelo konce'),
+    openingId: { type: 'string', description: 'GlobalId otvoru: hrana otvoru (face start / end)' },
+  },
   ['wallId', 'face'],
 );
 
@@ -29,6 +33,13 @@ const owner = { type: 'integer', enum: [0, 1] } as JsonSchema;
 
 function checkFace(model: Model, ref: FaceRef, capAllowed = true) {
   wallOf(model, ref.wallId);
+  if (ref.openingId) {
+    const o = model.openings[ref.openingId];
+    if (!o || o.hostId !== ref.wallId) fail('invalid', 'Otvor v této stěně neexistuje');
+    if (!capAllowed || !rulesFor('opening').dimensionFaces.includes(ref.face))
+      fail('invalid', `Na hranu otvoru ${ref.face} nejde kótovat`);
+    return;
+  }
   if (!rulesFor('wall').dimensionFaces.includes(ref.face) || (!capAllowed && isCap(ref.face)))
     fail('invalid', `Na líc ${ref.face} nejde kótovat`);
 }

@@ -22,10 +22,15 @@ export interface EndResult {
   readonly layers: readonly LayerEnd[];
 }
 
-/** Mezera ve vrstvě průběžné stěny: zůstane, co leží v jedné ze dvou polorovin (vně pásu jiné vrstvy). */
+/**
+ * Mezera ve vrstvě průběžné stěny: zůstane, co leží v jedné z oblastí `keep` (každá = průnik polorovin,
+ * oblasti se nepřekrývají). T a kříž: vně pásu jiné vrstvy; otvor: před a za otvorem (Z4).
+ * `extras` = kousky přidané po všech mezerách (omítka zahnutá do ostění).
+ */
 export interface Gap {
   readonly layer: number;
-  readonly outside: readonly [HalfPlane, HalfPlane];
+  readonly keep: readonly (readonly HalfPlane[])[];
+  readonly extras?: readonly (readonly Vec2[])[];
 }
 
 /** Výsledek jednoho uzlu: konce stěn (klíč „id:start|end“) a mezery průběžných stěn. */

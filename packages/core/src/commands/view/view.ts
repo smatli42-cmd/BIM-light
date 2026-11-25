@@ -1,6 +1,7 @@
 // Příkazy pohledu (základ 26): nový pohled, přepnutí stylu, měřítko, místní úpravy, Vrátit.
 // Nic z toho nemění prvky modelu ani kóty.
 import type { Id } from '../../ids/index.ts';
+import { DEFAULT_CUT_HEIGHT } from '../../wall/layers.ts';
 import type { Model } from '../../model/types.ts';
 import { putView } from '../../model/update.ts';
 import type { Detail } from '../../style/types.ts';
@@ -35,6 +36,7 @@ export const viewCreate = defineCommand<{ storeyId: Id; styleId: Id; scale?: num
       styleId: style.id,
       local: {},
       activeAnnotationLayerId: null,
+      cutPlane: DEFAULT_CUT_HEIGHT,
       elementOverrides: {},
     };
     return { model: putView(model, view), created: [view.id] };

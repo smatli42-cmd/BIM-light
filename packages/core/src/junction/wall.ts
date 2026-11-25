@@ -1,5 +1,6 @@
 // Obrys každé vrstvy jedné stěny po napojení: pás vrstvy ∩ poloroviny obou konců − mezery (stěna jako
-// hostitel v T, kříž, dvojice v uzlu) + kousky navíc (zahnutá omítka). Kousky jedné vrstvy se slijí.
+// hostitel v T, kříž, dvojice v uzlu, otvory v rovině řezu – Z4) + kousky navíc (zahnutá omítka).
+// Kousky jedné vrstvy se slijí.
 import {
   add,
   mul,
@@ -11,13 +12,16 @@ import {
   type PathEnd,
   type Vec2,
 } from '../geometry/index.ts';
-import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
+import { openingGaps } from '../opening/jamb.ts';
+import { cuttingOpenings } from '../opening/geometry.ts';
+import type { Opening } from '../opening/types.ts';
+import { DEFAULT_CUT_HEIGHT } from '../wall/layers.ts';
 import { wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
 import { unionLoops } from './chain.ts';
 import { neighbours, subEdges } from './edges.ts';
-import { clip, clipAll, MIN_AREA, signedArea } from './half-plane.ts';
+import { clipAll, MIN_AREA, signedArea } from './half-plane.ts';
 import { crossings, throughNodes } from './nodes.ts';
 import { crossNode, endResult, teeNode } from './solve.ts';
 import type { EndJoin, EndResult, Gap, LayerEnd, NodeResult } from './types.ts';
@@ -63,7 +67,8 @@ function layerPieces(band: Vec2[], s: LayerEnd, e: LayerEnd, gaps: readonly Gap[
   for (const vs of s.variants) for (const ve of e.variants) pieces.push(clipAll(band, [...vs, ...ve]));
   pieces.push(...s.extras.map((p) => [...p]), ...e.extras.map((p) => [...p]));
   pieces = pieces.filter(big);
-  for (const g of gaps) pieces = pieces.flatMap((p) => g.outside.map((h) => clip(p, h))).filter(big);
+  for (const g of gaps) pieces = pieces.flatMap((p) => g.keep.map((hs) => clipAll(p, hs))).filter(big);
+  for (const g of gaps) pieces.push(...(g.extras ?? []).map((p) => [...p]).filter(big));
   return mergePieces(pieces);
 }
 
@@ -77,9 +82,17 @@ function sources(model: Model, wall: Wall) {
   return { start: start.end, end: end.end, nodes: [...new Set(nodes)] };
 }
 
-function build(model: Model, wall: Wall, src: ReturnType<typeof sources>): WallJunction {
+function build(
+  model: Model,
+  wall: Wall,
+  src: ReturnType<typeof sources>,
+  openings: readonly Opening[],
+): WallJunction {
   const section = wallSection(model, wall);
-  const gaps = src.nodes.flatMap((n) => n.gaps.get(wall.id) ?? []);
+  const gaps = [
+    ...src.nodes.flatMap((n) => n.gaps.get(wall.id) ?? []),
+    ...openingGaps(model, wall, openings),
+  ];
   const empty: LayerEnd = { variants: [[]], extend: 0, extras: [] };
   const layers = section.layers.map((span, i) => {
     const s = src.start.layers[i] ?? empty;
@@ -103,16 +116,29 @@ function build(model: Model, wall: Wall, src: ReturnType<typeof sources>): WallJ
   };
 }
 
-const cache = new Map<Id, { deps: readonly unknown[]; result: WallJunction }>();
+const cache = new Map<string, { deps: readonly unknown[]; result: WallJunction }>();
 
-/** Napojení jedné stěny (z mezipaměti, když se vstupy nezměnily). */
-export function wallJunction(model: Model, wall: Wall): WallJunction {
+/**
+ * Napojení jedné stěny (z mezipaměti, když se vstupy nezměnily). `cutPlane` = rovina řezu pohledu nad
+ * podlažím: otvory, které ji protínají, stěnu přeruší (Z4).
+ */
+export function wallJunction(model: Model, wall: Wall, cutPlane = DEFAULT_CUT_HEIGHT): WallJunction {
   const src = sources(model, wall);
-  const deps = [wall, model.wallTypes[wall.typeId], model.materials, src.start, src.end, ...src.nodes];
-  const hit = cache.get(wall.id);
+  const openings = cuttingOpenings(model, wall, cutPlane);
+  const deps: unknown[] = [
+    wall,
+    model.wallTypes[wall.typeId],
+    model.materials,
+    src.start,
+    src.end,
+    ...src.nodes,
+  ];
+  if (openings.length) deps.push(model.storeys, ...openings);
+  const key = `${wall.id}|${cutPlane}`;
+  const hit = cache.get(key);
   if (hit && hit.deps.length === deps.length && hit.deps.every((d, i) => d === deps[i])) return hit.result;
   if (cache.size > 20000) cache.clear();
-  const result = build(model, wall, src);
-  cache.set(wall.id, { deps, result });
+  const result = build(model, wall, src, openings);
+  cache.set(key, { deps, result });
   return result;
 }
