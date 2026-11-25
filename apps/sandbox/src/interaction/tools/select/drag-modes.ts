@@ -36,8 +36,12 @@ export class BoxMode implements Mode {
     const r = rectOf(v.toWorld(this.a), v.toWorld(this.b));
     const got = boxSelect(s.model, s.view, r, this.b.x < this.a.x, s.filter);
     if (this.add)
-      s.selection.set([...s.selection.walls, ...got.wallIds], [...s.selection.dims, ...got.dimensionIds]);
-    else s.selection.set(got.wallIds, got.dimensionIds);
+      s.selection.set(
+        [...s.selection.walls, ...got.wallIds],
+        [...s.selection.dims, ...got.dimensionIds],
+        [...s.selection.openings, ...got.openingIds],
+      );
+    else s.selection.set(got.wallIds, got.dimensionIds, got.openingIds);
   }
 
   down() {
@@ -94,9 +98,9 @@ export class PressWallMode implements Mode {
   overlay(): Overlay {
     if (!this.dragging) return {};
     const geoms = allWallGeometry(this.s.model, this.s.storeyId);
-    const ghosts = this.s.selection.walls.map((id) =>
-      (geoms.get(id)?.outline ?? []).map((q) => add(q, this.vector)),
-    );
+    const ghosts = this.s.selection.walls
+      .map((id) => (geoms.get(id)?.outlines ?? []).map((loop) => loop.map((q) => add(q, this.vector))))
+      .flat();
     return { ghosts, lines: [[this.start.world, add(this.start.world, this.vector)]] };
   }
 

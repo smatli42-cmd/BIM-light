@@ -119,6 +119,27 @@ function HatchScale({ s }: { s: Session }) {
   );
 }
 
+/** Rovina řezu pohledu nad podlažím (plán stěn Z4): otvor, který ji protíná, stěnu přeruší. */
+function CutPlane({ s }: { s: Session }) {
+  return (
+    <label class="muted" title="Výška roviny řezu půdorysu nad podlažím (mm)">
+      Řez
+      <input
+        data-testid="cut-plane"
+        type="number"
+        min={0}
+        step={100}
+        value={s.view.cutPlane}
+        style={{ width: '5.5em' }}
+        onChange={(e) => {
+          const v = Number(e.currentTarget.value);
+          if (v >= 0) s.run('view.setCutPlane', { viewId: s.view.id, height: v });
+        }}
+      />
+    </label>
+  );
+}
+
 export function ViewBar({ session: s }: { session: Session }) {
   useSession(s);
   const [adding, setAdding] = useState(false);
@@ -147,6 +168,7 @@ export function ViewBar({ session: s }: { session: Session }) {
         testid="view-scale"
       />
       <HatchScale s={s} />
+      <CutPlane s={s} />
       <label class="muted">
         Kóty do
         <select

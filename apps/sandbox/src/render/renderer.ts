@@ -50,7 +50,7 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: s.view.scale };
   const model = o.previewModel ?? s.model;
   drawModel(r, s, model, hidden);
-  drawWallOutlines(ctx, s, s.selection.walls, SELECT, 2, model);
+  drawWallOutlines(ctx, s, [...s.selection.walls, ...s.selection.openings], SELECT, 2, model);
   for (const d of o.draftDims ?? []) {
     const g = resolveGraphics(s.model.display, s.view, dimensionFacts(d)).effect;
     for (const p of drawDimension(s.model, d, s.view.scale, s.model.display.paperSizes, g))

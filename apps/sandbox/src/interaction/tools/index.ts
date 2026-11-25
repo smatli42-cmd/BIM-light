@@ -7,6 +7,7 @@ import { AlignTool, RectTool, SplitTool, TrimTool, ZoomWindowTool } from './comm
 import { PasteTool } from './commands/paste-tool.ts';
 import { CopyTool, MirrorTool, MoveTool, RotateTool } from './commands/transform-tools.ts';
 import { DimensionTool } from './dimension-tool.ts';
+import { OpeningTool } from './opening-tool.ts';
 import { PickLineTool } from './pick-line-tool.ts';
 import { SelectTool } from './select/select-tool.ts';
 import { WallTool } from './wall-tool.ts';
@@ -28,13 +29,16 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   zoomwin: (s) => new ZoomWindowTool(s),
   paste: (s) => new PasteTool(s),
   pickline: (s) => new PickLineTool(s),
+  opening: (s) => new OpeningTool(s),
 };
 
-/** Nástroje, které pracují s vybranými stěnami. */
+/** Nástroje, které pracují s vybranými stěnami (přesun, kopie a zrcadlení i s otvory). */
 export const NEEDS_SELECTION: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array'];
+const OPENING_OK: readonly ToolId[] = ['move', 'copy', 'mirror'];
 
 export function createTool(id: ToolId, s: Session): Tool {
-  if (NEEDS_SELECTION.includes(id) && !s.selection.walls.length) {
+  const openings = OPENING_OK.includes(id) && s.selection.openings.length > 0;
+  if (NEEDS_SELECTION.includes(id) && !s.selection.walls.length && !openings) {
     s.toast('Nejdřív vyber stěny.', 'bad');
     return new SelectTool(s);
   }

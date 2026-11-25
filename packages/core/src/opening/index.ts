@@ -12,3 +12,4 @@ export * from './migrate-v6.ts';
 export * from './limits.ts';
 export * from './temporary.ts';
 export * from './warnings.ts';
+export * from './pick.ts';

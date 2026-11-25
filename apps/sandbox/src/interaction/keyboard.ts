@@ -20,6 +20,7 @@ export const TOOL_KEYS: Readonly<Record<string, ToolId>> = {
   t: 'trim',
   x: 'split',
   b: 'rect',
+  o: 'opening',
 };
 
 /** Přiblíží na všechny stěny (Home) nebo na vybrané (Z). */
@@ -27,7 +28,7 @@ export function zoomTo(s: Session, onlySelection: boolean) {
   const geoms = [...allWallGeometry(s.model, s.storeyId).values()].filter(
     (g) => !onlySelection || s.selection.walls.includes(g.wallId),
   );
-  const pts: Vec2[] = geoms.flatMap((g) => g.outline);
+  const pts: Vec2[] = geoms.flatMap((g) => g.outlines.flat());
   if (!pts.length) return;
   const b = boundsOf(pts);
   s.viewport.zoomToBox(b.x0, b.y0, b.x1, b.y1);
@@ -43,7 +44,7 @@ function ctrlKey(s: Session, key: string): boolean {
       return true;
     case 'a': {
       const all = boxSelect(s.model, s.view, { x0: -1e12, y0: -1e12, x1: 1e12, y1: 1e12 }, false, s.filter);
-      s.selection.set(all.wallIds, all.dimensionIds);
+      s.selection.set(all.wallIds, all.dimensionIds, all.openingIds);
       return true;
     }
     case 'c':
@@ -86,7 +87,11 @@ export function handleKey(s: Session, k: KeyInfo): boolean {
   }
   if (k.key === 'Delete' || (k.key === 'Backspace' && s.tool.id === 'select')) {
     if (!s.selection.empty)
-      s.run('selection.delete', { wallIds: s.selection.walls, dimensionIds: s.selection.dims });
+      s.run('selection.delete', {
+        wallIds: s.selection.walls,
+        dimensionIds: s.selection.dims,
+        openingIds: s.selection.openings,
+      });
     return true;
   }
   if (k.ctrl || k.alt) return false;

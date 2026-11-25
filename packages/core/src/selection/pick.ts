@@ -20,7 +20,7 @@ export function pointInPolygon(p: Vec2, poly: readonly Vec2[]): boolean {
 
 /** Geometrie stěn pohledu, které jde vybrat (vrstva viditelná a nezamčená). */
 export function selectableWallGeometry(model: Model, view: View): WallGeometry[] {
-  return [...allWallGeometry(model, view.storeyId).values()].filter((g) =>
+  return [...allWallGeometry(model, view.storeyId, view.cutPlane).values()].filter((g) =>
     isSelectable(model, view, g.wallId),
   );
 }
@@ -33,7 +33,8 @@ export function wallsAt(geoms: readonly WallGeometry[], p: Vec2, tol: number): I
   const out: Id[] = [];
   for (const g of geoms) {
     const onEdge = (['ref', 'opp'] as const).some((f) => nearestOnPath(g.faces[f], p).distance <= tol);
-    if (onEdge || pointInPolygon(p, g.outline)) out.push(g.wallId);
+    // Stěna přerušená otvorem má víc smyček obrysu (Z4); vybere se kliknutím do kterékoli.
+    if (onEdge || g.outlines.some((loop) => pointInPolygon(p, loop))) out.push(g.wallId);
   }
   return out.reverse();
 }

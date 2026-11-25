@@ -114,6 +114,34 @@ export function wallMenu(s: Session, wallId: Id, at: Vec2) {
     cmd('Otočit (R)', 'rotate'),
     cmd('Zrcadlit (F)', 'mirror'),
     cmd('Pole (P)', 'array'),
+    {
+      label: 'Okótovat celou stěnu',
+      action: () => s.run('dimension.wholeWall', { wallId, side: 'opp', viewId: s.viewId }),
+    },
     { label: 'Smazat (Del)', action: () => s.run('selection.delete', { wallIds: s.selection.walls }) },
+  ]);
+}
+
+/** Nabídka otvoru (plán stěn Z4). */
+export function openingMenu(s: Session, openingId: Id, at: Vec2) {
+  const ids = s.selection.openings.includes(openingId) ? s.selection.openings : [openingId];
+  const hostId = s.model.openings[openingId]?.hostId;
+  const cmd = (label: string, tool: Parameters<Session['setTool']>[0]) => ({
+    label,
+    action: () => s.setTool(tool),
+  });
+  open(s, ids.length > 1 ? `Otvor (${ids.length} vybraných)` : 'Otvor', at, [
+    cmd('Přesunout (M)', 'move'),
+    cmd('Kopírovat (K)', 'copy'),
+    cmd('Zrcadlit (F)', 'mirror'),
+    ...(hostId
+      ? [
+          {
+            label: 'Okótovat celou stěnu',
+            action: () => s.run('dimension.wholeWall', { wallId: hostId, side: 'opp', viewId: s.viewId }),
+          },
+        ]
+      : []),
+    { label: 'Smazat otvor (Del)', action: () => s.run('opening.delete', { openingIds: ids }) },
   ]);
 }

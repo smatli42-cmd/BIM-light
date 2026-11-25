@@ -58,7 +58,7 @@ export class OffsetMode extends ClickOrDrag {
   overlay(): Overlay {
     const g = allWallGeometry(this.s.model, this.s.storeyId).get(this.wallId);
     const v = mul(this.normal(), this.distance);
-    return g ? { ghosts: [g.outline.map((q) => add(q, v))] } : {};
+    return g ? { ghosts: g.outlines.map((l) => l.map((q) => add(q, v))) } : {};
   }
 
   tracker(): TrackerField[] {

@@ -1,6 +1,7 @@
 // Výběr rámečkem (pravidla-interakce: Výběr; kóty 12): zleva doprava jen celé prvky,
 // zprava doleva i protnuté. Vybírají se stěny i kóty; filtr podle kategorie.
 import type { Vec2 } from '../geometry/index.ts';
+import { openingOutline } from '../opening/draw.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { layoutDimension } from '../dimension/layout.ts';
@@ -71,6 +72,8 @@ export function dimensionPoints(model: Model, view: View, id: Id): Vec2[] {
 export interface BoxSelection {
   readonly wallIds: Id[];
   readonly dimensionIds: Id[];
+  /** Otvory (plán stěn Z4); řídí se filtrem stěn. */
+  readonly openingIds: Id[];
 }
 
 export function boxSelect(
@@ -82,9 +85,12 @@ export function boxSelect(
 ): BoxSelection {
   const take = (pts: readonly Vec2[]) =>
     pts.length > 0 && (crossing ? polygonTouchesRect(pts, r) : pts.every((p) => inRect(p, r)));
+  // Stěna přerušená otvorem má víc smyček obrysu (Z4).
+  const takeLoops = (loops: readonly (readonly Vec2[])[]) =>
+    loops.length > 0 && (crossing ? loops.some(take) : loops.every(take));
   const wallIds = filter.walls
     ? selectableWallGeometry(model, view)
-        .filter((g) => take(g.outline))
+        .filter((g) => takeLoops(g.outlines))
         .map((g) => g.wallId)
     : [];
   const dimensionIds = filter.dimensions
@@ -93,5 +99,10 @@ export function boxSelect(
         .filter((d) => take(dimensionPoints(model, view, d.id)))
         .map((d) => d.id)
     : [];
-  return { wallIds, dimensionIds };
+  const openingIds = filter.walls
+    ? Object.values(model.openings)
+        .filter((o) => isSelectable(model, view, o.id) && take(openingOutline(model, o)))
+        .map((o) => o.id)
+    : [];
+  return { wallIds, dimensionIds, openingIds };
 }

@@ -6,6 +6,7 @@ import {
   len,
   mul,
   norm,
+  openingOutline,
   parseNumber,
   sub,
   type Id,
@@ -25,9 +26,12 @@ export abstract class PointCommand implements Tool {
   protected last: PointerInfo | null = null;
   /** Vybrané stěny v okamžiku spuštění příkazu. */
   protected readonly ids: Id[];
+  /** Vybrané otvory (přesun, kopie a zrcadlení otvorů, plán stěn Z4); jen když není vybraná stěna. */
+  protected readonly openingIds: Id[];
 
   constructor(protected readonly s: Session) {
     this.ids = [...s.selection.walls];
+    this.openingIds = this.ids.length ? [] : [...s.selection.openings];
   }
 
   /** Nápověda pro každý krok. */
@@ -127,6 +131,10 @@ export abstract class PointCommand implements Tool {
   /** Obrysy vybraných stěn po transformaci bodů (náhled). */
   protected ghosts(fn: (p: Vec2) => Vec2): Vec2[][] {
     const geoms = allWallGeometry(this.s.model, this.s.storeyId);
-    return this.ids.map((id) => (geoms.get(id)?.outline ?? []).map(fn));
+    const ops = this.openingIds.flatMap((id) => {
+      const o = this.s.model.openings[id];
+      return o ? [openingOutline(this.s.model, o).map(fn)] : [];
+    });
+    return [...this.ids.flatMap((id) => (geoms.get(id)?.outlines ?? []).map((l) => l.map(fn))), ...ops];
   }
 }

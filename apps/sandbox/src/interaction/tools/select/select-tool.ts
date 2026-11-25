@@ -1,7 +1,7 @@
 // Nástroj Výběr (pravidla-interakce: Výběr; katalog kreslení 3–5; základ 25).
 // Klik vybere, Shift přidá/ubere, tažení z prázdna = rámeček, tažení stěny = přesun výběru,
 // uzel a líc vybrané stěny se táhnou hned, kóty se táhnou a čísla se mění kliknutím.
-import { pickFace, selectableWallGeometry, wallsAt, type Id } from '@bim-light/core';
+import { openingAt, pickFace, selectableWallGeometry, wallsAt, type Id } from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import { hitAt, type Hit } from '../../hits.ts';
 import type { Mode } from '../../mode.ts';
@@ -10,7 +10,8 @@ import type { TempDimView } from '../../temp-layout.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../../types.ts';
 import { PermDimDragMode, TempDimDragMode } from './dim-drag.ts';
 import { BoxMode, PressWallMode } from './drag-modes.ts';
-import { dimMenu, edgeMenu, nodeMenu, wallMenu } from './menus.ts';
+import { dimMenu, edgeMenu, nodeMenu, openingMenu, wallMenu } from './menus.ts';
+import { PressOpeningMode } from './opening-modes.ts';
 import { NodeMode } from './node-mode.ts';
 import { OffsetMode } from './wall-modes.ts';
 
@@ -31,9 +32,16 @@ export class SelectTool implements Tool {
 
   hint(): string {
     if (this.mode?.active && this.mode.hint) return this.mode.hint;
+    if (this.s.selection.singleOpening)
+      return 'Táhni otvor po stěně nebo na jinou stěnu; klik na číslo kóty ho posune. Del smaže.';
     if (this.s.selection.single)
       return 'Táhni uzel nebo líc; klik na číslo kóty změní hodnotu; kolečko = trvalá kóta. Mezerník přehodí stranu.';
     return 'Klikni na stěnu, Shift přidá. Tažení zleva = celé, zprava = i protnuté. Ctrl+A vše, Del smaže.';
+  }
+
+  /** Otvor pod kurzorem má přednost před stěnou, ve které leží (plán stěn Z4). */
+  private openingUnder(p: PointerInfo): Id | null {
+    return openingAt(this.s.model, this.s.view, p.world, this.s.viewport.px(3));
   }
 
   private wallsUnder(p: PointerInfo): Id[] {
@@ -51,6 +59,13 @@ export class SelectTool implements Tool {
     // Líc vybrané stěny má přednost před čárou kóty, která na něm začíná.
     if (this.faceOfSelected(p, (face, id) => (this.mode = new OffsetMode(this.s, id, face, p, true)))) return;
     if (hit) return this.onHit(hit, p);
+    const op = this.openingUnder(p);
+    if (op && p.shift) return this.s.selection.toggleOpening(op);
+    if (op) {
+      if (!this.s.selection.openings.includes(op)) this.s.selection.set([], [], [op]);
+      this.mode = new PressOpeningMode(this.s, op, p);
+      return;
+    }
     const id = this.wallsUnder(p)[0];
     if (id && p.shift) return this.s.selection.toggleWall(id);
     if (id) {
@@ -94,6 +109,11 @@ export class SelectTool implements Tool {
     }
     if (hit?.kind === 'grip') return nodeMenu(s, hit.grip.wallId, hit.grip.end, p.screen);
     if (this.faceOfSelected(p, (face, id) => edgeMenu(s, id, face, p, (m) => (this.mode = m)))) return;
+    const op = this.openingUnder(p);
+    if (op) {
+      if (!s.selection.openings.includes(op)) s.selection.set([], [], [op]);
+      return openingMenu(s, op, p.screen);
+    }
     const id = this.wallsUnder(p)[0];
     if (!id) return;
     if (!s.selection.walls.includes(id)) s.selection.set([id]);
@@ -102,7 +122,7 @@ export class SelectTool implements Tool {
 
   move(p: PointerInfo) {
     if (this.mode?.active) this.mode.move(p);
-    else this.hover = this.wallsUnder(p)[0] ?? null;
+    else this.hover = this.openingUnder(p) ?? this.wallsUnder(p)[0] ?? null;
   }
 
   up(p: PointerInfo) {

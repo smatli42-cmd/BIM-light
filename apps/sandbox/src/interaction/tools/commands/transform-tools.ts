@@ -20,7 +20,9 @@ export class MoveTool extends PointCommand {
   protected click(p: Vec2) {
     const base = this.points[0];
     if (!base) return this.next(p);
-    this.s.run('wall.move', { wallIds: this.ids, vector: sub(p, base) });
+    if (this.openingIds.length)
+      this.s.run('opening.move', { openingIds: this.openingIds, vector: sub(p, base) });
+    else this.s.run('wall.move', { wallIds: this.ids, vector: sub(p, base) });
     this.s.setTool('select');
   }
 
@@ -42,7 +44,10 @@ export class CopyTool extends MoveTool {
   protected override click(p: Vec2) {
     const base = this.points[0];
     if (!base) return this.next(p);
-    this.s.run('wall.copy', { wallIds: this.ids, transforms: [{ kind: 'translate', vector: sub(p, base) }] });
+    const vector = sub(p, base);
+    if (this.openingIds.length)
+      this.s.run('opening.copy', { openingIds: this.openingIds, vectors: [vector] });
+    else this.s.run('wall.copy', { wallIds: this.ids, transforms: [{ kind: 'translate', vector }] });
   }
 }
 
@@ -111,6 +116,10 @@ export class MirrorTool extends PointCommand {
   protected click(p: Vec2, info: PointerInfo) {
     const a = this.points[0];
     if (!a) return this.next(p);
+    if (this.openingIds.length) {
+      this.s.run('opening.mirror', { openingIds: this.openingIds, a, b: p, copy: !info.shift });
+      return this.s.setTool('select');
+    }
     this.s.run('wall.copy', {
       wallIds: this.ids,
       transforms: [{ kind: 'mirror', a, b: p }],

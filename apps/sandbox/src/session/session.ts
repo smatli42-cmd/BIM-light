@@ -27,6 +27,7 @@ import type { Clipboard } from '../interaction/clipboard.ts';
 import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { Selection } from './selection.ts';
+import type { OpeningDefaults } from './opening-defaults.ts';
 import type { MenuState, Toast, ToastAction, ToastKind, TypedInput, ValueEditState } from './ui-state.ts';
 
 /** Tolerance přichycení a výběru v px (katalog kreslení 2, pravidla-interakce kóty 7). */
@@ -52,6 +53,15 @@ export class Session {
   clipboard: Clipboard | null = null;
   /** grid = rozteč mřížky v mm, 0 = vypnutá (katalog kreslení 2.6: mřížka není, jde zapnout). */
   options = { copy: false, arrayCount: 3, arrayRadial: false, grid: 0 };
+  /** Rozměry nového otvoru (nástroj Otvor, plán stěn Z4). */
+  openingDefaults: OpeningDefaults = {
+    width: 1200,
+    height: 1500,
+    sill: 900,
+    kind: 'through',
+    depth: 150,
+    side: 'ref',
+  };
   typed: TypedInput = { field: 'len', len: '', ang: '' };
   menu: MenuState | null = null;
   valueEdit: ValueEditState | null = null;

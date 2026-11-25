@@ -1,6 +1,14 @@
 // Pomocné značky přes výkres: světle modré [R, katalog kreslení 2] – přichycení, pomocné čáry,
 // uzly, dočasné kóty, zámky a kolečka. Jsou to prvky rozhraní, ne kresba modelu.
-import { allWallGeometry, edgePath, tessellate, type Id, type Vec2, type Model } from '@bim-light/core';
+import {
+  allWallGeometry,
+  edgePath,
+  openingOutline,
+  tessellate,
+  type Id,
+  type Vec2,
+  type Model,
+} from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import type { GripView, PermDimView } from '../interaction/hits.ts';
 import type { TempDimView } from '../interaction/temp-layout.ts';
@@ -30,7 +38,7 @@ function poly(ctx: Ctx, s: Session, pts: readonly Vec2[], closed = true) {
   if (closed) ctx.closePath();
 }
 
-/** Obrysy stěn (výběr, zvýraznění pod kurzorem). */
+/** Obrysy stěn a otvorů (výběr, zvýraznění pod kurzorem). */
 export function drawWallOutlines(
   ctx: Ctx,
   s: Session,
@@ -39,14 +47,22 @@ export function drawWallOutlines(
   width: number,
   model: Model = s.model,
 ) {
-  const geoms = allWallGeometry(model, s.storeyId);
+  const geoms = allWallGeometry(model, s.storeyId, s.view.cutPlane);
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
   for (const id of ids) {
+    const o = model.openings[id];
+    if (o) {
+      poly(ctx, s, openingOutline(model, o));
+      ctx.stroke();
+      continue;
+    }
     const g = geoms.get(id);
     if (!g) continue;
-    poly(ctx, s, g.outline);
-    ctx.stroke();
+    for (const loop of g.outlines) {
+      poly(ctx, s, loop);
+      ctx.stroke();
+    }
   }
 }
 

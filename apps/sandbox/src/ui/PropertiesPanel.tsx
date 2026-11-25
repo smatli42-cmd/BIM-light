@@ -3,6 +3,7 @@
 import { bandThickness, parseNumber, typeHasCore, type Wall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { LayerMaterials } from './LayerMaterials.tsx';
+import { OpeningPanel } from './OpeningPanel.tsx';
 import { WallHeightFields } from './WallHeightFields.tsx';
 import { RefLineSelect, TypeSelect } from './WallFields.tsx';
 import { useSession } from './use-session.ts';
@@ -194,6 +195,7 @@ export function PropertiesPanel({ session }: { session: Session }) {
   return (
     <>
       <WallSection s={s} />
+      <OpeningPanel s={s} />
       {dims > 0 && (
         <section>
           <h2 data-testid="sel-dims">Vybrané kóty ({dims})</h2>

@@ -11,6 +11,9 @@ import {
   sub,
   tangentAt,
   temporaryDimensions,
+  openingEdgePath,
+  openingTempDimensions,
+  type Opening,
   type Id,
   type Model,
   type TempDimension,
@@ -39,7 +42,8 @@ export interface TempDimView {
   readonly shiftDir: Vec2;
 }
 
-export const tempKey = (t: TempDimension) => (t.kind === 'length' ? 'len' : `x-${t.own.face}`);
+export const tempKey = (t: TempDimension) =>
+  t.kind === 'length' ? 'len' : `x-${t.own.openingId ? 'o-' : ''}${t.own.face}`;
 
 function crossView(s: Session, t: Extract<TempDimension, { kind: 'cross' }>, face: Vec2): TempDimView {
   const key = tempKey(t);
@@ -99,13 +103,30 @@ function finish(
   };
 }
 
+/** Dočasné kóty vybraného otvoru: od hran k sousedům po stěně (plán stěn Z4). */
+function openingTempViews(s: Session, model: Model, id: Id): TempDimView[] {
+  return openingTempDimensions(model, id, 'ref').map((t) =>
+    crossView(
+      s,
+      t,
+      tangentAt(
+        openingEdgePath(model, model.openings[id] as Opening, t.own.face === 'end' ? 'end' : 'start'),
+        'start',
+      ),
+    ),
+  );
+}
+
 /**
  * Dočasné kóty pro jednu vybranou stěnu (při více vybraných se nezobrazují). `model` = náhled
  * během tažení uzlu (katalog kreslení 5.2), jinak skutečný model.
  */
 export function tempDimViews(s: Session, model: Model = s.model): TempDimView[] {
+  if (s.tool.id !== 'select') return [];
+  const op = s.selection.singleOpening;
+  if (op && model.openings[op]) return openingTempViews(s, model, op);
   const id = s.selection.single;
-  if (!id || s.tool.id !== 'select') return [];
+  if (!id) return [];
   const geoms = allWallGeometry(model, s.storeyId);
   const g = geoms.get(id);
   if (!g) return [];

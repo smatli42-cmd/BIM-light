@@ -27,6 +27,14 @@ export function editTemp(s: Session, t: TempDimView) {
     commit: (text) => {
       const v = parseNumber(text);
       if (!(v > 0)) return;
+      if (t.temp.own.openingId && t.temp.kind === 'cross') {
+        // Otvor (Z4): delší odstup od začátku = posun ke konci stěny, od konce = k začátku.
+        const sign = t.temp.own.face === 'start' ? 1 : -1;
+        const distance = (v - t.temp.value) * sign;
+        if (Math.abs(distance) > 1e-6)
+          s.run('opening.move', { openingIds: [t.temp.own.openingId], distance });
+        return;
+      }
       if (t.temp.kind === 'length') {
         s.run('wall.setLength', { wallId, end: s.lenEnd, length: v, face: 'ref' });
         return;
@@ -44,7 +52,10 @@ export function editTemp(s: Session, t: TempDimView) {
 /** Který odkaz kóty se hýbe: vybraná stěna z dvojice, jinak ta, z níž kóta vznikla (základ 25). */
 export function moverOf(d: Dimension, selected: readonly Id[]): 0 | 1 | undefined {
   if (d.kind === 'length') return undefined;
-  const ids = d.kind === 'linear' ? [d.refs[0].wallId, d.refs[1].wallId] : d.wallIds;
+  const ids =
+    d.kind === 'linear'
+      ? [d.refs[0].openingId ?? d.refs[0].wallId, d.refs[1].openingId ?? d.refs[1].wallId]
+      : d.wallIds;
   if (selected.includes(ids[1] as Id) && !selected.includes(ids[0] as Id)) return 1;
   if (selected.includes(ids[0] as Id)) return 0;
   return undefined;
@@ -52,7 +63,11 @@ export function moverOf(d: Dimension, selected: readonly Id[]): 0 | 1 | undefine
 
 /** Pole pro číslo trvalé kóty. */
 /** `selected` = stěny vybrané v okamžiku kliknutí na číslo (určují, co se pohne). */
-export function editPerm(s: Session, view: PermDimView, selected: readonly Id[] = s.selection.walls) {
+export function editPerm(
+  s: Session,
+  view: PermDimView,
+  selected: readonly Id[] = [...s.selection.walls, ...s.selection.openings],
+) {
   const d = view.dim;
   const value = measureDimension(s.model, d);
   s.valueEdit = {
