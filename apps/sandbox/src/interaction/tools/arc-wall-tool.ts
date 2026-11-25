@@ -20,7 +20,7 @@ import { clearTyped, editTyped } from '../../session/ui-state.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
 import { arcGhost, arcInfo, circleSnap, positive, sideOf } from './arc-helpers.ts';
 import { connectionAt } from './wall-links.ts';
-import { snapLabel } from './wall-tool.ts';
+import { snapLabel } from './wall-chain.ts';
 
 type Mode = 'three' | 'tangent';
 

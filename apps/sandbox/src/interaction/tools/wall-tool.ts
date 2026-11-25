@@ -3,31 +3,13 @@
 // dvojklik / pravé tlačítko řetěz ukončí, Backspace vrátí poslední stěnu, mezerník přehodí stranu.
 // U řetězu se po prvním kliku volí druh úseku (úsečka / tečný oblouk / oblouk bodem, klávesa M).
 // Napojení se ukládá jako vztah (základ 24).
-import {
-  dist,
-  tangentAt,
-  trackerPoint,
-  type Id,
-  type Path,
-  type SnapResult,
-  type Vec2,
-} from '@bim-light/core';
+import { dist, trackerPoint, type Id, type Path, type SnapResult, type Vec2 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { clearTyped, editTyped } from '../../session/ui-state.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
 import { arcGhost, arcInfo } from './arc-helpers.ts';
-import { connectionAt } from './wall-links.ts';
+import { chainLinks, snapLabel, type Chain } from './wall-chain.ts';
 import { endDirection, nextSegment, segmentPath, type Segment } from './wall-segment.ts';
-
-interface Chain {
-  pt: Vec2;
-  first: Vec2;
-  prevDir: number | null;
-  count: number;
-  lastWallId: Id | null;
-  firstWallId: Id | null;
-  stack: { pt: Vec2; prevDir: number | null; lastWallId: Id | null }[];
-}
 
 export class WallTool implements Tool {
   readonly id = 'wall';
@@ -130,20 +112,6 @@ export class WallTool implements Tool {
     this.endChain();
   }
 
-  private links(c: Chain, path: Path, closing: boolean) {
-    const conns: { end: 'start' | 'end'; wallId: Id; at: string }[] = [];
-    const startLink = c.lastWallId
-      ? { wallId: c.lastWallId, at: 'ATEND' }
-      : connectionAt(this.s, c.pt, [], tangentAt(path, 'start'));
-    if (startLink) conns.push({ end: 'start', ...startLink });
-    const back = tangentAt(path, 'end');
-    const endLink = closing
-      ? { wallId: c.firstWallId as Id, at: 'ATSTART' }
-      : connectionAt(this.s, path.end, c.lastWallId ? [c.lastWallId] : [], { x: -back.x, y: -back.y });
-    if (endLink) conns.push({ end: 'end', ...endLink });
-    return conns;
-  }
-
   private addPath(path: Path) {
     const c = this.chain;
     const s = this.s;
@@ -155,7 +123,7 @@ export class WallTool implements Tool {
       path,
       side: s.wallSide,
       referenceLine: s.wallRefLine,
-      connections: this.links(c, path, closing),
+      connections: chainLinks(this.s, c, path, closing),
       autoCross: true,
     });
     if (!r.ok) return;
@@ -263,8 +231,3 @@ export class WallTool implements Tool {
   }
 }
 
-export function snapLabel(r: SnapResult): string {
-  const sn = r.snap;
-  if (!sn) return '';
-  return sn.count > 1 ? `${sn.label} ${sn.index + 1}/${sn.count} (C = další)` : sn.label;
-}
