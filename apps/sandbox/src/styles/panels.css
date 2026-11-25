@@ -392,3 +392,153 @@
   flex-direction: column;
   gap: 2px;
 }
+
+/* Obsah projektu (koncepce rozhraní, část 4). */
+.content-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+.panel .content-tabs button {
+  flex: 1;
+  justify-content: center;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  font-weight: 600;
+}
+.panel .content-tabs button[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.panel .content-tabs button:disabled {
+  color: var(--muted);
+  opacity: 0.6;
+}
+.content-group {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 6px 0 2px;
+}
+.content-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.panel .content-list button {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 4px 6px;
+}
+.panel .content-list button span:nth-child(2) {
+  flex: 1;
+  text-align: left;
+}
+.panel .content-list button.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.vs-row {
+  display: grid !important;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.panel button.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Najít a vybrat (koncepce rozhraní, část 2 B). */
+.commandbar {
+  position: relative;
+}
+.find-panel {
+  position: absolute;
+  left: 48px;
+  top: 34px;
+  z-index: 30;
+  width: 340px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.find-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--accent);
+  font-size: 15px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.chip {
+  padding: 3px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.find-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.find-row input,
+.find-row select {
+  width: 100%;
+  min-width: 0;
+}
+.find-row .range {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 4px;
+  align-items: center;
+}
+.find-count {
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+.find-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.find-actions button {
+  padding: 4px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.find-actions button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.find-actions button.link {
+  border: 0;
+  color: var(--accent);
+}

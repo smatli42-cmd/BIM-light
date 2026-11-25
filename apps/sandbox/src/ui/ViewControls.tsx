@@ -4,6 +4,7 @@
 import { activeAnnotationLayer, DEFAULT_SCALES, isViewModified, styleOfView } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
+import { currentSet, switchSet } from '../session/sets.ts';
 
 export function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
   const storeys = Object.values(s.model.storeys);
@@ -67,24 +68,29 @@ export function ScaleSelect(props: { value: number; onPick: (v: number) => void;
   );
 }
 
+/**
+ * Přepínač sad (koncepce rozhraní, část 4): překreslí pracovní okno stylem sady a filtruje Obsah. Stav
+ * ukazuje styl aktivního okna (u uloženého pohledu jeho vlastní).
+ */
 export function StyleSwitch({ s }: { s: Session }) {
   const v = s.view;
   const style = styleOfView(s.model.display, v);
   const modified = isViewModified(v);
+  const set = currentSet(s);
   return (
     <span class="style-switch">
       {Object.values(s.model.display.styles).map((st) => (
         <button
           key={st.id}
           data-testid={`style-${st.name}`}
-          class={st.id === v.styleId ? 'active' : ''}
-          onClick={() => s.run('view.setStyle', { viewId: v.id, styleId: st.id })}
+          class={st.id === set ? 'active' : ''}
+          onClick={() => switchSet(s, st.id)}
         >
           {st.name}
         </button>
       ))}
       <span class="muted" data-testid="style-state">
-        styl: {style.name}
+        {v.saved ? `pohled: ${v.name} · ` : ''}styl: {style.name}
         {modified ? ' (upraveno)' : ''}
       </span>
       {modified && (

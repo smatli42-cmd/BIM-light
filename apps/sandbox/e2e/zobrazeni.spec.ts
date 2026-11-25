@@ -74,7 +74,8 @@ test.describe('katalog-pohledy / krok 4: zobrazení v sandboxu', () => {
     await page.getByTestId('new-view-style').selectOption({ label: 'Projekt' });
     await expect(page.getByTestId('new-view-scale')).toHaveValue('50');
     await page.getByTestId('new-view-create').click();
-    await expect(page.getByTestId('style-state')).toHaveText('styl: Projekt');
+    // Nový pohled je uložený pohled (koncepce rozhraní, část 4): stav ukáže jeho název a styl.
+    await expect(page.getByTestId('style-state')).toContainText('styl: Projekt');
     await expect(page.getByTestId('view-select').locator('option')).toHaveCount(2);
     await expect(page.getByTestId('view-scale')).toHaveValue('50');
   });

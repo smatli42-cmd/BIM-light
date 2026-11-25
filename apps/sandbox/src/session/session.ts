@@ -77,6 +77,8 @@ export class Session {
     world: { x: 0, y: 0 },
     inside: false,
   };
+  /** Zvolená sada zobrazení (styl) – filtruje Obsah (session/sets.ts); null = podle pracovního okna. */
+  setStyleId: Id | null = null;
   /** Geometrická metoda nástroje Stěna (koncepce rozhraní, část 2 D). */
   wallMethod: WallMethod = 'chain';
   /** Motiv rozhraní a podklad výkresu (koncepce rozhraní, část 5). */

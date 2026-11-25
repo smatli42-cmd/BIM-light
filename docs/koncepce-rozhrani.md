@@ -60,8 +60,13 @@ k dřívějším rozporům jsou v části 11.
 - Úpravy, které nezávisí na aktivním nástroji a pracují s výběrem: přesunout, otočit, zrcadlit,
   kopírovat, pole, zarovnat, do rohu, rozdělit, spojit, zakřivit / vyrovnat, odsadit, měřit, zamknout /
   odemknout, skupina.
-- Vlevo **lupa = hledání příkazů (Ctrl+K)**: píše se název nebo část („rozdělit“, „kóta“), Enter spustí.
-  Tady se později bude zadávat i požadavek pro AI.
+- Vlevo **lupa = Najít a vybrat** (podle vzoru, jako Archicad; uživatel 2026-11-25): panel s kritérii –
+  typ prvku (čipy), rozsah (aktuální / všechna podlaží), typ stěny, materiál, ID a název obsahuje,
+  oblouková stěna, rozsahy tloušťky, výšky a šířky otvoru; „Nalezeno N prvků“, + Vybrat / − Odebrat /
+  Nahradit výběr / Vymazat. Stejný dotaz jádra (`element.find`) má AI. Později uložené sady kritérií
+  (součást projektu i IFC).
+- **Hledání příkazů (Ctrl+K)** zůstává jako samostatná klávesová paleta (krok UI5); tam se později bude
+  zadávat i požadavek pro AI.
 - Příkazy v logických skupinách oddělených čárou; varianty pod malou šipkou (např. zarovnat ▾).
 - Nedostupný příkaz (nic vybráno, nevhodný prvek) je zašedlý, bublina řekne proč.
 
@@ -251,9 +256,9 @@ promýšlí – rozhraní pro jejich úpravu se navrhne zvlášť, se screenshot
 |---|---|---|
 | UI1 kostra | rozložení A–G (prázdné oblasti), motivy světlý / tmavý, podklad výkresu, komponenta ikony + prvních ~30 ikon | sandbox běží v novém rozložení v obou motivech, testy zelené |
 | UI2 nástroje a info box | paleta C, info box D z popisu parametrů (nástroj i výběr), metoda geometrie, sloučení Stěna + Oblouková stěna | vše z dnešní levé lišty a panelu Vlastnosti je v C a D |
-| UI3 příkazy a Obsah | lišta B, hledání Ctrl+K, Obsah F se záložkami Projekt / Pohledy (pracovní okno podlaží, uložené pohledy, + Uložit pohled, nastavení pohledu s fází a variantou), přepínač sad filtruje Obsah, lišta sekcí F' | dnešní pravé záložky a výběr pohledu jsou v F/F' |
+| UI3 příkazy a Obsah | lišta B, Najít a vybrat (lupa), Obsah F se záložkami Projekt / Pohledy (pracovní okno podlaží, uložené pohledy, + Uložit pohled, nastavení pohledu s fází a variantou), přepínač sad filtruje Obsah, lišta sekcí F' | dnešní pravé záložky a výběr pohledu jsou v F/F' |
 | UI4 spodní lišta a okna | lišta G (zoom, přichytávání, vrstvy, styl, měřítko, rovina řezu), více oken vedle sebe, aktivní okno | dnešní horní lišta pohledu zmizí |
-| UI5 plovoucí prvky | tracker ΔX/ΔY, nabídka metody po prvním kliku, kontextová paleta u uzlu a hrany, průvodce prostředím | kreslení a úpravy bez levého panelu |
+| UI5 plovoucí prvky | hledání příkazů Ctrl+K, tracker ΔX/ΔY, nabídka metody po prvním kliku, kontextová paleta u uzlu a hrany, průvodce prostředím | kreslení a úpravy bez levého panelu |
 
 Před každým krokem: screenshot odpovídající části Arditu → porovnání → zapsat rozhodnutí.
 **Pořadí (rozhodnuto): nejdřív UI1–UI5, potom stěny Z6** (předvolby fází patří do lišty G).

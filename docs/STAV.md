@@ -1,11 +1,28 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, rozhraní UI2 – paleta a info box.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, rozhraní UI3 – Obsah, pohledy a Najít a vybrat.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Rozhraní: UI3 hotovo, 2026-11-25 (Obsah, uložené pohledy, sady, Najít a vybrat)
+- **Jádro:** pohled má příznak `saved` – pracovní okno podlaží (false, jedno na podlaží, vzniká s
+  podlažím v `storey.create`) a uložené pohledy (true). Příkazy `view.save` (Uložit pohled z okna, název
+  „Půdorys 1.NP“, „… (2)“), `view.loadSettings`, `view.rename`, `view.delete` (pracovní okno smazat nejde);
+  `view.create` má `saved`. Schéma 9 → 10 (`view/migrate-v9.ts`: první pohled podlaží = pracovní okno).
+  Dotaz **`element.find`** (`selection/find.ts`): druh, podlaží, typ stěny, materiál, ID / název obsahuje,
+  oblouková, rozsahy tloušťky, výšky a šířky otvoru. `project.info` vrací u pohledů `saved`. Krok scénáře AI.
+- **Obsah vpravo** (`ui/content/`): záložky **Projekt** (podlaží → pracovní okno, nastavení podlaží) a
+  **Pohledy** (uložené pohledy aktuální sady s měřítkem, + Uložit pohled, **Nastavení pohledu**: název,
+  zdroj, styl, měřítko, řezná rovina, Fáze a Varianta „podle okna“ připravené, Načíst nastavení
+  aktuálního okna, Smazat pohled); Výkresy a Export zašedlé (etapa 7).
+- **Přepínač sad nahoře** (`session/sets.ts`): překreslí pracovní okno stylem sady a filtruje Pohledy;
+  uložené pohledy jiných sad se nemění. Stav u uloženého pohledu ukáže „pohled: název · styl“.
+- **Najít a vybrat** pod lupou (`ui/find/`): čipy typu prvku, kritéria, „Nalezeno N prvků“, + Vybrat /
+  − Odebrat / Nahradit výběr / Vymazat; počítá stejný dotaz jádra jako AI.
+- Testy: jádro 658, prohlížeč 110 (nové `obsah.spec.ts`; záložka Podlaží → Obsah `tab-contents`).
 
 ### Rozhraní: UI2 hotovo, 2026-11-25 (paleta a info box)
 - **Info box po sekcích** (`ui/infobox/`): sbalitelné sekce s (i); přepínač **Instance / Typ** (Typ =
@@ -134,11 +151,10 @@ Velikost šraf (2026-11-25):
   s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2 (info box, metoda Stěny, nabídka úseku řetězu, rychlý výběr typu).
-- Potom **UI3 – lišta příkazů a Obsah** podle `koncepce-rozhrani.md` (části 2 F a 4, rozhodnuto
-  2026-11-25 se screenshoty Obsahu a Organizátoru): záložky Projekt (pracovní okno podlaží) a Pohledy
-  (uložené pohledy aktuální sady, + Uložit pohled, nastavení pohledu: styl, měřítko, řezná rovina, fáze,
-  varianta „podle okna“ / pevně), přepínač sad filtruje Obsah, hledání příkazů Ctrl+K. Chybí ještě
-  screenshot hledání (lupa vlevo nahoře). Pak UI4–UI5, až po nich stěny Z6.
+- Uživatel vyzkouší UI3 (Obsah Projekt / Pohledy, Uložit pohled, přepnutí sady, Najít a vybrat).
+- Potom **UI4 – spodní lišta a okna**: lišta G (vrstvy, přichytávání, styl, měřítko, rovina řezu, fáze),
+  víc oken vedle sebe, aktivní okno. Před začátkem screenshot spodní lišty Arditu s rozbalenými volbami.
+  Pak UI5, až po něm stěny Z6.
 
 ## Otevřené
 
@@ -153,6 +169,8 @@ Velikost šraf (2026-11-25):
 - Jemná podrobnost (= střední), podle plánu krok Z6.
 - UI1: hledání příkazů (Ctrl+K) je zatím jen neaktivní ikona (UI3); panel Podlaží je provizorní místo
   Obsahu (UI3); úpravy Studie / Projekt jsou zatím jen dva styly bez Elektro.
+- UI3: uložené sady kritérií Najít a vybrat zatím nejsou; řezy, pohledy, 3D a výpisy v Obsahu přibudou
+  s etapami; Organizátor s etapou 7; hledání příkazů Ctrl+K přesunuto do UI5.
 - UI2: metody natočený obdélník a oblouk středem (jsou ve vzoru) zatím nejsou; tracker u tečného oblouku
   a oblouku bodem jen ukazuje poloměr a úhel (číslo napsat nejde); rychlý výběr typu zatím jen u Stěny.
 - Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).

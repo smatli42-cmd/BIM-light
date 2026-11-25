@@ -11,14 +11,14 @@ test.describe('plan-steny / Z3: výška stěny, podlaží a export IFC v sandbox
     await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
     await clickAt(page, 2000, 150);
     await expect(page.getByTestId('h-result')).toContainText('Výška 3000 mm');
-    await page.getByTestId('tab-storeys').click();
+    await page.getByTestId('tab-contents').click();
     await page.getByTestId('storey-height-0').fill('3100');
     await page.getByTestId('storey-height-0').press('Enter');
     await expect(page.getByTestId('h-result')).toContainText('Výška 3100 mm');
   });
 
   test('plan-steny / Z3: vršek přes dvě podlaží a odsazení v panelu Vlastnosti', async ({ page }) => {
-    await page.getByTestId('tab-storeys').click();
+    await page.getByTestId('tab-contents').click();
     await page.getByTestId('storey-add').click();
     await expect(page.getByTestId('storey-1')).toContainText('2.NP');
     await page.getByTestId('storey-open-0').click();
@@ -34,7 +34,7 @@ test.describe('plan-steny / Z3: výška stěny, podlaží a export IFC v sandbox
 
   test('plan-steny / Z3: smazání podlaží se stěnou se odmítne s počtem prvků', async ({ page }) => {
     await room(page);
-    await page.getByTestId('tab-storeys').click();
+    await page.getByTestId('tab-contents').click();
     await page.getByTestId('storey-add').click();
     await page.getByTestId('storey-delete-0').click();
     await expect(page.getByText(/4 prvků/)).toBeVisible();
