@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, tepelná izolace přes celou šířku vrstvy.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, stěny Z4 – otvory ve stěně.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 
@@ -80,6 +80,44 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
 - Kóty, zámky a výběr zůstaly 2D beze změny (všechny dřívější testy zelené).
 - Testy: jádro, IFC a nástroje 432 (Vitest), prohlížeč 91 (Playwright), vše zelené.
 
+### Stěny: Z4 hotovo, 2026-11-25 (otvory ve stěně)
+- **Složka `opening/`** (základ 19): prvek Otvor ve sbírce `model.openings` (IfcOpeningElement): hostitel
+  `hostId`, `offset` = vzdálenost počátku od začátku referenční čáry, šířka, výška, parapet nad spodkem
+  stěny, druh průchozí / nika (hloubka + strana ref / opp), stav, varianta, obrys `{rect}` (polygon jen
+  v datech). Schéma 6 → 7 (`opening/migrate-v6.ts`): prázdné otvory + rovina řezu pohledu 1000 mm.
+- **Výřez vrstev** (`opening/jamb.ts`): mechanismus mezer ze Z2 rozšířen (mezera = oblasti, které zůstanou,
+  + kousky navíc). Průchozí otvor přeruší všechny vrstvy, omítky zahnou do ostění (pravidlo níže), nika
+  vyřízne jen vrstvy do své hloubky. Hrubá i střední podrobnost stěnu v otvoru přeruší (dvě smyčky obrysu).
+- **Rovina řezu** = nastavení pohledu (`view.cutPlane`, příkaz `view.setCutPlane`, v liště „Řez“). Otvor,
+  který ji protíná, stěnu přeruší; otvor celý nad / pod ní stěnu nepřeruší a kreslí se čárkovaným obrysem
+  v tloušťce stěny (pero a barva z funkce grafiky, kategorie „opening“).
+- **Příkazy:** `opening.create` (offset nebo střed v bodě), `opening.move` (po stěně, nebo vektorem i na
+  jinou stěnu), `opening.update` (rozměry, druh, stav; šířka kolem středu), `opening.delete`,
+  `opening.copy` (i pole), `opening.mirror`; `selection.delete` maže i otvory. Dotaz `opening.list`
+  (poloha, výšky, vztah k rovině řezu, upozornění). Krok scénáře AI.
+- **Vazby na stěnu** (`opening/follow.ts`, hlídá editor po každém příkazu): otvor jde se stěnou při
+  posunu, otočení, odsazení, kopii, zrcadlení, poli i vložení ze schránky; při změně délky stojí na místě
+  (uchopený konec). Smazání stěny smaže otvory. Rozdělení přes otvor se odmítne, jinak otvor přejde na
+  část, ve které leží; sloučení (Smazat uzel) otvory zachová. Změna tloušťky a typu polohu nemění.
+- **Kontrola** (`opening/validate.ts`, v editoru): otvor musí ležet celý ve stěně po délce i na výšku, nika
+  mělčí než stěna, otvory se nepřekrývají. Zkrácení stěny, ořez do rohu, snížení stěny nebo podlaží, které
+  by to porušilo, se odmítne s vysvětlením. Pilířek u napojeného konce pod 100 mm jen upozorní (panel,
+  dotaz).
+- **Kóty:** trvalá kóta smí odkazovat na hranu otvoru (`FaceRef.openingId`, hrana = příčka přes stěnu
+  v líci stavebního otvoru), zámek i změna čísla (posune otvor; kóta mezi hranami téhož otvoru = šířka).
+  Smazání otvoru smaže jeho kóty. **Okótovat celou stěnu** (`dimension.wholeWall`, nabídka stěny
+  i otvoru): řetěz líc – hrany otvorů – líc + celková délka, dvě skupiny zarovnání v aktivní skupině
+  anotací. Dočasné kóty vybraného otvoru: k sousednímu otvoru nebo k líci / čelu, které stěnu ohraničuje.
+- **IFC:** IfcOpeningElement (OPENING, u niky RECESS) + IfcRelVoidsElement; tělo stěny je bez otvorů.
+  Ověřeno knihovnou web-ifc.
+- **Sandbox:** nástroj **Otvor** (O, tlačítko v liště; klik na stěnu, náhled s výřezem, přichytávání ke
+  středu stěny, k líci v rohu, k otvorům a k ose otvoru v jiné stěně, Alt vypne; rozměry v panelu „Nový
+  otvor“, v trackeru odstupy). Klik do otvoru ho vybere, tažení posune (i na jinou stěnu), Del smaže,
+  Přesunout / Kopírovat / Zrcadlit fungují i na otvory, panel „Vybrané otvory“ z popisu parametrů.
+- **Oprava při testech:** stěnu přerušenou otvorem šlo vybrat jen v největší části (výběr bral jen největší
+  smyčku obrysu); klik i rámeček teď berou všechny smyčky. Rámeček vybírá i otvory.
+- Testy: jádro, IFC a nástroje 603 (Vitest), prohlížeč 96 (Playwright), vše zelené.
+
 ### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
 - **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
   na papíře, opakované v rastru (dx, dy, posun řad, úhel). Rodina čar má navíc volitelný kolmý posun
@@ -126,6 +164,34 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
 - Šrafy v knihovně mají verzi 3; uložené projekty si drží své kopie (základ 21).
 
 ## Rozhodl Code (k potvrzení)
+
+Stěny Z4 – otvory (2026-11-25):
+- **Šířka otvoru = stavební otvor v jádru.** Hrany otvoru (a kóty k nim) leží v líci zdiva; omítky
+  zahnou do ostění, takže světlost v omítce je o tloušťku omítek menší (české výkresy kótují stavební
+  otvor).
+- **Obalení ostění = stejné pravidlo jako volný konec (Z2):** povrchové vrstvy každé strany zahnou do
+  ostění do poloviny těla (jádro + izolace); má-li povrch jen jedna strana, zahne přes celou tloušťku
+  (Obvodová zateplená 465: vnitřní omítka zahne i přes EPS). Vrstva u jádra jde nejblíž hraně otvoru.
+  Okno v etapě 4 to upraví podle polohy výplně. Nika se neobaluje.
+- **Otvor je ve vlastní sbírce `openings`**, ne mezi stěnami v `elements`; vztah ke stěně je uložený
+  odkaz `hostId` (do IFC se zapíše jako IfcRelVoidsElement). Otvor nemá typ (IfcOpeningElement ho nemá).
+- **Poloha po stěně se po příkazu přepočítá podle změny referenční čáry:** celá stěna pohnutá / stejná
+  délka / stojí začátek = vzdálenost od začátku zůstane; pohnul se jen začátek = otvor stojí; jinak se
+  počátek otvoru promítne. Kontrola i přepočet běží v editoru po každém příkazu (jako zámky kót).
+- **Otvory se nesmí překrývat** (po délce i na výšku); Revit to dovolí, tady by výřez vrstev nebyl
+  jednoznačný.
+- **Nika:** hloubka od zvoleného líce, musí být menší než tloušťka stěny; v IFC typ RECESS.
+- **Okótovat celou stěnu:** výchozí líc je protilehlý (u místnosti kreslené po vnitřním líci = vnější),
+  řady 800 a 1200 mm od líce. Konec stěny = čelo volného konce, nebo líc napojené stěny, na kterém líc
+  končí (musí být kolmý na stěnu, jinak se příkaz odmítne). Úseky mezi napojenými příčkami (bod 2
+  v pravidlech interakce) zatím ne – jen otvory a celková délka. Kóty jsou asociativní a odemčené.
+- **Upozornění „těsně u rohu“:** pilířek (od hrany otvoru ke konci líce u napojeného konce) pod 100 mm;
+  záporný = „zasahuje do napojené stěny“. Jen upozornění v panelu a v dotazu.
+- **Rovina řezu** platí pro otvory; výběr výškového pásu stěny zatím dál bere 1000 mm (Z6 použije
+  rovinu řezu i pro stěny).
+- **Přichytávání otvoru:** střed stěny, hrana k líci na konci stěny, hrana k hraně sousedního otvoru, osa
+  k ose otvoru v jiné stěně podlaží; tolerance 10 px.
+- **Čárkovaný obrys** otvoru mimo řez je konvence (typ čáry); pero a barva jdou z funkce grafiky.
 
 Tepelná izolace (2026-11-25):
 - Poměry 0,65 / 0,3 jsem odečetl z obrázku Arditu. Očka jsou na obou lících stejná, takže nezáleží na
@@ -252,9 +318,9 @@ Stěny Z1:
 
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
-- Uživatel vyzkouší stěny Z3 (záložka Podlaží, výška vybrané stěny, Exportovat IFC a otevření v BIMvision).
-  Potom stěny Z4 – otvory ve stěně (model Sonnet 5.5), stejnou větou „Pokračuj podle
-  docs/instrukce-code-steny.md…“.
+- Uživatel vyzkouší stěny Z4 (nástroj Otvor, ostění v Projektu, rovina řezu, Okótovat celou stěnu, IFC
+  s otvory v BIMvision) a potvrdí body „Rozhodl Code“ u Z4.
+- Potom stěny Z5 – oblouk (model Sonnet 5.5), stejnou větou „Pokračuj podle docs/instrukce-code-steny.md…“.
 
 ## Otevřené
 
@@ -273,15 +339,18 @@ Stěny Z1:
 - Z2: nic z pozdějších kroků nebylo potřeba; desky (rozhodnutí E) se napojení v půdorysu netýkají.
 - Z3 (rozhodnutí E): **desky** – vršek stěny nejde přichytit ke stropu, „omítka pod strop“ je jen číslo
   prodloužení. **Ukládání projektu v sandboxu** – Platform v prohlížeči umí jen stažení (export IFC).
+- Z4: **okna a dveře** (etapa 4) – ostění se počítá bez výplně; obalení podle polohy okna doplní etapa 4.
+  **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
+  parapet), kresba jen v půdorysu.
 
-## Největší soubory (po stěnách Z3)
+## Největší soubory (po stěnách Z4)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (325 souborů). Balíček `packages/ifc`: největší wall.ts.
+Výstup `npm run check:size`: varování 0, chyb 0 (375 souborů). Nová složka `packages/core/src/opening/`.
 
 | Řádky | Soubor |
 |---|---|
+| 229 | packages/core/src/ai/scenario.test.ts |
 | 223 | apps/sandbox/src/interaction/tools/wall-tool.ts |
 | 217 | apps/sandbox/e2e/kresleni.spec.ts |
 | 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 211 | packages/core/src/ai/scenario.test.ts |
-| 209 | apps/sandbox/src/ui/PropertiesPanel.tsx |
+| 211 | apps/sandbox/src/ui/PropertiesPanel.tsx |
