@@ -9,7 +9,7 @@ const CHEVRON = polyline([0.9, 1.6], [-0.9, 0], [0.9, -1.6]);
 /** Dvojitá krátká šikmá čárka (sklo). */
 const DOUBLE = [seg(-0.9, -0.8, 0.1, 0.8), seg(-0.3, -0.8, 0.7, 0.8)];
 /** Pás ze tří rovnoběžných čar (ploché sklo). */
-const BAND = [0, 0.6, 1.2].map((shift) => lines(60, 9.6, [], 0, shift));
+const BAND = [0, 0.7, 1.4].map((shift) => lines(60, 9.6, [], 0, shift));
 
 export const DREVO_KOV_SKLO: readonly Hatch[] = [
   h(20, 'hatch.drevo', 'Dřevo', { families: [motif([CHEVRON], 2.4, 4.0)] }),

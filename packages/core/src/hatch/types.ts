@@ -146,7 +146,7 @@ export const entry =
     name,
     group,
     order,
-    version: 2,
+    version: 3,
     derived: !!rest.variantOf,
     families: [],
     ...rest,

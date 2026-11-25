@@ -19,8 +19,8 @@ const DASHES = [
 ];
 
 export const ZEMINY: readonly Hatch[] = [
-  h(3, 'hatch.teren', 'Terén (zemina)', { families: [lines(45, 3.2)] }),
-  h(4, 'hatch.zasypy', 'Zásypy a násypy', { families: [lines(45, 4.8, [1.6, 1.6])] }),
+  h(3, 'hatch.teren', 'Terén (zemina)', { families: [lines(45, 2.0)] }),
+  h(4, 'hatch.zasypy', 'Zásypy a násypy', { families: [lines(45, 2.0, [1.6, 1.6])] }),
   h(5, 'hatch.zeminy-kamenivo', 'Zeminy – kamenivo', {
     variantOf: 'hatch.teren',
     families: [

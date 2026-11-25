@@ -4,7 +4,8 @@ import { entry, lines, motif, type Hatch } from '../types.ts';
 import { ring, tri } from './shapes.ts';
 
 const h = entry('beton');
-const S = 4.8;
+/** Rozteč plných čar; čerchované leží mezi nimi, výsledná rozteč 2 mm (praxe 1 : 50). */
+const S = 4.0;
 const FULL = lines(45, S);
 
 export const BETON: readonly Hatch[] = [

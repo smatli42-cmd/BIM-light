@@ -1,9 +1,15 @@
 // Šrafa ve výkresu: výplň materiálu a šrafa z dat, oříznutá mnohoúhelníkem vrstvy (základ 34).
-// Rozměry šrafy jsou mm na papíře převedené na pixely stejným koeficientem jako tloušťky čar
-// (stálé na obrazovce); počátek rastru je společný bod modelu, sousední stěny na sebe navazují.
+// Rozměry šrafy jsou mm na papíře (základ 29): na obrazovce se zvětšují s přiblížením stejně jako
+// texty (mm papíru × měřítko × zoom). Počátek rastru je společný bod modelu, sousední stěny navazují.
 import { penWidthMm, type Primitive } from '@bim-light/core';
 import { paintHatch } from './hatch-paint.ts';
 import { pathOf, PX_PER_PAPER_MM, type RenderContext } from './primitives.ts';
+
+/** Pod tímto počtem px na 1 mm papíru (velké oddálení) se kreslí jen výplň, čáry by splynuly. */
+export const HATCH_MIN_PX_PER_MM = 1;
+
+/** Kolik px na obrazovce odpovídá 1 mm na papíře: měřítko (mm modelu na mm papíru) × zoom (px na mm modelu). */
+export const hatchPxPerMm = (scale: number, pxPerModelMm: number): number => scale * pxPerModelMm;
 
 export function drawHatch(r: RenderContext, p: Extract<Primitive, { kind: 'hatch' }>, color?: string) {
   if (p.polygon.length < 3) return;
@@ -17,6 +23,11 @@ export function drawHatch(r: RenderContext, p: Extract<Primitive, { kind: 'hatch
     ctx.lineWidth = 1;
     ctx.stroke();
   }
+  const pxPerMm = hatchPxPerMm(r.scale, v.s);
+  if (pxPerMm < HATCH_MIN_PX_PER_MM) {
+    ctx.restore();
+    return;
+  }
   ctx.clip();
   const pts = p.polygon.map((q) => v.toScreen(q));
   const xs = pts.map((q) => q.x);
@@ -29,7 +40,7 @@ export function drawHatch(r: RenderContext, p: Extract<Primitive, { kind: 'hatch
     x1: Math.max(...xs),
     y1: Math.max(...ys),
     origin: v.toScreen(p.origin),
-    pxPerMm: PX_PER_PAPER_MM,
+    pxPerMm,
   });
   ctx.restore();
 }

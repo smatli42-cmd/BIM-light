@@ -16,9 +16,9 @@ const scatter = (k: number) => [
 export const OSTATNI: readonly Hatch[] = [
   h(1, 'hatch.bez-srafy', 'bez šrafy'),
   h(2, 'hatch.obecne', 'Obecné (bez rozlišení hmot)', {
-    families: [lines(45, 4.8), lines(45, 4.8, [3.2, 1.6], 0, 2.4)],
+    families: [lines(45, 4.0), lines(45, 4.0, [3.2, 1.6], 0, 2.0)],
   }),
-  h(21, 'hatch.sendvic', 'Sendvičové konstrukce', { families: [lines(90, 2.4)] }),
+  h(21, 'hatch.sendvic', 'Sendvičové konstrukce', { families: [lines(90, 2.0)] }),
   h(22, 'hatch.sendvic-krizky', 'Sendvič – křížky', {
     variantOf: 'hatch.sendvic',
     families: [PASY, motif([seg(-0.6, 0, 0.6, 0)], 3.2, 2.4)],
@@ -33,7 +33,7 @@ export const OSTATNI: readonly Hatch[] = [
   h(37, 'hatch.anhydrit', 'Anhydrit (potěr)', {
     families: [marks('dot', 0.3, 3.0, 2.6, 1.5), marks('dot', 0.25, 4.3, 3.7, 1.1, 21)],
   }),
-  h(38, 'hatch.plasty', 'Plasty, pryž, pružný tmel', { families: [lines(45, 4.0), lines(135, 4.0)] }),
+  h(38, 'hatch.plasty', 'Plasty, pryž, pružný tmel', { families: [lines(45, 2.0), lines(135, 2.0)] }),
   h(39, 'hatch.bourane', 'Bourané konstrukce', { families: [motif(plus(0, 0, 0.6), 3.2, 3.2)] }),
   h(40, 'hatch.krytina', 'Krytina', { families: [lines(0, 1.9)] }),
 ];

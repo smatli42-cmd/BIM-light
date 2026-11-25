@@ -72,7 +72,7 @@ describe('katalog-sraf-materialu: měřítko šraf ve stylu', () => {
       expect(s).toBe(JSON.stringify(h.families.map((f) => f.angle)));
     }
     const beton = scaleHatch(lib('hatch.beton-vyztuzeny'), 2);
-    expect(beton.families[1]).toMatchObject({ spacing: 9.6, shift: 4.8, dash: [6.4, 1.6, 0.6, 1.6] });
+    expect(beton.families[1]).toMatchObject({ spacing: 8, shift: 4, dash: [6.4, 1.6, 0.6, 1.6] });
     expect(scaleHatch(lib('hatch.omitky'), 2).families[0]).toMatchObject({ size: 0.6, dx: 4.4 });
   });
 
