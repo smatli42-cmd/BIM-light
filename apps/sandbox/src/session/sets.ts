@@ -19,10 +19,17 @@ export function openStorey(s: Session, storeyId: Id): void {
   if (w) s.setView(w.id);
 }
 
-/** Přepne sadu: pracovní okno aktuálního podlaží dostane její styl a otevře se; Obsah ji filtruje. */
+/**
+ * Přepne sadu: pracovní okno aktuálního podlaží se otevře a všechna okna, která ukazují pracovní okno
+ * podlaží (i ve druhém okně vedle), dostanou styl sady; uložené pohledy se nemění. Obsah sadu filtruje.
+ */
 export function switchSet(s: Session, styleId: Id): void {
   s.setStyleId = styleId;
   openStorey(s, s.storeyId);
-  if (s.view.styleId !== styleId) s.run('view.setStyle', { viewId: s.view.id, styleId });
+  const ids = new Set(s.windows.map((w) => w.viewId));
+  for (const id of ids) {
+    const v = s.model.views[id];
+    if (v && !v.saved && v.styleId !== styleId) s.run('view.setStyle', { viewId: id, styleId });
+  }
   s.changed();
 }

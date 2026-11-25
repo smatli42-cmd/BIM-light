@@ -75,4 +75,22 @@ test.describe('koncepce-rozhrani / 2 G: spodní lišta a okna', () => {
     await page.getByTestId('snap-toggle').click();
     await expect(page.getByTestId('snap-toggle')).toHaveAttribute('aria-pressed', 'false');
   });
+
+  test('přepnutí sady změní obě okna s pracovním oknem podlaží (ne jen aktivní)', async ({ page }) => {
+    await page.getByTestId('tab-contents').click();
+    await page.getByTestId('storey-add').click();
+    await page.getByTestId('layout-2').click();
+    const m0 = await model(page);
+    const active = (await view(page)).storeyId;
+    const first = Object.values(m0.views).find((v) => !v.saved && v.storeyId !== active)!;
+    await page.getByTestId('view-select-passive').selectOption(first.id);
+    await page.getByTestId('style-Projekt').click();
+    const m = await model(page);
+    const projekt = Object.values(m.display.styles).find((st) => st.name === 'Projekt')!.id;
+    expect(
+      Object.values(m.views)
+        .filter((v) => !v.saved)
+        .every((v) => v.styleId === projekt),
+    ).toBe(true);
+  });
 });

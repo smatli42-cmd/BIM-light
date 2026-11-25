@@ -21,7 +21,9 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 - **Okna:** stav oken v sezení (`session/windows.ts`), každé okno má svůj pohled a výřez; neaktivní okno
   kreslí jen svůj pohled a klikem / kolečkem se stane aktivním (modrý rámeček). Volby okna
   (`session/screen.ts`) nejsou data modelu.
-- Testy: jádro 668, prohlížeč 115 (nové `lista.spec.ts`).
+- **Oprava po vyzkoušení:** přepnutí sady (Studie / Projekt) měnilo jen aktivní okno; teď dostanou styl
+  sady všechna okna, která ukazují pracovní okno podlaží (uložené pohledy se nemění).
+- Testy: jádro 668, prohlížeč 116 (nové `lista.spec.ts`).
 
 ### Rozhraní: UI3 hotovo, 2026-11-25 (Obsah, uložené pohledy, sady, Najít a vybrat)
 - **Jádro:** pohled má příznak `saved` – pracovní okno podlaží (false, jedno na podlaží, vzniká s
