@@ -18,12 +18,18 @@ export interface DimRow {
   value: number;
 }
 
+/** Hodnota, která v testu musí existovat. */
+export function must<T>(v: T | undefined): T {
+  if (v === undefined) throw new Error('Chybí očekávaná hodnota');
+  return v;
+}
+
 export function start() {
   const ai = aiClient();
   const info = ai.call<Info>('project.info');
-  const storeyId = info.storeys[0]!.id;
-  const typeId = info.wallTypes.find((t) => t.name === 'Zdivo 300')!.id;
-  const viewId = info.views[0]!.id;
+  const storeyId = must(info.storeys[0]).id;
+  const typeId = must(info.wallTypes.find((t) => t.name === 'Zdivo 300')).id;
+  const viewId = must(info.views[0]).id;
   return { ai, storeyId, typeId, viewId };
 }
 
@@ -38,4 +44,4 @@ export function room(c: ReturnType<typeof start>) {
   return c.ai.call<string[]>('wall.chain', { storeyId: c.storeyId, typeId: c.typeId, points, closed: true });
 }
 
-export const row = (rows: WallRow[], id: string) => rows.find((r) => r.id === id)!;
+export const row = (rows: WallRow[], id: string) => must(rows.find((r) => r.id === id));

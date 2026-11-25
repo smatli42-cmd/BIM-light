@@ -47,7 +47,10 @@ function axisCurve(c: IfcContext, w: Wall, to: (p: Vec2) => [number, number]): R
   if (p.kind !== 'arc' || Math.abs(p.bulge) < 1e-9) return polyline(c, tessellate(p).map(to), false);
   const a = arcData(p);
   const [cx, cy] = to(a.center);
-  const circle = c.w.add('IfcCircle', [c.w.add('IfcAxis2Placement2D', [point2(c.w, cx, cy), null]), a.radius]);
+  const circle = c.w.add('IfcCircle', [
+    c.w.add('IfcAxis2Placement2D', [point2(c.w, cx, cy), null]),
+    a.radius,
+  ]);
   const trim = (q: Vec2) => {
     const [x, y] = to(q);
     return [point2(c.w, x, y)];
