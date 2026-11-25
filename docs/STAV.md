@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, stěny Z4 – otvory ve stěně.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, stěny Z5 – oblouk.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 
@@ -118,6 +118,39 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
   smyčku obrysu); klik i rámeček teď berou všechny smyčky. Rámeček vybírá i otvory.
 - Testy: jádro, IFC a nástroje 603 (Vitest), prohlížeč 96 (Playwright), vše zelené.
 
+### Stěny: Z5 hotovo, 2026-11-25 (oblouk)
+- **Napojení oblouků** (`junction/`): hranice vrstvy obloukové stěny je soustředná kružnice. Nový řez
+  „vnitřek / vnějšek kružnice“ (`circle-cut.ts`) vedle poloroviny; kružnice se bere jako tětivy **společné
+  mřížky úhlů** (`geometry/arc-grid.ts`, chyba tětivy do 0,5 mm), takže sousední vrstvy i stěny mají na
+  společné kružnici stejné body a obrysy se spojí bez švu. Roh, T, kříž, v přímce, tři konce, volný konec
+  i rám uzlu (`frame.ts`: `arc`, `curveAt`, `boundary`) počítají s obloukem; průsečík hranic po tětivách
+  (`curve.ts`). Pás oblouku se za uzlem prodlužuje po kružnici; řezy konce platí jen pro „svou“ polovinu
+  oblouku a mezery T / kříže jen pro polovinu roviny u uzlu (kružnice neprořízne protější stranu).
+- **Příkazy:** `wall.curve` (bodem oblouku, nebo poloměrem se znaménkem strany středu), `wall.straighten`.
+  Konce stojí, T konce sklouznou na novou křivku, otvory drží vzdálenost od začátku; nevejde-li se otvor,
+  editor změnu odmítne. Editor odmítne oblouk, jehož vnitřní líc by měl poloměr pod 10 mm, a oblouk nad
+  350° (`wall/shape.ts`).
+- **Otvory v oblouku:** výřez radiálně (klín ze středu), ostění obalené jako u přímé stěny, nika do
+  soustředné hloubky; posun po délce oblouku i vektorem. IFC tělo otvoru jako výseč.
+- **Kóty:** délková kóta má `measure` = oblouk (délka líce) / tětiva / poloměr (text „R 5000“); změna čísla
+  poloměru stěnu přezakřiví, tětivy posune uchopený konec po kružnici. Vzdálenostní kóta má `arc` = kóta
+  po oblouku (délka oblouku na líci mezi hranami přes stěnu, soustředná kótovací čára).
+  **Okótovat celou stěnu** u oblouku vytvoří řetěz po oblouku. Schéma 7 → 8 (`dimension/migrate-v7.ts`,
+  nová volitelná pole, data beze změny).
+- **Přichytávání:** střed oblouku, kvadranty (0°/90°/180°/270° na líci), tečna a kolmice z výchozího bodu,
+  průsečík přímka–oblouk (`snap/arc-snap.ts`).
+- **IFC:** osa obloukové stěny = IfcTrimmedCurve na IfcCircle (smysl podle směru); tělo lomená čára po
+  mřížce; ověřeno knihovnou web-ifc (`packages/ifc/src/arc.test.ts`).
+- **AI:** `wall.list` vrací `arc` (střed, poloměr, středový úhel); krok scénáře (kruh ze dvou oblouků,
+  zakřivení, kóty poloměru a tětivy, otvor, odmítnutí, vyrovnání). Scénář rozdělen na `scenario.test.ts`
+  (etapa 0) a `scenario-walls.test.ts` (Z1–Z5) + `scenario-helpers.ts`.
+- **Sandbox:** nástroj **Oblouková stěna** (A): začátek – konec – bod oblouku; **M** přepne na „tečně“ na
+  předchozí stěnu řetězu; tracker u konce Tětiva / Úhel, u oblouku Poloměr / Středový úhel (Tab, Enter);
+  řetěz pokračuje z konce oblouku. U vybrané stěny **kolečko zakřivení** 16 px za protilehlým lícem:
+  tažení stěnu prohne (číslo = poloměr). Nabídka obloukové stěny: Vyrovnat stěnu, Kóta poloměru, Kóta
+  tětivy. Galerie napojení má 6 příkladů s oblouky.
+- Testy: jádro, IFC a nástroje 635 (Vitest), prohlížeč 99 (Playwright), vše zelené.
+
 ### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
 - **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
   na papíře, opakované v rastru (dx, dy, posun řad, úhel). Rodina čar má navíc volitelný kolmý posun
@@ -164,6 +197,25 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
 - Šrafy v knihovně mají verzi 3; uložené projekty si drží své kopie (základ 21).
 
 ## Rozhodl Code (k potvrzení)
+
+Stěny Z5 – oblouk (2026-11-25):
+- **Kresba oblouku = lomená čára** (primitiva oblouk neumějí): body na společné mřížce úhlů kolem středu,
+  odchylka tětivy nejvýš 0,5 mm, krok nejvýš 3°. Na kružnici se stejným středem a poloměrem leží body vždy
+  na stejných místech – proto sousední vrstvy a stěny navazují přesně.
+- **Pokos v rohu s obloukem je přímka** mezi průsečíky hranic vrstev (jako Archicad), pravidla priority
+  beze změny ze Z2. Roh přímka × oblouk se stejnou skladbou: jádro druhé stěny prořízne omítku (jako u
+  přímého L).
+- **Napojení v přímce** platí i pro oblouk navazující tečně (odchylka do 2°) – kruh ze dvou oblouků má
+  v uzlech kolmý (radiální) řez bez čáry.
+- **Oblouk nejvýš 350°** (kruh = aspoň dvě stěny), vnitřní líc s poloměrem aspoň 10 mm.
+- **Tečně:** M přepíná způsob v nástroji; tečna se bere z konce předchozí stěny řetězu (ne z libovolné
+  stěny pod kurzorem). Napsaný poloměr bez úhlu dá čtvrtkruh (90°).
+- **Kolečko zakřivení** leží mimo stěnu (16 px za protilehlým lícem), aby nepřekáželo kliknutí do stěny
+  a tažení líce.
+- **Kóta po oblouku** měří na líci, kladné odsazení = od středu; změna čísla přepočítá posun po
+  referenční čáře poměrem poloměrů. Kóta tětivy a poloměru se při vyrovnání stěny smaže.
+- **Poloha otvoru po oblouku** = délka po referenční čáře; šířka otvoru také po referenční čáře (na
+  vnějším líci je oblouk otvoru o poměr poloměrů delší).
 
 Stěny Z4 – otvory (2026-11-25):
 - **Šířka otvoru = stavební otvor v jádru.** Hrany otvoru (a kóty k nim) leží v líci zdiva; omítky
@@ -318,9 +370,11 @@ Stěny Z1:
 
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
-- Uživatel vyzkouší stěny Z4 (nástroj Otvor, ostění v Projektu, rovina řezu, Okótovat celou stěnu, IFC
-  s otvory v BIMvision) a potvrdí body „Rozhodl Code“ u Z4.
-- Potom stěny Z5 – oblouk (model Sonnet 5.5), stejnou větou „Pokračuj podle docs/instrukce-code-steny.md…“.
+- Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
+  s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
+  body „Rozhodl Code“ u Z4 a Z5.
+- Potom stěny Z6 – kresba stěny v půdorysu (model Sonnet 5.5), stejnou větou „Pokračuj podle
+  docs/instrukce-code-steny.md…“.
 
 ## Otevřené
 
@@ -333,9 +387,14 @@ Stěny Z1:
   poloha čáry je odsazení od středu líce, po prodloužení stěny se řada může rozejít. Návrh: uložit polohu
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
 - Jemná podrobnost (= střední), podle plánu krok Z6.
+- `docs/STAV.md` má ~37 KB (limit ~40 KB): návrh přesunout hotové sekce Z1–Z3 (Hotovo + Rozhodl Code)
+  do nového `docs/STAV-steny.md` – k rozhodnutí.
+- Oblouk se zatím nedá kreslit „středem a poloměrem“ ani zadat tětivu číslem po zadání konce (jen při
+  zadávání konce); případně doplnit podle zkušenosti.
 
 ## Chybělo
 
+- Z5: nic z pozdějších kroků; primitivum oblouku v kresbě (rozhodnuto lomenou čarou, viz Rozhodl Code).
 - Z2: nic z pozdějších kroků nebylo potřeba; desky (rozhodnutí E) se napojení v půdorysu netýkají.
 - Z3 (rozhodnutí E): **desky** – vršek stěny nejde přichytit ke stropu, „omítka pod strop“ je jen číslo
   prodloužení. **Ukládání projektu v sandboxu** – Platform v prohlížeči umí jen stažení (export IFC).
@@ -343,14 +402,14 @@ Stěny Z1:
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po stěnách Z4)
+## Největší soubory (po stěnách Z5)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (375 souborů). Nová složka `packages/core/src/opening/`.
+Výstup `npm run check:size`: varování 0, chyb 0 (396 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 229 | packages/core/src/ai/scenario.test.ts |
+| 241 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
 | 223 | apps/sandbox/src/interaction/tools/wall-tool.ts |
 | 217 | apps/sandbox/e2e/kresleni.spec.ts |
+| 212 | packages/core/src/junction/wall.ts |
 | 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 211 | apps/sandbox/src/ui/PropertiesPanel.tsx |
