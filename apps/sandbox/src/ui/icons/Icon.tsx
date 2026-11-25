@@ -24,7 +24,7 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   );
 }
 
-/** Tlačítko s ikonou a bublinou (název – zkratka, popis). */
+/** Tlačítko s ikonou a stručnou bublinou „název – zkratka“ (koncepce rozhraní, část 7). */
 export function IconButton(props: {
   icon: IconName;
   label: string;
@@ -43,7 +43,8 @@ export function IconButton(props: {
       aria-label={props.label}
       aria-pressed={props.pressed}
       disabled={props.disabled}
-      title={props.description ? `${head}\n${props.description}` : head}
+      title={head}
+      aria-description={props.description}
       onClick={props.onClick}
     >
       <Icon name={props.icon} />

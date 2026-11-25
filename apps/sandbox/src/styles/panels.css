@@ -267,3 +267,128 @@
   font-size: 1rem;
   margin: 0;
 }
+
+/* Plovoucí nabídka druhu úseku a rychlý výběr typu (koncepce rozhraní, část 2 C, I). */
+.segment-menu {
+  position: absolute;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+.has-pick {
+  position: relative;
+  display: inline-flex;
+}
+.pick-mark {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-bottom: 4px solid var(--muted);
+  pointer-events: none;
+}
+.quick-pick {
+  position: absolute;
+  left: 36px;
+  top: 0;
+  z-index: 20;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+.quick-pick-title {
+  padding: 4px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.quick-pick button {
+  text-align: left;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+.quick-pick button:hover {
+  background: var(--hover);
+}
+.quick-pick button.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Info box po sekcích (koncepce rozhraní, část 2 D). */
+.ib-tabs {
+  display: flex;
+  margin-bottom: 8px;
+}
+.panel .ib-tabs button {
+  flex: 1;
+  justify-content: center;
+  border-radius: 0;
+}
+.panel .ib-tabs button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+.panel .ib-tabs button:last-child {
+  border-radius: 0 5px 5px 0;
+}
+.ib-section {
+  border-top: 1px solid var(--line);
+  padding: 6px 0;
+}
+.ib-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel .ib-toggle {
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--accent);
+  justify-content: flex-start;
+}
+.ib-info {
+  color: var(--muted);
+  cursor: help;
+}
+.ib-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+.ib-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ib-buttons .icon-btn {
+  width: 38px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+}
+.ib-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ib-composition {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

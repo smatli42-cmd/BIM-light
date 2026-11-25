@@ -10,20 +10,20 @@ export interface ToolDef {
   readonly command?: string;
   readonly label?: string;
   readonly key?: string;
+  /** Další nástroje, při kterých je tlačítko zvýrazněné (metody Stěny). */
+  readonly also?: readonly ToolId[];
 }
 
 /** Paleta nástrojů vlevo: výběr, modelování, anotace (koncepce rozhraní, část 2 C). */
 export const PALETTE: readonly (readonly ToolDef[])[] = [
   [{ tool: 'select', icon: 'select', label: 'Výběr', key: 'Esc' }],
   [
-    { tool: 'wall', icon: 'wall', command: 'wall.create' },
-    { tool: 'arc', icon: 'wall-arc', label: 'Oblouková stěna', key: 'A' },
+    { tool: 'wall', icon: 'wall', label: 'Stěna', key: 'W', also: ['rect', 'arc'] },
     { tool: 'pickline', icon: 'wall-line', label: 'Stěna z čáry', key: 'V' },
-    { tool: 'rect', icon: 'rect', command: 'wall.rectangle' },
-    { tool: 'opening', icon: 'opening', command: 'opening.create' },
+    { tool: 'opening', icon: 'opening', label: 'Otvor', key: 'O' },
   ],
   [
-    { tool: 'dimension', icon: 'dimension', command: 'dimension.create' },
+    { tool: 'dimension', icon: 'dimension', label: 'Kóta', key: 'D' },
     { tool: 'angle', icon: 'angle', label: 'Úhel', key: 'U' },
   ],
 ];
@@ -55,6 +55,7 @@ export function describeTool(s: Session, d: ToolDef) {
 
 /** Název aktivního nástroje (hlavička info boxu). */
 export function toolLabel(s: Session): string {
-  for (const d of [...PALETTE, ...EDITS].flat()) if (d.tool === s.tool.id) return describeTool(s, d).label;
+  for (const d of [...PALETTE, ...EDITS].flat())
+    if (d.tool === s.tool.id || d.also?.includes(s.tool.id)) return describeTool(s, d).label;
   return s.tool.id === 'zoomwin' ? 'Přiblížit oknem' : s.tool.id;
 }

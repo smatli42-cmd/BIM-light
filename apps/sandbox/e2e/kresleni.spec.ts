@@ -146,7 +146,7 @@ test.describe('katalog-kresleni / část 2: přichytávání', () => {
   });
 
   test('2.9: klávesy jdou do výkresu, když na něj najedeš myší', async ({ page }) => {
-    await page.getByTestId('new-type').focus();
+    await page.getByTestId('view-scale').focus();
     const p = await px(page, 0, 0);
     await page.mouse.move(p.x, p.y);
     await page.keyboard.press('w');

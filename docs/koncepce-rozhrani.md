@@ -69,8 +69,9 @@ k dřívějším rozporům jsou v části 11.
 - Skupina **modelování**: stěna, otvor, (později) deska, střecha, okno, dveře, schodiště, místnost…
 - Skupina **anotace**: kóta, úhel, výšková kóta, text, popisek.
 - Skupina **2D kresba**: čára, oblouk, křivka, šrafa, bod (základ 22).
-- Jen ikony; bublina = název + zkratka; nástroj s variantami má v rohu trojúhelník (pravé tlačítko nebo
-  podržení otevře varianty). Aktivní nástroj zvýrazněný.
+- Jen ikony; bublina = název + zkratka; nástroj s variantami má v rohu trojúhelník. **Podržení myši,
+  dvojklik nebo pravé tlačítko** na nástroji otevře rychlý výběr (u Stěny seznam typů stěn; vybraný typ
+  se nastaví a nástroj se zapne). Aktivní nástroj zvýrazněný. (uživatel, 2026-11-25)
 
 ### D – Info box (vlevo vedle palety)
 - **Bez výběru**: nastavení aktivního nástroje (u stěny typ, referenční čára, strana, výška; u otvoru
@@ -79,7 +80,12 @@ k dřívějším rozporům jsou v části 11.
 - Generuje se z popisu parametrů (základ 15b), po sekcích; sekce jdou sbalit, u sekce (i) s vysvětlivkou.
 - Nahoře název nástroje / prvku a stručný stav („nic nevybráno“, „3 stěny“).
 - **Geometrická metoda** nástroje jako řada ikon (u výběru: rámeček / kosodélník / polygon; u stěny:
-  úsečka / tečný oblouk / oblouk bodem / obdélník…). Stejná volba je i v plovoucí nabídce u kurzoru (I).
+  jedna stěna / řetěz / obdélník / oblouk; později natočený obdélník a oblouk středem).
+- **Druh úseku (úsečka / tečný oblouk / oblouk bodem) jen u řetězu** – volí se v plovoucí nabídce u kurzoru
+  po prvním kliku (I), ne v info boxu; u jedné stěny, obdélníku ani oblouku nedává smysl. (uživatel,
+  2026-11-25)
+- Info box nahoře přepínač **Instance / Typ**: Instance = vlastnosti prvku (nebo výchozí nastavení nových
+  prvků u nástroje), Typ = úprava typu (skladby), která platí pro všechny prvky typu.
 - Typ prvku: rozbalovací seznam s miniaturou skladby a hledáním (sekce 18).
 
 ### E – Okna (pohledy)
@@ -109,8 +115,8 @@ Platí pro aktivní okno (základ 26: pohled má svůj styl); každá položka j
 ### I – Plovoucí prvky u kurzoru
 - **Tracker**: Vzdálenost, Úhel, ΔX, ΔY (u oblouku Poloměr, Středový úhel, Tětiva); Tab přepíná pole,
   čísla se píšou rovnou.
-- **Nabídka metody po prvním kliku** (malá lišta nad kurzorem): úsečka / tečný oblouk / oblouk bodem,
-  s bublinou, co a jak se nakreslí. Klávesa přepíná (dnes M).
+- **Nabídka druhu úseku po prvním kliku** (jen řetěz stěn; malá lišta u kurzoru): úsečka / tečný oblouk /
+  oblouk bodem (bod na oblouku, pak konec), s bublinou, co se nakreslí. Klávesa M přepíná.
 - **Kontextová paleta u uzlu / hrany** (sekce 16, jako Archicad): posun uzlu, odsazení hrany, zakřivení,
   přidání bodu. Nahradí dnešní kolečko zakřivení a pravé tlačítko na uzlu.
 - Dočasné kóty, zámky a nápověda „co dělat dál“ (krátký text u kurzoru nebo vlevo dole v okně).
@@ -166,7 +172,8 @@ Rozhodnuto (uživatel, 2026-11-25), princip jako šablony pohledů v Revitu:
 
 ## 7. Bubliny, nabídky, hlášky
 
-- Bublina po 0,5 s: **název – zkratka**, na druhém řádku jedna věta z popisu příkazu.
+- Bublina: **jen název – zkratka**, stručně (dlouhé popisy nikdo nečte; uživatel, 2026-11-25). Delší
+  vysvětlení patří pod (i) u sekce info boxu.
 - Pravé tlačítko = kontextová nabídka toho, co je pod kurzorem (prvek, uzel, kóta, okno); položky jsou
   příkazy z registru, nahoře nejčastější.
 - Hlášky (toast) vpravo dole, krátké; chyba s tlačítkem nápravy (např. „Odemknout kótu“).

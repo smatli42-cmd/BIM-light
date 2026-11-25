@@ -1,22 +1,23 @@
-// Nástroj Stěna (katalog kreslení, části 1–2): řetěz stěn s trackerem u kurzoru, Tab mezi délkou
-// a úhlem, Enter potvrdí, klik na první bod obrys uzavře, Esc / dvojklik / pravé tlačítko řetěz ukončí,
-// Backspace vrátí poslední stěnu, mezerník přehodí stranu. Napojení se ukládá jako vztah (základ 24).
+// Nástroj Stěna – metody jedna stěna a řetěz (katalog kreslení, části 1–2; koncepce rozhraní, část 2 D, I):
+// tracker u kurzoru, Tab mezi délkou a úhlem, Enter potvrdí, klik na první bod obrys uzavře, Esc /
+// dvojklik / pravé tlačítko řetěz ukončí, Backspace vrátí poslední stěnu, mezerník přehodí stranu.
+// U řetězu se po prvním kliku volí druh úseku (úsečka / tečný oblouk / oblouk bodem, klávesa M).
+// Napojení se ukládá jako vztah (základ 24).
 import {
-  add,
   dist,
-  leftNormal,
-  mul,
-  norm,
-  sub,
+  tangentAt,
   trackerPoint,
   type Id,
+  type Path,
   type SnapResult,
   type Vec2,
 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { clearTyped, editTyped } from '../../session/ui-state.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
-import { connectionAt, typeThickness } from './wall-links.ts';
+import { arcGhost, arcInfo } from './arc-helpers.ts';
+import { connectionAt } from './wall-links.ts';
+import { endDirection, nextSegment, segmentPath, type Segment } from './wall-segment.ts';
 
 interface Chain {
   pt: Vec2;
@@ -33,25 +34,49 @@ export class WallTool implements Tool {
   private chain: Chain | null = null;
   private snapRes: SnapResult | null = null;
   private end: Vec2 | null = null;
-  private dir = 0;
+  private path: Path | null = null;
   private length = 0;
   private angle = 0;
   private last: PointerInfo | null = null;
+  /** Druh úseku řetězu a bod oblouku (oblouk bodem). */
+  seg: Segment = 'line';
+  private through: Vec2 | null = null;
 
   constructor(private readonly s: Session) {}
+
+  private get single(): boolean {
+    return this.s.wallMethod === 'single';
+  }
 
   hint(): string {
     if (!this.chain)
       return 'Klikni počátek stěny (přichytává se; C střídá kandidáty, Alt vypne). Mezerník = strana.';
+    if (this.seg === 'tangent') return 'Klikni konec tečného oblouku. M = druh úseku, Esc končí.';
+    if (this.seg === 'arc')
+      return this.through ? 'Klikni konec oblouku.' : 'Klikni bod na oblouku, pak konec. M = druh úseku.';
     return 'Klikni konec, nebo napiš délku (Tab = úhel, 90° = doprava) a Enter. Klik na první bod uzavře, Esc končí.';
+  }
+
+  /** Plovoucí nabídka druhu úseku (jen řetěz, po prvním kliku). */
+  segmentMenu(): { at: Vec2; seg: Segment; tangentOk: boolean } | null {
+    if (!this.chain || this.single) return null;
+    return { at: this.chain.pt, seg: this.seg, tangentOk: this.chain.prevDir !== null };
+  }
+
+  setSegment(seg: Segment) {
+    this.seg = seg === 'tangent' && this.chain?.prevDir === null ? 'line' : seg;
+    this.through = null;
+    if (this.last) this.move(this.last);
+    this.s.changed();
   }
 
   move(p: PointerInfo) {
     this.last = p;
     const c = this.chain;
     const s = this.s;
+    const line = this.seg === 'line';
     this.snapRes = s.snap(p.world, {
-      from: c?.pt ?? null,
+      from: line ? (c?.pt ?? null) : null,
       prevDir: c?.prevDir ?? null,
       orthoOnly: p.shift,
       alt: p.alt,
@@ -60,14 +85,17 @@ export class WallTool implements Tool {
       this.end = this.snapRes.point;
       return;
     }
-    const tr = trackerPoint(c.pt, this.snapRes.point, c.prevDir, { length: s.typed.len, angle: s.typed.ang });
-    let end = tr.point;
-    if (!tr.typed && c.count >= 2 && dist(end, c.first) < s.viewport.px(10)) end = c.first;
-    if (tr.typed) this.snapRes = { ...this.snapRes, snap: null, guides: [] };
+    let end = this.snapRes.point;
+    if (line) {
+      const tr = trackerPoint(c.pt, end, c.prevDir, { length: s.typed.len, angle: s.typed.ang });
+      end = tr.point;
+      if (!tr.typed && c.count >= 2 && dist(end, c.first) < s.viewport.px(10)) end = c.first;
+      if (tr.typed) this.snapRes = { ...this.snapRes, snap: null, guides: [] };
+      this.length = tr.length;
+      this.angle = tr.angleDeg;
+    }
     this.end = end;
-    this.dir = tr.dir;
-    this.length = tr.length;
-    this.angle = tr.angleDeg;
+    this.path = segmentPath(this.seg, c.pt, end, c.prevDir, this.through);
   }
 
   down(p: PointerInfo) {
@@ -85,10 +113,15 @@ export class WallTool implements Tool {
         firstWallId: null,
         stack: [],
       };
+      this.seg = 'line';
       clearTyped(this.s.typed);
       return;
     }
-    this.addSegment(this.end);
+    if (this.seg === 'arc' && !this.through) {
+      this.through = this.end;
+      return;
+    }
+    if (this.path) this.addPath(this.path);
   }
 
   up() {}
@@ -97,47 +130,53 @@ export class WallTool implements Tool {
     this.endChain();
   }
 
-  private addSegment(end: Vec2) {
-    const c = this.chain;
-    const s = this.s;
-    if (!c || dist(c.pt, end) < 1) return;
-    const closing = c.count >= 2 && dist(end, c.first) < 1 && c.firstWallId !== null;
+  private links(c: Chain, path: Path, closing: boolean) {
     const conns: { end: 'start' | 'end'; wallId: Id; at: string }[] = [];
     const startLink = c.lastWallId
       ? { wallId: c.lastWallId, at: 'ATEND' }
-      : connectionAt(s, c.pt, [], sub(end, c.pt));
+      : connectionAt(this.s, c.pt, [], tangentAt(path, 'start'));
     if (startLink) conns.push({ end: 'start', ...startLink });
+    const back = tangentAt(path, 'end');
     const endLink = closing
       ? { wallId: c.firstWallId as Id, at: 'ATSTART' }
-      : connectionAt(s, end, c.lastWallId ? [c.lastWallId] : [], sub(c.pt, end));
+      : connectionAt(this.s, path.end, c.lastWallId ? [c.lastWallId] : [], { x: -back.x, y: -back.y });
     if (endLink) conns.push({ end: 'end', ...endLink });
+    return conns;
+  }
+
+  private addPath(path: Path) {
+    const c = this.chain;
+    const s = this.s;
+    if (!c || dist(path.start, path.end) < 1) return;
+    const closing = c.count >= 2 && dist(path.end, c.first) < 1 && c.firstWallId !== null;
     const r = s.run('wall.create', {
       storeyId: s.storeyId,
       typeId: s.wallTypeId,
-      path: { kind: 'line', start: c.pt, end },
+      path,
       side: s.wallSide,
       referenceLine: s.wallRefLine,
-      connections: conns,
+      connections: this.links(c, path, closing),
       autoCross: true,
     });
     if (!r.ok) return;
     const id = r.created[0] as Id;
     c.stack.push({ pt: c.pt, prevDir: c.prevDir, lastWallId: c.lastWallId });
-    const v = sub(end, c.pt);
-    c.prevDir = Math.atan2(v.y, v.x);
-    c.pt = end;
+    c.prevDir = endDirection(path);
+    c.pt = path.end;
     c.count++;
     c.lastWallId = id;
     c.firstWallId ??= id;
+    this.through = null;
     clearTyped(s.typed);
-    if (closing) {
-      this.chain = null;
-      s.toast('Obrys uzavřen.');
-    }
+    if (closing) s.toast('Obrys uzavřen.');
+    if (closing || this.single) this.endChain();
   }
 
   private endChain() {
     this.chain = null;
+    this.path = null;
+    this.through = null;
+    this.seg = 'line';
     clearTyped(this.s.typed);
   }
 
@@ -161,15 +200,19 @@ export class WallTool implements Tool {
       return true;
     }
     if (!this.chain) return false;
+    if (k.key.toLowerCase() === 'm' && !k.ctrl && !this.single) {
+      this.setSegment(nextSegment(this.seg, this.chain.prevDir !== null));
+      return true;
+    }
     if (k.key === 'Enter') {
-      if (this.end) this.addSegment(this.end);
+      if (this.path && !(this.seg === 'arc' && !this.through)) this.addPath(this.path);
       return true;
     }
     if (k.key === 'Backspace' && s.typed[s.typed.field] === '') {
       this.back();
       return true;
     }
-    if (editTyped(s.typed, k.key, true)) {
+    if (this.seg === 'line' && editTyped(s.typed, k.key, true)) {
       if (this.last) this.move(this.last);
       return true;
     }
@@ -177,6 +220,10 @@ export class WallTool implements Tool {
   }
 
   escape(): boolean {
+    if (this.through) {
+      this.through = null;
+      return true;
+    }
     if (!this.chain) return false;
     this.endChain();
     return true;
@@ -185,21 +232,21 @@ export class WallTool implements Tool {
   overlay(): Overlay {
     const r = this.snapRes;
     const snap = r?.snap && this.end ? { point: this.end, label: snapLabel(r) } : null;
-    const c = this.chain;
-    if (!c || !this.end) return { snap, guides: r?.guides ?? [] };
-    const t = typeThickness(this.s.model, this.s.wallTypeId);
-    const n = mul(leftNormal(norm(sub(this.end, c.pt))), this.s.wallSide === 'left' ? t : -t);
-    // U osy leží nakreslená čára uprostřed tloušťky.
-    const back = this.s.wallRefLine === 'axis' ? mul(n, -0.5) : { x: 0, y: 0 };
-    const a = add(c.pt, back);
-    const b = add(this.end, back);
-    const ghost = [a, b, add(b, n), add(a, n)];
-    return { snap, guides: r?.guides ?? [], ghosts: [ghost] };
+    if (!this.chain || !this.path) return { snap, guides: r?.guides ?? [] };
+    const markers = this.through ? [this.through] : [];
+    return { snap, guides: r?.guides ?? [], ghosts: [arcGhost(this.s, this.path)], markers };
   }
 
   tracker(): TrackerField[] | null {
-    if (!this.chain || !this.end) return null;
+    if (!this.chain || !this.end || !this.path) return null;
     const t = this.s.typed;
+    if (this.seg !== 'line') {
+      const info = arcInfo(this.path);
+      return [
+        { label: 'Poloměr', value: info.radius, active: false },
+        { label: 'Středový úhel', value: info.sweep, active: false },
+      ];
+    }
     const ang = Math.round(this.angle * 10) / 10;
     return [
       {

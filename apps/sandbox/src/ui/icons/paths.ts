@@ -13,6 +13,17 @@ export const ICONS = {
   opening: ['M3 8h6v8H3z', 'M15 8h6v8h-6z', 'M9 8a6 6 0 0 1 6 0', 'c:12,12,1'],
   dimension: ['M4 7v10', 'M20 7v10', 'M4 12h16', 'M6 14l-2-2 2-2', 'M18 10l2 2-2 2'],
   angle: ['M4 20L20 20', 'M4 20L16 6', 'M10 20a6 6 0 0 0-1.6-4.1'],
+  // Druh úseku řetězu (plovoucí nabídka I)
+  'seg-line': ['M5 19L19 5', 'c:5,19,1.2', 'c:19,5,1.2'],
+  'seg-tangent': ['M4 18h6a8 8 0 0 0 8-8V5', 'c:10,18,1.2'],
+  'seg-arc': ['M4 19A11 11 0 0 1 20 9', 'c:4,19,1.2', 'c:11.5,11.2,1.2', 'c:20,9,1.2'],
+  // Metody stěny (info box D)
+  'wall-single': ['M3 12h18', 'c:3,12,1.2', 'c:21,12,1.2'],
+  'wall-chain': ['M3 18l6-10 6 7 6-9', 'c:3,18,1.2', 'c:9,8,1.2', 'c:15,15,1.2', 'c:21,6,1.2'],
+  // Referenční čára (info box D): stěna jako pás, čára na líci / v ose / na líci jádra
+  'ref-face': ['M3 7h18v10H3z', 'M3 17h18', 'M5 17h14'],
+  'ref-axis': ['M3 7h18v10H3z', 'M3 12h18'],
+  'ref-core': ['M3 7h18v10H3z', 'M3 10h18', 'M3 14h18', 'M3 14h18'],
   // Úpravy (lišta příkazů B)
   move: ['M12 3v18', 'M3 12h18', 'M9 6l3-3 3 3', 'M9 18l3 3 3-3', 'M6 9l-3 3 3 3', 'M18 9l3 3-3 3'],
   copy: ['M8 8h12v12H8z', 'M4 16V4h12'],
@@ -69,6 +80,8 @@ export const ICONS = {
   'chevron-down': ['M6 9l6 6 6-6'],
   'chevron-right': ['M9 6l6 6-6 6'],
   close: ['M6 6l12 12', 'M18 6L6 18'],
+  flip: ['M12 3v18', 'M8 8L4 12l4 4', 'M16 8l4 4-4 4'],
+  info: ['c:12,12,9', 'M12 11v6', 'M12 7.5h.01'],
 } as const;
 
 export type IconName = keyof typeof ICONS;

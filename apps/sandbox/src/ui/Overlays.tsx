@@ -2,6 +2,7 @@
 // pole pro číslo kóty (čitelný tmavý text, pravidla-interakce kóty 5) a hlášky.
 import { useEffect, useRef } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
+import { SegmentMenu } from './SegmentMenu.tsx';
 import { useSession } from './use-session.ts';
 
 function ValueEditor({ s }: { s: Session }) {
@@ -86,6 +87,7 @@ export function CanvasOverlays({ session }: { session: Session }) {
   return (
     <>
       <Tracker s={s} />
+      <SegmentMenu s={s} />
       <Menu s={s} />
       <ValueEditor s={s} />
       <div class="toasts">

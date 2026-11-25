@@ -1,15 +1,16 @@
 // D – info box vlevo (koncepce rozhraní, část 2): nastavení aktivního nástroje, nebo vlastnosti
-// vybraných prvků. V kroku UI1 obsahuje dosavadní panel Vlastnosti; generování po sekcích je UI2.
+// vybraných prvků, po sekcích (krok UI2).
 import type { Session } from '../../session/session.ts';
-import { PropertiesPanel } from '../PropertiesPanel.tsx';
+import { InfoContent } from '../infobox/InfoContent.tsx';
 import { useSession } from '../use-session.ts';
 import { toolLabel } from './tool-defs.ts';
 
 function heading(s: Session): { title: string; sub: string } {
   const { walls, openings, dims } = s.selection;
   const n = walls.length + openings.length + dims.length;
+  if (!n && s.tool.id !== 'select') return { title: toolLabel(s), sub: 'Výchozí nastavení nových prvků' };
   if (!n) return { title: toolLabel(s), sub: 'nic nevybráno' };
-  if (n === walls.length) return { title: n > 1 ? 'Stěny' : 'Stěna', sub: `vybráno: ${n}` };
+  if (n === walls.length) return { title: n > 1 ? 'Stěny' : 'Stěna', sub: `Označené: ${n}` };
   if (n === openings.length) return { title: n > 1 ? 'Otvory' : 'Otvor', sub: `vybráno: ${n}` };
   if (n === dims.length) return { title: n > 1 ? 'Kóty' : 'Kóta', sub: `vybráno: ${n}` };
   return { title: 'Výběr', sub: `vybráno: ${n}` };
@@ -24,7 +25,7 @@ export function InfoBox({ s }: { s: Session }) {
         <strong data-testid="infobox-title">{h.title}</strong>
         <span class="muted">{h.sub}</span>
       </div>
-      <PropertiesPanel session={s} />
+      <InfoContent s={s} />
     </aside>
   );
 }

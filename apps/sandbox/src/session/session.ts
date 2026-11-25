@@ -26,6 +26,7 @@ import { Viewport } from '../canvas/viewport.ts';
 import type { Clipboard } from '../interaction/clipboard.ts';
 import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
+import { wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
 import { Selection } from './selection.ts';
 import type { OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
@@ -76,6 +77,8 @@ export class Session {
     world: { x: 0, y: 0 },
     inside: false,
   };
+  /** Geometrická metoda nástroje Stěna (koncepce rozhraní, část 2 D). */
+  wallMethod: WallMethod = 'chain';
   /** Motiv rozhraní a podklad výkresu (koncepce rozhraní, část 5). */
   theme: Theme;
   paper: Paper;
@@ -166,7 +169,10 @@ export class Session {
     this.valueEdit = null;
     this.snapCycle = 0;
     this.typed = { field: 'len', len: '', ang: '' };
-    this.tool = createTool(id, this);
+    // Obdélník a oblouk jsou metody nástroje Stěna: zkratky B / A metodu přepnou.
+    if (id === 'rect') this.wallMethod = 'rect';
+    if (id === 'arc') this.wallMethod = 'arc';
+    this.tool = createTool(id === 'wall' ? wallToolFor(this.wallMethod) : id, this);
     this.changed();
   }
 

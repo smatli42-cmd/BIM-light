@@ -42,9 +42,10 @@ test.describe('pravidla-interakce / Příkazy nad výběrem (základ 25)', () =>
     const w = await wallById(page, id);
     expect(w.path.end.x).toBeCloseTo(0, 6);
     expect(w.path.end.y).toBeCloseTo(3000, 6);
-    await page.getByTestId('opt-copy').check();
     await clickAt(page, -150, 1500);
     await page.keyboard.press('r');
+    // Volby příkazu jsou v info boxu, když je příkaz aktivní (koncepce rozhraní, část 2 D).
+    await page.getByTestId('opt-copy').check();
     await clickAt(page, 0, 0);
     await page.keyboard.type('90');
     await page.keyboard.press('Enter');
@@ -69,19 +70,19 @@ test.describe('pravidla-interakce / Příkazy nad výběrem (základ 25)', () =>
 
   test('Pole (P): počet z panelu, rozteč napsaná; radiální pole', async ({ page }) => {
     await wall(page, { x: 0, y: 0 }, { x: 0, y: 3000 });
-    await page.getByTestId('opt-array-count').fill('4');
     await clickAt(page, -150, 1500);
     await page.keyboard.press('p');
+    await page.getByTestId('opt-array-count').fill('4');
     await clickAt(page, 0, 0);
     await moveTo(page, 1000, 0);
     await page.keyboard.type('1500');
     await page.keyboard.press('Enter');
     const xs = (await walls(page)).map((w) => Math.round(w.path.start.x)).sort((a, b) => a - b);
     expect(xs).toEqual([0, 1500, 3000, 4500]);
-    await page.getByTestId('opt-radial').check();
-    await page.getByTestId('opt-array-count').fill('3');
     await clickAt(page, -150, 1500);
     await page.keyboard.press('p');
+    await page.getByTestId('opt-radial').check();
+    await page.getByTestId('opt-array-count').fill('3');
     await clickAt(page, 0, 0);
     await clickAt(page, 0, 1000);
     await page.keyboard.type('90');

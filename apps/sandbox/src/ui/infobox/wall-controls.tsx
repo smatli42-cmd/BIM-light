@@ -1,0 +1,93 @@
+// Ovládací prvky stěny v info boxu: geometrická metoda (jen nástroj Stěna), referenční čára jako ikony
+// s přehozením strany a souhrn skladby (koncepce rozhraní, část 2 D).
+import { bandThickness, type ReferenceLine, type WallType } from '@bim-light/core';
+import type { WallMethod } from '../../interaction/tools/wall-method.ts';
+import type { Session } from '../../session/session.ts';
+import { IconButton } from '../icons/Icon.tsx';
+import type { IconName } from '../icons/paths.ts';
+
+const METHODS: readonly [WallMethod, IconName, string, string][] = [
+  ['single', 'wall-single', 'Jedna stěna', ''],
+  ['chain', 'wall-chain', 'Řetěz stěn', 'W'],
+  ['rect', 'rect', 'Obdélník', 'B'],
+  ['arc', 'wall-arc', 'Oblouk třemi body', 'A'],
+];
+
+export function MethodButtons({ s }: { s: Session }) {
+  return (
+    <div class="ib-buttons" data-testid="wall-method">
+      {METHODS.map(([m, icon, label, key]) => (
+        <IconButton
+          key={m}
+          icon={icon}
+          label={label}
+          shortcut={key || undefined}
+          testid={`method-${m}`}
+          pressed={s.wallMethod === m}
+          onClick={() => {
+            s.wallMethod = m;
+            s.setTool('wall');
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const REF: readonly [ReferenceLine, IconName, string][] = [
+  ['face', 'ref-face', 'Líc'],
+  ['axis', 'ref-axis', 'Osa'],
+  ['core-face', 'ref-core', 'Líc jádra'],
+];
+
+/** Referenční čára (stěna roste od ní) a přehození strany tloušťky. */
+export function RefLineButtons(props: {
+  value: ReferenceLine | '';
+  coreAllowed: boolean;
+  onPick: (v: ReferenceLine) => void;
+  onFlip: () => void;
+}) {
+  return (
+    <div class="ib-buttons" data-testid="refline">
+      {REF.map(([v, icon, label]) => (
+        <IconButton
+          key={v}
+          icon={icon}
+          label={v === 'core-face' && !props.coreAllowed ? `${label} (typ nemá jádro)` : label}
+          testid={`refline-${v}`}
+          pressed={props.value === v}
+          disabled={v === 'core-face' && !props.coreAllowed}
+          onClick={() => props.onPick(v)}
+        />
+      ))}
+      <span class="spacer" />
+      <IconButton
+        icon="flip"
+        label="Přehodit stranu"
+        shortcut="Mezerník"
+        testid="flip-side"
+        onClick={props.onFlip}
+      />
+    </div>
+  );
+}
+
+/** Souhrn skladby: tloušťka a vrstvy (materiál, tloušťka). */
+export function CompositionSummary({ s, type }: { s: Session; type: WallType | undefined }) {
+  const band = type?.bands[0];
+  if (!band) return null;
+  return (
+    <div class="ib-composition">
+      <div class="ib-row">
+        <span class="muted">Tloušťka (součet vrstev)</span>
+        <strong data-testid="ib-thickness">{bandThickness(band)} mm</strong>
+      </div>
+      {band.layers.map((l, i) => (
+        <div class="ib-row" key={i}>
+          <span class="muted">{s.model.materials[l.materialId]?.name ?? '?'}</span>
+          <span>{l.thickness} mm</span>
+        </div>
+      ))}
+    </div>
+  );
+}
