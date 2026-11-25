@@ -1,8 +1,8 @@
 # BIM-light – koncepce grafického rozhraní
 
-Stav: **návrh k potvrzení uživatelem** (sepsal Claude Code 2026-11-25 podle rozhovoru a screenshotů
-aplikace Ardit Designer). Rozšiřuje sekci 10 „Ovládání (UI)“ v `rozhodnuti-platforma-ui-vystupy.md`;
-rozpory s ní jsou v části 11. Po potvrzení se doplní do rejstříku v `rozhodnuti-bim-light.md`.
+Stav: **potvrzeno uživatelem 2026-11-25** (sepsal Claude Code podle rozhovoru a screenshotů aplikace
+Ardit Designer). Rozšiřuje sekci 10 „Ovládání (UI)“ v `rozhodnuti-platforma-ui-vystupy.md`; rozhodnutí
+k dřívějším rozporům jsou v části 11.
 
 ## 0. Výchozí rozhodnutí uživatele
 
@@ -131,10 +131,15 @@ Platí pro aktivní okno (základ 26: pohled má svůj styl); každá položka j
 
 ## 4. Studie / Projekt / Elektro a styl pohledu
 
-V Arditu přepínač nahoře mění kreslení celé aplikace. U nás má styl **každý pohled** (základy 26, 27).
-**Návrh (k potvrzení):** přepínač v A nastaví sadu (styl) **aktivnímu oknu** a stane se výchozí pro nově
-otevřená okna; Shift + klik ji nastaví všem otevřeným oknům. Ve spodní liště G je vidět skutečný styl
-okna (i vlastní, uživatelský). Přepínač je zkratka k předvolbám; data se nemění (základ 31).
+Rozhodnuto (uživatel, 2026-11-25), princip jako šablony pohledů v Revitu:
+- **Každý pohled má svůj styl** (základy 26, 27). Studie / Projekt / Elektro jsou jen první předvolby;
+  uživatel si časem nastaví **vlastní styly podle svých představ** a přepínač je nabídne stejně.
+- Přepínač v liště A nastaví styl **aktivnímu oknu**. Kdo chce mít stejné podlaží zároveň ve dvou
+  podobách, vytvoří **kopii pohledu** (jako duplikát půdorysu v Revitu) s jiným stylem; kopie jde
+  v Obsahu (F) i z nabídky okna.
+- Přepínač ukazuje styl aktivního okna; je-li vlastní nebo upravený, zobrazí jeho název / „upraveno“.
+- **Přepisy vzhledu** (pravidla grafiky, patra přepisů, základy 11 a 30) jsou samostatná disciplína,
+  kterou uživatel ještě promýšlí – rozhraní pro jejich úpravu se navrhne zvlášť, se screenshotem.
 
 ## 5. Motivy (světlý a tmavý)
 
@@ -145,7 +150,8 @@ okna (i vlastní, uživatelský). Přepínač je zkratka k předvolbám; data se
   Na tmavém podkladu se **jen při zobrazení** zesvětlí tmavé barvy čar (černá → světle šedá); barvy
   výplní a šraf zůstanou, jen ztlumené. Data, tisk a export mají vždy původní barvy (základy 11, 32).
 - Pomocná modrá a značky výběru mají v obou motivech dost kontrastu (kontrolní test kontrastu tokenů).
-- Výchozí motiv: tmavý rozhraní + tmavý podklad (jako vzor); světlý se přepne jedním klikem.
+- **Výchozí motiv: světlý** (rozhraní i podklad výkresu, rozhodnutí uživatele); tmavý se přepne jedním
+  klikem.
 
 ## 6. Ikony
 
@@ -190,22 +196,18 @@ okna (i vlastní, uživatelský). Přepínač je zkratka k předvolbám; data se
 | UI4 spodní lišta a okna | lišta G (zoom, přichytávání, vrstvy, styl, měřítko, rovina řezu), více oken vedle sebe, aktivní okno | dnešní horní lišta pohledu zmizí |
 | UI5 plovoucí prvky | tracker ΔX/ΔY, nabídka metody po prvním kliku, kontextová paleta u uzlu a hrany, průvodce prostředím | kreslení a úpravy bez levého panelu |
 
-Před každým krokem: screenshot odpovídající části Arditu → porovnání → zapsat rozhodnutí. Krok Z6
-(kresba stěny, předvolby fází) se dělá **po UI4**, protože fáze patří do lišty G – nebo dřív s dočasným
-umístěním (k rozhodnutí, část 11).
+Před každým krokem: screenshot odpovídající části Arditu → porovnání → zapsat rozhodnutí.
+**Pořadí (rozhodnuto): nejdřív UI1–UI5, potom stěny Z6** (předvolby fází patří do lišty G).
 
-## 11. Rozpory se sekcí 10 a otázky k potvrzení
+## 11. Rozhodnutí k rozporům se sekcí 10 (uživatel, 2026-11-25)
 
-1. Sekce 10 říká „vlastnosti vpravo“. Vzor (a tento návrh) má **vlastnosti vlevo v info boxu** a vpravo
-   Obsah projektu. Návrh: přijmout rozložení podle vzoru a sekci 10 upravit.
-2. Sekce 10 odkládá uhlazení ikon a vzhledu na etapu 7. Návrh: **kostru, motivy a ikony udělat teď**
-   (UI1–UI5), v etapě 7 jen doladění.
-3. Sekce 10 chce mockup obrazovky před etapou 1. Návrh: mockupem je tento dokument (schéma v části 2)
-   a krok UI1 (prázdná kostra v sandboxu).
-4. Přepínač Studie / Projekt / Elektro: pro aktivní okno (návrh v části 4), nebo pro celou aplikaci
-   jako ve vzoru?
-5. Výchozí motiv tmavý, nebo světlý?
-6. Pořadí: UI1–UI5 před Z6, nebo Z6 hned s dočasnými tlačítky fází?
+1. **Vlastnosti vlevo** v info boxu, vpravo Obsah projektu (sekce 10 upravena).
+2. **Kostra, motivy a ikony se dělají hned** (UI1–UI5); v etapě 7 jen doladění.
+3. **Přepínač sad** = styl aktivního okna, styly vlastní a rozšiřitelné, jiná podoba téhož podlaží
+   = kopie pohledu (část 4).
+4. **Výchozí motiv světlý.**
+5. **Pořadí: UI1–UI5 před stěnami Z6.**
+6. **Mockup obrazovky** = tento dokument (schéma v části 2) + prázdná kostra z kroku UI1.
 
 ## 12. Mimo rozsah tohoto návrhu
 

@@ -52,6 +52,8 @@ Tyto body musí být v kódu od začátku, i když se jejich funkce ukáže až 
 | `rozhodnuti-prvky-stavby.md` | 7 Schodiště a zábradlí · 9 Místnosti a povrchy · 11 Střechy a krovy · 12 Terén a zemní práce · 13 Složené stěny a skleněný plášť · 15 Otvory v deskách a střechách, vikýře |
 | `rozhodnuti-platforma-ui-vystupy.md` | 8 Platforma · 10 Ovládání (UI) · 14 3D, kamery, render, export do 3ds Max · 16 Kreslení a kótování · 17 Ukládání a zálohy · 18 Katalog a výběr typů · 19 Dokumentace pro povolení stavby · 20 2D výkresy |
 
+Podrobné rozhraní (rozložení, motivy, ikony, kroky UI1–UI5) je v `koncepce-rozhrani.md` (k sekci 10).
+
 Základy 1–34 jsou jen v tomto souboru a zůstávají v jednom kuse. Novou sekci přidávej do souboru podle tématu; když soubor přeroste ~40 KB, rozděl ho a doplň rejstřík.
 
 ## Otevřené (k probrání)
@@ -62,6 +64,6 @@ Základy 1–34 jsou jen v tomto souboru a zůstávají v jednom kuse. Novou sek
 - Co BIM nutně potřebuje a co v Revitu chybí.
 - Jak přesně má AI pracovat (prompt → návrh → potvrzení?).
 - Zdroj nábytku a zařizovacích předmětů (2D symbol + 3D kvádr / import ze souboru / převzít ze zaměřování).
-- Mockup obrazovky (před etapou 1).
+- Mockup obrazovky: vyřešeno `koncepce-rozhrani.md` (2026-11-25).
 - Kreslení oblouku a zakřivení hrany (po přímých stěnách).
 - Okótování celé stěny (až s otvory a okny).

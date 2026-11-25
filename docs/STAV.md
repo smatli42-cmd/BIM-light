@@ -380,11 +380,9 @@ Stěny Z1:
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
   s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
   body „Rozhodl Code“ u Z4 a Z5.
-- Uživatel projde návrh **`docs/koncepce-rozhrani.md`** (rozhraní podle principu Arditu, kroky UI1–UI5)
-  a odpoví na otázky v jeho části 11 (vlastnosti vlevo, ikony hned, přepínač sad, výchozí motiv,
-  pořadí UI × Z6).
-- Potom podle rozhodnutí kroky UI1–UI5, nebo stěny Z6 – kresba stěny v půdorysu (model Sonnet 5.5),
-  stejnou větou „Pokračuj podle docs/instrukce-code-steny.md…“.
+- **Rozhraní krok UI1 – kostra** podle `docs/koncepce-rozhrani.md` (potvrzeno 2026-11-25): rozložení
+  A–G, světlý (výchozí) a tmavý motiv, podklad výkresu, komponenta ikony a první sada ikon. Před
+  začátkem si vyžádat screenshot odpovídající části Arditu. Potom UI2–UI5, až po nich stěny Z6.
 
 ## Otevřené
 
@@ -400,8 +398,8 @@ Stěny Z1:
 - `docs/STAV.md` má ~37 KB (limit ~40 KB): návrh přesunout hotové sekce Z1–Z3 (Hotovo + Rozhodl Code)
   do nového `docs/STAV-steny.md` – k rozhodnutí.
 - Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).
-- Grafické rozhraní: návrh koncepce v `docs/koncepce-rozhrani.md` (2026-11-25) čeká na potvrzení;
-  po potvrzení doplnit do rejstříku v `rozhodnuti-bim-light.md` a upravit sekci 10.
+- Přepisy vzhledu (pravidla grafiky, vlastní styly) – uživatel je ještě promýšlí; rozhraní pro ně se
+  navrhne zvlášť (koncepce rozhraní, část 4).
 - Oblouk se zatím nedá kreslit „středem a poloměrem“ ani zadat tětivu číslem po zadání konce (jen při
   zadávání konce); případně doplnit podle zkušenosti.
 

@@ -16,9 +16,9 @@ Značení: **[R]** = rozhodl uživatel, **(já)** = Claude podle Revitu/Archicad
 
 - Dvě vrstvy: **kostra ovládání od začátku** (základ 15), **vzhled postupně**. (já)
 - Kostra: registr příkazů (tlačítka, menu, propisky u ikon, Ctrl+K vyhledávání, nástroje pro AI z jednoho místa), panel vlastností generovaný z popisu parametrů prvku, stavový řádek s nápovědou „co dělat dál“, nastavení z jednoho popisu. (já)
-- **[R] Rozložení: panel nástrojů vlevo** (jako ardit / Archicad), vlastnosti vpravo, přepínače sad (Studie/Projekt/Elektro), fází a variant nahoře. Více místa pro výkres než pás karet.
-- Vzhled: v etapách 1–6 jednoduchý, ale už ve finálním rozložení (aby se uživatel nepřeučoval); uhlazení ikon a vzhledu v etapě 7. (já)
-- **[R] Před kódováním (před etapou 1) návrh obrazovky (mockup)** v tomto projektu.
+- **[R] Rozložení podle principu Arditu** (podrobně `koncepce-rozhrani.md`, potvrzeno 2026-11-25): paleta nástrojů a **info box (vlastnosti) vlevo**, lišta příkazů nahoře, **Obsah projektu vpravo**, spodní lišta zobrazení aktivního okna (fáze, vrstvy, styl…), přepínač sad (Studie/Projekt/Elektro = styl aktivního okna) nahoře. Více místa pro výkres než pás karet.
+- Vzhled: **kostra, světlý a tmavý motiv a vlastní ikony hned** (kroky UI1–UI5 před stěnami Z6), v etapě 7 jen doladění. Výchozí motiv světlý.
+- **[R] Návrh obrazovky (mockup)** = `koncepce-rozhrani.md` (schéma rozložení) + prázdná kostra z kroku UI1.
 - **[R] Pomocné značky v interakci (přichycení, pomocné čáry, uzly, dočasné kóty, zámky) jsou světle modré.** Kóty a jejich čísla se kreslí podle ČSN (viz 16).
 - Klávesy mají jít vždy do výkresu: výkres si fokus bere při najetí myší (poučení z prototypu).
 
