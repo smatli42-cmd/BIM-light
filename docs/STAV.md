@@ -150,6 +150,13 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
   tažení stěnu prohne (číslo = poloměr). Nabídka obloukové stěny: Vyrovnat stěnu, Kóta poloměru, Kóta
   tětivy. Galerie napojení má 6 příkladů s oblouky.
 - Testy: jádro, IFC a nástroje 635 (Vitest), prohlížeč 99 (Playwright), vše zelené.
+- **Opravy po vyzkoušení (2026-11-25):** (1) přímá stěna napojená pod úhlem na oblouk přes 180° (tvar U)
+  měla zub v izolaci a izolace oblouku se rozlila do kruhu – buňka napojení brala celou kružnici
+  (i protější stranu) a ořez kružnicí dostal „plochý“ zbytek; buňka je teď výseč u uzlu a zbytky
+  s nulovou plochou se zahodí. (2) Kruh ze dvou oblouků byl rozdělený: nástroj nenapojil konec druhého
+  oblouku na začátek prvního (vylučoval předchozí stěnu) a bod oblouku kliknutý od oka dal trochu jinou
+  kružnici. Konec se teď napojí a bod oblouku se přichytí „na kružnici“ oblouku, který prochází oběma
+  konci. Testy: jádro 636, prohlížeč 100.
 
 ### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
 - **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
@@ -389,6 +396,10 @@ Stěny Z1:
 - Jemná podrobnost (= střední), podle plánu krok Z6.
 - `docs/STAV.md` má ~37 KB (limit ~40 KB): návrh přesunout hotové sekce Z1–Z3 (Hotovo + Rozhodl Code)
   do nového `docs/STAV-steny.md` – k rozhodnutí.
+- Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).
+- Grafické rozhraní celého programu zatím nemá koncepci (uživatel otevřel téma 2026-11-25); vzor
+  z ukázek: po prvním kliku malá nabídka druhu úseku (úsečka / tečný oblouk / oblouk bodem) s nápovědou
+  a tracker Vzdálenost, Úhel, ΔX, ΔY.
 - Oblouk se zatím nedá kreslit „středem a poloměrem“ ani zadat tětivu číslem po zadání konce (jen při
   zadávání konce); případně doplnit podle zkušenosti.
 

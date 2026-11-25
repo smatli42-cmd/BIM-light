@@ -7,7 +7,6 @@ import {
   arcTangent,
   arcWithRadius,
   dist,
-  parseNumber,
   rotate,
   tangentAt,
   trackerPoint,
@@ -19,17 +18,11 @@ import {
 import type { Session } from '../../session/session.ts';
 import { clearTyped, editTyped } from '../../session/ui-state.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
-import { arcGhost, sideOf } from './arc-ghost.ts';
+import { arcGhost, arcInfo, circleSnap, positive, sideOf } from './arc-helpers.ts';
 import { connectionAt } from './wall-links.ts';
 import { snapLabel } from './wall-tool.ts';
 
 type Mode = 'three' | 'tangent';
-
-/** Napsané kladné číslo, jinak null (prázdné = podle myši). */
-function positive(text: string): number | null {
-  const n = parseNumber(text);
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
 
 interface State {
   start: Vec2;
@@ -102,7 +95,15 @@ export class ArcWallTool implements Tool {
       const half = dist(st.start, end) / 2 / Math.sin((deg * Math.PI) / 180 / 2);
       return arcWithRadius(st.start, end, -side * half);
     }
-    return arcThrough(st.start, q, end);
+    const on = circleSnap(this.s, st.start, end, q, this.s.viewport.px(12));
+    if (on && this.snapRes)
+      this.snapRes = {
+        ...this.snapRes,
+        snap: { kind: 'face', label: 'na kružnici', index: 0, count: 1 },
+        guides: [],
+      };
+    if (on) this.cursor = on;
+    return arcThrough(st.start, on ?? q, end);
   }
 
   down(p: PointerInfo) {
@@ -140,10 +141,9 @@ export class ArcWallTool implements Tool {
       : connectionAt(s, path.start, [], tangentAt(path, 'start'));
     if (startLink) conns.push({ end: 'start', ...startLink });
     const back = tangentAt(path, 'end');
-    const endLink = connectionAt(s, path.end, st.lastWallId ? [st.lastWallId] : [], {
-      x: -back.x,
-      y: -back.y,
-    });
+    // Předchozí stěnu řetězu nevylučovat: konec oblouku může zavřít kruh na jejím začátku.
+    const found = connectionAt(s, path.end, [], { x: -back.x, y: -back.y });
+    const endLink = found && !(found.wallId === st.lastWallId && found.at === 'ATEND') ? found : null;
     if (endLink) conns.push({ end: 'end', ...endLink });
     const r = s.run('wall.create', {
       storeyId: s.storeyId,
@@ -228,14 +228,4 @@ export class ArcWallTool implements Tool {
       { label: 'Tětiva', value: String(Math.round(dist(p.start, p.end))), active: false },
     ];
   }
-}
-
-function arcInfo(p: Path): { radius: string; sweep: string } {
-  if (p.kind !== 'arc' || Math.abs(p.bulge) < 1e-9) return { radius: '∞', sweep: '0°' };
-  const sweep = Math.abs(4 * Math.atan(p.bulge));
-  const radius = dist(p.start, p.end) / 2 / Math.sin(sweep / 2);
-  return {
-    radius: String(Math.round(radius)),
-    sweep: `${String(Math.round((sweep * 1800) / Math.PI) / 10).replace('.', ',')}°`,
-  };
 }

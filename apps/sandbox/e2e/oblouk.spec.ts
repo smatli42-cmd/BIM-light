@@ -71,4 +71,26 @@ test.describe('plan-steny / Z5: oblouková stěna v sandboxu', () => {
     [p] = await arcOf(page);
     expect(p?.kind).toBe('line');
   });
+
+  test('plan-steny / Z5: kruh ze dvou oblouků – bod druhého oblouku se přichytí na kružnici prvního', async ({
+    page,
+  }) => {
+    await moveTo(page, 3000, 3000);
+    await page.keyboard.press('a');
+    await clickAt(page, 0, 0);
+    await clickAt(page, 4000, 0);
+    await clickAt(page, 2000, 2000);
+    await clickAt(page, 0, 0);
+    // Kliknuto 30 mm vedle kružnice: bod se přichytí, kružnice je stejná.
+    await clickAt(page, 2000, -1970);
+    await page.keyboard.press('Escape');
+    const all = await walls(page);
+    expect(all).toHaveLength(2);
+    const radius = (p: (typeof all)[number]['path']) => {
+      const sweep = Math.abs(4 * Math.atan(p.kind === 'arc' ? p.bulge : 0));
+      return Math.hypot(p.end.x - p.start.x, p.end.y - p.start.y) / 2 / Math.sin(sweep / 2);
+    };
+    expect(radius(all[1]!.path)).toBeCloseTo(radius(all[0]!.path), 6);
+    expect(Object.values((await model(page)).relations)).toHaveLength(2);
+  });
 });
