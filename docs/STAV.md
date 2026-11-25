@@ -1,11 +1,27 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, rozhraní UI3 – Obsah, pohledy a Najít a vybrat.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, rozhraní UI4 – spodní lišta a okna.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Rozhraní: UI4 hotovo, 2026-11-26 (spodní lišta a okna, podle tabulky v koncepci, část 2 G)
+- **Jádro:** příkazy `view.setLayerCombination` (kombinace vrstev okna, null = podle stylu) a
+  `view.setLayerStates` (víc vrstev najednou, jeden krok Zpět); `drawView(…, { mergeMaterials })` –
+  průchozí materiál jde vypnout (mezi stěnami stejného materiálu se pak kreslí dělicí čára).
+- **Spodní lišta** (`ui/bottom/`): zoom s % (100 % = skutečná velikost v měřítku) a nabídka Vše / Výběr /
+  Oknem / 100 %; **jedno / dvě okna vedle sebe**; **trasování** (Níž / Výš / podlaží, intenzita, nad /
+  pod aktivním, prohodit odkaz); **pomocné prvky, přichytávání a krok** (vyp., 10–500 mm); **kombinace
+  vrstev** a **rychlé volby** (přepnout zobrazené / skryté, skrýt vrstvy označených, skrýt ostatní, zpět
+  změnu vrstev); **skutečná tloušťka / vlasové čáry**, **průchozí materiál**, **izolovat popisy** (model
+  v polotónu, nevybíratelný), **Pera a barvy** (dialog tabulky per × měřítek); **grafické přepisy**,
+  **podrobnost**, šrafy ×, řez, kóty do; **Odhalit** (skryté stěny purpurově čárkovaně, jdou vybrat).
+- **Okna:** stav oken v sezení (`session/windows.ts`), každé okno má svůj pohled a výřez; neaktivní okno
+  kreslí jen svůj pohled a klikem / kolečkem se stane aktivním (modrý rámeček). Volby okna
+  (`session/screen.ts`) nejsou data modelu.
+- Testy: jádro 668, prohlížeč 115 (nové `lista.spec.ts`).
 
 ### Rozhraní: UI3 hotovo, 2026-11-25 (Obsah, uložené pohledy, sady, Najít a vybrat)
 - **Jádro:** pohled má příznak `saved` – pracovní okno podlaží (false, jedno na podlaží, vzniká s
@@ -150,12 +166,11 @@ Velikost šraf (2026-11-25):
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
   s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
   body „Rozhodl Code“ u Z4 a Z5.
-- Uživatel vyzkouší UI2 (info box, metoda Stěny, nabídka úseku řetězu, rychlý výběr typu).
-- Uživatel vyzkouší UI3 (Obsah Projekt / Pohledy, Uložit pohled, přepnutí sady, Najít a vybrat).
-- Potom **UI4 – spodní lišta a okna** podle tabulky v `koncepce-rozhrani.md`, část 2 G (screenshoty
-  vzoru jsou probrané 2026-11-25): zoom s %, dvě okna vedle sebe, trasování podlaží, přichytávání a krok,
-  kombinace vrstev a rychlé volby, skutečná tloušťka čar, izolovat popisy, pera, grafické přepisy, odhalit.
-  Gravitace, sady per, konstrukční zobrazení, fáze a 3D podle tabulky později. Pak UI5, až po něm Z6.
+- Uživatel vyzkouší UI2–UI4 (info box, Obsah a pohledy, Najít a vybrat, spodní lišta, dvě okna,
+  trasování, vrstvy, izolovat / odhalit, pera).
+- Potom **UI5 – plovoucí prvky**: hledání příkazů Ctrl+K, tracker Vzdálenost / Úhel / ΔX / ΔY,
+  kontextová paleta u uzlu a hrany, průvodce prostředím. Před začátkem screenshot trackeru a palety
+  u uzlu z Arditu. Až po UI5 stěny Z6.
 
 ## Otevřené
 
@@ -170,6 +185,9 @@ Velikost šraf (2026-11-25):
 - Jemná podrobnost (= střední), podle plánu krok Z6.
 - UI1: hledání příkazů (Ctrl+K) je zatím jen neaktivní ikona (UI3); panel Podlaží je provizorní místo
   Obsahu (UI3); úpravy Studie / Projekt jsou zatím jen dva styly bez Elektro.
+- UI4: trasování kreslí odkaz bez kót; zpět změnu vrstev jen přes Zpět editoru; sady per, gravitace,
+  konstrukční zobrazení, fáze a 3D podle tabulky v koncepci později; na úzké obrazovce lišta zatím
+  nepřetéká do „…“; volby okna (přichytávání, trasování…) se po obnovení stránky nepamatují.
 - UI3: uložené sady kritérií Najít a vybrat zatím nejsou; řezy, pohledy, 3D a výpisy v Obsahu přibudou
   s etapami; Organizátor s etapou 7; hledání příkazů Ctrl+K přesunuto do UI5.
 - UI2: metody natočený obdélník a oblouk středem (jsou ve vzoru) zatím nejsou; tracker u tečného oblouku
