@@ -5,6 +5,7 @@ import { DEFAULT_CUT_HEIGHT } from '../../wall/layers.ts';
 import type { Model } from '../../model/types.ts';
 import { putView } from '../../model/update.ts';
 import type { Detail } from '../../style/types.ts';
+import { layerState } from '../../view/effective.ts';
 import type { View } from '../../view/types.ts';
 import { storeyOf, styleOf, viewOf } from '../lookup.ts';
 import { S } from '../schema.ts';
@@ -159,6 +160,57 @@ export const viewSetOverrideCombination = defineCommand<{ viewId: Id; combinatio
     return change(model, p.viewId, (v) => {
       const { overrideCombinationId: _old, ...local } = v.local;
       return { ...v, local: id === null ? local : { ...local, overrideCombinationId: id } };
+    });
+  },
+});
+
+export const viewSetLayerCombination = defineCommand<{ viewId: Id; combinationId: Id | null }>({
+  name: 'view.setLayerCombination',
+  label: 'Kombinace vrstev',
+  description:
+    'Nastaví pohledu kombinaci vrstev (které vrstvy jsou vidět a zamčené) jako místní úpravu stylu; ' +
+    'null = podle stylu pohledu.',
+  group: 'Zobrazení',
+  params: S.object({ viewId: S.id, combinationId: { oneOf: [S.id, { type: 'null' }] } }, [
+    'viewId',
+    'combinationId',
+  ]),
+  run(model, p) {
+    const combo = p.combinationId ? model.display.layerCombinations[p.combinationId] : null;
+    if (p.combinationId && !combo) fail('not-found', 'Kombinace vrstev neexistuje');
+    return change(model, p.viewId, (v) => {
+      const { layerStates: _drop, ...rest } = v.local;
+      return { ...v, local: combo ? { ...rest, layerStates: { ...combo.states } } : rest };
+    });
+  },
+});
+
+export const viewSetLayerStates = defineCommand<{
+  viewId: Id;
+  states: Record<Id, { visible?: boolean; locked?: boolean }>;
+}>({
+  name: 'view.setLayerStates',
+  label: 'Vrstvy v pohledu',
+  description:
+    'Nastaví viditelnost nebo zámek více vrstev pohledu najednou (jeden krok Zpět), např. skrýt ostatní ' +
+    'vrstvy nebo přepnout zobrazené / skryté.',
+  group: 'Zobrazení',
+  params: S.object(
+    {
+      viewId: S.id,
+      states: { type: 'object', description: 'id vrstvy → { visible?, locked? }' },
+    },
+    ['viewId', 'states'],
+  ),
+  run(model, p) {
+    return change(model, p.viewId, (v) => {
+      const next = { ...v.local.layerStates };
+      for (const [id, st] of Object.entries(p.states)) {
+        if (!model.display.layers[id]) fail('not-found', `Vrstva ${id} neexistuje`);
+        const cur = layerState(model.display, v, id);
+        next[id] = { visible: st.visible ?? cur.visible, locked: st.locked ?? cur.locked };
+      }
+      return { ...v, local: { ...v.local, layerStates: next } };
     });
   },
 });

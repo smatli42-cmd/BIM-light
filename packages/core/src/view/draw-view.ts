@@ -35,7 +35,7 @@ export function dimensionFacts(d: Dimension): ElementFacts {
 export const isDimensionVisible = (model: Model, view: View, d: Dimension): boolean =>
   d.storeyId === view.storeyId && layerState(model.display, view, d.annotationLayerId).visible;
 
-function drawWalls(model: Model, view: View): Primitive[] {
+function drawWalls(model: Model, view: View, merge: boolean): Primitive[] {
   const detail = detailOf(model.display, view);
   const geoms = allWallGeometry(model, view.storeyId, view.cutPlane);
   const items: WallDrawItem[] = [];
@@ -58,7 +58,7 @@ function drawWalls(model: Model, view: View): Primitive[] {
     const g = resolveGraphics(model.display, view, elementFacts(model, w)).effect;
     if (g.visible) items.push({ geom, g });
   }
-  return drawWallItems(items, detail, look);
+  return drawWallItems(items, detail, look, merge);
 }
 
 /** Otvory mimo rovinu řezu (čárkovaně, plán stěn Z4). */
@@ -74,10 +74,15 @@ function drawOpenings(model: Model, view: View): Primitive[] {
 }
 
 /** Kresba pohledu jako seznam primitiv. */
-export function drawView(model: Model, viewId: Id): Drawing {
+/** Volby zobrazení okna (ne data pohledu): průchozí materiál (výchozí zapnuto). */
+export interface DrawOptions {
+  readonly mergeMaterials?: boolean;
+}
+
+export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): Drawing {
   const view = model.views[viewId];
   if (!view) throw new Error(`Pohled ${viewId} neexistuje`);
-  const out = [...drawWalls(model, view), ...drawOpenings(model, view)];
+  const out = [...drawWalls(model, view, options.mergeMaterials ?? true), ...drawOpenings(model, view)];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;

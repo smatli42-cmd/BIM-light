@@ -48,16 +48,16 @@ interface Piece {
 type Role = 'obrys' | 'hranice vrstvy';
 
 /** Co se kreslí na dílčí hraně: obrys (za ní nic), hranice vrstvy (jiný materiál), nebo nic. */
-function roleOf(p: Piece, q: Piece | null, detail: Detail, emitter: boolean): Role | null {
+function roleOf(p: Piece, q: Piece | null, detail: Detail, emitter: boolean, merge: boolean): Role | null {
   if (!q) return 'obrys';
   if (detail === 'coarse' || !emitter) return null;
   if (q.item === p.item && q.layer === p.layer) return null;
-  if (q.item !== p.item && q.materialId === p.materialId) return null;
+  if (merge && q.item !== p.item && q.materialId === p.materialId) return null;
   return 'hranice vrstvy';
 }
 
 /** Čáry všech stěn najednou (obrys sjednocený přes napojené stěny). */
-export function drawWallLines(items: readonly WallDrawItem[], detail: Detail): Primitive[] {
+export function drawWallLines(items: readonly WallDrawItem[], detail: Detail, merge = true): Primitive[] {
   const pieces: Piece[] = [];
   const polys = items.flatMap((it, item) =>
     it.geom.layers.flatMap((l, layer) =>
@@ -75,7 +75,7 @@ export function drawWallLines(items: readonly WallDrawItem[], detail: Detail): P
     const j = nb[i] ?? -1;
     const other = j >= 0 ? (set.edges[j] as SubEdge).owner : -1;
     const p = pieces[e.owner] as Piece;
-    const role = roleOf(p, other >= 0 ? (pieces[other] as Piece) : null, detail, e.owner < other);
+    const role = roleOf(p, other >= 0 ? (pieces[other] as Piece) : null, detail, e.owner < other, merge);
     if (!role) return;
     const { g } = items[p.item] as WallDrawItem;
     const stroke: Stroke = {
@@ -100,6 +100,15 @@ export function drawWallLines(items: readonly WallDrawItem[], detail: Detail): P
 }
 
 /** Kresba stěn: výplně a šrafy, potom čáry. */
-export function drawWalls(items: readonly WallDrawItem[], detail: Detail, look: DrawLookup): Primitive[] {
-  return [...items.flatMap((it) => drawWallFills(it, detail, look)), ...drawWallLines(items, detail)];
+/**
+ * Kresba stěn: výplně a šrafy, potom čáry. `merge` = průchozí materiál: stejný materiál sousedních stěn
+ * bez dělicí čáry (výchozí; vypnutí je volba zobrazení okna, koncepce rozhraní 2 G).
+ */
+export function drawWalls(
+  items: readonly WallDrawItem[],
+  detail: Detail,
+  look: DrawLookup,
+  merge = true,
+): Primitive[] {
+  return [...items.flatMap((it) => drawWallFills(it, detail, look)), ...drawWallLines(items, detail, merge)];
 }

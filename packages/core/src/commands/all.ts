@@ -21,6 +21,8 @@ import { viewDelete, viewLoadSettings, viewRename, viewSave } from './view/saved
 import {
   viewCreate,
   viewResetToStyle,
+  viewSetLayerCombination,
+  viewSetLayerStates,
   viewSetActiveAnnotationLayer,
   viewSetDetail,
   viewSetLayerState,
@@ -124,6 +126,8 @@ export const CORE_COMMANDS = [
   viewSetStyle,
   viewSetScale,
   viewSetLayerState,
+  viewSetLayerCombination,
+  viewSetLayerStates,
   viewSetOverrideCombination,
   viewSetDetail,
   viewResetToStyle,
