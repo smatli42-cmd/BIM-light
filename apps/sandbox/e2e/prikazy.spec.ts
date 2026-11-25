@@ -182,6 +182,10 @@ test.describe('pravidla-interakce / Příkazy nad výběrem (základ 25)', () =>
     const s1 = await page.evaluate(() => window.__bim!.scale());
     expect(s1).toBeGreaterThan(s0);
     await page.keyboard.press('Home');
-    expect(await page.evaluate(() => window.__bim!.scale())).toBeLessThan(s1);
+    // Na širokém okně se místnost i levá stěna vejdou na výšku stejně – Home ale vycentruje celou místnost.
+    expect(await page.evaluate(() => window.__bim!.scale())).toBeLessThanOrEqual(s1);
+    const c = await px(page, 2000, 1500);
+    const box = (await page.getByTestId('drawing-canvas').boundingBox())!;
+    expect(Math.abs(c.x - (box.x + box.width / 2))).toBeLessThan(2);
   });
 });

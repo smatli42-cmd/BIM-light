@@ -108,7 +108,9 @@ test.describe('katalog-kresleni / část 4 a pravidla-interakce kóty 1, 2, 5 (r
     const input = page.getByTestId('value-edit');
     await expect(input).toBeVisible();
     const color = await input.evaluate((el) => getComputedStyle(el).color);
-    expect(color).toBe('rgb(17, 17, 17)');
+    // Čitelné: tmavé písmo (ve světlém motivu), ne světlé na bílém.
+    const [r, g, b] = (color.match(/\d+/g) ?? []).map(Number);
+    expect(Math.max(r ?? 255, g ?? 255, b ?? 255)).toBeLessThan(80);
     await input.fill('3800');
     await input.press('Enter');
     expect((await dims(page))[0]?.locked).toBe(false);

@@ -28,6 +28,8 @@ import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { Selection } from './selection.ts';
 import type { OpeningDefaults } from './opening-defaults.ts';
+import type { Paper } from '../render/paper.ts';
+import { applyTheme, loadUi, saveUi, type Theme } from '../ui/theme.ts';
 import type { MenuState, Toast, ToastAction, ToastKind, TypedInput, ValueEditState } from './ui-state.ts';
 
 /** Tolerance přichycení a výběru v px (katalog kreslení 2, pravidla-interakce kóty 7). */
@@ -74,6 +76,9 @@ export class Session {
     world: { x: 0, y: 0 },
     inside: false,
   };
+  /** Motiv rozhraní a podklad výkresu (koncepce rozhraní, část 5). */
+  theme: Theme;
+  paper: Paper;
   private toastSeq = 0;
   private readonly listeners = new Set<() => void>();
   private geomCache: { model: Model; key: string; geoms: WallGeometry[] } | null = null;
@@ -85,6 +90,9 @@ export class Session {
     this.viewId = Object.keys(m.views)[0] as Id;
     this.wallTypeId = Object.values(m.wallTypes)[0]?.id ?? '';
     this.tool = createTool('select', this);
+    const ui = loadUi();
+    this.theme = ui.theme;
+    this.paper = ui.paper;
     this.editor.subscribe(() => {
       // Pohled mohl zmizet (Undo nového pohledu): přepne se na první existující.
       if (!this.model.views[this.viewId]) this.viewId = Object.keys(this.model.views)[0] as Id;
@@ -99,6 +107,15 @@ export class Session {
     if (!this.model.wallTypes[this.wallTypeId]) this.wallTypeId = Object.keys(this.model.wallTypes)[0] ?? '';
     const t = this.model.wallTypes[this.wallTypeId];
     if (this.wallRefLine === 'core-face' && t && !typeHasCore(t)) this.wallRefLine = 'face';
+  }
+
+  /** Přepne motiv (světlý / tmavý) nebo podklad výkresu a zapamatuje volbu. */
+  setLook(look: { theme?: Theme; paper?: Paper }) {
+    this.theme = look.theme ?? this.theme;
+    this.paper = look.paper ?? this.paper;
+    applyTheme(this.theme);
+    saveUi({ theme: this.theme, paper: this.paper });
+    this.changed();
   }
 
   get model(): Model {

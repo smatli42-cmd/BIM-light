@@ -103,18 +103,3 @@ export function CanvasOverlays({ session }: { session: Session }) {
     </>
   );
 }
-
-export function StatusBar({ session }: { session: Session }) {
-  useSession(session);
-  const s = session;
-  const w = s.cursor.world;
-  return (
-    <footer class="status">
-      <span data-testid="hint">{s.tool.hint()}</span>
-      <span class="muted">
-        X {Math.round(w.x)} Y {Math.round(w.y)} · 1:{s.view.scale} · výběr {s.selection.walls.length} stěn,{' '}
-        {s.selection.dims.length} kót
-      </span>
-    </footer>
-  );
-}

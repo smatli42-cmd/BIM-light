@@ -1,0 +1,119 @@
+/* Ovládací prvky v obou motivech: tlačítka s ikonou, běžná tlačítka, pole, záložky. */
+.icon {
+  display: block;
+}
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--hover);
+}
+.icon-btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  color: var(--ink);
+}
+.panel button,
+.appbar button:not(.icon-btn),
+.window-head button:not(.icon-btn),
+.bottombar button:not(.icon-btn) {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.panel button:hover,
+.appbar button:not(.icon-btn):hover {
+  background: var(--hover);
+}
+select,
+input:not([type='checkbox']):not([type='color']),
+textarea {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+}
+kbd {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: ui-monospace, monospace;
+}
+.style-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+.style-switch > button {
+  border-radius: 0;
+}
+.style-switch > button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+.style-switch > button:nth-last-child(1),
+.style-switch > button:nth-last-child(2) {
+  border-radius: 0 5px 5px 0;
+}
+.style-switch > .muted {
+  margin-left: 8px;
+}
+.appbar button.active,
+.panel button.active,
+.viewbar button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.bottombar label,
+.window-head label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Pole v panelech se vejdou do šířky panelu (i ve dvou sloupcích). */
+.panel select,
+.panel input:not([type='checkbox']):not([type='color']):not([type='radio']) {
+  width: 100%;
+  min-width: 0;
+}
+.panel .row input,
+.panel .row select {
+  width: auto;
+  flex: 1;
+}

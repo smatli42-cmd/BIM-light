@@ -1,0 +1,189 @@
+/* Rozložení okna aplikace (koncepce rozhraní, části 2 a 8): A 44 px, B 36 px, C 44 px, D 270 px,
+   E zbytek, F 300 px (lze skrýt), F' 40 px, G 36 px. */
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+.spacer {
+  flex: 1;
+}
+
+/* Lišty A, B, G */
+.appbar,
+.commandbar,
+.bottombar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  background: var(--surface);
+  flex: none;
+}
+.appbar {
+  height: 44px;
+  border-bottom: 1px solid var(--line);
+}
+.appbar .brand {
+  font-weight: 700;
+  font-size: 15px;
+}
+.appbar .project {
+  color: var(--muted);
+}
+.commandbar {
+  height: 36px;
+  border-bottom: 1px solid var(--line);
+}
+.commandbar .tool-group + .tool-group {
+  border-left: 1px solid var(--line);
+  padding-left: 8px;
+}
+.bottombar {
+  height: 36px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.bottombar .hint {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* C paleta, D info box, F Obsah, F' lišta sekcí */
+.palette,
+.sections {
+  width: 44px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  background: var(--surface);
+}
+.palette {
+  border-right: 1px solid var(--line);
+}
+.palette .tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.sections {
+  width: 40px;
+  border-left: 1px solid var(--line);
+}
+.panel {
+  overflow-y: auto;
+  padding: 10px;
+  background: var(--surface);
+  flex: none;
+}
+.infobox {
+  width: 270px;
+  border-right: 1px solid var(--line);
+}
+.infobox-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.panel .infobox-head strong {
+  font-size: 15px;
+}
+.content {
+  width: 300px;
+  border-left: 1px solid var(--line);
+}
+.content-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.panel .content-title {
+  font-size: 15px;
+  margin: 0;
+}
+
+/* E okno pohledu */
+.window {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  margin: 4px;
+}
+.window.active {
+  border-color: var(--accent);
+}
+.window-head {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.window-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.workspace {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.drawing {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--paper);
+}
+.drawing:focus {
+  outline: none;
+}
+.view-label {
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  pointer-events: none;
+}

@@ -1,11 +1,13 @@
 // Mřížka na pozadí (katalog kreslení 2.6): jen když je zapnutá; hustá síť se skryje, když by byla
 // hustší než 8 px, každá desátá čára je výraznější. Světle modrá jako ostatní pomocné značky.
 import type { Viewport } from '../canvas/viewport.ts';
+import type { Paper } from './paper.ts';
 
 const MIN_PX = 8;
 
-export function drawGrid(ctx: CanvasRenderingContext2D, v: Viewport, step: number) {
+export function drawGrid(ctx: CanvasRenderingContext2D, v: Viewport, step: number, paper: Paper = 'light') {
   if (!(step > 0)) return;
+  const [major, minor] = paper === 'dark' ? ['#34506f', '#263445'] : ['#c9dcf2', '#e8f0fa'];
   let s = step;
   while (s * v.s < MIN_PX) s *= 10;
   const a = v.toWorld({ x: 0, y: v.height });
@@ -15,7 +17,7 @@ export function drawGrid(ctx: CanvasRenderingContext2D, v: Viewport, step: numbe
   ctx.lineWidth = 1;
   for (let x = Math.ceil(x0 / s) * s; x <= x1; x += s) {
     const p = v.toScreen({ x, y: 0 });
-    ctx.strokeStyle = Math.round(x / s) % 10 === 0 ? '#c9dcf2' : '#e8f0fa';
+    ctx.strokeStyle = Math.round(x / s) % 10 === 0 ? major : minor;
     ctx.beginPath();
     ctx.moveTo(Math.round(p.x) + 0.5, 0);
     ctx.lineTo(Math.round(p.x) + 0.5, v.height);
@@ -23,7 +25,7 @@ export function drawGrid(ctx: CanvasRenderingContext2D, v: Viewport, step: numbe
   }
   for (let y = Math.ceil(y0 / s) * s; y <= y1; y += s) {
     const p = v.toScreen({ x: 0, y });
-    ctx.strokeStyle = Math.round(y / s) % 10 === 0 ? '#c9dcf2' : '#e8f0fa';
+    ctx.strokeStyle = Math.round(y / s) % 10 === 0 ? major : minor;
     ctx.beginPath();
     ctx.moveTo(0, Math.round(p.y) + 0.5);
     ctx.lineTo(v.width, Math.round(p.y) + 0.5);

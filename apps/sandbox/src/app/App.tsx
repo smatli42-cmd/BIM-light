@@ -1,41 +1,36 @@
-import { CORE_NAME } from '@bim-light/core';
+// Okno aplikace v rozložení podle koncepce rozhraní (část 2): A horní lišta, B lišta příkazů,
+// C paleta nástrojů, D info box, E okno pohledu, F Obsah + F' lišta sekcí, G spodní lišta.
 import { useMemo } from 'preact/hooks';
-import { DrawingCanvas } from '../canvas/DrawingCanvas.tsx';
 import { Controller } from '../interaction/controller.ts';
 import { Session } from '../session/session.ts';
-import { CanvasOverlays, StatusBar } from '../ui/Overlays.tsx';
-import { SidePanel } from '../ui/SidePanel.tsx';
-import { Toolbar } from '../ui/Toolbar.tsx';
-import { ViewBar } from '../ui/ViewBar.tsx';
+import { AppBar } from '../ui/layout/AppBar.tsx';
+import { BottomBar } from '../ui/layout/BottomBar.tsx';
+import { CommandBar } from '../ui/layout/CommandBar.tsx';
+import { ContentPanel } from '../ui/layout/ContentPanel.tsx';
+import { InfoBox } from '../ui/layout/InfoBox.tsx';
+import { ToolPalette } from '../ui/layout/ToolPalette.tsx';
+import { ViewWindow } from '../ui/layout/ViewWindow.tsx';
+import { applyTheme } from '../ui/theme.ts';
 import { installTestHook } from './test-hook.ts';
 
 export function App() {
   const { session, controller } = useMemo(() => {
     const s = new Session();
+    applyTheme(s.theme);
     installTestHook(s);
     return { session: s, controller: new Controller(s) };
   }, []);
   return (
-    <div class="layout">
-      <header class="topbar">
-        <h1>BIM-light sandbox</h1>
-        <span class="muted" data-testid="core-name">
-          {CORE_NAME}
-        </span>
-        <ViewBar session={session} />
-        <a class="muted" href="#galerie">
-          Galerie napojení
-        </a>
-      </header>
+    <div class="app">
+      <AppBar s={session} />
+      <CommandBar s={session} />
       <div class="main">
-        <Toolbar session={session} />
-        <main class="workspace">
-          <DrawingCanvas session={session} controller={controller} />
-          <CanvasOverlays session={session} />
-        </main>
-        <SidePanel session={session} />
+        <ToolPalette s={session} />
+        <InfoBox s={session} />
+        <ViewWindow s={session} controller={controller} />
+        <ContentPanel s={session} />
       </div>
-      <StatusBar session={session} />
+      <BottomBar s={session} />
     </div>
   );
 }

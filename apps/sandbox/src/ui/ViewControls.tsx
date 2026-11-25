@@ -1,11 +1,11 @@
-// Lišta pohledu nahoře (katalog pohledů: jednoduché ovládání, úroveň 1): pohled, nový pohled, přepínač
-// stylu jedním klikem, „styl (upraveno)“ + Vrátit, měřítko a aktivní skupina anotací. Vše přes příkazy.
+// Ovládání pohledu (katalog pohledů: jednoduché ovládání, úroveň 1): nový pohled, přepínač stylu
+// jedním klikem, „styl (upraveno)“ + Vrátit, měřítko, šrafy, rovina řezu a aktivní skupina anotací.
+// Vše přes příkazy. Rozmístění v okně: koncepce rozhraní, část 2 (A, E, G).
 import { activeAnnotationLayer, DEFAULT_SCALES, isViewModified, styleOfView } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
-import { useSession } from './use-session.ts';
 
-function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
+export function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
   const storeys = Object.values(s.model.storeys);
   const styles = Object.values(s.model.display.styles);
   const [storeyId, setStorey] = useState(s.storeyId);
@@ -48,7 +48,7 @@ function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
   );
 }
 
-function ScaleSelect(props: { value: number; onPick: (v: number) => void; testid: string }) {
+export function ScaleSelect(props: { value: number; onPick: (v: number) => void; testid: string }) {
   const scales = DEFAULT_SCALES.includes(props.value as never)
     ? DEFAULT_SCALES
     : [...DEFAULT_SCALES, props.value];
@@ -67,7 +67,7 @@ function ScaleSelect(props: { value: number; onPick: (v: number) => void; testid
   );
 }
 
-function StyleSwitch({ s }: { s: Session }) {
+export function StyleSwitch({ s }: { s: Session }) {
   const v = s.view;
   const style = styleOfView(s.model.display, v);
   const modified = isViewModified(v);
@@ -97,7 +97,7 @@ function StyleSwitch({ s }: { s: Session }) {
 }
 
 /** Měřítko šraf stylu (0,5–3): mění velikost všech šraf najednou, platí pro celý styl. */
-function HatchScale({ s }: { s: Session }) {
+export function HatchScale({ s }: { s: Session }) {
   const style = styleOfView(s.model.display, s.view);
   return (
     <label class="muted" title="Násobí rozteče a velikosti všech šraf stylu (0,5–3)">
@@ -120,7 +120,7 @@ function HatchScale({ s }: { s: Session }) {
 }
 
 /** Rovina řezu pohledu nad podlažím (plán stěn Z4): otvor, který ji protíná, stěnu přeruší. */
-function CutPlane({ s }: { s: Session }) {
+export function CutPlane({ s }: { s: Session }) {
   return (
     <label class="muted" title="Výška roviny řezu půdorysu nad podlažím (mm)">
       Řez
@@ -140,51 +140,26 @@ function CutPlane({ s }: { s: Session }) {
   );
 }
 
-export function ViewBar({ session: s }: { session: Session }) {
-  useSession(s);
-  const [adding, setAdding] = useState(false);
+/** Skupina anotací, do které jdou nové kóty (základ 28). */
+export function AnnotationGroup({ s }: { s: Session }) {
   const v = s.view;
   const groups = Object.values(s.model.display.layers).filter((l) => l.kind === 'annotation');
   return (
-    <div class="viewbar" data-testid="viewbar">
-      <select data-testid="view-select" value={v.id} onChange={(e) => s.setView(e.currentTarget.value)}>
-        {Object.values(s.model.views).map((x) => (
-          <option key={x.id} value={x.id}>
-            {x.name}
+    <label class="muted" title="Skupina anotací pro nové kóty">
+      Kóty do
+      <select
+        data-testid="annotation-group"
+        value={activeAnnotationLayer(s.model, v)}
+        onChange={(e) =>
+          s.run('view.setActiveAnnotationLayer', { viewId: v.id, layerId: e.currentTarget.value })
+        }
+      >
+        {groups.map((g) => (
+          <option key={g.id} value={g.id}>
+            {g.name}
           </option>
         ))}
       </select>
-      {adding ? (
-        <NewView s={s} onDone={() => setAdding(false)} />
-      ) : (
-        <button data-testid="new-view-open" onClick={() => setAdding(true)}>
-          Nový pohled
-        </button>
-      )}
-      <StyleSwitch s={s} />
-      <ScaleSelect
-        value={v.scale}
-        onPick={(scale) => s.run('view.setScale', { viewId: v.id, scale })}
-        testid="view-scale"
-      />
-      <HatchScale s={s} />
-      <CutPlane s={s} />
-      <label class="muted">
-        Kóty do
-        <select
-          data-testid="annotation-group"
-          value={activeAnnotationLayer(s.model, v)}
-          onChange={(e) =>
-            s.run('view.setActiveAnnotationLayer', { viewId: v.id, layerId: e.currentTarget.value })
-          }
-        >
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
-      </label>
-    </div>
+    </label>
   );
 }

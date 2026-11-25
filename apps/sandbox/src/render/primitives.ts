@@ -11,6 +11,7 @@ import {
 } from '@bim-light/core';
 import type { Viewport } from '../canvas/viewport.ts';
 import { drawHatch } from './hatch.ts';
+import { forPaper, PAPER_BG, type Paper } from './paper.ts';
 
 /** 1 mm na papíře = 96 / 25,4 px při 100 % (tloušťka čáry na obrazovce). */
 export const PX_PER_PAPER_MM = 96 / 25.4;
@@ -27,6 +28,8 @@ export interface RenderContext {
   readonly v: Viewport;
   readonly pens: PenTable;
   readonly scale: number;
+  /** Podklad výkresu; na tmavém se barvy jen pro zobrazení přemapují (render/paper.ts). */
+  readonly paper?: Paper;
 }
 
 export function pathOf(r: RenderContext, pts: readonly Vec2[], closed: boolean) {
@@ -63,7 +66,7 @@ function text(r: RenderContext, p: Extract<Primitive, { kind: 'text' }>, color?:
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
   ctx.lineWidth = 3;
-  ctx.strokeStyle = '#ffffff';
+  ctx.strokeStyle = PAPER_BG[r.paper ?? 'light'];
   ctx.strokeText(p.text, 0, 0);
   ctx.fillStyle = color ?? p.color;
   ctx.fillText(p.text, 0, 0);
@@ -91,6 +94,9 @@ export function drawPrimitive(r: RenderContext, p: Primitive, color?: string) {
 }
 
 export function drawDrawing(r: RenderContext, d: Drawing) {
+  const paper = r.paper ?? 'light';
+  const prims = paper === 'light' ? d.primitives : d.primitives.map((p) => forPaper(p, paper));
+  d = { ...d, primitives: prims };
   for (const p of d.primitives) if (p.kind === 'fill') drawPrimitive(r, p);
   for (const p of d.primitives) if (p.kind === 'hatch') drawPrimitive(r, p);
   for (const p of d.primitives) if (p.kind === 'line' || p.kind === 'text') drawPrimitive(r, p);

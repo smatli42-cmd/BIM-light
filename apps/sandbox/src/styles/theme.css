@@ -1,0 +1,45 @@
+/* Motivy rozhraní (koncepce rozhraní, část 5): barvy jen jako proměnné na jednom místě.
+   Výchozí světlý; tmavý přes <html data-theme="dark">. Pomocná modrá je v obou motivech. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --paper: #ffffff;
+  --ink: #1b1f24;
+  --muted: #6b7280;
+  --line: #dfe2e7;
+  --line-strong: #c7ccd4;
+  --accent: #2b7de0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4effc;
+  --hover: #eef1f5;
+  --danger: #c62828;
+  --danger-soft: #fdecec;
+  --aux: #2b8cff;
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  color-scheme: light;
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+:root[data-theme='dark'] {
+  --bg: #12161c;
+  --surface: #1a1f27;
+  --surface-2: #20262f;
+  --paper: #1c2027;
+  --ink: #e6e9ee;
+  --muted: #8b94a3;
+  --line: #2c333e;
+  --line-strong: #3b4452;
+  --accent: #3d8bfd;
+  --accent-ink: #ffffff;
+  --accent-soft: #1e3352;
+  --hover: #262d38;
+  --danger: #ef5350;
+  --danger-soft: #3a1f22;
+  --aux: #4aa3ff;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}

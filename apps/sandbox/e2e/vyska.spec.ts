@@ -14,7 +14,6 @@ test.describe('plan-steny / Z3: výška stěny, podlaží a export IFC v sandbox
     await page.getByTestId('tab-storeys').click();
     await page.getByTestId('storey-height-0').fill('3100');
     await page.getByTestId('storey-height-0').press('Enter');
-    await page.getByTestId('tab-props').click();
     await expect(page.getByTestId('h-result')).toContainText('Výška 3100 mm');
   });
 
@@ -23,7 +22,6 @@ test.describe('plan-steny / Z3: výška stěny, podlaží a export IFC v sandbox
     await page.getByTestId('storey-add').click();
     await expect(page.getByTestId('storey-1')).toContainText('2.NP');
     await page.getByTestId('storey-open-0').click();
-    await page.getByTestId('tab-props').click();
     const id = await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
     await clickAt(page, 2000, 150);
     await page.getByTestId('h-top-kind').selectOption('2');

@@ -60,7 +60,7 @@ function permsOf(s: Session, page: (p: Px) => Px) {
 export function installTestHook(s: Session) {
   if (typeof window === 'undefined') return;
   const page = (p: Px): Px => {
-    const r = document.querySelector('canvas')?.getBoundingClientRect();
+    const r = document.querySelector('[data-testid="drawing-canvas"]')?.getBoundingClientRect();
     return { x: p.x + (r?.left ?? 0), y: p.y + (r?.top ?? 0) };
   };
   window.__bim = {

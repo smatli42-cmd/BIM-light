@@ -1,10 +1,30 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, stěny Z5 – oblouk.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-25, rozhraní UI1 – kostra.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 
 ## Hotovo
+
+### Rozhraní: UI1 hotovo, 2026-11-25 (kostra podle `docs/koncepce-rozhrani.md`)
+- **Rozložení A–G** (`apps/sandbox/src/ui/layout/`): A horní lišta (název, projekt, sady Studie / Projekt /
+  Elektro = styl aktivního okna, Zpět / Znovu, Exportovat IFC, podklad výkresu, motiv), B lišta příkazů
+  (hledání – zatím neaktivní, UI3; přesunout, kopírovat, otočit, zrcadlit, pole | zarovnat, do rohu,
+  rozdělit), C paleta nástrojů (jen ikony s bublinou název – zkratka – popis z registru), D info box
+  (název nástroje / výběru + dosavadní panel Vlastnosti), E okno pohledu (záložka s výběrem pohledu,
+  nový pohled, měřítko, štítek „Půdorys · 1.NP (±0)“), F panel sekcí + F' svislá lišta (Podlaží, Vrstvy,
+  Typy stěn, Materiály, Šrafy; křížek panel skryje), G spodní lišta (zoom, šrafy ×, rovina řezu, kóty do,
+  nápověda, souřadnice).
+- **Motivy** (`styles/theme.css`): barvy jen jako proměnné; světlý výchozí, tmavý přes `data-theme`.
+  **Podklad výkresu** papír / tmavý (`render/paper.ts`): na tmavém se jen při zobrazení zesvětlí tmavé
+  čáry a texty a ztlumí výplně; data a export beze změny. Volba se pamatuje v prohlížeči.
+- **Ikony** (`ui/icons/`): vlastní sada ~50 SVG ikon (24 px, čára 1,5, barva z motivu), komponenta
+  `Icon` a `IconButton`.
+- Styly rozdělené na `theme.css`, `layout.css`, `controls.css`, `panels.css`; staré `Toolbar`,
+  `SidePanel`, `ViewBar` nahrazeny (`ViewControls.tsx` drží ovládání pohledu).
+- Testy: prohlížečové testy mají okno 1700 × 1000 (širší rozložení); testovací háček hledá plátno výkresu
+  podle `data-testid` (v info boxu je i náhled skladby); nové testy rozložení a motivu. Jádro 639,
+  prohlížeč 102, vše zelené.
 
 ### Stěny: Z1 hotovo, 2026-11-24 (typ stěny a skladba)
 - **Složka `wall-type/`:** typ, pás a vrstva (přesunuté z `wall/types.ts`, ten je dál re-exportuje), vrstva má
@@ -380,9 +400,10 @@ Stěny Z1:
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
   s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
   body „Rozhodl Code“ u Z4 a Z5.
-- **Rozhraní krok UI1 – kostra** podle `docs/koncepce-rozhrani.md` (potvrzeno 2026-11-25): rozložení
-  A–G, světlý (výchozí) a tmavý motiv, podklad výkresu, komponenta ikony a první sada ikon. Před
-  začátkem si vyžádat screenshot odpovídající části Arditu. Potom UI2–UI5, až po nich stěny Z6.
+- Uživatel vyzkouší kostru UI1 (světlý a tmavý motiv, podklad výkresu, skrytí panelu, bubliny ikon).
+- Potom **UI2 – paleta a info box**: info box po sekcích z popisu parametrů (vzor: screenshot info boxu
+  stěny v Arditu – Instance / Typ, skladba, referenční čára, výška a úroveň, napojení), metoda geometrie,
+  sloučení Stěna + Oblouková stěna. Pak UI3–UI5, až po nich stěny Z6.
 
 ## Otevřené
 
@@ -397,6 +418,8 @@ Stěny Z1:
 - Jemná podrobnost (= střední), podle plánu krok Z6.
 - `docs/STAV.md` má ~37 KB (limit ~40 KB): návrh přesunout hotové sekce Z1–Z3 (Hotovo + Rozhodl Code)
   do nového `docs/STAV-steny.md` – k rozhodnutí.
+- UI1: hledání příkazů (Ctrl+K) je zatím jen neaktivní ikona (UI3); panel Podlaží je provizorní místo
+  Obsahu (UI3); úpravy Studie / Projekt jsou zatím jen dva styly bez Elektro.
 - Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).
 - Přepisy vzhledu (pravidla grafiky, vlastní styly) – uživatel je ještě promýšlí; rozhraní pro ně se
   navrhne zvlášť (koncepce rozhraní, část 4).

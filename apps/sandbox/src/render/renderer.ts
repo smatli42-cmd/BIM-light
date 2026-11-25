@@ -11,6 +11,7 @@ import type { Session } from '../session/session.ts';
 import { gripViews, permDimViews } from '../interaction/hits.ts';
 import { tempDimViews } from '../interaction/temp-layout.ts';
 import { drawGrid } from './grid.ts';
+import { PAPER_BG } from './paper.ts';
 import { drawDrawing, drawPrimitive, type RenderContext } from './primitives.ts';
 import {
   AUX,
@@ -42,12 +43,12 @@ function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly 
 
 export function render(ctx: CanvasRenderingContext2D, s: Session) {
   const v = s.viewport;
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = PAPER_BG[s.paper];
   ctx.fillRect(0, 0, v.width, v.height);
-  if (s.options.grid) drawGrid(ctx, v, s.options.grid);
+  if (s.options.grid) drawGrid(ctx, v, s.options.grid, s.paper);
   const o = s.tool.overlay();
   const hidden = o.hiddenDims ?? [];
-  const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: s.view.scale };
+  const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: s.view.scale, paper: s.paper };
   const model = o.previewModel ?? s.model;
   drawModel(r, s, model, hidden);
   drawWallOutlines(ctx, s, [...s.selection.walls, ...s.selection.openings], SELECT, 2, model);

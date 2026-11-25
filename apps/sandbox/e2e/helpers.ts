@@ -10,7 +10,7 @@ export interface Pt {
 
 /** Otevře pískoviště; 0,1 px na mm, počátek modelu 300 px zleva a 500 px shora v plátně. */
 export async function open(page: Page) {
-  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.setViewportSize({ width: 1700, height: 1000 });
   await page.goto('./');
   await page.waitForFunction(() => !!window.__bim);
   await page.evaluate(() => window.__bim!.setView(0.1, 300, 500));
