@@ -54,9 +54,15 @@ function clipLine(poly: readonly Vec2[], h: HalfPlane): Vec2[] {
   return out;
 }
 
-/** Ořízne mnohoúhelník všemi řezy; vrací části s nenulovou plochou. */
+/** Má mnohoúhelník skutečnou plochu (ne zbytek po ořezu, např. „plochý“ pruh podél hrany)? */
+const solid = (p: readonly Vec2[]) => p.length >= 3 && Math.abs(signedArea(p)) > MIN_AREA;
+
+/**
+ * Ořízne mnohoúhelník všemi řezy; vrací části s nenulovou plochou. Zbytky s nulovou plochou se zahodí
+ * před dalším řezem – ořez kružnicí by z nich udělal nesmyslný tvar (Z5).
+ */
 export const clipAll = (poly: readonly Vec2[], hs: readonly Cut[]): Vec2[][] =>
-  hs.reduce<Vec2[][]>((ps, h) => ps.flatMap((p) => (p.length < 3 ? [] : clip(p, h))), [[...poly]]);
+  hs.reduce<Vec2[][]>((ps, h) => ps.filter(solid).flatMap((p) => clip(p, h)), [[...poly]]).filter(solid);
 
 /** Plocha se znaménkem (kladná = proti směru hodin). */
 export function signedArea(poly: readonly Vec2[]): number {

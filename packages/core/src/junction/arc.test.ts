@@ -176,4 +176,30 @@ describe('plan-steny / Z5: napojení oblouků', () => {
     expect(g.outlines).toHaveLength(1);
     areasMatch(f);
   });
+
+  it('U: přímé stěny napojené pod úhlem na oblouk přes 180° – izolace pokosem, bez zubu a bez výplně kruhu', () => {
+    const f = fixture();
+    const t = f.type('Obvodová zateplená 465');
+    const x = -Math.sqrt(1850 * 1850 - 1600 * 1600);
+    const sweep = -(2 * Math.PI - 2 * Math.atan2(1600, -x));
+    const a = f.line(vec(-6000, 1600), vec(x, 1600), { typeId: t, side: 'right' });
+    const [b] = f.run('wall.create', {
+      storeyId: f.storeyId,
+      typeId: t,
+      side: 'right',
+      path: { kind: 'arc', start: vec(x, 1600), end: vec(x, -1600), bulge: Math.tan(sweep / 4) },
+      connections: [{ end: 'start', wallId: a, at: 'ATEND' }],
+    });
+    f.line(vec(x, -1600), vec(-6000, -1600), {
+      typeId: t,
+      side: 'right',
+      connections: [{ end: 'start', wallId: b, at: 'ATEND' }],
+    });
+    expect(wallGeometry(f.model, f.wall(a)).cuts.end.join).toBe('corner');
+    noOverlap(f, vec(x, 1300), 600, 23);
+    areasMatch(f);
+    // Vnitřní roh je vyplněný izolací (dříve zub), střed kruhu zůstane prázdný (dříve výplň).
+    expect(ownerAt(f, vec(-850, 1150))).toBe('Tepelná izolace EPS');
+    expect(ownerAt(f, vec(0, 0))).toBe('');
+  });
 });

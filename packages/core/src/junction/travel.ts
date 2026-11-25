@@ -44,10 +44,24 @@ function strip(a: Frame, lo: number, hi: number, reach: number): Vec2[] {
   return signedArea(poly) >= 0 ? poly : poly.reverse();
 }
 
+/** U oblouku výseč kolem uzlu (±60°), aby se nepočítala vrstva na protější straně kružnice. */
+function wedge(f: Frame, reach: number): Cut[] {
+  const arc = f.arc;
+  if (!arc) return [];
+  const ang = angleOf(sub(f.origin, arc.c));
+  const span = Math.min(Math.PI / 3, reach / Math.max(radiusAt(arc, f.lo), radiusAt(arc, f.hi), 1));
+  const ray = (t: number, dir: 1 | -1): Cut => {
+    const d = { x: Math.cos(t), y: Math.sin(t) };
+    return { p: arc.c, n: { x: -d.y * dir, y: d.x * dir } };
+  };
+  return [ray(ang - span, 1), ray(ang + span, -1)];
+}
+
 /** Buňka = průnik pásu vrstvy `x` ramene `a` a pásu vrstvy `y` stěny `other` (kolem uzlu). */
 export function cell(a: Arm, x: FrameLayer, other: Frame, y: FrameLayer, reach: number): Vec2[][] {
   const n = other.normal;
-  return clipAll(strip(a, x.lo, x.hi, reach), [boundary(other, y.lo, n), boundary(other, y.hi, mul(n, -1))]);
+  const cuts = [boundary(other, y.lo, n), boundary(other, y.hi, mul(n, -1)), ...wedge(other, reach)];
+  return clipAll(strip(a, x.lo, x.hi, reach), cuts);
 }
 
 /** Leží vrstva s ořezem `cuts` (aspoň kouskem) v buňce? */
