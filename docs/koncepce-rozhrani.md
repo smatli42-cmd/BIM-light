@@ -118,14 +118,27 @@ k dřívějším rozporům jsou v části 11.
   Materiály, Šrafy, Styly, Podlaží, později Organizátor výkresů. Panel jde skrýt (více místa pro okna).
 
 ### G – Spodní lišta zobrazení
-Platí pro aktivní okno (základ 26: pohled má svůj styl); každá položka je rychlá volba s rozbalením (›):
-- zoom (přiblížit, oddálit, vše, výběr), rozvržení oken;
-- zobrazení podlaží pod / nad (podklad);
-- přichytávání (zapnout typy: konec, střed, průsečík, líc, osa…), mřížka;
-- kombinace vrstev / skupin anotací, pera (skutečná tloušťka čar), měřítko;
-- styl pohledu, **fáze** (Stávající / Bourací / Nový / Srovnávací – krok Z6), skladba (celá / jádro),
-  přepisy grafiky, „Odhalit“ skryté prvky.
-- Úplně vpravo informace o projektu / souřadnice kurzoru (dnešní stavový řádek).
+Podle screenshotů vzoru (2026-11-25). Platí pro **aktivní okno**; každá položka s › má rozbalovací volby,
+bubliny jsou stručné. Zleva doprava:
+
+| # | Položka | Co dělá | U nás | Kdy |
+|---|---|---|---|---|
+| 1 | Oddálit, Přiblížit, **74 %** › | zoom; číslo = přiblížení, rozbalení = vše / výběr / oknem / 100 % | viewport, `zoomTo` | UI4 |
+| 2 | **Rozvržení oken**: jedno okno, dvě okna vedle sebe (např. půdorys + 3D / půdorys + jiný pohled) | víc oken, aktivní okno | nové | UI4 |
+| 3 | **Trasování** (Shift+F2) + **„Níž · 1.NP“** › | průsvitný odkaz jiného podlaží: Níž (auto) / Výš (auto) / konkrétní podlaží; intenzita slabá / střední / silná; kreslit odkaz nad / pod aktivním; prohodit odkaz s aktivním | kresba jiného podlaží jen pro zobrazení | UI4 |
+| 4 | **Pomocné prvky** (vodicí čáry a body), **Přichytávání (S)**, **krok přichytávání** › (vyp., 10–500 mm, Alt+S) | zapnutí služby přichytávání a kroku kurzoru | služba přichytávání (základ 20), mřížka | UI4 |
+| 5 | **Gravitace** › (vyp. / na desku / na střechu / na terén / na cokoli) | nový prvek se postaví na plochu pod bodem | potřebuje desky, střechy, terén | s deskami |
+| 6 | **Kombinace vrstev** › (Vše, Studie půdorys / řez / pohled, DSP a PPS…, Situace, 3D model, Elektro) + **rychlé volby vrstev** › (přepnout zobrazené / skryté, skrýt vrstvy označených, skrýt ostatní, zpět / znovu změnu vrstev) | které vrstvy jsou vidět a zamčené | `layerCombinations`, místní stavy vrstev pohledu | UI4 |
+| 7 | **Skutečná tloušťka čar** / vlasové, **Průchozí materiál** (stejný materiál bez dělicí čáry v řezu, pohledu i 3D), **Izolovat popisy** (model v polotónu, nevybíratelný), **Pera a barvy** (dialog sad per) + **sada per** › (Studie, Projekt, TZB, AutoCAD) | tloušťky a barvy čar | tabulka per (základ 32): zatím jedna; průchozí materiál už platí v kresbě stěn | tloušťka, izolovat popisy, dialog per: UI4; sady per: s etapou 7 |
+| 8 | **Grafické přepisy** › (Šrafy, Prezentace, Barevné označení hmot, Tepelná obálka, Elektro – podklad šedě, Elektro – okruhy barevně, Upravit přepisy…) | kombinace pravidel grafiky (základ 30) | `overrideCombinations`, `view.setOverrideCombination` | výběr: UI4; „Upravit přepisy“ až s návrhem přepisů (část 4) |
+| 9 | **Konstrukční zobrazení** › (Celá skladba, Bez povrchů, Jen jádro, Jen jádro nosných prvků) | jen zobrazení, model a IFC beze změny | nové v kresbě stěn (vrstvy podle funkce) | stěny Z6 |
+| 10 | **Zobrazit výběr ve 3D** (F4), **Zobrazit vše ve 3D** (Ctrl+F4) | 3D okno | 3D | etapa 3D |
+| 11 | **Odhalit** | dočasně ukáže skryté prvky (skrytou vrstvou, fází, filtrem) purpurově a jdou vybrat | nové | UI4 |
+| 12 | **Fáze** › (Stávající / Bourací práce / Nový / Srovnávací) | filtr rekonstrukce aktivního okna | pravidla fází | stěny Z6 |
+| 13 | Podrobnost › (hrubá / střední / jemná), Šrafy ×, Řez (rovina řezu), Kóty do | naše položky navíc | máme | UI4 (přesun do G) |
+
+Vpravo zůstane nápověda „co dělat dál“ a souřadnice kurzoru. Na úzké obrazovce se položky schovají
+do rozbalovací nabídky „…“.
 
 ### I – Plovoucí prvky u kurzoru
 - **Tracker**: Vzdálenost, Úhel, ΔX, ΔY (u oblouku Poloměr, Středový úhel, Tětiva); Tab přepíná pole,
@@ -257,7 +270,7 @@ promýšlí – rozhraní pro jejich úpravu se navrhne zvlášť, se screenshot
 | UI1 kostra | rozložení A–G (prázdné oblasti), motivy světlý / tmavý, podklad výkresu, komponenta ikony + prvních ~30 ikon | sandbox běží v novém rozložení v obou motivech, testy zelené |
 | UI2 nástroje a info box | paleta C, info box D z popisu parametrů (nástroj i výběr), metoda geometrie, sloučení Stěna + Oblouková stěna | vše z dnešní levé lišty a panelu Vlastnosti je v C a D |
 | UI3 příkazy a Obsah | lišta B, Najít a vybrat (lupa), Obsah F se záložkami Projekt / Pohledy (pracovní okno podlaží, uložené pohledy, + Uložit pohled, nastavení pohledu s fází a variantou), přepínač sad filtruje Obsah, lišta sekcí F' | dnešní pravé záložky a výběr pohledu jsou v F/F' |
-| UI4 spodní lišta a okna | lišta G (zoom, přichytávání, vrstvy, styl, měřítko, rovina řezu), více oken vedle sebe, aktivní okno | dnešní horní lišta pohledu zmizí |
+| UI4 spodní lišta a okna | lišta G podle tabulky v části 2 G (položky „UI4“), dvě okna vedle sebe, aktivní okno, trasování podlaží, odhalit | dnešní ovládání pohledu je v G, okno jde rozdělit |
 | UI5 plovoucí prvky | hledání příkazů Ctrl+K, tracker ΔX/ΔY, nabídka metody po prvním kliku, kontextová paleta u uzlu a hrany, průvodce prostředím | kreslení a úpravy bez levého panelu |
 
 Před každým krokem: screenshot odpovídající části Arditu → porovnání → zapsat rozhodnutí.

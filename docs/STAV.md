@@ -152,9 +152,10 @@ Velikost šraf (2026-11-25):
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2 (info box, metoda Stěny, nabídka úseku řetězu, rychlý výběr typu).
 - Uživatel vyzkouší UI3 (Obsah Projekt / Pohledy, Uložit pohled, přepnutí sady, Najít a vybrat).
-- Potom **UI4 – spodní lišta a okna**: lišta G (vrstvy, přichytávání, styl, měřítko, rovina řezu, fáze),
-  víc oken vedle sebe, aktivní okno. Před začátkem screenshot spodní lišty Arditu s rozbalenými volbami.
-  Pak UI5, až po něm stěny Z6.
+- Potom **UI4 – spodní lišta a okna** podle tabulky v `koncepce-rozhrani.md`, část 2 G (screenshoty
+  vzoru jsou probrané 2026-11-25): zoom s %, dvě okna vedle sebe, trasování podlaží, přichytávání a krok,
+  kombinace vrstev a rychlé volby, skutečná tloušťka čar, izolovat popisy, pera, grafické přepisy, odhalit.
+  Gravitace, sady per, konstrukční zobrazení, fáze a 3D podle tabulky později. Pak UI5, až po něm Z6.
 
 ## Otevřené
 
