@@ -35,14 +35,34 @@ export interface LinearDimension extends DimensionBase {
   readonly refs: readonly [FaceRef, FaceRef];
   /** Index odkazu, jehož stěna se hýbe, když není nic vybráno (ta, z níž kóta vznikla). */
   readonly ownerRef: 0 | 1;
-  /** Poloha kótovací čáry: vzdálenost od středu prvního líce podél líce (mm). */
+  /**
+   * Poloha kótovací čáry: vzdálenost od středu prvního líce podél líce (mm). U kóty po oblouku
+   * (`arc`) vzdálenost kótovací čáry od měřeného líce (+ = od středu oblouku).
+   */
   readonly offset: number;
+  /**
+   * Kóta po oblouku (Z5): hrany přes obloukovou stěnu (čelo, hrana otvoru, líc napojené stěny) se měří
+   * délkou oblouku na líci `face` stěny `wallId`.
+   */
+  readonly arc?: ArcMeasure;
 }
 
-/** Délka líce stěny (podélná kóta). */
+export interface ArcMeasure {
+  readonly wallId: Id;
+  readonly face: 'ref' | 'opp';
+}
+
+/**
+ * Co délková kóta měří (Z5): délku líce (u oblouku délku oblouku), tětivu oblouku, nebo poloměr líce.
+ */
+export type LengthMeasure = 'arc' | 'chord' | 'radius';
+
+/** Délka líce stěny (podélná kóta); u oblouku i tětiva nebo poloměr. */
 export interface LengthDimension extends DimensionBase {
   readonly kind: 'length';
   readonly ref: FaceRef;
+  /** Chybí = 'arc' (délka líce). */
+  readonly measure?: LengthMeasure;
   /** Odsazení kótovací čáry od líce (mm, kladné = vlevo od směru stěny). */
   readonly offset: number;
 }

@@ -1,6 +1,7 @@
 // Okótování celé stěny (pravidla-interakce: „Okótování celé stěny“; plán stěn Z4): podél zvoleného líce
 // řetěz líc – hrana otvoru – … – líc a pod ním celková délka (Archicad: automatické kótování).
-import { add, leftNormal, mul, pointAt, tangentAt, type Vec2 } from '../geometry/index.ts';
+import { add, mul, pathLength, type Vec2 } from '../geometry/index.ts';
+import { stationAt } from '../opening/along.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { openingsOf } from '../opening/geometry.ts';
@@ -38,11 +39,9 @@ export function wholeWallRows(
   const g = wallGeometry(model, getWall(model, wallId));
   const face = g.faces[side];
   const f = g.section.faces;
-  const out = mul(
-    leftNormal(tangentAt(face, 'start')),
-    Math.sign(f[side] - f[side === 'ref' ? 'opp' : 'ref']) || 1,
-  );
-  const mid = pointAt(face, 0.5);
+  const st = stationAt(face, pathLength(face) / 2);
+  const out = mul(st.normal, Math.sign(f[side] - f[side === 'ref' ? 'opp' : 'ref']) || 1);
+  const mid = st.point;
   return {
     chain,
     total: edges.length > 2 ? [start, end] : null,

@@ -14,5 +14,6 @@ export function formatAngle(deg: number): string {
 /** Text, který se u kóty zobrazí: přepsaný, nebo skutečná hodnota. */
 export function dimensionText(d: Dimension, value: number): string {
   if (d.textOverride !== null) return d.textOverride;
-  return d.kind === 'angular' ? formatAngle(value) : formatLength(value);
+  if (d.kind === 'angular') return formatAngle(value);
+  return d.kind === 'length' && d.measure === 'radius' ? `R ${formatLength(value)}` : formatLength(value);
 }

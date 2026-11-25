@@ -1,18 +1,20 @@
 // Příkaz: změna čísla v kótě (základ 25; pravidla-interakce: kóty 1, 9; katalog kreslení 3.3–3.4).
 // Pohne se vybraná stěna z dvojice, jinak ta, ze které kóta vznikla. Zámek se změnou čísla nemění.
-import { pathLength, rotatePath } from '../../geometry/index.ts';
+import { arcData, pathLength, rotatePath } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
-import { angleGeometry, facePath, measureDimension } from '../../dimension/measure.ts';
+import { angleGeometry, facePath, isArcPath, measureDimension } from '../../dimension/measure.ts';
 import { isCap } from '../../wall/edges.ts';
-import type { Dimension, LinearDimension } from '../../dimension/types.ts';
+import type { Dimension, LengthDimension, LinearDimension } from '../../dimension/types.ts';
 import { putOpenings } from '../../model/update.ts';
 import type { Opening } from '../../opening/types.ts';
 import { assertOpenings } from '../opening/shared.ts';
-import { dimensionOf } from '../lookup.ts';
+import { dimensionOf, wallOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { CommandFailure, defineCommand, fail } from '../types.ts';
+import { arcScale } from '../../dimension/arc-dim.ts';
+import { curveWall } from '../wall/curve.ts';
 import { setWallLength } from '../wall/endpoint.ts';
 import { offsetWall, transformWalls } from '../wall/move.ts';
 import { END_SCHEMA } from '../wall/shared.ts';
@@ -50,13 +52,14 @@ function moveOpeningEdge(model: Model, d: LinearDimension, value: number, mover:
   const ref = d.refs[mover];
   const other = d.refs[mover === 0 ? 1 : 0];
   const o = model.openings[ref.openingId as Id] ?? fail('not-found', 'Otvor neexistuje');
-  const delta = value - measureDimension(model, d);
+  // Kóta po oblouku měří na líci; posun po referenční čáře je o poměr poloměrů jiný (Z5).
+  const k = arcScale(model, d);
+  const delta = (value - measureDimension(model, d)) * k;
   const put = (x: Opening) => () => assertOpenings(putOpenings(model, [x]), [x.id]);
   if (other.openingId === o.id) {
+    const w = value * k;
     const width =
-      ref.face === 'end'
-        ? { ...o, width: value }
-        : { ...o, width: value, offset: o.offset + o.width - value };
+      ref.face === 'end' ? { ...o, width: w } : { ...o, width: w, offset: o.offset + o.width - w };
     return closest(d, value, [put(width)]);
   }
   return closest(d, value, [
@@ -65,13 +68,29 @@ function moveOpeningEdge(model: Model, d: LinearDimension, value: number, mover:
   ]);
 }
 
+/** Délka líce, tětiva (konec klouže po kružnici), nebo poloměr líce (Z5). */
+function applyLength(model: Model, d: LengthDimension, p: SetValueParams): Model {
+  const face = isCap(d.ref.face) ? 'ref' : d.ref.face;
+  const path = facePath(model, d.ref);
+  const end = p.end ?? 'end';
+  if ((d.measure ?? 'arc') === 'arc')
+    return setWallLength(model, { wallId: d.ref.wallId, end, length: p.value, face });
+  if (!isArcPath(path)) fail('invalid', 'Líc není oblouk');
+  const a = arcData(path);
+  if (d.measure === 'radius') {
+    const ref = arcData(wallOf(model, d.ref.wallId).path as typeof path).radius;
+    return curveWall(model, d.ref.wallId, Math.sign(a.sweep) * (ref + p.value - a.radius));
+  }
+  if (p.value >= 2 * a.radius)
+    fail('invalid', `Tětiva musí být kratší než průměr (${Math.round(2 * a.radius)} mm)`);
+  const length = 2 * a.radius * Math.asin(p.value / (2 * a.radius));
+  return setWallLength(model, { wallId: d.ref.wallId, end, length, face });
+}
+
 function applyValue(model: Model, d: Dimension, p: SetValueParams): Model {
   const current = measureDimension(model, d);
   const delta = p.value - current;
-  if (d.kind === 'length') {
-    const face = isCap(d.ref.face) ? 'ref' : d.ref.face;
-    return setWallLength(model, { wallId: d.ref.wallId, end: p.end ?? 'end', length: p.value, face });
-  }
+  if (d.kind === 'length') return applyLength(model, d, p);
   const mover = p.moveRef ?? d.ownerRef;
   if (d.kind === 'linear') {
     const ref = d.refs[mover];
@@ -80,8 +99,9 @@ function applyValue(model: Model, d: Dimension, p: SetValueParams): Model {
     if (isCap(cap)) {
       // Čelo volného konce: změna čísla prodlouží / zkrátí stěnu na tomto konci.
       const length = pathLength(facePath(model, { wallId: ref.wallId, face: 'ref' }));
+      const dl = delta * arcScale(model, d);
       const at = (l: number) => () => setWallLength(model, { wallId: ref.wallId, end: cap, length: l });
-      return closest(d, p.value, [at(length + delta), at(length - delta)]);
+      return closest(d, p.value, [at(length + dl), at(length - dl)]);
     }
     if (ref.wallId === d.refs[mover === 0 ? 1 : 0].wallId) {
       fail('invalid', 'Tloušťka stěny se mění v typu nebo příkazem Tloušťka stěny');

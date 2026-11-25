@@ -4,3 +4,4 @@ export * from './path.ts';
 export * from './split.ts';
 export * from './nearest.ts';
 export * from './arc-grid.ts';
+export * from './arc-build.ts';

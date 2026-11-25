@@ -4,8 +4,9 @@ import { cross, tangentAt } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
-import { facePath, measureDimension } from '../../dimension/measure.ts';
-import type { Dimension, FaceRef } from '../../dimension/types.ts';
+import { facePath, isArcPath, measureDimension } from '../../dimension/measure.ts';
+import { measuredFace } from '../../dimension/arc-dim.ts';
+import type { ArcMeasure, Dimension, FaceRef, LengthMeasure } from '../../dimension/types.ts';
 import { rulesFor } from '../../rules/cross-rules.ts';
 import { isCap } from '../../wall/edges.ts';
 import { activeAnnotationLayer } from '../../view/effective.ts';
@@ -23,8 +24,8 @@ export const FACE_REF_SCHEMA: JsonSchema = S.object(
 );
 
 export type DimensionCreateParams = { annotationLayerId?: Id; viewId?: Id } & (
-  | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef?: 0 | 1; offset?: number }
-  | { kind: 'length'; ref: FaceRef; offset?: number }
+  | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef?: 0 | 1; offset?: number; arc?: ArcMeasure }
+  | { kind: 'length'; ref: FaceRef; offset?: number; measure?: LengthMeasure }
   | { kind: 'angular'; wallIds: [Id, Id]; ownerRef?: 0 | 1; radius?: number }
 );
 
@@ -66,7 +67,8 @@ export function buildDimension(model: Model, p: DimensionCreateParams, id: Id, l
   if (p.kind === 'linear') {
     p.refs.forEach((r) => checkFace(model, r));
     const [a, b] = p.refs.map((r) => facePath(model, r));
-    if (a && b && Math.abs(cross(tangentAt(a, 'start'), tangentAt(b, 'start'))) > 0.01) {
+    if (p.arc && !measuredFace(model, p.arc)) fail('invalid', 'Kóta po oblouku potřebuje obloukovou stěnu');
+    if (!p.arc && a && b && Math.abs(cross(tangentAt(a, 'start'), tangentAt(b, 'start'))) > 0.01) {
       fail('invalid', 'Kótovat vzdálenost jde jen mezi rovnoběžnými líci');
     }
     const storeyId = wallOf(model, p.refs[0].wallId).storeyId;
@@ -77,12 +79,16 @@ export function buildDimension(model: Model, p: DimensionCreateParams, id: Id, l
       refs: p.refs,
       ownerRef: p.ownerRef ?? 0,
       offset: p.offset ?? 0,
+      ...(p.arc ? { arc: p.arc } : {}),
     };
   }
   if (p.kind === 'length') {
     checkFace(model, p.ref, false);
     const storeyId = wallOf(model, p.ref.wallId).storeyId;
-    return { ...base, storeyId, kind: 'length', ref: p.ref, offset: p.offset ?? 500 };
+    const measure = p.measure && p.measure !== 'arc' ? { measure: p.measure } : {};
+    if (p.measure && p.measure !== 'arc' && !isArcPath(facePath(model, p.ref)))
+      fail('invalid', 'Tětivu a poloměr jde kótovat jen u obloukové stěny');
+    return { ...base, storeyId, kind: 'length', ref: p.ref, offset: p.offset ?? 500, ...measure };
   }
   const storeyId = wallOf(model, p.wallIds[0]).storeyId;
   wallOf(model, p.wallIds[1]);
@@ -100,7 +106,8 @@ export const dimensionCreate = defineCommand<DimensionCreateParams>({
   name: 'dimension.create',
   label: 'Kóta',
   description:
-    'Vytvoří trvalou kótu: vzdálenost dvou rovnoběžných líců, délku líce stěny, nebo úhel dvou stěn. ' +
+    'Vytvoří trvalou kótu: vzdálenost dvou rovnoběžných líců, délku líce stěny (u oblouku i tětivu ' +
+    'nebo poloměr), nebo úhel dvou stěn. ' +
     'Kóta je odemčená a patří do aktivní skupiny anotací pohledu.',
   group: 'Kóta',
   icon: 'dimension',
@@ -112,11 +119,23 @@ export const dimensionCreate = defineCommand<DimensionCreateParams>({
           kind: S.enumOf(['linear'], ''),
           refs: { type: 'array', items: FACE_REF_SCHEMA, minItems: 2, maxItems: 2 },
           ownerRef: owner,
+          arc: {
+            ...S.object({ wallId: S.id, face: S.enumOf(['ref', 'opp'], 'měřený líc') }, ['wallId', 'face']),
+            description: 'kóta po oblouku: délka oblouku na líci obloukové stěny',
+          },
           ...common,
         },
         ['kind', 'refs'],
       ),
-      S.object({ kind: S.enumOf(['length'], ''), ref: FACE_REF_SCHEMA, ...common }, ['kind', 'ref']),
+      S.object(
+        {
+          kind: S.enumOf(['length'], ''),
+          ref: FACE_REF_SCHEMA,
+          measure: S.enumOf(['arc', 'chord', 'radius'], 'délka líce / oblouku, tětiva, nebo poloměr'),
+          ...common,
+        },
+        ['kind', 'ref'],
+      ),
       S.object(
         {
           kind: S.enumOf(['angular'], ''),

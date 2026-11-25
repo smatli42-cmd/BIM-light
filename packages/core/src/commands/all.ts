@@ -35,6 +35,7 @@ import { wallCopy, wallPaste } from './wall/copy.ts';
 import { wallAlign, wallRectangle, wallTrimToCorner } from './wall/corner.ts';
 import { wallMoveEndpoint, wallSetLength } from './wall/endpoint.ts';
 import { wallMove, wallOffset, wallRotate } from './wall/move.ts';
+import { wallCurve, wallStraighten } from './wall/curve.ts';
 import { wallFlipSide, wallSetProperties, wallSetType } from './wall/properties.ts';
 import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
 import { wallSplit } from './wall/split.ts';
@@ -76,6 +77,8 @@ export const CORE_COMMANDS = [
   wallMoveEndpoint,
   wallSetLength,
   wallFlipSide,
+  wallCurve,
+  wallStraighten,
   wallSetType,
   wallSetThickness,
   wallSetReferenceLine,

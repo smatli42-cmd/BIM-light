@@ -1,6 +1,8 @@
 // Skutečná hodnota kóty spočítaná z modelu (základ 4): mm, u úhlové kóty stupně.
 import {
+  arcData,
   carrierOf,
+  dist,
   distanceToCarrier,
   dot,
   intersectNearest,
@@ -9,15 +11,17 @@ import {
   pathLength,
   pointAt,
   sub,
+  type Path,
   type Vec2,
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { openingEdgePath } from '../opening/edges.ts';
+import { arcDistance, measuredFace } from './arc-dim.ts';
 import { edgePath } from '../wall/edges.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { getWall } from '../wall/queries.ts';
-import type { AngularDimension, Dimension, FaceRef } from './types.ts';
+import type { AngularDimension, Dimension, FaceRef, LengthMeasure } from './types.ts';
 
 export function facePath(model: Model, ref: FaceRef) {
   if (ref.openingId) {
@@ -58,10 +62,23 @@ function angularValue(model: Model, d: AngularDimension): number {
 
 /** Aktuální hodnota kóty. */
 export function measureDimension(model: Model, d: Dimension): number {
-  if (d.kind === 'linear') return faceDistance(model, d.refs[0], d.refs[1]);
-  if (d.kind === 'length') return pathLength(facePath(model, d.ref));
+  if (d.kind === 'linear')
+    return d.arc
+      ? arcDistance(measuredFace(model, d.arc), [facePath(model, d.refs[0]), facePath(model, d.refs[1])])
+      : faceDistance(model, d.refs[0], d.refs[1]);
+  if (d.kind === 'length') return lengthValue(facePath(model, d.ref), d.measure ?? 'arc');
   return angularValue(model, d);
 }
+
+/** Délka líce, tětiva, nebo poloměr (přímý líc nemá poloměr → NaN). */
+export function lengthValue(face: Path, measure: LengthMeasure): number {
+  if (measure === 'chord') return dist(face.start, face.end);
+  if (measure === 'radius') return isArcPath(face) ? arcData(face).radius : Number.NaN;
+  return pathLength(face);
+}
+
+export const isArcPath = (p: Path): p is Extract<Path, { kind: 'arc' }> =>
+  p.kind === 'arc' && Math.abs(p.bulge) > 1e-9;
 
 /** Otvory, na které kóta odkazuje (hrany otvoru). */
 export function dimensionOpeningIds(d: Dimension): Id[] {

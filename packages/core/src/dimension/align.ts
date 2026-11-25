@@ -1,7 +1,10 @@
 // Poloha kótovací čáry a zarovnání kót (pravidla-interakce, kóty 3–4, 7).
 // Poloha čáry = souřadnice c podél kanonické normály čáry; rovnoběžné kóty se stejným c leží v řadě.
 import {
+  add,
+  arcData,
   cross,
+  dist,
   dot,
   leftNormal,
   mul,
@@ -14,6 +17,7 @@ import {
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
+import { measuredFace } from './arc-dim.ts';
 import { facePath } from './measure.ts';
 import type { Dimension } from './types.ts';
 
@@ -43,9 +47,14 @@ function lineFrom(start: Vec2, end: Vec2): DimensionLine | null {
 
 /** Kótovací čára délkové nebo vzdálenostní kóty (úhlová nemá přímou čáru → null). */
 export function dimensionLine(model: Model, d: Dimension): DimensionLine | null {
-  if (d.kind === 'angular') return null;
+  if (d.kind === 'angular' || (d.kind === 'linear' && d.arc)) return null;
   if (d.kind === 'length') {
     const face = facePath(model, d.ref);
+    if (d.measure === 'radius') return null;
+    if (d.measure === 'chord') {
+      const n = leftNormal(norm(sub(face.end, face.start)));
+      return lineFrom(add(face.start, mul(n, d.offset)), add(face.end, mul(n, d.offset)));
+    }
     if (face.kind !== 'line') return null;
     const l = offsetPath(face, d.offset);
     return lineFrom(l.start, l.end);
@@ -65,12 +74,20 @@ export function dimensionLine(model: Model, d: Dimension): DimensionLine | null 
 /** Kóta s odsazením takovým, aby čára procházela bodem `p` (nese se na myši). */
 export function withLineThrough(model: Model, d: Dimension, p: Vec2): Dimension {
   if (d.kind === 'angular') return d;
+  if (d.kind === 'linear' && d.arc) {
+    const face = measuredFace(model, d.arc);
+    return face ? { ...d, offset: dist(p, arcData(face).center) - arcData(face).radius } : d;
+  }
   const line = dimensionLine(model, d);
   if (!line) return d;
   const c = dot(p, line.normal);
   if (d.kind === 'length') {
+    if (d.measure === 'radius') return d;
     const face = facePath(model, d.ref);
-    const ln = leftNormal(tangentAt(face, 'start'));
+    const ln =
+      d.measure === 'chord'
+        ? leftNormal(norm(sub(face.end, face.start)))
+        : leftNormal(tangentAt(face, 'start'));
     const k = dot(ln, line.normal);
     return Math.abs(k) < 1e-9 ? d : { ...d, offset: (c - dot(face.start, line.normal)) / k };
   }

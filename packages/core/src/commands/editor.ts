@@ -4,6 +4,7 @@ import { describeViolation, lockViolations } from '../constraints/locks.ts';
 import type { IdGenerator } from '../ids/index.ts';
 import { followOpenings } from '../opening/follow.ts';
 import { describeOpeningViolation, openingViolations } from '../opening/validate.ts';
+import { wallShapeViolation } from '../wall/shape.ts';
 import { MAIN_MODEL, type Model, type VariantRef } from '../model/types.ts';
 import type { CommandRegistry } from './registry.ts';
 import { validate } from './schema.ts';
@@ -92,6 +93,8 @@ export class Editor {
     }
     const bad = openingViolations(this.current, model)[0];
     if (bad) return { ok: false, error: { code: 'invalid', message: describeOpeningViolation(bad) } };
+    const shape = wallShapeViolation(this.current, model);
+    if (shape) return { ok: false, error: { code: 'invalid', message: shape } };
     this.commit(def.label, model);
     return { ok: true, created: result.created ?? [] };
   }
@@ -106,7 +109,8 @@ export class Editor {
     try {
       const run = def.run(this.current, params, { newId: this.options.newId, variant: this.variant }).model;
       const m = followOpenings(this.current, run);
-      return lockViolations(m).length || openingViolations(this.current, m).length ? null : m;
+      const bad = lockViolations(m).length || openingViolations(this.current, m).length;
+      return bad || wallShapeViolation(this.current, m) ? null : m;
     } catch (e) {
       if (e instanceof CommandFailure) return null;
       throw e;

@@ -17,7 +17,7 @@ export function wallEndLimit(model: Model, wallId: Id, end: PathEnd, side: 'ref'
   const g = wallGeometry(model, wall);
   if (g.cuts[end].join === 'free') return { wallId, face: end };
   const p = endPoint(g.faces[side], end);
-  const along = tangentAt(wall.path, 'start');
+  const along = tangentAt(wall.path, end);
   for (const c of connectionsAtEnd(model, wallId, end)) {
     const otherId = sidesFor(c, wallId).other.wallId;
     const og = wallGeometry(model, getWall(model, otherId));

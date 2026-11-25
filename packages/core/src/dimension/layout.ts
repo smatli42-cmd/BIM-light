@@ -3,6 +3,7 @@
 import {
   add,
   angleOf,
+  arcData,
   carrierOf,
   dist,
   endPoint,
@@ -16,11 +17,13 @@ import {
   sub,
   tangentAt,
   tessellate,
+  type Path,
   type Vec2,
 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
 import type { PaperSizes } from '../style/types.ts';
-import { angleGeometry, facePath } from './measure.ts';
+import { arcLine, measuredFace } from './arc-dim.ts';
+import { angleGeometry, facePath, isArcPath } from './measure.ts';
 import type { AngularDimension, Dimension, LengthDimension, LinearDimension } from './types.ts';
 
 export interface DimensionLayout {
@@ -75,7 +78,25 @@ function straight(a: Vec2, b: Vec2, ext: [Vec2, Vec2][], k: number, paper: Paper
 type Ext = (f: Vec2, t: Vec2) => [Vec2, Vec2] | null;
 const kept = (e: [Vec2, Vec2] | null): e is [Vec2, Vec2] => e !== null;
 
+function arcLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper: PaperSizes) {
+  const face = d.arc && measuredFace(model, d.arc);
+  const l = face && arcLine(face, [facePath(model, d.refs[0]), facePath(model, d.refs[1])], d.offset);
+  if (!l) return null;
+  const mid = l.line[Math.floor(l.line.length / 2)] as Vec2;
+  const radial = norm(sub(mid, l.center));
+  const tangent = leftNormal(radial);
+  const ticks = l.to.map((q) => ({ at: q, dir: leftNormal(norm(sub(q, l.center))) }));
+  return {
+    line: l.line,
+    ticks,
+    extensions: [ext(l.from[0], l.to[0]), ext(l.from[1], l.to[1])].filter(kept),
+    textAt: add(mid, mul(radial, (paper.dimensionTextGap + paper.dimensionText / 2) * k)),
+    textAngle: readableAngle(tangent),
+  };
+}
+
 function linearLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper: PaperSizes) {
+  if (d.arc) return arcLayout(model, d, ext, k, paper);
   const fa = facePath(model, d.refs[0]);
   const pA = pointAt(fa, 0.5);
   const base = add(pA, mul(tangentAt(fa, 'start'), d.offset));
@@ -84,8 +105,25 @@ function linearLayout(model: Model, d: LinearDimension, ext: Ext, k: number, pap
   return straight(base, pB, [ext(pA, base), ext(projectOnCarrier(pA, cb), pB)].filter(kept), k, paper);
 }
 
+/** Tětiva oblouku: čára rovnoběžná s tětivou, odsazená o `offset` doleva. */
+function chordLayout(face: Path, d: LengthDimension, ext: Ext, k: number, paper: PaperSizes) {
+  const n = mul(leftNormal(norm(sub(face.end, face.start))), d.offset);
+  const [a, b] = [add(face.start, n), add(face.end, n)];
+  return straight(a, b, [ext(face.start, a), ext(face.end, b)].filter(kept), k, paper);
+}
+
+/** Poloměr: čára ze středu k bodu uprostřed líce, značka jen na líci. */
+function radiusLayout(face: Path, k: number, paper: PaperSizes): DimensionLayout | null {
+  if (!isArcPath(face)) return null;
+  const c = arcData(face).center;
+  const p = pointAt(face, 0.5);
+  return { ...straight(c, p, [], k, paper), ticks: [{ at: p, dir: norm(sub(p, c)) }] };
+}
+
 function lengthLayout(model: Model, d: LengthDimension, ext: Ext, k: number, paper: PaperSizes) {
   const face = facePath(model, d.ref);
+  if (d.measure === 'chord') return chordLayout(face, d, ext, k, paper);
+  if (d.measure === 'radius') return radiusLayout(face, k, paper);
   const line = offsetPath(face, d.offset);
   const exts = (['start', 'end'] as const).map((e) => ext(endPoint(face, e), endPoint(line, e))).filter(kept);
   return {
