@@ -28,4 +28,9 @@ export interface View {
   readonly cutPlane: number;
   /** Přepis prvku „jen v tomto pohledu“ (patro 6). */
   readonly elementOverrides: Readonly<Record<Id, GraphicEffect>>;
+  /**
+   * Uložený pohled (jde na výkresy, má pevné nastavení), nebo pracovní okno podlaží (false; jedno na
+   * podlaží, nastavení se mění volně – koncepce rozhraní, část 4).
+   */
+  readonly saved: boolean;
 }

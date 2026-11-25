@@ -15,15 +15,23 @@ const change = (model: Model, id: Id, fn: (v: View) => View) => ({
   model: putView(model, fn(viewOf(model, id))),
 });
 
-export const viewCreate = defineCommand<{ storeyId: Id; styleId: Id; scale?: number; name?: string }>({
+export const viewCreate = defineCommand<{
+  storeyId: Id;
+  styleId: Id;
+  scale?: number;
+  name?: string;
+  saved?: boolean;
+}>({
   name: 'view.create',
   label: 'Nový pohled',
-  description: 'Vytvoří pohled: podlaží + styl + měřítko (výchozí měřítko nabídne styl).',
+  description:
+    'Vytvoří uložený pohled: podlaží + styl + měřítko (výchozí měřítko nabídne styl). saved: false = ' +
+    'pracovní okno podlaží (bývá jen jedno, vzniká s podlažím).',
   group: 'Zobrazení',
-  params: S.object({ storeyId: S.id, styleId: S.id, scale: SCALE, name: { type: 'string' } }, [
-    'storeyId',
-    'styleId',
-  ]),
+  params: S.object(
+    { storeyId: S.id, styleId: S.id, scale: SCALE, name: { type: 'string' }, saved: { type: 'boolean' } },
+    ['storeyId', 'styleId'],
+  ),
   run(model, p, ctx) {
     const storey = storeyOf(model, p.storeyId);
     const style = styleOf(model, p.styleId);
@@ -38,6 +46,7 @@ export const viewCreate = defineCommand<{ storeyId: Id; styleId: Id; scale?: num
       activeAnnotationLayerId: null,
       cutPlane: DEFAULT_CUT_HEIGHT,
       elementOverrides: {},
+      saved: p.saved ?? true,
     };
     return { model: putView(model, view), created: [view.id] };
   },

@@ -46,6 +46,7 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     activeAnnotationLayerId: null,
     cutPlane: DEFAULT_CUT_HEIGHT,
     elementOverrides: {},
+    saved: false,
   };
   return {
     schemaVersion: SCHEMA_VERSION,

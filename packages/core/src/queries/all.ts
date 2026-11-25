@@ -1,5 +1,6 @@
 // Všechny dotazy jádra (čtení modelu pro AI). Nový dotaz = nový soubor + řádek zde.
 import { dimensionList } from './dimensions.ts';
+import { elementFind } from './find.ts';
 import { hatchList, materialList } from './materials.ts';
 import { openingList } from './openings.ts';
 import { projectInfo } from './project.ts';
@@ -18,4 +19,5 @@ export const CORE_QUERIES = [
   viewInfo,
   wallTypeList,
   wallTypeLibrary,
+  elementFind,
 ];

@@ -37,6 +37,7 @@ export const projectInfo = defineQuery<Record<string, never>, unknown>({
         storeyId: v.storeyId,
         styleId: v.styleId,
         scale: v.scale,
+        saved: v.saved,
       })),
       styles: Object.values(m.display.styles).map((s) => ({ id: s.id, name: s.name, detail: s.detail })),
       counts: { walls: allWalls(m).length, dimensions: Object.keys(m.dimensions).length },

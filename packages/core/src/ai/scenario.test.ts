@@ -94,4 +94,23 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     const w = row(c.ai.call<WallRow[]>('wall.list'), left!);
     expect(w.thickness).toBe(450);
   });
+
+  it('pohledy a hledání přes AI: uložit pohled, přejmenovat, najít stěny podle typu (koncepce rozhraní UI3)', () => {
+    interface ViewRow {
+      id: string;
+      name: string;
+      saved: boolean;
+    }
+    const c = start();
+    const [left] = room(c);
+    const [v] = c.ai.call<string[]>('view.save', { viewId: c.viewId, name: 'DSP půdorys' });
+    c.ai.call('view.rename', { viewId: v, name: 'PPS půdorys' });
+    const views = c.ai.call<{ views: ViewRow[] }>('project.info').views;
+    expect(views.map((x) => [x.name, x.saved])).toContainEqual(['PPS půdorys', true]);
+    expect(views.find((x) => x.id === c.viewId)?.saved).toBe(false);
+    const found = c.ai.call<{ walls: string[] }>('element.find', { categories: ['wall'] });
+    expect(found.walls).toContain(left);
+    const none = c.ai.call<{ walls: string[] }>('element.find', { thickness: { min: 1000 } });
+    expect(none.walls).toEqual([]);
+  });
 });
