@@ -1,7 +1,7 @@
 // Dotazy na stěny pro AI: seznam s délkami a napojeními, detail s líci a čely.
 import { S } from '../commands/schema.ts';
 import { fail } from '../commands/types.ts';
-import { pathLength, type Path } from '../geometry/index.ts';
+import { arcData, pathLength, type Path } from '../geometry/index.ts';
 import { signedArea } from '../junction/half-plane.ts';
 import type { Model } from '../model/types.ts';
 import { capPath } from '../wall/edges.ts';
@@ -14,6 +14,13 @@ import { defineQuery } from './types.ts';
 const r1 = (v: number) => Math.round(v * 10) / 10;
 const pt = (p: { x: number; y: number }) => ({ x: r1(p.x), y: r1(p.y) });
 const seg = (p: Path) => ({ start: pt(p.start), end: pt(p.end), length: r1(pathLength(p)) });
+
+/** Oblouk referenční čáry: střed, poloměr, středový úhel (° se znaménkem, + proti směru hodin); jinak null. */
+function arcInfo(p: Path) {
+  if (p.kind !== 'arc' || Math.abs(p.bulge) < 1e-9) return null;
+  const a = arcData(p);
+  return { center: pt(a.center), radius: r1(a.radius), sweepDeg: r1((a.sweep * 180) / Math.PI) };
+}
 
 function summary(m: Model, w: Wall) {
   const g = wallGeometry(m, w);
@@ -29,6 +36,7 @@ function summary(m: Model, w: Wall) {
     height: w.height,
     ...levels(m, w),
     topProfile: w.topProfile,
+    arc: arcInfo(w.path),
     length: r1(pathLength(g.faces.ref)),
     ends: { start: g.cuts.start.join, end: g.cuts.end.join },
     connections: connectionsOf(m, w.id).map((c) => {
@@ -51,6 +59,7 @@ export const wallList = defineQuery<{ storeyId?: string }, unknown>({
   label: 'Seznam stěn',
   description:
     'Vrátí stěny (volitelně jen jednoho podlaží): id, typ, tloušťka (mm), referenční čára (path, mm), ' +
+    'u oblouku arc (střed, poloměr, středový úhel), ' +
     'strana tloušťky, stav, vazba výšky (height: spodek = podlaží + odsazení, vršek = pevná výška nebo ' +
     'podlaží + N + odsazení), spočítaný spodek, vršek a výška nad ±0 (bottom, top, wallHeight), horní profil, délka referenčního líce po oříznutí v rozích (mm), druh konců ' +
     '(free = volný, corner = roh, tee = T, straight = v přímce, multiple = tři a více) a napojení na jiné ' +

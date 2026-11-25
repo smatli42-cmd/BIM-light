@@ -4,8 +4,11 @@ import type { Id } from '../ids/index.ts';
 import type { SnapKind } from '../rules/cross-rules.ts';
 import type { WallFace } from '../wall/types.ts';
 
-/** Druh kandidáta; „kolmo“ je líc, na který se z výchozího bodu dopadá kolmo. */
-export type SnapCandidateKind = SnapKind | 'perpendicular';
+/**
+ * Druh kandidáta; „kolmo“ je líc, na který se z výchozího bodu dopadá kolmo, „tečna“ je bod oblouku,
+ * kde se ho dotkne přímka z výchozího bodu (Z5).
+ */
+export type SnapCandidateKind = SnapKind | 'perpendicular' | 'tangent';
 
 export interface SnapCandidate {
   readonly point: Vec2;

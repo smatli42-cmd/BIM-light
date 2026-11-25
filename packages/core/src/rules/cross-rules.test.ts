@@ -10,7 +10,15 @@ describe('rozhodnutí / základ 7: průřezová pravidla na jednom místě (prav
   });
 
   it('katalog-kresleni / část 2: pořadí přichytávání u stěny – konec, průsečík, střed, líc, osa', () => {
-    expect(rulesFor('wall').snaps).toEqual(['endpoint', 'intersection', 'midpoint', 'face', 'axis']);
+    expect(rulesFor('wall').snaps).toEqual([
+      'endpoint',
+      'intersection',
+      'midpoint',
+      'center',
+      'quadrant',
+      'face',
+      'axis',
+    ]);
   });
 
   it('základ 7: na stěnu jde kótovat líce i osu, délku i úhel; stěna jde zamknout kótou', () => {

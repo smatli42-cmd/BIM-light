@@ -6,3 +6,5 @@ export * from './draw.ts';
 export * from './align.ts';
 export * from './temporary.ts';
 export * from './whole-wall.ts';
+export * from './arc-dim.ts';
+export * from './migrate-v7.ts';

@@ -1,7 +1,9 @@
 // Stěna v IFC: IfcWall s osou (Axis), tělem vytaženým z obrysu po napojení (Body), skladbou
 // (IfcMaterialLayerSetUsage) a stavem (Pset_WallCommon.Status). Tělo je stěna bez otvorů; otvory ji
-// vyříznou přes IfcRelVoidsElement (Z4). Oblouk přesně až Z5: zatím se zapíše jako lomená čára.
+// vyříznou přes IfcRelVoidsElement (Z4). Osa obloukové stěny je IfcTrimmedCurve na IfcCircle (Z5);
+// obrys těla je lomená čára po společné mřížce oblouku (chyba do 0,5 mm).
 import {
+  arcData,
   leftNormal,
   norm,
   referenceDepth,
@@ -18,7 +20,7 @@ import { placement, point2, type IfcContext } from './context.ts';
 import { derivedGlobalId, modelGlobalId } from './guid.ts';
 import { exportBand, type TypeRefs } from './materials.ts';
 import { writeOpenings } from './opening.ts';
-import { en, str, typed, type Raw } from './step.ts';
+import { bool, en, str, typed, type Raw } from './step.ts';
 
 const STATUS: Record<Status, string> = { existing: 'EXISTING', demolished: 'DEMOLISH', new: 'NEW' };
 
@@ -39,9 +41,23 @@ function polyline(c: IfcContext, pts: readonly [number, number][], closed: boole
   return c.w.add('IfcPolyline', [closed && first ? [...refs, first] : refs]);
 }
 
+/** Osa: úsečka jako lomená čára, oblouk jako oříznutá kružnice (smysl podle směru kreslení). */
+function axisCurve(c: IfcContext, w: Wall, to: (p: Vec2) => [number, number]): Raw {
+  const p = w.path;
+  if (p.kind !== 'arc' || Math.abs(p.bulge) < 1e-9) return polyline(c, tessellate(p).map(to), false);
+  const a = arcData(p);
+  const [cx, cy] = to(a.center);
+  const circle = c.w.add('IfcCircle', [c.w.add('IfcAxis2Placement2D', [point2(c.w, cx, cy), null]), a.radius]);
+  const trim = (q: Vec2) => {
+    const [x, y] = to(q);
+    return [point2(c.w, x, y)];
+  };
+  return c.w.add('IfcTrimmedCurve', [circle, trim(p.start), trim(p.end), bool(a.sweep > 0), en('CARTESIAN')]);
+}
+
 function shape(c: IfcContext, m: Model, w: Wall, height: number): Raw {
   const { to } = localFrame(w);
-  const axis = polyline(c, tessellate(w.path).map(to), false);
+  const axis = axisCurve(c, w, to);
   const axisRep = c.w.add('IfcShapeRepresentation', [c.axis, str('Axis'), str('Curve2D'), [axis]]);
   const up = c.w.add('IfcDirection', [[0, 0, 1]]);
   // Rovina řezu pod vším: žádný otvor obrys nepřeruší, otvory řeže IfcOpeningElement.

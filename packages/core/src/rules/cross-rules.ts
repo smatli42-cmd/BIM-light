@@ -6,7 +6,7 @@ import type { WallEdge } from '../wall/edges.ts';
 export type ElementKind = 'wall' | 'opening' | 'dimension';
 
 /** Druhy bodů a čar pro přichytávání (katalog kreslení, část 2, pořadí priorit). */
-export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'face' | 'axis';
+export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'center' | 'quadrant' | 'face' | 'axis';
 
 /** Co se při smazání prvku smaže s ním. */
 export type DeleteCascade = 'dimensions' | 'connections' | 'openings';
@@ -40,7 +40,7 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     lengthDimension: true,
     angularDimension: true,
     lockable: true,
-    snaps: ['endpoint', 'intersection', 'midpoint', 'face', 'axis'],
+    snaps: ['endpoint', 'intersection', 'midpoint', 'center', 'quadrant', 'face', 'axis'],
     movable: true,
     offsettable: true,
     deletable: true,

@@ -18,6 +18,7 @@ import type { Id } from '../ids/index.ts';
 import { rulesFor } from '../rules/cross-rules.ts';
 import type { WallGeometry } from '../wall/geometry.ts';
 import type { WallFace } from '../wall/types.ts';
+import { arcCenter, arcFaceCandidates } from './arc-snap.ts';
 import { rayFaceCandidates, roundOnFace } from './face-snap.ts';
 import type { SnapCandidate, SnapCandidateKind } from './types.ts';
 
@@ -27,18 +28,21 @@ const LABELS: Record<SnapCandidateKind, string> = {
   midpoint: 'střed',
   face: 'líc',
   perpendicular: 'kolmo k líci',
+  tangent: 'tečna',
+  center: 'střed oblouku',
+  quadrant: 'kvadrant',
   axis: 'osa',
 };
 
-function priorityOf(kind: SnapCandidateKind): number {
+export function priorityOf(kind: SnapCandidateKind): number {
   const order = rulesFor('wall').snaps;
-  const i = order.indexOf(kind === 'perpendicular' ? 'face' : kind);
+  const i = order.indexOf(kind === 'perpendicular' || kind === 'tangent' ? 'face' : kind);
   return i < 0 ? order.length : i;
 }
 
 const OUTER: readonly WallFace[] = ['ref', 'opp'];
 
-function candidate(point: Vec2, kind: SnapCandidateKind, wallId?: Id, face?: WallFace): SnapCandidate {
+export function candidate(point: Vec2, kind: SnapCandidateKind, wallId?: Id, face?: WallFace): SnapCandidate {
   return { point, kind, label: LABELS[kind], priority: priorityOf(kind), wallId, face };
 }
 
@@ -66,7 +70,9 @@ function wallCandidates(g: WallGeometry, raw: Vec2, tol: number, from: Vec2 | nu
     if (hit.distance <= tol) out.push(candidate(roundOnFace(face, hit.point, from), 'face', g.wallId, f));
     const foot = from ? perpendicularFoot(face, from) : null;
     if (foot && near(foot)) out.push(candidate(foot, 'perpendicular', g.wallId, f));
+    out.push(...arcFaceCandidates(face, raw, tol, from, g.wallId, f));
   }
+  out.push(...arcCenter(g, raw, tol));
   const axis = nearestOnPath(g.faces.axis, raw);
   if (axis.distance <= tol) out.push(candidate(axis.point, 'axis', g.wallId, 'axis'));
   return out;

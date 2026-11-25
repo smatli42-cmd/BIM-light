@@ -97,4 +97,65 @@ describe('AI scénář: stěny (plán stěn Z1–Z5)', () => {
     c.ai.call('opening.delete', { openingIds: [o] });
     expect(c.ai.call<unknown[]>('opening.list')).toHaveLength(1);
   });
+
+  it('oblouk přes AI: kruhová stěna ze dvou oblouků, zakřivení, kóty oblouku, otvor (plán stěn Z5)', () => {
+    interface ArcRow extends WallRow {
+      arc: { radius: number; sweepDeg: number } | null;
+    }
+    const c = start();
+    const arc = (sx: number, ex: number, bulge: number) => ({
+      kind: 'arc',
+      start: { x: sx, y: 0 },
+      end: { x: ex, y: 0 },
+      bulge,
+    });
+    const [a] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: arc(5000, -5000, 1),
+    });
+    const [b] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: arc(-5000, 5000, 1),
+      connections: [
+        { end: 'start', wallId: a, at: 'ATEND' },
+        { end: 'end', wallId: a, at: 'ATSTART' },
+      ],
+    });
+    const rows = c.ai.call<ArcRow[]>('wall.list');
+    expect(row(rows, a!).ends).toEqual({ start: 'straight', end: 'straight' });
+    expect((row(rows, b!) as ArcRow).arc).toMatchObject({ radius: 5000, sweepDeg: 180 });
+    const [w] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: { kind: 'line', start: { x: 8000, y: 0 }, end: { x: 14000, y: 0 } },
+    });
+    c.ai.call('wall.curve', { wallId: w, radius: -5000 });
+    const ref = { wallId: w, face: 'ref' };
+    const [r] = c.ai.call<string[]>('dimension.create', {
+      kind: 'length',
+      ref,
+      measure: 'radius',
+      viewId: c.viewId,
+    });
+    const [ch] = c.ai.call<string[]>('dimension.create', {
+      kind: 'length',
+      ref,
+      measure: 'chord',
+      viewId: c.viewId,
+    });
+    const val = (id: string) => c.ai.call<DimRow[]>('dimension.list').find((d) => d.id === id)!.value;
+    expect([val(r!), val(ch!)]).toEqual([5000, 6000]);
+    c.ai.call('opening.create', { wallId: w, offset: 2000, width: 1000 });
+    expect(c.ai.call<string[]>('dimension.wholeWall', { wallId: w, viewId: c.viewId })).toHaveLength(4);
+    const [short] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: { kind: 'line', start: { x: 0, y: -8000 }, end: { x: 400, y: -8000 } },
+    });
+    expect(c.ai.raw('wall.curve', { wallId: short, radius: 200 }).error?.message).toMatch(/oloměr/);
+    c.ai.call('wall.straighten', { wallIds: [w] });
+    expect((row(c.ai.call<ArcRow[]>('wall.list'), w!) as ArcRow).arc).toBeNull();
+  });
 });

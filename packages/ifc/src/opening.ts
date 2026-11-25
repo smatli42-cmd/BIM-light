@@ -26,11 +26,12 @@ function body(c: IfcContext, m: Model, o: Opening, wall: Wall, to: (p: Vec2) => 
   const overB = o.kind === 'niche' ? 0 : Math.sign(b - a) * OVER;
   const lo = Math.min(a + overA, b + overB);
   const hi = Math.max(a + overA, b + overB);
+  // U oblouku (Z5) je obrys výseč: hrany radiálně, líce po 16 dílcích oblouku (chyba ≪ přesah 1 mm).
+  const n = host.kind === 'arc' && Math.abs(host.bulge) > 1e-9 ? 16 : 1;
+  const st = Array.from({ length: n + 1 }, (_, i) => s0 + ((s1 - s0) * i) / n);
   const quad = [
-    pointAtStation(host, s0, lo),
-    pointAtStation(host, s1, lo),
-    pointAtStation(host, s1, hi),
-    pointAtStation(host, s0, hi),
+    ...st.map((s) => pointAtStation(host, s, lo)),
+    ...[...st].reverse().map((s) => pointAtStation(host, s, hi)),
   ].map(to);
   const refs = quad.map(([x, y]) => point2(c.w, x, y));
   const loop = c.w.add('IfcPolyline', [[...refs, refs[0] as Raw]]);

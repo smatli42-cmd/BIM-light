@@ -17,7 +17,7 @@ a `docs/STAV.md`.
   (např. „pravidla-interakce / kóty 5: …“). Oprava chyby = nejdřív test, který ji chytí.
 - **Vše ovladatelné přes AI (základy 6, 15):** co jde udělat myší, jde udělat jedním příkazem z registru se
   stejným výsledkem; logika (napojení, ořezy, výpočty) patří do jádra, ne do UI. Ke každé nové funkci: příkaz
-  (zápis), dotaz `queries/` (když AI potřebuje něco nového vidět) a krok ve scénáři `core/src/ai/scenario.test.ts`.
+  (zápis), dotaz `queries/` (když AI potřebuje něco nového vidět) a krok ve scénáři `core/src/ai/scenario*.test.ts`.
   Hlídají to `ai/tools.test.ts` a `tools/ui-commands.test.mjs`.
 - Žádné pevné milimetry čar, barvy ani šrafy v generátorech: vždy přes funkci grafiky (základy 11, 32).
 - Žádný přímý přístup k souborům ani k prohlížeči z jádra (základy 9, 13); hlídá to ESLint.
