@@ -31,6 +31,8 @@ a `docs/STAV.md`.
 - `docs/katalog-pohledy-styly-zobrazeni.md` – základy 26–32.
 - `docs/katalog-kresleni-sten-kotovani.md` – kreslení stěn, přichytávání, kóty (části 1–7).
 - `docs/postup-etapy-bim-light.md` – etapy; `docs/checklist-dps-bim-light.md` – cíl DPS.
+- `docs/koncepce-rozhrani.md` – rozložení a vzhled rozhraní (podle principu Arditu; u nové funkce si vyžádat
+  screenshot z Arditu a probrat).
 - `docs/reference/prototyp-interakce.html` – zadání chování, kód se NEkopíruje.
 - Přednost při rozporu: pravidla-interakce > katalog-pohledy-styly > katalog-kresleni > starší rozhodnutí.
 - Kóty a popisky patří podlaží a mají skupinu anotací (ne pohledu); měřítko mění jen tloušťky čar.
