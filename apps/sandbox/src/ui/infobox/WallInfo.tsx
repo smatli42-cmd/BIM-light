@@ -1,6 +1,6 @@
 // Info box stěny (koncepce rozhraní, část 2 D): výchozí nastavení nových stěn (nástroj Stěna) a vlastnosti
 // vybraných stěn. Instance = vlastnosti prvku, Typ = úprava skladby (platí pro všechny stěny typu).
-import { bandThickness, parseNumber, typeHasCore, type Wall } from '@bim-light/core';
+import { bandThickness, parseNumber, type Wall } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
 import { LayerMaterials } from '../LayerMaterials.tsx';
@@ -36,7 +36,6 @@ export function NewWallInfo({ s }: { s: Session }) {
           <Section title="Referenční čára" info={REF_INFO}>
             <RefLineButtons
               value={s.wallRefLine}
-              coreAllowed={!!type && typeHasCore(type)}
               onPick={(v) => set(() => (s.wallRefLine = v))}
               onFlip={() => set(() => (s.wallSide = s.wallSide === 'left' ? 'right' : 'left'))}
             />
@@ -84,16 +83,11 @@ function SelectedInstance({ s, walls }: { s: Session; walls: Wall[] }) {
   const first = walls[0] as Wall;
   const ids = walls.map((w) => w.id);
   const sameRef = walls.every((w) => w.referenceLine === first.referenceLine);
-  const allCore = walls.every((w) => {
-    const t = s.model.wallTypes[w.typeId];
-    return !!t && typeHasCore(t);
-  });
   return (
     <>
       <Section title="Referenční čára" info={REF_INFO}>
         <RefLineButtons
           value={sameRef ? first.referenceLine : ''}
-          coreAllowed={allCore}
           onPick={(v) =>
             ids.forEach((id) => s.run('wall.setReferenceLine', { wallId: id, referenceLine: v }))
           }

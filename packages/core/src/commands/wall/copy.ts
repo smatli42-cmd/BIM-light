@@ -1,5 +1,6 @@
 // Příkazy: kopie, zrcadlení, pole (i radiální), otočení s kopií a vložení ze schránky
 // (pravidla-interakce: Příkazy nad výběrem). Kopie si nese vzájemná napojení stěn.
+import { REFERENCE_LINES } from '../../wall/types.ts';
 import {
   add,
   dot,
@@ -117,7 +118,10 @@ const SPEC_SCHEMA = S.object(
     typeId: S.id,
     path: PATH_SCHEMA,
     side: S.enumOf(['left', 'right'], 'strana'),
-    referenceLine: S.enumOf(['face', 'axis', 'core-face'], 'referenční čára'),
+    referenceLine: S.enumOf(
+      REFERENCE_LINES,
+      'referenční čára (face = líc u první vrstvy, opp-face = protilehlý líc)',
+    ),
     height: { type: 'object' },
     topProfile: { type: 'object' },
     status: { type: 'string' },

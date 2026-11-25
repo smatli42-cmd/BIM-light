@@ -1,5 +1,6 @@
 // Příkaz: nová stěna (katalog kreslení, část 1). Napojení na jiné stěny vzniká v témže kroku.
 import { endPoint, type Path, type PathEnd } from '../../geometry/index.ts';
+import { REFERENCE_LINES } from '../../wall/types.ts';
 import type { Model } from '../../model/types.ts';
 import { connectionAt, crossingWalls, inwardDir } from '../../wall/auto-connect.ts';
 import type { HeightBinding } from '../../model/height.ts';
@@ -71,7 +72,10 @@ export const wallCreate = defineCommand<WallCreateParams>({
       typeId: S.id,
       path: PATH_SCHEMA,
       side: S.enumOf(['left', 'right'], 'strana tloušťky vůči směru kreslení'),
-      referenceLine: S.enumOf(['face', 'axis', 'core-face'], 'referenční čára'),
+      referenceLine: S.enumOf(
+        REFERENCE_LINES,
+        'referenční čára (face = líc u první vrstvy, opp-face = protilehlý líc)',
+      ),
       height: HEIGHT_SCHEMA,
       status: S.enumOf(STATUSES, 'stav: stávající / bourání / nový'),
       discipline: { type: 'string' },

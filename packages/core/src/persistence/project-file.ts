@@ -8,6 +8,7 @@ import { projectV4toV5 } from '../wall-height/migrate-v4.ts';
 import { projectV5toV6 } from '../hatch/migrate-v2.ts';
 import { projectV6toV7 } from '../opening/migrate-v6.ts';
 import { projectV7toV8 } from '../dimension/migrate-v7.ts';
+import { projectV8toV9 } from '../wall/migrate-v8.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -28,6 +29,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   5: projectV5toV6,
   6: projectV6toV7,
   7: projectV7toV8,
+  8: projectV8toV9,
 };
 
 export function serializeProject(model: Model): string {

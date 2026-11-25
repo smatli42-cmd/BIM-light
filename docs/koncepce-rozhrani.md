@@ -84,6 +84,11 @@ k dřívějším rozporům jsou v části 11.
 - **Druh úseku (úsečka / tečný oblouk / oblouk bodem) jen u řetězu** – volí se v plovoucí nabídce u kurzoru
   po prvním kliku (I), ne v info boxu; u jedné stěny, obdélníku ani oblouku nedává smysl. (uživatel,
   2026-11-25)
+- **Referenční čára** (uživatel, 2026-11-25): tři ikony **vně / uprostřed / uvnitř** a tlačítko převrácení
+  strany stěny kolem referenční čáry.
+- **Překlopení přímo ve výkresu: malá dvojitá šipka** u vybraného prvku (u stěny před referenčním lícem);
+  klik prvek převrátí. Stejné šipky později u dveří (strana otevírání) a dalších prvků, které to umožní.
+  (uživatel, 2026-11-25 – místo „sluníčka“ ze vzoru)
 - Info box nahoře přepínač **Instance / Typ**: Instance = vlastnosti prvku (nebo výchozí nastavení nových
   prvků u nástroje), Typ = úprava typu (skladby), která platí pro všechny prvky typu.
 - Typ prvku: rozbalovací seznam s miniaturou skladby a hledáním (sekce 18).

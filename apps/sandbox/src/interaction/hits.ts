@@ -28,9 +28,14 @@ export interface PermDimView {
 
 export interface GripView {
   readonly wallId: Id;
-  /** Uzel na konci, nebo kolečko uprostřed (tažení = zakřivení, Z5). */
-  readonly end: PathEnd | 'mid';
+  /**
+   * Uzel na konci, kolečko uprostřed (tažení = zakřivení, Z5), nebo dvojitá šipka překlopení (klik
+   * převrátí stranu stěny kolem referenční čáry; stejné šipky později u dveří a dalších prvků).
+   */
+  readonly end: PathEnd | 'mid' | 'flip';
   readonly at: Vec2;
+  /** Směr šipek překlopení v px (kolmo na stěnu). */
+  readonly dir?: Vec2;
 }
 
 export type Hit =
@@ -74,15 +79,25 @@ export function permDimViews(s: Session, hidden: readonly Id[] = []): PermDimVie
 }
 
 /**
- * Kolečko zakřivení (Z5): 16 px za středem protilehlého líce, mimo stěnu – nepřekryje klik do stěny
- * ani tažení líce.
+ * Kolečko zakřivení (Z5) 16 px za středem protilehlého líce a dvojitá šipka překlopení 18 px před
+ * referenčním lícem (36 px vedle středu) – obě mimo stěnu, nepřekryjí klik do stěny ani tažení líce.
  */
-function curveGripAt(s: Session, w: Wall): Vec2 {
+function sideGrips(s: Session, w: Wall): GripView[] {
   const g = wallGeometry(s.model, w);
   const ref = s.viewport.toScreen(pointAt(g.faces.ref, 0.5));
   const opp = s.viewport.toScreen(pointAt(g.faces.opp, 0.5));
   const d = Math.hypot(opp.x - ref.x, opp.y - ref.y) || 1;
-  return { x: opp.x + ((opp.x - ref.x) / d) * 16, y: opp.y + ((opp.y - ref.y) / d) * 16 };
+  const u = { x: (opp.x - ref.x) / d, y: (opp.y - ref.y) / d };
+  return [
+    { wallId: w.id, end: 'mid', at: { x: opp.x + u.x * 16, y: opp.y + u.y * 16 } },
+    // Šipka 36 px vedle středu, aby se nepotkala s dočasnou kótou uprostřed stěny.
+    {
+      wallId: w.id,
+      end: 'flip',
+      at: { x: ref.x - u.x * 18 + u.y * 36, y: ref.y - u.y * 18 - u.x * 36 },
+      dir: u,
+    },
+  ];
 }
 
 /** Uzly (koncové čtverečky) a kolečko zakřivení jediné vybrané stěny. */
@@ -95,7 +110,7 @@ export function gripViews(s: Session): GripView[] {
     end,
     at: s.viewport.toScreen(w.path[end]),
   }));
-  return [...ends, { wallId: w.id, end: 'mid' as const, at: curveGripAt(s, w) }];
+  return [...ends, ...sideGrips(s, w)];
 }
 
 /** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */

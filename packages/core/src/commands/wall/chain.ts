@@ -2,6 +2,7 @@
 // jedním příkazem (jeden krok Undo). Sousední stěny jsou napojené v rozích, uzavřený řetěz i první
 // s poslední; volné konce se napojí na existující stěny samy (roh / T), jako při kreslení myší.
 import type { Vec2 } from '../../geometry/index.ts';
+import { REFERENCE_LINES } from '../../wall/types.ts';
 import type { HeightBinding } from '../../model/height.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
 import type { ReferenceLine, WallSide } from '../../wall/types.ts';
@@ -37,7 +38,10 @@ export const wallChain = defineCommand<WallChainParams>({
       points: { type: 'array', items: S.point, minItems: 2, description: 'body řetězu v mm' },
       closed: { type: 'boolean', description: 'uzavřít obrys' },
       side: S.enumOf(['left', 'right'], 'strana tloušťky vůči směru kreslení'),
-      referenceLine: S.enumOf(['face', 'axis', 'core-face'], 'referenční čára'),
+      referenceLine: S.enumOf(
+        REFERENCE_LINES,
+        'referenční čára (face = líc u první vrstvy, opp-face = protilehlý líc)',
+      ),
       height: HEIGHT_SCHEMA,
       status: S.enumOf(STATUSES, 'stav: stávající / bourání / nový'),
     },

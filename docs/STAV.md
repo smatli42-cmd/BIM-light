@@ -19,6 +19,9 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
 - **Rychlý výběr typu**: podržení, dvojklik nebo pravé tlačítko na nástroji Stěna otevře typy stěn.
 - **Referenční čára jako ikony** (líc / osa / líc jádra) + přehození strany; **bubliny jen „název –
   zkratka“**.
+- **Referenční čára vně / uprostřed / uvnitř** + převrácení (podle vzoru); v jádře nová hodnota
+  `opp-face` (protilehlý líc), schéma 8 → 9 (`wall/migrate-v8.ts`, data beze změny). **Dvojitá šipka**
+  u vybrané stěny (před referenčním lícem, kousek vedle středu) ji klikem převrátí.
 - Rozdělení: stav řetězu a napojení úseku do `wall-chain.ts`. Testy: jádro 639, prohlížeč 106 (nové
   `rozhrani.spec.ts`; volby příkazů se v testech nastavují až při aktivním příkazu).
 
@@ -240,6 +243,13 @@ Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `doc
 - Šrafy v knihovně mají verzi 3; uložené projekty si drží své kopie (základ 21).
 
 ## Rozhodl Code (k potvrzení)
+
+Rozhraní UI2 (2026-11-25):
+- **Uvnitř = líc u první vrstvy skladby** (výchozí „líc“ dosavadních stěn), **vně = líc u poslední vrstvy**.
+  U knihovních typů je první vrstva vnitřní omítka, takže to odpovídá; u vlastních typů rozhoduje pořadí
+  vrstev v editoru skladby.
+- **Líc jádra** z info boxu zmizel (vzor ho nemá); zůstává v datech, pro AI a ve výběru v editoru typu.
+- Dvojitá šipka je jen u jedné vybrané stěny; u více vybraných převrací tlačítko v info boxu.
 
 Stěny Z5 – oblouk (2026-11-25):
 - **Kresba oblouku = lomená čára** (primitiva oblouk neumějí): body na společné mřížce úhlů kolem středu,

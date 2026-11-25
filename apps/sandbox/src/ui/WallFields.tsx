@@ -32,6 +32,7 @@ export function TypeSelect(props: {
 const REF_LINES: readonly [ReferenceLine, string][] = [
   ['face', 'Líc'],
   ['axis', 'Osa'],
+  ['opp-face', 'Protilehlý líc'],
   ['core-face', 'Líc jádra'],
 ];
 

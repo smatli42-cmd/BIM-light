@@ -1,5 +1,6 @@
 // Příkazy: tloušťka stěny (katalog kreslení, část 6) a referenční čára (část 6.3).
 import { offsetPath } from '../../geometry/index.ts';
+import { REFERENCE_LINES } from '../../wall/types.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putElements } from '../../model/update.ts';
@@ -49,10 +50,17 @@ export const wallSetReferenceLine = defineCommand<{ wallId: Id; referenceLine: R
   name: 'wall.setReferenceLine',
   label: 'Referenční čára',
   description:
-    'Přepne referenční čáru (líc / osa / líc jádra). Stěna zůstane na místě, změní se jen vztažná čára.',
+    'Přepne referenční čáru (líc u první vrstvy / osa / protilehlý líc / líc jádra). Stěna zůstane ' +
+    'na místě, změní se jen vztažná čára.',
   group: 'Stěna',
   params: S.object(
-    { wallId: S.id, referenceLine: S.enumOf(['face', 'axis', 'core-face'], 'referenční čára') },
+    {
+      wallId: S.id,
+      referenceLine: S.enumOf(
+        REFERENCE_LINES,
+        'referenční čára (face = líc u první vrstvy, opp-face = protilehlý líc)',
+      ),
+    },
     ['wallId', 'referenceLine'],
   ),
   run(model, p) {

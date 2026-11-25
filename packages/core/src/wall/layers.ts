@@ -24,6 +24,7 @@ export const bandThickness = (band: HeightBand): number => band.layers.reduce((s
 export function referenceDepth(band: HeightBand, ref: ReferenceLine): number {
   if (ref === 'face') return 0;
   if (ref === 'axis') return bandThickness(band) / 2;
+  if (ref === 'opp-face') return bandThickness(band);
   let depth = 0;
   for (const layer of band.layers) {
     if (layer.function === 'core') return depth;

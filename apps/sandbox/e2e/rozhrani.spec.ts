@@ -68,4 +68,19 @@ test.describe('koncepce-rozhrani / UI2: paleta a info box', () => {
     await page.getByTestId('ib-type').click();
     await expect(page.getByTestId('infobox').getByTestId('type-refline')).toBeVisible();
   });
+
+  test('koncepce-rozhrani / 2 D: dvojitá šipka u vybrané stěny ji převrátí; ref. čára vně = protilehlý líc', async ({
+    page,
+  }) => {
+    const id = await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
+    await clickAt(page, 2000, 150);
+    const g = (await page.evaluate(() => window.__bim!.grips())).find((x) => x.end === 'flip')!;
+    await page.mouse.click(g.at.x, g.at.y);
+    expect((await model(page)).elements[id]!.side).toBe('right');
+    await page.getByTestId('refline-opp-face').click();
+    const w = (await model(page)).elements[id]!;
+    expect(w.referenceLine).toBe('opp-face');
+    // Stěna zůstala na místě: referenční čára se přesunula na protilehlý líc (y = −300).
+    expect(w.path.start.y).toBeCloseTo(-300, 6);
+  });
 });

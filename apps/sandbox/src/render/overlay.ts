@@ -188,11 +188,41 @@ export function drawLock(ctx: Ctx, d: PermDimView, flash: boolean) {
   ctx.stroke();
 }
 
+/** Dvojitá šipka překlopení: krátká úsečka kolmo na stěnu s hroty na obou koncích. */
+function drawFlipArrows(ctx: Ctx, at: Vec2, d: Vec2) {
+  const L = 9;
+  const n = { x: -d.y, y: d.x };
+  const a = { x: at.x - d.x * L, y: at.y - d.y * L };
+  const b = { x: at.x + d.x * L, y: at.y + d.y * L };
+  ctx.save();
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(at.x, at.y, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  for (const [p, s] of [
+    [a, 1],
+    [b, -1],
+  ] as const) {
+    ctx.moveTo(p.x + (d.x * 4 + n.x * 3.5) * s, p.y + (d.y * 4 + n.y * 3.5) * s);
+    ctx.lineTo(p.x, p.y);
+    ctx.lineTo(p.x + (d.x * 4 - n.x * 3.5) * s, p.y + (d.y * 4 - n.y * 3.5) * s);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 export function drawGrips(ctx: Ctx, grips: readonly GripView[]) {
   ctx.fillStyle = '#ffffff';
   ctx.strokeStyle = AUX;
   ctx.lineWidth = 1.5;
   for (const g of grips) {
+    if (g.end === 'flip') {
+      drawFlipArrows(ctx, g.at, g.dir ?? { x: 0, y: -1 });
+      continue;
+    }
     if (g.end === 'mid') {
       ctx.beginPath();
       ctx.arc(g.at.x, g.at.y, 4.5, 0, Math.PI * 2);

@@ -31,4 +31,14 @@ describe('katalog-kresleni 6.3: referenční čára určuje, kam se stěna rozš
     f.run('wall.setReferenceLine', { wallId: id, referenceLine: 'face' });
     expect(faces(f, id)).toEqual(before.map((v) => expect.closeTo(v, 6)));
   });
+
+  it('rozhraní UI2: vně (protilehlý líc) – stěna zůstane, při změně tloušťky stojí protilehlý líc', () => {
+    const f = fixture();
+    const id = f.line({ x: 0, y: 0 }, { x: 5000, y: 0 });
+    f.run('wall.setReferenceLine', { wallId: id, referenceLine: 'opp-face' });
+    expect(f.wall(id).path.start.y).toBeCloseTo(300, 6);
+    expect(faces(f, id)).toEqual([0, 300].map((v) => expect.closeTo(v, 6)));
+    f.run('wall.setThickness', { wallId: id, thickness: 500 });
+    expect(faces(f, id)).toEqual([-200, 300].map((v) => expect.closeTo(v, 6)));
+  });
 });

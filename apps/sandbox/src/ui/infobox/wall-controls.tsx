@@ -34,16 +34,19 @@ export function MethodButtons({ s }: { s: Session }) {
   );
 }
 
+/**
+ * Uvnitř = líc u první vrstvy skladby, uprostřed = osa, vně = líc u poslední vrstvy (rozhraní UI2, podle
+ * vzoru). Líc jádra zůstává v datech a v editoru typu.
+ */
 const REF: readonly [ReferenceLine, IconName, string][] = [
-  ['face', 'ref-face', 'Líc'],
-  ['axis', 'ref-axis', 'Osa'],
-  ['core-face', 'ref-core', 'Líc jádra'],
+  ['opp-face', 'ref-out', 'Ref. čára vně'],
+  ['axis', 'ref-mid', 'Ref. čára uprostřed'],
+  ['face', 'ref-in', 'Ref. čára uvnitř'],
 ];
 
 /** Referenční čára (stěna roste od ní) a přehození strany tloušťky. */
 export function RefLineButtons(props: {
   value: ReferenceLine | '';
-  coreAllowed: boolean;
   onPick: (v: ReferenceLine) => void;
   onFlip: () => void;
 }) {
@@ -53,17 +56,16 @@ export function RefLineButtons(props: {
         <IconButton
           key={v}
           icon={icon}
-          label={v === 'core-face' && !props.coreAllowed ? `${label} (typ nemá jádro)` : label}
+          label={label}
           testid={`refline-${v}`}
           pressed={props.value === v}
-          disabled={v === 'core-face' && !props.coreAllowed}
           onClick={() => props.onPick(v)}
         />
       ))}
       <span class="spacer" />
       <IconButton
-        icon="flip"
-        label="Přehodit stranu"
+        icon="flip-arrows"
+        label="Převrátit stranu stěny kolem ref. čáry"
         shortcut="Mezerník"
         testid="flip-side"
         onClick={props.onFlip}

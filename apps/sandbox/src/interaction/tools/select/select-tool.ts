@@ -86,7 +86,8 @@ export class SelectTool implements Tool {
     else if (hit.kind === 'grip') {
       const e = hit.grip.end;
       const id = hit.grip.wallId;
-      this.mode = e === 'mid' ? new CurveMode(s, id, p, true) : new NodeMode(s, id, e, p, true);
+      if (e === 'flip') s.run('wall.flipSide', { wallIds: [id] });
+      else this.mode = e === 'mid' ? new CurveMode(s, id, p, true) : new NodeMode(s, id, e, p, true);
     } else if (hit.kind === 'temp-text' || hit.kind === 'temp-line')
       this.mode = new TempDimDragMode(s, hit.temp, hit.kind === 'temp-text', p);
     else if (hit.kind === 'dim-text' || hit.kind === 'dim-line')
@@ -111,7 +112,7 @@ export class SelectTool implements Tool {
       if (!s.selection.dims.includes(hit.dim.id)) s.selection.set([], [hit.dim.id]);
       return dimMenu(s, hit.dim, p.screen);
     }
-    if (hit?.kind === 'grip' && hit.grip.end !== 'mid')
+    if (hit?.kind === 'grip' && hit.grip.end !== 'mid' && hit.grip.end !== 'flip')
       return nodeMenu(s, hit.grip.wallId, hit.grip.end, p.screen);
     if (this.faceOfSelected(p, (face, id) => edgeMenu(s, id, face, p, (m) => (this.mode = m)))) return;
     const op = this.openingUnder(p);

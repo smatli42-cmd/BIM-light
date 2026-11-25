@@ -21,9 +21,10 @@ export const ICONS = {
   'wall-single': ['M3 12h18', 'c:3,12,1.2', 'c:21,12,1.2'],
   'wall-chain': ['M3 18l6-10 6 7 6-9', 'c:3,18,1.2', 'c:9,8,1.2', 'c:15,15,1.2', 'c:21,6,1.2'],
   // Referenční čára (info box D): stěna jako pás, čára na líci / v ose / na líci jádra
-  'ref-face': ['M3 7h18v10H3z', 'M3 17h18', 'M5 17h14'],
-  'ref-axis': ['M3 7h18v10H3z', 'M3 12h18'],
-  'ref-core': ['M3 7h18v10H3z', 'M3 10h18', 'M3 14h18', 'M3 14h18'],
+  'ref-out': ['M3 8h18v9H3z', 'M2 8h17', 'M17 6l2 2-2 2'],
+  'ref-mid': ['M3 7h18v10H3z', 'M2 12h17', 'M17 10l2 2-2 2'],
+  'ref-in': ['M3 7h18v9H3z', 'M2 16h17', 'M17 14l2 2-2 2'],
+  'flip-arrows': ['M12 3v18', 'M8.5 6.5L12 3l3.5 3.5', 'M8.5 17.5L12 21l3.5-3.5'],
   // Úpravy (lišta příkazů B)
   move: ['M12 3v18', 'M3 12h18', 'M9 6l3-3 3 3', 'M9 18l3 3 3-3', 'M6 9l-3 3 3 3', 'M18 9l3 3-3 3'],
   copy: ['M8 8h12v12H8z', 'M4 16V4h12'],
