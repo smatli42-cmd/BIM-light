@@ -12,9 +12,11 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
   zůstávají jen pole, tlačítka a plovoucí nabídky. Rámeček aktivního okna (při dvou oknech) je uvnitř.
 - **Šířka info boxu a Obsahu tažením dělítka** (`ui/layout/Splitter.tsx`, `ui/panel-sizes.ts`):
   200–600 px, dvojklik vrátí výchozí (270 / 300 px); pamatuje se v prohlížeči (volba obrazovky, ne model).
+- **Dvě okna vedle sebe – poměr tažením dělítka** (`ui/layout/WindowSplitter.tsx`): 15–85 %, dvojklik
+  vrátí půlky, pamatuje se v prohlížeči.
 - **Podrobnost (hrubá / střední / jemná) odebrána ze spodní lišty**; v jádře a pro AI zůstává
   (`view.setDetail`, základ 5), nastavovat se bude jinde. Koncepce rozhraní, tabulka G, řádek 13 upraven.
-- Testy: jádro 668, prohlížeč 118 (2 nové v `rozhrani.spec.ts`).
+- Testy: jádro 668, prohlížeč 119 (3 nové v `rozhrani.spec.ts`).
 
 ### Rozhraní: moderní vzhled, 2026-11-26 (připomínka uživatele podle vzoru)
 - **Tři roviny barev** v obou motivech (`styles/theme.css`): podklad aplikace < panely (karty) a v nich

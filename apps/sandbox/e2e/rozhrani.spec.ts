@@ -119,3 +119,20 @@ test.describe('pokyn uživatele 2026-11-26: pracovní plocha', () => {
     await expect(page.getByTestId('detail-menu')).toHaveCount(0);
   });
 });
+
+test('pokyn uživatele 2026-11-26: dvě okna – poměr tažením dělítka, dvojklik vrátí půlky', async ({
+  page,
+}) => {
+  await page.getByTestId('layout-2').click();
+  const box = (await page.locator('.windows').boundingBox())!;
+  const first = page.locator('.window').first();
+  const split = (await page.getByTestId('splitter-windows').boundingBox())!;
+  const y = split.y + split.height / 2;
+  await page.mouse.move(split.x + 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.3, y, { steps: 5 });
+  await page.mouse.up();
+  expect(Math.abs((await first.boundingBox())!.width - box.width * 0.3)).toBeLessThan(3);
+  await page.getByTestId('splitter-windows').dblclick();
+  expect(Math.abs((await first.boundingBox())!.width - box.width * 0.5)).toBeLessThan(3);
+});

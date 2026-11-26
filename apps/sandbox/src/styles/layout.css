@@ -145,10 +145,13 @@ body,
   outline: 2px solid transparent;
   outline-offset: -2px;
 }
-.window + .window {
+.windows > .window:first-child:not(:last-child) {
+  flex: 0 0 var(--win-split, 50%);
+}
+.windows > .splitter + .window {
   border-left: 1px solid var(--line);
 }
-.windows:has(.window + .window) .window.active {
+.windows:has(.splitter) .window.active {
   outline-color: var(--accent);
 }
 .window-head {
