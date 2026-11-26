@@ -6,6 +6,7 @@ import { LayerGroup, SnapGroup, ZoomGroup } from '../bottom/groups.tsx';
 import { TraceGroup } from '../bottom/trace.tsx';
 import { LookGroup, OverridesMenu, RevealToggle } from '../bottom/look.tsx';
 import { WindowsGroup } from '../bottom/windows.tsx';
+import { PhaseMenu, StructureMenu } from '../bottom/phase.tsx';
 import { useSession } from '../use-session.ts';
 import { AnnotationGroup, CutPlane, HatchScale } from '../ViewControls.tsx';
 
@@ -21,6 +22,8 @@ export function BottomBar({ s }: { s: Session }) {
       <LayerGroup s={s} />
       <LookGroup s={s} />
       <OverridesMenu s={s} />
+      <StructureMenu s={s} />
+      <PhaseMenu s={s} />
       <HatchScale s={s} />
       <CutPlane s={s} />
       <AnnotationGroup s={s} />

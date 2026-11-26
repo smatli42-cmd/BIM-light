@@ -304,3 +304,39 @@ Stěny Z1:
 - **Klín a šikmé stěny (rozhodnutí A):** model nerovnoběžné líce nepřipouští (tvar jen přímá a oblouk).
 - Starý příkaz `wallType.setLayerMaterial` zůstává (panel Vlastnosti), nově s validací; obecný je
   `wallType.updateLayer`.
+
+## Z6 – kresba stěny v půdorysu: hotovo, 2026-11-26
+
+### Hotovo
+- **Rovina řezu u stěn** (`wall/cut.ts`): stěnu, kterou rovina protíná, kreslí řez (výplň, šrafy, vrstvy);
+  stěna celá pod rovinou (parapetní zídka) jen obrys perem pohledu; celá nad rovinou obrys čárkovaně.
+  Změna roviny řezu pohledu (`view.setCutPlane`) kresbu přepne.
+- **Tři podrobnosti:** hrubá = sjednocený obrys a jedna výplň; střední = vrstvy, šrafy, čáry mezi
+  vrstvami (pero vrstev); **jemná = střední + hranice nosného jádra perem řezu** (k potvrzení).
+- **Konce stěn a značka osy** jsou nové vlastnosti grafiky `endLines` (výchozí zapnuto) a `refLine`
+  (výchozí vypnuto) – fungují ve stylu (patro 2, příkaz `style.setWallDrawing`), v pravidlech i v přepisu
+  prvku a funkce grafiky řekne proč. Schéma projektu 10 → 11, balíček zobrazení 3 → 4 (migrace doplní
+  výchozí hodnoty; vzhled starých projektů se nemění).
+- **Fáze:** předvolby (Stávající stav, Bourací práce, Nový stav, Srovnávací) už byly v pravidlech; nově
+  menu **Fáze ›** ve spodní liště a **Stav (fáze)** v panelu stěny. Ověřeno testy na stěnách s vrstvami.
+- **Konstrukční zobrazení ›** ve spodní liště (volba okna): Celá skladba / Bez povrchů / Jen jádro.
+- **„Proč“:** panel stěny (sekce Zobrazení) ukáže u viditelnosti, barvy a typu čáry, pera řezu, výplně
+  a šrafy patro a zdroj (styl / pravidlo / přepis). Pro AI dotaz **`element.graphics`**; `view.info`
+  vrací i kombinace přepisů (fáze).
+- Testy: `view/draw-z6.test.ts` (řez / pod / nad, změna roviny, podrobnosti, konstrukční zobrazení,
+  fáze s přepisem prvku, Studie a Projekt, konce stěn, značka osy, měřítko, balíček stylu), migrace,
+  scénář AI, prohlížeč `steny-z6.spec.ts`.
+
+### Rozhodl Code (k potvrzení)
+- **Jemná podrobnost:** hranice jádra (nosné vrstvy) perem řezu, ostatní hranice vrstev tenkým perem.
+  Zadání říká „čáry hran povrchových vrstev silnějším perem“ – vyložil jsem to jako zvýraznění jádra
+  (česká zvyklost: nosná konstrukce silně, omítky a izolace tence). Jiný výklad stačí říct.
+- **Pás stěny v půdorysu** se dál vybírá ve výšce 1000 mm; rovina řezu rozhoduje o řezu / pohledu
+  a o otvorech. Výběr pásu podle roviny řezu by změnil napojování a otvory na mnoha místech – zapsáno
+  do Otevřených.
+- **Fáze** v liště G nastavují kombinaci přepisů okna (jedna kombinace na okno), takže výběr fáze nahradí
+  např. „Šrafy“ v Grafických přepisech. Samostatný filtr fází vedle přepisů je možný později.
+- **Konstrukční zobrazení** „Jen jádro nosných prvků“ chybí – nosnost stěny přijde v Z7.
+- **Čelní čára volného konce** se při vypnutí schová jen v přímé části čela (u odstupňovaného čela
+  vrstev zůstanou schody).
+- Konce stěn a značka osy se přepínají v panelu stěny (sekce Zobrazení), ale platí pro celý styl okna.

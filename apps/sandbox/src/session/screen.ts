@@ -26,6 +26,8 @@ export interface ScreenOptions {
   isolate: boolean;
   /** Odhalit: skryté prvky purpurově a vybíratelné. */
   reveal: boolean;
+  /** Konstrukční zobrazení: celá skladba, bez povrchů, jen jádro (jen kresba, model beze změny). */
+  structure: 'all' | 'no-finish' | 'core';
   /** Karta prvku po podržení myši nad prvkem (vypínač ve spodní liště). */
   infoCards: boolean;
   /** Trasování: průsvitný odkaz jiného podlaží. */
@@ -41,6 +43,7 @@ export const DEFAULT_SCREEN: ScreenOptions = {
   isolate: false,
   reveal: false,
   infoCards: true,
+  structure: 'all',
   trace: { on: false, ref: 'below', intensity: 'mid', over: false },
 };
 
@@ -49,3 +52,9 @@ export const TRACE_ALPHA: Readonly<Record<ScreenOptions['trace']['intensity'], n
   mid: 0.3,
   strong: 0.5,
 };
+
+/** Volby obrazovky, které mění kresbu pohledu (drawView): průchozí materiál, konstrukční zobrazení. */
+export const drawOptionsOf = (sc: ScreenOptions) => ({
+  mergeMaterials: sc.mergeMaterials,
+  structure: sc.structure,
+});

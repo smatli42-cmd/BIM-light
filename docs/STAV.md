@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, UI5 hotovo – Změnit velikost (Ctrl+K) a průvodní lekce.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z6 hotovo – kresba stěny v půdorysu, fáze, konstrukční zobrazení.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
@@ -130,9 +130,10 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
   podle `data-testid` (v info boxu je i náhled skladby); nové testy rozložení a motivu. Jádro 639,
   prohlížeč 102, vše zelené.
 
-### Stěny: Z1, Z2, Z3, Z4, Z5 hotovo (podrobnosti v `docs/STAV-steny.md`)
+### Stěny: Z1, Z2, Z3, Z4, Z5, Z6 hotovo (podrobnosti v `docs/STAV-steny.md`)
 - Z1 typ a skladba (2026-11-24), Z2 napojování vrstev (2026-11-24), Z3 výška a IFC (2026-11-24),
-  Z4 otvory (2026-11-25), Z5 oblouk (2026-11-25). Další krok stěn je Z6, až po rozhraní UI1–UI5.
+  Z4 otvory (2026-11-25), Z5 oblouk (2026-11-25), **Z6 kresba v půdorysu (2026-11-26)**. Kroky Z7–Z10
+  rozpracuje uživatel po vyzkoušení Z1–Z6.
 
 ### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
 - **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
@@ -181,6 +182,9 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ## Rozhodl Code (k potvrzení)
 
+- **Z6 (podrobně v `STAV-steny.md`):** jemná podrobnost = střední + hranice nosného jádra perem řezu;
+  pás stěny v půdorysu se dál bere z výšky 1000 mm (ne z roviny řezu); Fáze v liště G přepíná kombinaci
+  přepisů okna (stejné místo jako Grafické přepisy); konstrukční zobrazení bez „jen jádro nosných“ (Z7).
 - **Změnit velikost:** mění se jen půdorysné vzdálenosti; výšky stěn, výšky otvorů a parapety stojí
   (zaškrtnutí změní jen šířku otvoru). Volba „Změnit i velikost textu“ z Arditu vynechána – volné texty
   zatím nejsou a kóty mají text pevně na papíře (základ 29). Okno se otevře jen s vybranými stěnami.
@@ -231,8 +235,9 @@ Velikost šraf (2026-11-25):
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2–UI4 (info box, Obsah a pohledy, Najít a vybrat, spodní lišta, dvě okna,
   trasování, vrstvy, izolovat / odhalit, pera).
-- Uživatel vyzkouší UI5 (paleta u uzlu a hrany, karta prvku, tracker, Změnit velikost, lekce).
-- Potom **stěny Z6** (podle plánu stěn).
+- Uživatel vyzkouší UI5 (paleta u uzlu a hrany, karta prvku, tracker, Změnit velikost, lekce) a stěny Z6
+  (stěna v řezu / pod / nad rovinou, podrobnosti, fáze, konstrukční zobrazení, „proč“ v panelu stěny).
+- Potom uživatel rozpracuje kroky stěn Z7–Z10 (podle plánu stěn, část 7).
 
 ## Otevřené
 
@@ -244,7 +249,8 @@ Velikost šraf (2026-11-25):
 - Skupina zarovnaných kót zatím nedrží společnou polohu čáry po změně geometrie (kóty 4, druhá věta):
   poloha čáry je odsazení od středu líce, po prodloužení stěny se řada může rozejít. Návrh: uložit polohu
   skupiny v modelu (nová verze schématu + migrace) – k rozhodnutí.
-- Jemná podrobnost (= střední), podle plánu krok Z6.
+- Z6: pás vícepásového typu stěny v půdorysu podle roviny řezu (dnes 1000 mm) – vyžaduje rovinu řezu
+  v napojování a otvorech; čelní čára u volného konce se schová jen v přímé části čela.
 - UI1: hledání příkazů (Ctrl+K) je zatím jen neaktivní ikona (UI3); panel Podlaží je provizorní místo
   Obsahu (UI3); úpravy Studie / Projekt jsou zatím jen dva styly bez Elektro.
 - UI4: trasování kreslí odkaz bez kót; zpět změnu vrstev jen přes Zpět editoru; sady per, gravitace,
@@ -270,14 +276,14 @@ Velikost šraf (2026-11-25):
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po stěnách Z5)
+## Největší soubory (po stěnách Z6)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (396 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (487 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 241 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
-| 223 | apps/sandbox/src/interaction/tools/wall-tool.ts |
-| 217 | apps/sandbox/e2e/kresleni.spec.ts |
-| 212 | packages/core/src/junction/wall.ts |
-| 211 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 247 | apps/sandbox/src/session/session.ts |
+| 236 | apps/sandbox/src/render/overlay.ts |
+| 234 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 231 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
+| 227 | apps/sandbox/src/interaction/tools/select/select-tool.ts |

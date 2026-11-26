@@ -136,3 +136,23 @@
   background: var(--danger-soft);
   border-color: transparent;
 }
+
+/* „Proč“ grafiky stěny (plán stěn Z6, základ 11). */
+.why {
+  margin: 0;
+  font-size: 12px;
+}
+.why > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 1px 0;
+}
+.why dt {
+  color: var(--muted);
+  flex: none;
+}
+.why dd {
+  margin: 0;
+  text-align: right;
+}

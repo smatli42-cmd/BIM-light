@@ -14,6 +14,7 @@ import { drawGrid } from './grid.ts';
 import { PAPER_BG } from './paper.ts';
 import { drawDrawing, drawPrimitive, type RenderContext } from './primitives.ts';
 import { drawMain, drawRevealed, drawTrace } from './screen-layers.ts';
+import { drawOptionsOf } from '../session/screen.ts';
 import {
   AUX,
   drawGrips,
@@ -26,7 +27,7 @@ import {
 } from './overlay.ts';
 
 function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly string[]) {
-  const drawing = drawView(model, s.viewId, { mergeMaterials: s.screen.mergeMaterials });
+  const drawing = drawView(model, s.viewId, drawOptionsOf(s.screen));
   const sel = new Set(s.selection.dims);
   const flash = new Set(s.flashDims);
   const plain: Primitive[] = [];
@@ -92,5 +93,5 @@ export function renderPassive(ctx: CanvasRenderingContext2D, s: Session, index: 
     paper: s.paper,
     hairline: !s.screen.trueWeight,
   };
-  drawDrawing(r, drawView(s.model, view.id, { mergeMaterials: s.screen.mergeMaterials }));
+  drawDrawing(r, drawView(s.model, view.id, drawOptionsOf(s.screen)));
 }

@@ -9,6 +9,7 @@ import { WallHeightFields } from '../WallHeightFields.tsx';
 import { WallTypeEditor } from '../WallTypeEditor.tsx';
 import { CompositionSummary, MethodButtons, RefLineButtons } from './wall-controls.tsx';
 import { InstanceTypeTabs, Section } from './Section.tsx';
+import { WallDisplay } from './WallDisplay.tsx';
 
 const REF_INFO = 'Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.';
 
@@ -101,16 +102,7 @@ function SelectedInstance({ s, walls }: { s: Session; walls: Wall[] }) {
       >
         <WallHeightFields s={s} walls={walls} />
       </Section>
-      <Section title="Zobrazení">
-        <label class="check">
-          <input
-            type="checkbox"
-            checked={s.tempMode === 'axis'}
-            onChange={(e) => ((s.tempMode = e.currentTarget.checked ? 'axis' : 'face'), s.changed())}
-          />
-          Dočasné kóty k osám
-        </label>
-      </Section>
+      <WallDisplay s={s} walls={walls} />
     </>
   );
 }

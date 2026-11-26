@@ -5,6 +5,7 @@ import type { Session } from '../session/session.ts';
 import { TRACE_ALPHA } from '../session/screen.ts';
 import { drawDrawing, type RenderContext } from './primitives.ts';
 import { drawWallOutlines } from './overlay.ts';
+import { drawOptionsOf } from '../session/screen.ts';
 
 export const REVEAL = '#b000c8';
 
@@ -26,7 +27,7 @@ export function drawTrace(r: RenderContext, s: Session, model: Model) {
     ? (workingViewOf(model, id) ?? Object.values(model.views).find((x) => x.storeyId === id))
     : null;
   if (!v) return;
-  const d = drawView(model, v.id, { mergeMaterials: s.screen.mergeMaterials });
+  const d = drawView(model, v.id, drawOptionsOf(s.screen));
   r.ctx.save();
   r.ctx.globalAlpha = TRACE_ALPHA[s.screen.trace.intensity];
   drawDrawing(r, { scale: s.view.scale, primitives: d.primitives.filter((p) => !p.source.dimensionId) });
