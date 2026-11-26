@@ -1,12 +1,22 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Editor typů krok 2 (náhled Půdorys / Řez / 3D).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Editor typů krok 3 (společné skladby, schéma 16).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Editor typů, krok 3: skladby společné pro stěny, desky a střechy, 2026-11-26 (koncepce rozhraní 11a)
+- Skladba je samostatná položka projektu (`composition/`, pole modelu `compositions`): název, vrstvy,
+  „Použít pro“ stěna / deska / střecha. Pás typu stěny na ni odkazuje (`compositionId`); jeho vrstvy jsou
+  kopie, kterou drží jediné místo zápisu (`putValidType` → `storeTypeCompositions` + `syncTypes`), takže
+  kresba, napojení, výkazy a IFC se nemusely měnit. Schéma 15 → 16: každý pás dostane skladbu, typy se
+  stejnými vrstvami jednu společnou.
+- Příkazy `composition.rename`, `composition.setUse`, `composition.delete` (jen nepoužitou),
+  `wallType.setComposition`; dotaz `composition.list`; krok ve scénáři AI (`ai/scenario-types.test.ts`).
+- Okno Editor typů: pole Skladba (výběr společné skladby), Název skladby, Použít pro, „Sdílí N typy“.
 
 ### Stěna z čáry jako metoda nástroje Stěna, 2026-11-26 (pokyn uživatele: zbytečná ikona navíc)
 - Ikona Stěna z čáry zmizela z palety; funkce zůstala jako geometrická metoda nástroje Stěna v info boxu
@@ -131,6 +141,15 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Skladby (krok 3 editoru typů):** úprava vrstev v editoru mění skladbu, tedy všechny typy, které ji
+  sdílejí (to je smysl společné skladby; okno to píše). Duplikát typu dostane vlastní kopii skladby (jako
+  Revit – kopii jde upravit bez vlivu na původní typ). Změna tloušťky stěny, která založí nový typ, založí
+  i novou skladbu. Skladba, kterou žádný typ nepoužívá, v projektu zůstane (knihovna skladeb, jako
+  v Arditu); smazat jde ručně příkazem. Typ stěny musí mít skladbu „pro stěnu“. IFC dál exportuje sadu
+  vrstev po typech (IfcMaterialLayerSet) s názvem typu.
+- **Stěna z čáry:** ikona z palety pryč, funkce přesunuta do metod nástroje Stěna (jako „Vybrat čáry“
+  v Revitu); zkratka V zůstala.
+
 - **Z8 výkazy:** délka stěny = délka osy po napojení (Revit měří po ose napojené stěny); plocha boku =
   délka osy × výška; niky se z ploch neodečítají (jen z objemu). Výchozí mez odečtu otvorů 0 (odečíst
   vše jako Revit); českou zvyklost (např. do 0,25 m²) jde nastavit u výkazu. Plocha vrstvy = objem / tloušťka,
@@ -161,9 +180,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Uživatel vyzkouší Editor typů (kroky 1 a 2):** ikona Editor typů vpravo v liště sekcí; vybrat stěnu →
-  záložka Typ → Upravit v editoru typů…; nový typ, změna vrstev; náhled Půdorys / Řez / 3D, klik na vrstvu.
-  Pak krok 3 – společné skladby pro stěny, desky a střechy (schéma + migrace).
+- **Uživatel vyzkouší skladby (krok 3):** Editor typů → u typu pole Skladba – vybrat jinou skladbu (typ
+  ji pak sdílí), upravit vrstvu a zkontrolovat druhý typ, Použít pro. Pak dál podle plánu: stěny Z9.
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
@@ -184,8 +202,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
-- **Editor typů, další krok (rozhodnuto 2026-11-26, koncepce rozhraní 11a):** krok 3 – společné skladby pro stěny, desky a střechy (schéma + migrace). Vzor
-  Arditu u skladby ukazuje i U, R, plošnou hmotnost, CO₂e, cenu, kondenzaci a Rw – výpočty později.
+- **Skladby – další:** výpočty u skladby podle vzoru Arditu (U, R, plošná hmotnost, CO₂e, cena,
+  kondenzace, Rw) – vyžadují vlastnosti materiálů (λ, hustota…); seznam samotných skladeb (bez typu)
+  v okně a jejich přímé zakládání; desky a střechy skladby použijí, až budou.
 - **Lineární prvek stěny (nápad uživatele 2026-11-26):** přidání nebo vybrání hmoty podle profilu (sokl,
   římsa, drážka) jako Obklad stěny / Drážka v Revitu; profil jako položka knihovny, součást typu nebo
   instance, vybrání přes společný mechanismus otvorů (základ 19). Zařadit po oknech a dveřích.

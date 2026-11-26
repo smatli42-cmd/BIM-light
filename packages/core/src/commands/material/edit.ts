@@ -3,6 +3,7 @@
 import { DEFAULT_PRIORITY, type Material, type MaterialCategory } from '../../material/types.ts';
 import { materialUsage } from '../../material/usage.ts';
 import type { Model } from '../../model/types.ts';
+import type { WallLayer } from '../../wall-type/types.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 import { freeName, MATERIAL_FIELDS, materialOf, putMaterial } from './shared.ts';
@@ -74,7 +75,12 @@ function replaceInTypes(model: Model, from: string, to: string): Model {
       },
     ]),
   );
-  return { ...model, wallTypes };
+  const swap = (ls: readonly WallLayer[]) =>
+    ls.map((l) => (l.materialId === from ? { ...l, materialId: to } : l));
+  const compositions = Object.fromEntries(
+    Object.entries(model.compositions).map(([id, c]) => [id, { ...c, layers: swap(c.layers) }]),
+  );
+  return { ...model, wallTypes, compositions };
 }
 
 export const materialDelete = defineCommand<{ materialId: string; replacementId?: string }>({

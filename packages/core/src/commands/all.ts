@@ -46,6 +46,12 @@ import { wallFlipSide, wallSetProperties, wallSetType } from './wall/properties.
 import { wallTypeSetMark, wallTypeSetProperties } from './wall-type/properties.ts';
 import { scheduleCreate, scheduleDelete, scheduleUpdate } from './schedule/schedule.ts';
 import { wallTagCreate, wallTagDelete, wallTagMove, wallTagTagAll } from './tag/tag.ts';
+import {
+  compositionDelete,
+  compositionRename,
+  compositionSetUse,
+  wallTypeSetComposition,
+} from './composition/composition.ts';
 import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
 import { wallSplit } from './wall/split.ts';
 import { wallDeleteNode } from './wall/merge.ts';
@@ -170,6 +176,10 @@ export const CORE_COMMANDS = [
   wallTagTagAll,
   wallTagMove,
   wallTagDelete,
+  compositionRename,
+  compositionSetUse,
+  compositionDelete,
+  wallTypeSetComposition,
   wallTypeUpdateLayer,
 ];
 

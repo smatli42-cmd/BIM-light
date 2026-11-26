@@ -75,7 +75,9 @@ export const wallTypeDuplicate = defineCommand<{ typeId: Id; name?: string }>({
   run(model, p, ctx) {
     const { source: _s, ...src } = wallTypeOf(model, p.typeId);
     const name = freeTypeName(model, p.name?.trim() || src.name);
-    const type: WallType = { ...src, id: ctx.newId(), name, mark: '' };
+    // Kopie dostane vlastní kopii skladby (úprava kopie nezmění původní typ).
+    const bands = src.bands.map(({ compositionId: _c, ...b }) => b);
+    const type: WallType = { ...src, bands, id: ctx.newId(), name, mark: '' };
     return { model: putValidType(model, type), created: [type.id] };
   },
 });

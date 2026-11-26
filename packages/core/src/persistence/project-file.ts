@@ -1,5 +1,6 @@
 // Uložení a načtení projektu jako JSON (základy 9, 13; rozhodnutí 17).
 // Načtení projde migracemi podle SCHEMA_VERSION. Ruční uložení navíc vytvoří datovanou verzi.
+import { projectV15toV16 } from '../composition/migrate-v15.ts';
 import { SCHEMA_VERSION, type Model } from '../model/types.ts';
 import { projectV1toV2 } from '../hatch/migrate-v1.ts';
 import { projectV2toV3 } from '../wall-type/migrate-v2.ts';
@@ -44,6 +45,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   12: projectV12toV13,
   13: projectV13toV14,
   14: projectV14toV15,
+  15: projectV15toV16,
 };
 
 export function serializeProject(model: Model): string {

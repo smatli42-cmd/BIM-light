@@ -23,6 +23,8 @@ export interface WallLayer {
  */
 export interface HeightBand {
   readonly height: number | null;
+  /** Skladba pásu (krok 3 editoru typů); `layers` je její kopie, drží ji `composition/store.ts`. */
+  readonly compositionId?: Id;
   readonly layers: readonly WallLayer[];
 }
 

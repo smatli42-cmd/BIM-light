@@ -1,5 +1,6 @@
 // Nový prázdný projekt: budova, podlaží 1.NP, knihovní materiály, výchozí typy stěn,
 // nastavení zobrazení (Studie, Projekt) s kopiemi použitých šraf a pohled. Ukázková data jsou vymyšlená.
+import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
 import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
 import type { Material } from '../material/types.ts';
@@ -33,6 +34,10 @@ function wallTypes(mats: Material[], newId: IdGenerator): WallType[] {
 }
 
 export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): Model {
+  return ensureCompositions(emptyProject(newId, name));
+}
+
+function emptyProject(newId: IdGenerator, name: string): Model {
   const buildingId = newId();
   const storeyId = newId();
   const mats = materials(newId);
@@ -60,6 +65,7 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     storeys: { [storeyId]: { id: storeyId, name: '1.NP', buildingId, elevation: 0, height: 3000 } },
     materials: byId(mats),
     wallTypes: byId(wallTypes(mats, newId)),
+    compositions: {},
     elements: {},
     openings: {},
     relations: {},

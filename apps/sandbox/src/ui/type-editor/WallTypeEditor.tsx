@@ -4,6 +4,7 @@
 import { bandThickness, wallTypeUsage, type WallType } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
+import { CompositionField } from './CompositionField.tsx';
 import { LayerRow } from './LayerRow.tsx';
 
 function select(s: Session, id: string | null) {
@@ -94,6 +95,7 @@ export function WallTypeEditor(props: {
         />
         <span data-testid="type-total">{bandThickness(band)} mm</span>
       </label>
+      <CompositionField s={s} type={type} />
       <p class="muted">Vrstvy od referenční (vnitřní) strany ke straně tloušťky:</p>
       <div class="type-layer-head muted">
         <span />

@@ -113,6 +113,20 @@ test.describe('plán stěn Z1 / okno Editor typů', () => {
     await expect(page.getByTestId('type-layer-1')).not.toHaveClass(/selected/);
   });
 
+  test('koncepce rozhraní 11a / krok 3: společná skladba – přiřadit, sdílí dva typy, Použít pro', async ({
+    page,
+  }) => {
+    await openType(page, 'Zdivo 300');
+    await page.getByTestId('composition-select').selectOption({ label: 'Obvodová zateplená 465' });
+    await expect(page.getByTestId('type-total')).toContainText('465 mm');
+    await expect(page.getByTestId('composition-shared')).toContainText('Sdílí 2 typy');
+    await expect(page.getByTestId('composition-use-wall')).toBeDisabled();
+    await page.getByTestId('composition-use-roof').check();
+    const m = await model(page);
+    const c = Object.values(m.compositions).find((x) => x.name === 'Obvodová zateplená 465')!;
+    expect(c.use).toEqual({ wall: true, slab: false, roof: true });
+  });
+
   test('vybraná stěna: změna typu v panelu Vlastnosti', async ({ page }) => {
     await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
     await clickAt(page, 2000, 150);

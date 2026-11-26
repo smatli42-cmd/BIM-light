@@ -2,6 +2,7 @@
 // i nástroj pro AI, základ 15b), uložení s validací, volný název, oprava referenční čáry.
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
+import { storeTypeCompositions, syncTypes } from '../../composition/store.ts';
 import { putElements, putWallType } from '../../model/update.ts';
 import { typeHasCore } from '../../wall-type/composition.ts';
 import { LAYER_FUNCTIONS, type HeightBand, type WallLayer, type WallType } from '../../wall-type/types.ts';
@@ -80,7 +81,8 @@ export function putValidType(model: Model, given: WallType): Model {
   if (errors.length) fail('invalid', errors.join('; '));
   const clash = Object.values(model.wallTypes).find((t) => t.id !== type.id && t.name === type.name);
   if (clash) fail('invalid', `Typ „${type.name}“ už v projektu je`);
-  return normalizeRefLines(putWallType(model, type));
+  const stored = storeTypeCompositions(model, type);
+  return normalizeRefLines(syncTypes(putWallType(stored.model, stored.type)));
 }
 
 /** Volný název typu: „X“, jinak „X (2)“, „X (3)“… */

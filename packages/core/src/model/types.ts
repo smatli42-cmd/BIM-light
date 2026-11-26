@@ -1,5 +1,6 @@
 // Model ve tvaru IFC (základy 1–3, 9, 17): Projekt → Budova → Podlaží → prvek.
 // Vše jsou čistá JSON data v mm; mění se jen příkazy (základ 6).
+import type { Composition } from '../composition/types.ts';
 import type { Id } from '../ids/index.ts';
 import type { Material } from '../material/types.ts';
 import type { Wall, WallType } from '../wall/types.ts';
@@ -13,7 +14,7 @@ import type { ScheduleDef } from '../schedule/types.ts';
 import type { WallTag } from '../tag/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 16;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -101,6 +102,8 @@ export interface Model {
   readonly storeys: Readonly<Record<Id, Storey>>;
   readonly materials: Readonly<Record<Id, Material>>;
   readonly wallTypes: Readonly<Record<Id, WallType>>;
+  /** Skladby společné pro stěny, desky a střechy (koncepce rozhraní 11a); pásy typů na ně odkazují. */
+  readonly compositions: Readonly<Record<Id, Composition>>;
   readonly elements: Readonly<Record<Id, Element>>;
   /** Otvory v hostitelích (základ 19, plán stěn Z4); hostitel je uložený odkaz `hostId`. */
   readonly openings: Readonly<Record<Id, Opening>>;

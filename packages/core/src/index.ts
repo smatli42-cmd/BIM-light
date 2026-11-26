@@ -24,3 +24,4 @@ export * from './selection/index.ts';
 export * from './commands/index.ts';
 export * from './queries/index.ts';
 export * from './persistence/index.ts';
+export * from './composition/index.ts';
