@@ -1,5 +1,5 @@
-// Minimální export do IFC4 (plán stěn Z3): projekt, pozemek, budova, podlaží a stěny se skladbou,
-// výškou a stavem. Bez otvorů a bez dalších sad vlastností. Výstup je text; zápis do souboru
+// Export do IFC4 (plán stěn Z3, Z4, Z5, Z7): projekt, pozemek, budova, podlaží a stěny se skladbou,
+// výškou, otvory, stavem a vlastnostmi (Pset_WallCommon). Výstup je text; zápis do souboru
 // dělá aplikace přes Platform (základ 13).
 import { allWalls, type Id, type Model, type Wall } from '@bim-light/core';
 import { createContext } from './context.ts';

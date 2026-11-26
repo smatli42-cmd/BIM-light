@@ -1,15 +1,18 @@
 // Skladba stěn v IFC: materiály, sada vrstev typu (IfcMaterialLayerSet) a typ stěny (IfcWallType).
 // Vrstvy jdou ve stejném pořadí jako v modelu: od referenční strany ke straně tloušťky.
+// Typ nese Pset_WallCommon s vlastnostmi typu a PredefinedType podle funkce (plán stěn Z7).
 import {
   bandAt,
   DEFAULT_CUT_HEIGHT,
   type Id,
   type LayerFunction,
   type Model,
+  typeProperties,
   type WallType,
 } from '@bim-light/core';
 import type { IfcContext } from './context.ts';
 import { derivedGlobalId, modelGlobalId } from './guid.ts';
+import { predefined, wallCommonPset } from './pset.ts';
 import { bool, en, int, str, type Raw } from './step.ts';
 
 /** Doporučené kategorie vrstev IFC4 podle funkce vrstvy. */
@@ -54,17 +57,19 @@ function writeType(c: IfcContext, m: Model, t: WallType, mats: Map<Id, Raw>): Ty
     ]);
   });
   const layerSet = c.w.add('IfcMaterialLayerSet', [layers, str(t.name), null]);
+  const props = typeProperties(t);
+  const kind = predefined(props);
   const wallType = c.w.add('IfcWallType', [
     str(modelGlobalId(t.id)),
     null,
     str(t.name),
     null,
     null,
+    [wallCommonPset(c, t.id, t.name, props)],
     null,
     null,
-    null,
-    null,
-    en('STANDARD'),
+    kind.userType === null ? null : str(kind.userType),
+    en(kind.type),
   ]);
   c.w.add('IfcRelAssociatesMaterial', [
     str(derivedGlobalId(`${t.id}/material`)),

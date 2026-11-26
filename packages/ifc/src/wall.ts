@@ -1,5 +1,5 @@
 // Stěna v IFC: IfcWall s osou (Axis), tělem vytaženým z obrysu po napojení (Body), skladbou
-// (IfcMaterialLayerSetUsage) a stavem (Pset_WallCommon.Status). Tělo je stěna bez otvorů; otvory ji
+// (IfcMaterialLayerSetUsage), stavem a vlastnostmi (Pset_WallCommon, plán stěn Z7). Tělo je stěna bez otvorů; otvory ji
 // vyříznou přes IfcRelVoidsElement (Z4). Osa obloukové stěny je IfcTrimmedCurve na IfcCircle (Z5);
 // obrys těla je lomená čára po společné mřížce oblouku (chyba do 0,5 mm).
 import {
@@ -12,17 +12,16 @@ import {
   wallGeometry,
   wallHeight,
   type Model,
-  type Status,
   type Vec2,
   type Wall,
+  wallProperties,
 } from '@bim-light/core';
 import { placement, point2, type IfcContext } from './context.ts';
 import { derivedGlobalId, modelGlobalId } from './guid.ts';
 import { exportBand, type TypeRefs } from './materials.ts';
 import { writeOpenings } from './opening.ts';
-import { bool, en, str, typed, type Raw } from './step.ts';
-
-const STATUS: Record<Status, string> = { existing: 'EXISTING', demolished: 'DEMOLISH', new: 'NEW' };
+import { predefined, writeOccurrencePset } from './pset.ts';
+import { bool, en, str, type Raw } from './step.ts';
 
 /** Převod bodu půdorysu do místních souřadnic stěny (počátek = začátek, osa X = směr stěny). */
 function localFrame(w: Wall) {
@@ -92,30 +91,6 @@ function layerUsage(c: IfcContext, m: Model, w: Wall, t: TypeRefs): Raw {
   ]);
 }
 
-function statusPset(c: IfcContext, wall: Raw, w: Wall) {
-  const prop = c.w.add('IfcPropertyEnumeratedValue', [
-    str('Status'),
-    null,
-    [typed('IFCLABEL', str(STATUS[w.status]))],
-    null,
-  ]);
-  const pset = c.w.add('IfcPropertySet', [
-    str(derivedGlobalId(`${w.id}/pset`)),
-    null,
-    str('Pset_WallCommon'),
-    null,
-    [prop],
-  ]);
-  c.w.add('IfcRelDefinesByProperties', [
-    str(derivedGlobalId(`${w.id}/pset-rel`)),
-    null,
-    null,
-    null,
-    [wall],
-    pset,
-  ]);
-}
-
 /** Zapíše jednu stěnu; vrací entitu IfcWall. */
 export function writeWall(
   c: IfcContext,
@@ -133,16 +108,18 @@ export function writeWall(
     dx,
   );
   const name = m.wallTypes[w.typeId]?.name ?? 'Stěna';
+  const props = wallProperties(m, w);
+  const kind = predefined(props);
   const wall = c.w.add('IfcWall', [
     str(modelGlobalId(w.id)),
     null,
     str(name),
     null,
-    str(name),
+    str(kind.userType ?? name),
     place,
     shape(c, m, w, h.height),
     null,
-    en('STANDARD'),
+    en(kind.type),
   ]);
   const usage = layerUsage(c, m, w, t);
   c.w.add('IfcRelAssociatesMaterial', [
@@ -153,7 +130,7 @@ export function writeWall(
     [wall],
     usage,
   ]);
-  statusPset(c, wall, w);
+  writeOccurrencePset(c, w.id, wall, name, props, w.status);
   writeOpenings(c, m, w, wall, place, localFrame(w).to);
   return wall;
 }
