@@ -55,6 +55,9 @@ function ctrlKey(s: Session, key: string): boolean {
     case 'v':
       s.setTool('paste');
       return true;
+    case 'k':
+      s.setTool('scale');
+      return true;
     case 'd':
       s.clipboard = copyWalls(s.model, s.selection.walls) ?? s.clipboard;
       if (s.selection.walls.length) s.setTool('paste');

@@ -5,6 +5,7 @@ import type { Session } from '../session/session.ts';
 import { HoverCard } from './HoverCard.tsx';
 import { useKeepInside } from './keep-inside.ts';
 import { PetPalette } from './PetPalette.tsx';
+import { ScaleDialog } from './ScaleDialog.tsx';
 import { SegmentMenu } from './SegmentMenu.tsx';
 import { useSession } from './use-session.ts';
 
@@ -94,6 +95,7 @@ export function CanvasOverlays({ session }: { session: Session }) {
       <SegmentMenu s={s} />
       <PetPalette s={s} />
       <HoverCard s={s} />
+      <ScaleDialog s={s} />
       <Menu s={s} />
       <ValueEditor s={s} />
       <div class="toasts">

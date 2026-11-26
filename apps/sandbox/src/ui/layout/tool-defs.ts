@@ -36,6 +36,7 @@ export const EDITS: readonly (readonly ToolDef[])[] = [
     { tool: 'rotate', icon: 'rotate', command: 'wall.rotate' },
     { tool: 'mirror', icon: 'mirror', label: 'Zrcadlit', key: 'F' },
     { tool: 'array', icon: 'array', label: 'Pole', key: 'P' },
+    { tool: 'scale', icon: 'scale', command: 'wall.scale' },
   ],
   [
     { tool: 'align', icon: 'align', command: 'wall.align' },

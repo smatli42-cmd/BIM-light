@@ -127,3 +127,17 @@ describe('AI scénář: karta prvku (koncepce rozhraní, 2 I)', () => {
     expect(info.sideArea).toBeGreaterThan(0);
   });
 });
+
+describe('AI scénář: Změnit velikost (Ctrl+K)', () => {
+  it('wall.scale zvětší místnost o 10 % kolem rohu, délky stěn se změní, tloušťka ne', () => {
+    const c = start();
+    const ids = room(c);
+    const before = c.ai.call<WallRow[]>('wall.list', { storeyId: c.storeyId });
+    c.ai.call('wall.scale', { wallIds: ids, origin: { x: 0, y: 0 }, factor: 1.1 });
+    const after = c.ai.call<WallRow[]>('wall.list', { storeyId: c.storeyId });
+    expect(after.map((w) => w.length).sort()).toEqual(
+      before.map((w) => Math.round(w.length * 11) / 10).sort(),
+    );
+    expect(after.map((w) => w.thickness)).toEqual(before.map((w) => w.thickness));
+  });
+});

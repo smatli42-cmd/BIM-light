@@ -121,6 +121,14 @@ export function rotatePath(p: Path, center: Vec2, angle: number): Path {
   return p.kind === 'line' ? { kind: 'line', start, end } : { kind: 'arc', start, end, bulge: p.bulge };
 }
 
+/** Stejnoměrná změna velikosti kolem bodu (k > 0); oblouk si drží vypouklost (bulge je beze změny). */
+export function scalePath(p: Path, origin: Vec2, k: number): Path {
+  const at = (q: Vec2) => add(origin, mul(sub(q, origin), k));
+  return p.kind === 'line'
+    ? { kind: 'line', start: at(p.start), end: at(p.end) }
+    : { kind: 'arc', start: at(p.start), end: at(p.end), bulge: p.bulge };
+}
+
 /** Rozloží křivku na body (oblouk po společné mřížce úhlů, chyba do ARC_TOLERANCE). */
 export function tessellate(p: Path): Vec2[] {
   if (!isArc(p)) return [p.start, p.end];

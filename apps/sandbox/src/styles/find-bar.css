@@ -179,3 +179,25 @@
 .pen-table input {
   width: 64px !important;
 }
+
+/* Okno Změnit velikost (Ctrl+K). */
+.scale-dialog {
+  width: min(440px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel .scale-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.panel .scale-row input[type='number'] {
+  width: 110px;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

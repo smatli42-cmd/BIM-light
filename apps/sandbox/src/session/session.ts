@@ -28,7 +28,7 @@ import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
 import { Selection } from './selection.ts';
-import { OPENING_DEFAULTS, type OpeningDefaults } from './opening-defaults.ts';
+import { OPENING_DEFAULTS, TOOL_OPTIONS, type OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
 import { DEFAULT_SCREEN, type ScreenOptions } from './screen.ts';
 import type { WindowState } from './screen.ts';
@@ -65,8 +65,8 @@ export class Session {
   tempOffsets: Record<string, number> = {};
   filter: SelectionFilter = ALL_CATEGORIES;
   clipboard: Clipboard | null = null;
-  /** grid = rozteč mřížky v mm, 0 = vypnutá (katalog kreslení 2.6: mřížka není, jde zapnout). */
-  options = { copy: false, arrayCount: 3, arrayRadial: false, grid: 0 };
+  /** Volby příkazů nad výběrem (session/opening-defaults.ts). */
+  options = { ...TOOL_OPTIONS };
   /** Rozměry nového otvoru (nástroj Otvor, plán stěn Z4). */
   openingDefaults: OpeningDefaults = { ...OPENING_DEFAULTS };
   typed: TypedInput = { field: 'len', len: '', ang: '' };

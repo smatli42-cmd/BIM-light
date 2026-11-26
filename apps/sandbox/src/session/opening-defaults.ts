@@ -1,4 +1,4 @@
-// Rozměry nového otvoru v nástroji Otvor (plán stěn Z4); mění je panel vpravo.
+// Výchozí volby nástrojů v sezení: rozměry nového otvoru (plán stěn Z4; mění je panel vpravo) a volby příkazů.
 export interface OpeningDefaults {
   width: number;
   height: number;
@@ -16,4 +16,16 @@ export const OPENING_DEFAULTS: Readonly<OpeningDefaults> = {
   kind: 'through',
   depth: 150,
   side: 'ref',
+};
+
+/** Volby příkazů nad výběrem (info box / okno příkazu): kopie, pole, mřížka, Změnit velikost. */
+export const TOOL_OPTIONS = {
+  copy: false,
+  arrayCount: 3,
+  arrayRadial: false,
+  /** Rozteč mřížky v mm, 0 = vypnutá (katalog kreslení 2.6: mřížka není, jde zapnout). */
+  grid: 0,
+  /** Změnit velikost (Ctrl+K): měřítko v % a zda se mění i šířka otvorů. */
+  scalePercent: 100,
+  scaleOpenings: false,
 };

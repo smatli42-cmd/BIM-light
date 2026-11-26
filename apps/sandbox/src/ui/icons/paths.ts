@@ -96,6 +96,7 @@ export const ICONS = {
   close: ['M6 6l12 12', 'M18 6L6 18'],
   flip: ['M12 3v18', 'M8 8L4 12l4 4', 'M16 8l4 4-4 4'],
   info: ['c:12,12,9', 'M12 11v6', 'M12 7.5h.01'],
+  scale: ['M4 20h7v-7H4z', 'M4 13V4h16v16h-9', 'M14 10l4-4', 'M14 6h4v4'],
   // Paleta u uzlu a hrany (koncepce rozhraní, část 2 I)
   'node-move': ['M4 20L15 9', 'c:17,7,2.5', 'M10 4l4 0', 'M19 14v4'],
   disconnect: ['M3 12h6', 'M15 12h6', 'M9 8v8', 'M15 8v8'],

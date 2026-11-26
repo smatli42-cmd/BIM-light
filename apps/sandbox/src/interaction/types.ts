@@ -29,6 +29,7 @@ export type ToolId =
   | 'rotate'
   | 'mirror'
   | 'array'
+  | 'scale'
   | 'align'
   | 'trim'
   | 'split'

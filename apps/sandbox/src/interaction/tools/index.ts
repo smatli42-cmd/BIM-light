@@ -6,6 +6,7 @@ import { ArcWallTool } from './arc-wall-tool.ts';
 import { ArrayTool } from './commands/array-tool.ts';
 import { AlignTool, RectTool, SplitTool, TrimTool, ZoomWindowTool } from './commands/edit-tools.ts';
 import { PasteTool } from './commands/paste-tool.ts';
+import { ScaleTool } from './commands/scale-tool.ts';
 import { CopyTool, MirrorTool, MoveTool, RotateTool } from './commands/transform-tools.ts';
 import { DimensionTool } from './dimension-tool.ts';
 import { OpeningTool } from './opening-tool.ts';
@@ -24,6 +25,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   rotate: (s) => new RotateTool(s),
   mirror: (s) => new MirrorTool(s),
   array: (s) => new ArrayTool(s),
+  scale: (s) => new ScaleTool(s),
   align: (s) => new AlignTool(s),
   trim: (s) => new TrimTool(s),
   split: (s) => new SplitTool(s),
@@ -35,7 +37,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
 };
 
 /** Nástroje, které pracují s vybranými stěnami (přesun, kopie a zrcadlení i s otvory). */
-export const NEEDS_SELECTION: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array'];
+export const NEEDS_SELECTION: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'scale'];
 const OPENING_OK: readonly ToolId[] = ['move', 'copy', 'mirror'];
 
 export function createTool(id: ToolId, s: Session): Tool {
