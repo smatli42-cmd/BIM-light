@@ -143,17 +143,15 @@ describe('AI scénář: Změnit velikost (Ctrl+K)', () => {
 });
 
 describe('AI scénář: kresba stěn a „proč“ (plan-steny / Z6)', () => {
-  it('fáze Bourací práce: element.graphics řekne, že barvu určilo pravidlo; styl zapne značku osy', () => {
+  it('filtr rekonstrukce Bourací práce: element.graphics řekne, že barvu určilo pravidlo; styl zapne značku osy', () => {
     const c = start();
     const [left] = room(c);
     c.ai.call('wall.setProperties', { wallIds: [left], status: 'demolished' });
     const info = c.ai.call<{ views: { id: string; saved: boolean }[] }>('project.info', {});
     const viewId = info.views.find((v) => !v.saved)!.id;
-    const combos = c.ai.call<{ overrideCombinations: { id: string; name: string }[] }>('view.info', {
-      viewId,
-    });
-    const phase = combos.overrideCombinations.find((x) => x.name === 'Fáze – bourací práce')!;
-    c.ai.call('view.setOverrideCombination', { viewId, combinationId: phase.id });
+    const vi = c.ai.call<{ phaseFilters: { id: string; name: string }[] }>('view.info', { viewId });
+    const phase = vi.phaseFilters.find((x) => x.name === 'Fáze – bourací práce')!;
+    c.ai.call('view.setPhaseFilter', { viewId, filterId: phase.id });
     const g = c.ai.call<{ why: { lineColor: { level: number; source: string } } }>('element.graphics', {
       elementId: left,
       viewId,

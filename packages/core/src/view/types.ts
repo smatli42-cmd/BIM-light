@@ -33,4 +33,9 @@ export interface View {
    * podlaží, nastavení se mění volně – koncepce rozhraní, část 4).
    */
   readonly saved: boolean;
+  /**
+   * Filtr rekonstrukce (fáze): předvolba fáze = kombinace pravidel s příznakem `phase`; null = Vše.
+   * Platí vedle grafických přepisů a má před nimi přednost (vzor Arditu / Archicadu, 2026-11-26).
+   */
+  readonly phaseFilterId: Id | null;
 }

@@ -38,17 +38,26 @@ export interface ComboPreset {
   readonly key: string;
   readonly name: string;
   readonly ruleKeys: readonly string[];
+  /** Předvolba fáze (filtr rekonstrukce pohledu), ne grafický přepis. */
+  readonly phase?: boolean;
 }
 
 /** Kombinace přepisů; první pravidlo v seznamu má přednost. */
 export const COMBO_PRESETS: readonly ComboPreset[] = [
   { key: 'none', name: 'Bez přepisů', ruleKeys: [] },
-  { key: 'phase-existing', name: 'Fáze – stávající stav', ruleKeys: ['hide-new'] },
+  { key: 'phase-existing', name: 'Fáze – stávající stav', ruleKeys: ['hide-new'], phase: true },
   {
     key: 'phase-demolition',
     name: 'Fáze – bourací práce',
     ruleKeys: ['hide-new', 'demolished-yellow', 'existing-black'],
+    phase: true,
   },
-  { key: 'phase-new', name: 'Fáze – nový stav', ruleKeys: ['hide-demolished'] },
-  { key: 'phase-compare', name: 'Fáze – srovnávací', ruleKeys: ['demolished-yellow', 'new-red'] },
+  { key: 'phase-new', name: 'Fáze – plánovaný stav', ruleKeys: ['hide-demolished'], phase: true },
+  { key: 'phase-new-red', name: 'Fáze – nový stav', ruleKeys: ['hide-demolished', 'new-red'], phase: true },
+  {
+    key: 'phase-compare',
+    name: 'Fáze – srovnávací',
+    ruleKeys: ['demolished-yellow', 'new-red'],
+    phase: true,
+  },
 ];

@@ -133,6 +133,7 @@ export class RectTool extends PointCommand {
       a,
       b,
       side: this.s.wallSide,
+      status: this.s.options.newStatus,
     });
     if (r.ok) this.s.selection.set(r.created);
     this.points = [];

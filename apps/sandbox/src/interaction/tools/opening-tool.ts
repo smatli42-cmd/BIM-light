@@ -33,7 +33,12 @@ export class OpeningTool implements Tool {
   }
 
   private params(p: Place) {
-    return { wallId: p.wallId, offset: p.offset, ...this.s.openingDefaults };
+    return {
+      wallId: p.wallId,
+      offset: p.offset,
+      ...this.s.openingDefaults,
+      status: this.s.options.newStatus,
+    };
   }
 
   private place(p: PointerInfo): Place | null {

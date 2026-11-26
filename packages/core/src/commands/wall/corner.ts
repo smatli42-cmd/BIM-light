@@ -14,6 +14,7 @@ import {
 import { paramOf } from '../../geometry/split.ts';
 import type { Id } from '../../ids/index.ts';
 import { putElements, putRelations, removeRelations } from '../../model/update.ts';
+import { STATUSES, type Status } from '../../model/types.ts';
 import { facePath } from '../../dimension/measure.ts';
 import type { FaceRef } from '../../dimension/types.ts';
 import { connectionsOf, endToType, sidesFor } from '../../wall/queries.ts';
@@ -115,6 +116,8 @@ export interface RectangleParams {
   a: Vec2;
   b: Vec2;
   side?: WallSide;
+  /** Stav nových stěn (fáze); výchozí nový. */
+  status?: Status;
 }
 
 export const wallRectangle = defineCommand<RectangleParams>({
@@ -126,7 +129,14 @@ export const wallRectangle = defineCommand<RectangleParams>({
   group: 'Stěna',
   shortcut: 'B',
   params: S.object(
-    { storeyId: S.id, typeId: S.id, a: S.point, b: S.point, side: S.enumOf(['left', 'right'], 'strana') },
+    {
+      storeyId: S.id,
+      typeId: S.id,
+      a: S.point,
+      b: S.point,
+      side: S.enumOf(['left', 'right'], 'strana'),
+      status: S.enumOf(STATUSES, 'stav: stávající / bourání / nový'),
+    },
     ['storeyId', 'typeId', 'a', 'b'],
   ),
   run(model, p, ctx) {
@@ -146,6 +156,7 @@ export const wallRectangle = defineCommand<RectangleParams>({
       path: { kind: 'line' as const, start: s, end: pts[(i + 1) % 4] as Vec2 },
       side: p.side ?? ('left' as const),
       referenceLine: 'face' as const,
+      ...(p.status ? { status: p.status } : {}),
     }));
     const conns = [0, 1, 2, 3].map((i) => ({
       relating: { index: i, at: 'ATEND' as const },

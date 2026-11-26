@@ -92,6 +92,8 @@ export interface OverrideCombination {
   readonly id: Id;
   readonly name: string;
   readonly ruleIds: readonly Id[];
+  /** Předvolba fáze pro filtr rekonstrukce pohledu (ne grafický přepis). */
+  readonly phase?: boolean;
 }
 
 /** Velikosti textů a značek na papíře v mm (základ 29), stejné ve všech měřítcích. */

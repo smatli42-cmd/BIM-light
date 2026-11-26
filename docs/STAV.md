@@ -1,11 +1,26 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z6 hotovo – kresba stěny v půdorysu, fáze, konstrukční zobrazení.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, filtr rekonstrukce pohledu a stav nových prvků (po vyzkoušení Z6).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Rekonstrukce: filtr rekonstrukce a stav nových prvků, 2026-11-26 (po vyzkoušení Z6, vzor Arditu)
+- **Filtr rekonstrukce je nastavení pohledu** (`view.phaseFilterId`, příkaz `view.setPhaseFilter`),
+  platí **vedle grafických přepisů** a má před nimi přednost. Volby: Stávající stav, Bourací práce,
+  Plánovaný stav, Nový stav, Srovnávací, Vše. Ve spodní liště **Fáze ›** i v Obsahu → Nastavení pohledu
+  → **Filtr rekonstrukce** (totéž nastavení; uložený pohled si ho pamatuje).
+- Předvolby fází jsou kombinace pravidel s příznakem `phase` (pravidla dál jako data). „Plánovaný stav“ =
+  bez bouraných, „Nový stav“ = bez bouraných a nové červeně. Grafické přepisy fáze nenabízejí.
+- **Stav nových prvků** (info box nástroje Stěna, sekce Rekonstrukce, a nový otvor): stávající / bourání /
+  nový; dostanou ho stěny, obdélník, oblouk, stěna z čáry i otvory (`wall.rectangle` má nově `status`).
+- Schéma projektu 11 → 12, zobrazení 4 → 5 (`view/migrate-v11.ts`): fáze vybraná dřív v přepisech se
+  přesune do filtru; „Fáze – nový stav“ se přejmenuje na „plánovaný“ a přibude nový „nový stav“.
+- AI: `view.info` vrací `phaseFilterId` a `phaseFilters`; scénář AI používá `view.setPhaseFilter`.
+- Testy: jádro 703 (`view/phase-filter.test.ts` – příklad uživatele: 4 stěny, bouraná a nová příčka),
+  prohlížeč 133 (`rekonstrukce.spec.ts`).
 
 ### Rozhraní: UI5 část 2 hotovo, 2026-11-26 (Změnit velikost a průvodní lekce podle Arditu)
 - **Ctrl+K = Změnit velikost** (jako Resize v Archicadu; „hledání příkazů“ z plánu vypuštěno, v Arditu
@@ -182,9 +197,11 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ## Rozhodl Code (k potvrzení)
 
+- **Filtr rekonstrukce:** volba „podle okna“ z Arditu zatím není (výchozí je Vše); „Nový stav“ ukazuje
+  nové stěny červeně, „Plánovaný stav“ normálně. Stav nových prvků se po obnovení stránky vrátí na Nový.
 - **Z6 (podrobně v `STAV-steny.md`):** jemná podrobnost = střední + hranice nosného jádra perem řezu;
-  pás stěny v půdorysu se dál bere z výšky 1000 mm (ne z roviny řezu); Fáze v liště G přepíná kombinaci
-  přepisů okna (stejné místo jako Grafické přepisy); konstrukční zobrazení bez „jen jádro nosných“ (Z7).
+  pás stěny v půdorysu se dál bere z výšky 1000 mm (ne z roviny řezu); konstrukční zobrazení bez
+  „jen jádro nosných“ (Z7). Fáze už nepřepínají grafické přepisy (opraveno filtrem rekonstrukce).
 - **Změnit velikost:** mění se jen půdorysné vzdálenosti; výšky stěn, výšky otvorů a parapety stojí
   (zaškrtnutí změní jen šířku otvoru). Volba „Změnit i velikost textu“ z Arditu vynechána – volné texty
   zatím nejsou a kóty mají text pevně na papíře (základ 29). Okno se otevře jen s vybranými stěnami.

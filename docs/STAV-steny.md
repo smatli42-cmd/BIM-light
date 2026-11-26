@@ -334,8 +334,8 @@ Stěny Z1:
 - **Pás stěny v půdorysu** se dál vybírá ve výšce 1000 mm; rovina řezu rozhoduje o řezu / pohledu
   a o otvorech. Výběr pásu podle roviny řezu by změnil napojování a otvory na mnoha místech – zapsáno
   do Otevřených.
-- **Fáze** v liště G nastavují kombinaci přepisů okna (jedna kombinace na okno), takže výběr fáze nahradí
-  např. „Šrafy“ v Grafických přepisech. Samostatný filtr fází vedle přepisů je možný později.
+- ~~Fáze v liště G nastavují kombinaci přepisů okna~~ – opraveno po vyzkoušení (2026-11-26): filtr
+  rekonstrukce je samostatné nastavení pohledu vedle přepisů (viz STAV.md).
 - **Konstrukční zobrazení** „Jen jádro nosných prvků“ chybí – nosnost stěny přijde v Z7.
 - **Čelní čára volného konce** se při vypnutí schová jen v přímé části čela (u odstupňovaného čela
   vrstev zůstanou schody).

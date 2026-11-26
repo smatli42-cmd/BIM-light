@@ -47,6 +47,7 @@ export const viewCreate = defineCommand<{
       activeAnnotationLayerId: null,
       cutPlane: DEFAULT_CUT_HEIGHT,
       elementOverrides: {},
+      phaseFilterId: null,
       saved: p.saved ?? true,
     };
     return { model: putView(model, view), created: [view.id] };

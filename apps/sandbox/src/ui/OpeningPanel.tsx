@@ -4,6 +4,7 @@ import { openingWarnings, type JsonSchema } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import type { OpeningDefaults } from '../session/opening-defaults.ts';
 import { SchemaForm } from './SchemaForm.tsx';
+import { NewStatusField } from './infobox/NewStatus.tsx';
 
 const SIZE = ['width', 'height', 'sill', 'kind', 'depth', 'side'] as const;
 const LABELS: Record<string, string> = {
@@ -57,6 +58,7 @@ function NewOpening({ s }: { s: Session }) {
           s.changed();
         }}
       />
+      <NewStatusField s={s} />
     </section>
   );
 }

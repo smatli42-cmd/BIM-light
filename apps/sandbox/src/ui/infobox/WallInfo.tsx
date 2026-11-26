@@ -9,6 +9,7 @@ import { WallHeightFields } from '../WallHeightFields.tsx';
 import { WallTypeEditor } from '../WallTypeEditor.tsx';
 import { CompositionSummary, MethodButtons, RefLineButtons } from './wall-controls.tsx';
 import { InstanceTypeTabs, Section } from './Section.tsx';
+import { NewStatusField } from './NewStatus.tsx';
 import { WallDisplay } from './WallDisplay.tsx';
 
 const REF_INFO = 'Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.';
@@ -46,6 +47,9 @@ export function NewWallInfo({ s }: { s: Session }) {
           </Section>
           <Section title="Konstrukce">
             <CompositionSummary s={s} type={type} />
+          </Section>
+          <Section title="Rekonstrukce" info="Stávající = zaměření původního stavu, Nový = návrh.">
+            <NewStatusField s={s} />
           </Section>
         </>
       )}

@@ -15,6 +15,7 @@ const settingsOf = (v: View) => ({
   local: v.local,
   activeAnnotationLayerId: v.activeAnnotationLayerId,
   cutPlane: v.cutPlane,
+  phaseFilterId: v.phaseFilterId,
   elementOverrides: v.elementOverrides,
   crop: v.crop,
 });

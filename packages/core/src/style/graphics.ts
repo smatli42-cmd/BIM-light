@@ -57,6 +57,8 @@ function layersFor(display: DisplaySettings, view: View, facts: ElementFacts): L
     { level: 1, source: `kategorie ${cat}`, effect: display.categoryGraphics[cat] },
     { level: 2, source: `styl ${style?.name ?? '?'}`, effect: style?.categoryGraphics[cat] },
     ...ruleLayers(display, comboId, facts),
+    // Filtr rekonstrukce (fáze) má přednost před grafickými přepisy, oba jsou patro pravidel.
+    ...ruleLayers(display, view.phaseFilterId ?? '', facts),
     { level: 4, source: `pohled ${view.name}`, effect: view.local.categoryGraphics?.[cat] },
     { level: 5, source: 'přepis prvku', effect: facts.graphicOverride },
     { level: 6, source: `přepis prvku v pohledu ${view.name}`, effect: view.elementOverrides[facts.id] },

@@ -55,11 +55,13 @@ export function LookGroup({ s }: { s: Session }) {
 export function OverridesMenu({ s }: { s: Session }) {
   const d = s.model.display;
   const cur = s.view.local.overrideCombinationId ?? styleOfView(d, s.view).overrideCombinationId;
-  const items = Object.values(d.overrideCombinations).map((c) => ({
-    label: c.name,
-    checked: c.id === cur,
-    onPick: () => s.run('view.setOverrideCombination', { viewId: s.view.id, combinationId: c.id }),
-  }));
+  const items = Object.values(d.overrideCombinations)
+    .filter((c) => !c.phase)
+    .map((c) => ({
+      label: c.name,
+      checked: c.id === cur,
+      onPick: () => s.run('view.setOverrideCombination', { viewId: s.view.id, combinationId: c.id }),
+    }));
   return (
     <BarMenu
       icon="overrides"

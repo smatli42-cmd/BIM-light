@@ -16,7 +16,8 @@ export const viewInfo = defineQuery<{ viewId: string }, unknown>({
   description:
     'Vrátí pohled: podlaží, styl, zda má místní úpravy („upraveno“), podrobnost, měřítko, aktivní skupinu ' +
     'anotací (kam jdou nové kóty), stav každé vrstvy (viditelná / zamčená, druh kategorie / anotace), ' +
-    'použitou kombinaci přepisů a všechny dostupné (fáze, šrafy…).',
+    'použitou kombinaci grafických přepisů a dostupné (overrideCombinations), filtr rekonstrukce ' +
+    '(phaseFilterId, null = vše) a dostupné předvolby fází (phaseFilters).',
   group: 'Zobrazení',
   params: S.object({ viewId: S.id }, ['viewId']),
   run(m, p) {
@@ -32,7 +33,13 @@ export const viewInfo = defineQuery<{ viewId: string }, unknown>({
       scale: v.scale,
       activeAnnotationLayerId: activeAnnotationLayer(m, v),
       overrideCombinationId: v.local.overrideCombinationId ?? styleOfView(d, v).overrideCombinationId,
-      overrideCombinations: Object.values(d.overrideCombinations).map((c) => ({ id: c.id, name: c.name })),
+      overrideCombinations: Object.values(d.overrideCombinations)
+        .filter((c) => !c.phase)
+        .map((c) => ({ id: c.id, name: c.name })),
+      phaseFilterId: v.phaseFilterId,
+      phaseFilters: Object.values(d.overrideCombinations)
+        .filter((c) => c.phase)
+        .map((c) => ({ id: c.id, name: c.name })),
       layers: Object.values(d.layers).map((l) => ({
         id: l.id,
         name: l.name,

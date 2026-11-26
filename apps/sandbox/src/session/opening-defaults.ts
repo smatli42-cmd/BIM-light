@@ -1,4 +1,5 @@
 // Výchozí volby nástrojů v sezení: rozměry nového otvoru (plán stěn Z4; mění je panel vpravo) a volby příkazů.
+import type { Status } from '@bim-light/core';
 export interface OpeningDefaults {
   width: number;
   height: number;
@@ -28,4 +29,6 @@ export const TOOL_OPTIONS = {
   /** Změnit velikost (Ctrl+K): měřítko v % a zda se mění i šířka otvorů. */
   scalePercent: 100,
   scaleOpenings: false,
+  /** Stav nových prvků (fáze, jako v Archicadu): stávající = zaměření, nový = návrh. */
+  newStatus: 'new' as Status,
 };

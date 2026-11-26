@@ -1,15 +1,10 @@
 // Sekce Zobrazení vybrané stěny (plán stěn Z6): stav (stávající / bourání / nový), kresba stěn ve stylu
 // (konce stěn, značka osy) a „proč“ – které patro a pravidlo grafiky rozhodlo (základ 11). Data jsou
 // z jádra (funkce grafiky, pro AI dotaz element.graphics); vše se mění jen příkazy.
-import { elementFacts, resolveGraphics, styleOfView, type Status, type Wall } from '@bim-light/core';
+import { elementFacts, resolveGraphics, styleOfView, type Wall } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
+import { STATUS_LABELS } from './NewStatus.tsx';
 import { Section } from './Section.tsx';
-
-const STATUS: [Status, string][] = [
-  ['existing', 'Stávající'],
-  ['demolished', 'Bourání'],
-  ['new', 'Nový'],
-];
 
 /** Vlastnosti grafiky, u kterých panel ukáže důvod. */
 const WHY: [string, string][] = [
@@ -95,7 +90,7 @@ export function WallDisplay({ s, walls }: { s: Session; walls: Wall[] }) {
           onChange={(e) => s.run('wall.setProperties', { wallIds: ids, status: e.currentTarget.value })}
         >
           {!same && <option value="">různé</option>}
-          {STATUS.map(([v, label]) => (
+          {STATUS_LABELS.map(([v, label]) => (
             <option key={v} value={v}>
               {label}
             </option>

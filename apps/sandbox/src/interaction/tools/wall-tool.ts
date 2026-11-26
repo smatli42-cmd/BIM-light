@@ -124,6 +124,7 @@ export class WallTool implements Tool {
       path,
       side: s.wallSide,
       referenceLine: s.wallRefLine,
+      status: s.options.newStatus,
       connections: chainLinks(this.s, c, path, closing),
       autoCross: true,
     });

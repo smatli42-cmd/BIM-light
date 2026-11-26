@@ -1,7 +1,8 @@
 // Nastavení uloženého pohledu (koncepce rozhraní, části 2 F a 4): název, zdroj, styl (kombinace),
-// měřítko, řezná rovina; fáze a varianta jsou připravené („podle okna“, ovládání přijde s fázemi Z6 a
-// s etapou variant). Vše přes příkazy jádra.
-import { workingViewOf, type Id } from '@bim-light/core';
+// měřítko, řezná rovina, filtr rekonstrukce; varianta je připravená („podle okna“, přijde s etapou
+// variant). Vše přes příkazy jádra.
+import { workingViewOf, type Id, type View } from '@bim-light/core';
+import { phaseFilters } from '../bottom/phase.tsx';
 import type { Session } from '../../session/session.ts';
 import { NumberInput } from '../NumberInput.tsx';
 import { ScaleSelect } from '../ViewControls.tsx';
@@ -16,13 +17,24 @@ function Row({ label, children }: { label: string; children: preact.ComponentChi
   );
 }
 
-/** Fáze a varianta: zatím jen „podle okna“ (fáze přijdou se stěnami Z6, varianty s jejich etapou). */
-function FuturePlaceholders() {
+/** Filtr rekonstrukce pohledu (jako v Arditu) a varianta (zatím jen „podle okna“, přijde s etapou variant). */
+function PhaseAndVariant({ s, view }: { s: Session; view: View }) {
   return (
     <>
-      <Row label="Fáze">
-        <select disabled title="Přijde s předvolbami fází (stěny Z6)">
-          <option>podle okna</option>
+      <Row label="Filtr rekonstrukce">
+        <select
+          data-testid="vs-phase"
+          value={view.phaseFilterId ?? ''}
+          onChange={(e) =>
+            s.run('view.setPhaseFilter', { viewId: view.id, filterId: e.currentTarget.value || null })
+          }
+        >
+          {phaseFilters(s.model).map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
+          <option value="">Vše</option>
         </select>
       </Row>
       <Row label="Varianta">
@@ -91,7 +103,7 @@ export function ViewSettings({ s, viewId }: { s: Session; viewId: Id }) {
           onSet={(height) => s.run('view.setCutPlane', { viewId, height })}
         />
       </Row>
-      <FuturePlaceholders />
+      <PhaseAndVariant s={s} view={v} />
       {source && source.id !== v.id && (
         <button
           data-testid="vs-load"

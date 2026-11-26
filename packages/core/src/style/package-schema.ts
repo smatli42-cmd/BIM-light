@@ -67,7 +67,7 @@ export const RULE_SCHEMA = S.object(
   ['id', 'name', 'conditions', 'effect'],
 );
 export const OVERRIDE_COMBINATION_SCHEMA = S.object(
-  { id: str, name: str, ruleIds: { type: 'array', items: str } },
+  { id: str, name: str, ruleIds: { type: 'array', items: str }, phase: { type: 'boolean' } },
   ['id', 'name', 'ruleIds'],
 );
 export const STYLE_SCHEMA: JsonSchema = {

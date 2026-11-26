@@ -33,6 +33,7 @@ export class PickLineTool implements Tool {
       storeyId: s.storeyId,
       typeId: s.wallTypeId,
       path: edgePath(g, f.face),
+      status: s.options.newStatus,
       side: s.wallSide,
       autoCross: true,
     });

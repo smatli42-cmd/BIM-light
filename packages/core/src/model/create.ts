@@ -47,6 +47,7 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     cutPlane: DEFAULT_CUT_HEIGHT,
     elementOverrides: {},
     saved: false,
+    phaseFilterId: null,
   };
   return {
     schemaVersion: SCHEMA_VERSION,
