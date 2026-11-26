@@ -18,8 +18,7 @@ export interface ToolDef {
 export const PALETTE: readonly (readonly ToolDef[])[] = [
   [{ tool: 'select', icon: 'select', label: 'Výběr', key: 'Esc' }],
   [
-    { tool: 'wall', icon: 'wall', label: 'Stěna', key: 'W', also: ['rect', 'arc'] },
-    { tool: 'pickline', icon: 'wall-line', label: 'Stěna z čáry', key: 'V' },
+    { tool: 'wall', icon: 'wall', label: 'Stěna', key: 'W', also: ['rect', 'arc', 'pickline'] },
     { tool: 'opening', icon: 'opening', label: 'Otvor', key: 'O' },
   ],
   [

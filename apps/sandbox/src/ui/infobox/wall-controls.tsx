@@ -11,6 +11,7 @@ const METHODS: readonly [WallMethod, IconName, string, string][] = [
   ['chain', 'wall-chain', 'Řetěz stěn', 'W'],
   ['rect', 'rect', 'Obdélník', 'B'],
   ['arc', 'wall-arc', 'Oblouk třemi body', 'A'],
+  ['pick', 'wall-line', 'Z čáry (klik na líc)', 'V'],
 ];
 
 export function MethodButtons({ s }: { s: Session }) {

@@ -155,13 +155,23 @@ test.describe('katalog-kresleni / část 2: přichytávání', () => {
 });
 
 test.describe('pravidla-interakce / kontrolní seznam: vybrat čáru → stěna', () => {
-  test('klik na líc v nástroji Stěna z čáry vytvoří stěnu po této čáře', async ({ page }) => {
+  test('klik na líc v metodě Stěna z čáry (zkratka V) vytvoří stěnu po této čáře', async ({ page }) => {
     await wall(page, { x: 0, y: 0 }, { x: 3000, y: 0 });
     await page.keyboard.press('v');
     await clickAt(page, 1500, 300);
     const ws = await walls(page);
     expect(ws.length).toBe(2);
     expect(ws[1]?.path.start.y).toBeCloseTo(300, 6);
+  });
+
+  test('pokyn uživatele 2026-11-26: Stěna z čáry není samostatná ikona palety, ale metoda nástroje Stěna', async ({
+    page,
+  }) => {
+    await expect(page.getByTestId('tool-pickline')).toHaveCount(0);
+    await page.keyboard.press('w');
+    await page.getByTestId('method-pick').click();
+    expect(await page.evaluate(() => window.__bim!.tool())).toBe('pickline');
+    await expect(page.getByTestId('method-pick')).toHaveAttribute('aria-pressed', 'true');
   });
 });
 

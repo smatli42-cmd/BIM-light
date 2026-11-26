@@ -27,7 +27,7 @@ export const ENVIRONMENT: Lesson = {
     {
       target: '.palette',
       title: 'Paleta nástrojů',
-      text: 'Výběr, Stěna, Stěna z čáry, Otvor, Kóta a Úhel. Bublina nad ikonou ukáže zkratku (W = stěna, D = kóta…). Dvojklik na Stěnu nabídne typy stěn.',
+      text: 'Výběr, Stěna, Otvor, Kóta a Úhel (stěnu z čáry najdeš v metodách Stěny). Bublina nad ikonou ukáže zkratku (W = stěna, D = kóta…). Dvojklik na Stěnu nabídne typy stěn.',
     },
     {
       target: '[data-testid=infobox]',

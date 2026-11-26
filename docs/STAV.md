@@ -8,6 +8,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
+### Stěna z čáry jako metoda nástroje Stěna, 2026-11-26 (pokyn uživatele: zbytečná ikona navíc)
+- Ikona Stěna z čáry zmizela z palety; funkce zůstala jako geometrická metoda nástroje Stěna v info boxu
+  („Z čáry (klik na líc)“, zkratka V), stejně jako „Vybrat čáry“ v Revitu. Klik na líc stěny vytvoří
+  stěnu po něm; s 2D kresbou (základ 22) bude brát i nakreslené čáry (kontrolní seznam pravidel interakce).
+
 ### Editor typů, krok 2: náhled skladby Půdorys / Řez / 3D, 2026-11-26 (koncepce rozhraní 11a)
 - Záložky náhledu: **Půdorys** (úsek stěny vodorovně, vrstvy jako pásy, referenční strana dole),
   **Řez** (stěna nastojato, vrstvy svisle i s prodloužením nahoru / dolů), **3D** (izometrický výsek,

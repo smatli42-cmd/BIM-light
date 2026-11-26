@@ -26,7 +26,7 @@ import { Viewport } from '../canvas/viewport.ts';
 import type { Clipboard } from '../interaction/clipboard.ts';
 import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
-import { wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
+import { methodOfTool, wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
 import { Selection } from './selection.ts';
 import { OPENING_DEFAULTS, TOOL_OPTIONS, type OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
@@ -197,9 +197,8 @@ export class Session {
     this.valueEdit = null;
     this.snapCycle = 0;
     this.typed = { field: 'len', len: '', ang: '' };
-    // Obdélník a oblouk jsou metody nástroje Stěna: zkratky B / A metodu přepnou.
-    if (id === 'rect') this.wallMethod = 'rect';
-    if (id === 'arc') this.wallMethod = 'arc';
+    // Obdélník, oblouk a z čáry jsou metody nástroje Stěna: zkratky B / A / V metodu přepnou.
+    this.wallMethod = methodOfTool(id) ?? this.wallMethod;
     this.tool = createTool(id === 'wall' ? wallToolFor(this.wallMethod) : id, this);
     this.changed();
   }

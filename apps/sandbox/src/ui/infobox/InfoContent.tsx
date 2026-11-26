@@ -38,7 +38,7 @@ export function InfoContent({ s }: { s: Session }) {
   if (COMMANDS.includes(id)) return <CommandOptions s={s} />;
   if (id === 'opening') return <OpeningPanel s={s} />;
   if (any) return <Selection s={s} />;
-  if (WALL_TOOLS.includes(id) || id === 'pickline') return <NewWallInfo s={s} />;
+  if (WALL_TOOLS.includes(id)) return <NewWallInfo s={s} />;
   return (
     <>
       <SelectOptions s={s} />
