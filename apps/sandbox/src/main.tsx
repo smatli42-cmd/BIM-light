@@ -5,6 +5,9 @@ import './styles/theme.css';
 import './styles/layout.css';
 import './styles/controls.css';
 import './styles/panels.css';
+import './styles/floating.css';
+import './styles/infobox-content.css';
+import './styles/find-bar.css';
 
 const root = document.getElementById('app');
 // Galerie napojení stěn (plán stěn Z2): adresa …/BIM-light/#galerie.

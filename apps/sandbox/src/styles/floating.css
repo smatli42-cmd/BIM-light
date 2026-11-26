@@ -1,0 +1,146 @@
+/* Plovoucí prvky u kurzoru, nabídky a hlášky (barvy z motivu, styles/theme.css). */
+.tracker {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.tracker .field {
+  background: var(--surface);
+  border: 1px solid var(--aux);
+  padding: 1px 5px;
+  color: var(--ink);
+}
+.tracker .field.on {
+  border-color: var(--aux);
+  background: var(--accent-soft);
+}
+.value-edit {
+  position: absolute;
+  width: 96px;
+  font:
+    13px ui-monospace,
+    monospace;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--aux);
+  padding: 2px 4px;
+}
+.menu {
+  position: absolute;
+  min-width: 170px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}
+.menu-title {
+  padding: 4px 8px;
+  color: var(--muted);
+}
+.menu button {
+  text-align: left;
+  font: inherit;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+.menu button:hover {
+  background: var(--accent-soft);
+}
+.toasts {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--aux);
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+.toast.bad {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.toast button {
+  pointer-events: auto;
+  margin-left: 8px;
+  font: inherit;
+  color: var(--ink);
+  border: 1px solid var(--danger);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+/* Plovoucí nabídka druhu úseku a rychlý výběr typu (koncepce rozhraní, část 2 C, I). */
+.segment-menu {
+  position: absolute;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+.has-pick {
+  position: relative;
+  display: inline-flex;
+}
+.pick-mark {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-bottom: 4px solid var(--muted);
+  pointer-events: none;
+}
+.quick-pick {
+  position: absolute;
+  left: 36px;
+  top: 0;
+  z-index: 20;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+.quick-pick-title {
+  padding: 4px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.quick-pick button {
+  text-align: left;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+.quick-pick button:hover {
+  background: var(--hover);
+}
+.quick-pick button.active {
+  color: var(--accent);
+  font-weight: 600;
+}

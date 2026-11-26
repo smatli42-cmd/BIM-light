@@ -1,0 +1,125 @@
+/* Info box a Obsah projektu (koncepce rozhraní, části 2 D a 4). */
+.ib-tabs {
+  display: flex;
+  margin-bottom: 8px;
+}
+.panel .ib-tabs button {
+  flex: 1;
+  justify-content: center;
+  border-radius: 0;
+}
+.panel .ib-tabs button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+.panel .ib-tabs button:last-child {
+  border-radius: 0 5px 5px 0;
+}
+.ib-section {
+  border-top: 1px solid var(--line);
+  padding: 6px 0;
+}
+.ib-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel .ib-toggle {
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--accent);
+  justify-content: flex-start;
+}
+.ib-info {
+  color: var(--muted);
+  cursor: help;
+}
+.ib-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+.ib-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ib-buttons .icon-btn {
+  width: 38px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+}
+.ib-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ib-composition {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Obsah projektu (koncepce rozhraní, část 4). */
+.content-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+.panel .content-tabs button {
+  flex: 1;
+  justify-content: center;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  font-weight: 600;
+}
+.panel .content-tabs button[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.panel .content-tabs button:disabled {
+  color: var(--muted);
+  opacity: 0.6;
+}
+.content-group {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 6px 0 2px;
+}
+.content-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.panel .content-list button {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 4px 6px;
+}
+.panel .content-list button span:nth-child(2) {
+  flex: 1;
+  text-align: left;
+}
+.panel .content-list button.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.vs-row {
+  display: grid !important;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.panel button.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
