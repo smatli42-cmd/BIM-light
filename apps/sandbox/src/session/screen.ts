@@ -1,6 +1,6 @@
 // Volby zobrazení okna ze spodní lišty (koncepce rozhraní, část 2 G): nejsou data pohledu ani modelu,
 // platí pro obrazovku tohoto uživatele (jako On-Screen View Options v Archicadu).
-import type { Id } from '@bim-light/core';
+import type { Id, Structure } from '@bim-light/core';
 import type { Viewport } from '../canvas/viewport.ts';
 
 /** Okno pohledu: který pohled ukazuje a jeho výřez. */
@@ -26,8 +26,8 @@ export interface ScreenOptions {
   isolate: boolean;
   /** Odhalit: skryté prvky purpurově a vybíratelné. */
   reveal: boolean;
-  /** Konstrukční zobrazení: celá skladba, bez povrchů, jen jádro (jen kresba, model beze změny). */
-  structure: 'all' | 'no-finish' | 'core';
+  /** Konstrukční zobrazení: celá skladba, bez povrchů, jen jádro, jen jádro nosných (jen kresba). */
+  structure: Structure;
   /** Karta prvku po podržení myši nad prvkem (vypínač ve spodní liště). */
   infoCards: boolean;
   /** Trasování: průsvitný odkaz jiného podlaží. */

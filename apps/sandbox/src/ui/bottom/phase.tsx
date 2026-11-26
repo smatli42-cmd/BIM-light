@@ -48,6 +48,7 @@ const STRUCTURES: [ScreenOptions['structure'], string][] = [
   ['all', 'Celá skladba'],
   ['no-finish', 'Bez povrchů'],
   ['core', 'Jen jádro'],
+  ['bearing-core', 'Jen jádro nosných'],
 ];
 
 export function StructureMenu({ s }: { s: Session }) {

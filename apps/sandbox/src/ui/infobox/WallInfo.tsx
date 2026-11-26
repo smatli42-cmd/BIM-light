@@ -11,6 +11,7 @@ import { CompositionSummary, MethodButtons, RefLineButtons } from './wall-contro
 import { InstanceTypeTabs, Section } from './Section.tsx';
 import { NewStatusField } from './NewStatus.tsx';
 import { WallDisplay } from './WallDisplay.tsx';
+import { TypePropsSection, WallPropsSection } from './WallProps.tsx';
 
 const REF_INFO = 'Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.';
 
@@ -106,6 +107,7 @@ function SelectedInstance({ s, walls }: { s: Session; walls: Wall[] }) {
       >
         <WallHeightFields s={s} walls={walls} />
       </Section>
+      <WallPropsSection s={s} walls={walls} />
       <WallDisplay s={s} walls={walls} />
     </>
   );
@@ -128,7 +130,12 @@ export function SelectedWallsInfo({ s, walls }: { s: Session; walls: Wall[] }) {
         testid="sel-type"
         onPick={(typeId) => s.run('wall.setType', { wallIds: ids, typeId })}
       />
-      {tab === 'type' && type && !mixed && <WallTypeEditor s={s} type={type} />}
+      {tab === 'type' && type && !mixed && (
+        <>
+          <TypePropsSection s={s} type={type} />
+          <WallTypeEditor s={s} type={type} />
+        </>
+      )}
       {tab === 'instance' && <SelectedInstance s={s} walls={walls} />}
     </>
   );
