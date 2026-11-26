@@ -3,7 +3,8 @@
 // texty (mm papíru × měřítko × zoom). Počátek rastru je společný bod modelu, sousední stěny navazují.
 import { penWidthMm, type Primitive } from '@bim-light/core';
 import { paintHatch } from './hatch-paint.ts';
-import { pathOf, PX_PER_PAPER_MM, type RenderContext } from './primitives.ts';
+import { canvasDpr, screenLineWidth } from './line-width.ts';
+import { pathOf, type RenderContext } from './primitives.ts';
 
 /** Pod tímto počtem px na 1 mm papíru (velké oddálení) se kreslí jen výplň, čáry by splynuly. */
 export const HATCH_MIN_PX_PER_MM = 1;
@@ -33,7 +34,8 @@ export function drawHatch(r: RenderContext, p: Extract<Primitive, { kind: 'hatch
   const xs = pts.map((q) => q.x);
   const ys = pts.map((q) => q.y);
   ctx.strokeStyle = color ?? p.lineColor;
-  ctx.lineWidth = Math.max(0.5, penWidthMm(r.pens, p.pen, r.scale) * PX_PER_PAPER_MM);
+  const dpr = canvasDpr(ctx);
+  ctx.lineWidth = screenLineWidth(penWidthMm(r.pens, p.pen, r.scale), !!r.hairline, dpr);
   paintHatch(ctx, p.hatch, {
     x0: Math.min(...xs),
     y0: Math.min(...ys),
@@ -42,6 +44,7 @@ export function drawHatch(r: RenderContext, p: Extract<Primitive, { kind: 'hatch
     origin: v.toScreen(p.origin),
     pxPerMm,
     bands: false,
+    pixel: dpr,
   });
   if (p.curves) {
     ctx.beginPath();

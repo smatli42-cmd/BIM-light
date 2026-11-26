@@ -1,11 +1,18 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z8 – výkazy, legenda skladeb a značky typu.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava šraf na obrazovce (stejně silné čáry).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Oprava: šrafy na obrazovce stejně silné, 2026-11-26 (připomínka uživatele se screenshoty z Arditu)
+- Čáry šraf vycházely tenčí než pixel obrazovky (pero 0,13 mm ≈ 0,5 px); vyhlazování je pak podle polohy
+  vůči mřížce pixelů kreslilo různě sytě, takže šrafa vypadala, že má čáry různě silné. Teď mají čáry
+  na obrazovce vždy celé pixely obrazovky, nejméně jeden (`render/line-width.ts`, platí pro šrafy
+  i ostatní čáry; silnější pero nikdy tenčí než slabší), vodorovné a svislé šrafy leží ve středu pixelu.
+  Tisk (mm z tabulky per) se nemění. Test: `render/line-width.test.ts`.
 
 ### Oprava: šikmé dočasné kóty, 2026-11-26 (hlášení uživatele se screenshotem)
 - Po kliknutí na stěnu, jejíž líce jsou po napojení různě dlouhé (roh jen na jednom konci, pokos), šla
@@ -346,6 +353,16 @@ Velikost šraf (2026-11-25):
 
 ## Otevřené
 
+- **Editor typů (návrh, čeká na rozhodnutí uživatele):** samostatné okno společné pro stěny, desky,
+  střechy, později okna, dveře a nábytek – vlevo seznam, uprostřed náhled (svislý řez s vrstvami nastojato
+  a pseudo-3D výsek s odstupňovanými vrstvami), vpravo vrstvy a vlastnosti. Vzor z Arditu (screenshot
+  2026-11-26): panel „Skladby“ je společný pro stěnu, desku a střechu (zaškrtávátka Použít pro), u skladby
+  je U, R, plošná hmotnost, splnění požadavku, CO₂e, cena za m², kondenzace v konstrukci, Rw; vrstvy jsou
+  řádky název – tloušťka – materiál, „+ vrstva“. Skladby u nás dnes patří jen typu stěny – sjednocení
+  skladeb pro stěny, desky a střechy probrat s uživatelem.
+- **Lineární prvek stěny (nápad uživatele 2026-11-26):** přidání nebo vybrání hmoty podle profilu (sokl,
+  římsa, drážka) jako Obklad stěny / Drážka v Revitu; profil jako položka knihovny, součást typu nebo
+  instance, vybrání přes společný mechanismus otvorů (základ 19). Zařadit po oknech a dveřích.
 - `STAV.md` má 35 KB (limit ~40 KB): návrh rozdělení – sekce „Rozhraní UI1–UI5“ a „Šrafy“ z Hotovo
   přesunout do `docs/STAV-rozhrani.md` a `docs/STAV-srafy.md` (jako `STAV-steny.md`); čeká na souhlas.
 - Z8: výběr a tažení značky typu myší (dnes jen info box a příkaz); legenda skladeb jako kresba (řez

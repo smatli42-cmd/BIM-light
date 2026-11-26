@@ -11,10 +11,10 @@ import {
 } from '@bim-light/core';
 import type { Viewport } from '../canvas/viewport.ts';
 import { drawHatch } from './hatch.ts';
+import { canvasDpr, screenLineWidth } from './line-width.ts';
 import { forPaper, PAPER_BG, type Paper } from './paper.ts';
 
-/** 1 mm na papíře = 96 / 25,4 px při 100 % (tloušťka čáry na obrazovce). */
-export const PX_PER_PAPER_MM = 96 / 25.4;
+export { PX_PER_PAPER_MM } from './line-width.ts';
 
 const DASH: Readonly<Record<LineType, number[]>> = {
   solid: [],
@@ -49,7 +49,7 @@ function line(r: RenderContext, p: Extract<Primitive, { kind: 'line' }>, color?:
   const { ctx } = r;
   pathOf(r, p.points, p.closed);
   ctx.strokeStyle = color ?? p.stroke.color;
-  ctx.lineWidth = r.hairline ? 1 : Math.max(0.8, penWidthMm(r.pens, p.stroke.pen, r.scale) * PX_PER_PAPER_MM);
+  ctx.lineWidth = screenLineWidth(penWidthMm(r.pens, p.stroke.pen, r.scale), !!r.hairline, canvasDpr(ctx));
   ctx.setLineDash(DASH[p.stroke.lineType]);
   ctx.stroke();
   ctx.setLineDash([]);

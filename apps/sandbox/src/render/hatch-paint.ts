@@ -12,6 +12,7 @@ import {
   type Vec2,
   type WaveFamily,
 } from '@bim-light/core';
+import { snapToPixel } from './line-width.ts';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -29,6 +30,8 @@ export interface PaintArea {
    * nekreslí zde, ale z hotových křivek jádra (`false`).
    */
   readonly bands?: boolean;
+  /** Pixely obrazovky na CSS px: vodorovné a svislé čáry se položí do středu pixelu (ostré). */
+  readonly pixel?: number;
 }
 
 const MAX_ITEMS = 40000;
@@ -59,6 +62,27 @@ const at = (area: PaintArea, ex: Vec2, ey: Vec2, u: number, v: number): Vec2 => 
   y: area.origin.y + ex.y * u + ey.y * v,
 });
 
+/** Vodorovnou nebo svislou úsečku posune do středu pixelu obrazovky; šikmé nechá být. */
+function snapAxis(area: PaintArea, a: Vec2, b: Vec2): [Vec2, Vec2] {
+  const d = area.pixel;
+  if (!d) return [a, b];
+  if (Math.abs(a.y - b.y) < 1e-6) {
+    const y = snapToPixel(a.y, d);
+    return [
+      { ...a, y },
+      { ...b, y },
+    ];
+  }
+  if (Math.abs(a.x - b.x) < 1e-6) {
+    const x = snapToPixel(a.x, d);
+    return [
+      { ...a, x },
+      { ...b, x },
+    ];
+  }
+  return [a, b];
+}
+
 function paintLines(ctx: Ctx, f: LineFamily, area: PaintArea) {
   const { ex, ey } = frame(f.angle);
   const s = f.spacing * area.pxPerMm;
@@ -71,8 +95,7 @@ function paintLines(ctx: Ctx, f: LineFamily, area: PaintArea) {
   ctx.beginPath();
   for (let k = Math.floor(r.v0 / s); k <= Math.ceil(r.v1 / s); k++) {
     const u0 = r.u0 - ((f.offset * area.pxPerMm * k) % (period || 1));
-    const a = at(area, ex, ey, u0, k * s + shift);
-    const b = at(area, ex, ey, r.u1, k * s + shift);
+    const [a, b] = snapAxis(area, at(area, ex, ey, u0, k * s + shift), at(area, ex, ey, r.u1, k * s + shift));
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
   }
