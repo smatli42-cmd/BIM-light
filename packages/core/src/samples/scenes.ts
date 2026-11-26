@@ -54,6 +54,29 @@ function rowAcross(c: SampleContext, right: string, p: string, left: string) {
 
 export const SCENES: readonly Sample[] = [
   {
+    key: 'kota-cislo',
+    title: 'Kóty – zámeček jen u vybrané, posun čísla',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Zámečky nejsou vidět, dokud kótu nevybereš (klik na kótovací čáru). U vybrané kóty táhni číslo po ' +
+      'čáře – i ven z krátké kóty (čára se prodlouží). Pravé tlačítko → Číslo kóty doprostřed.',
+    build(c) {
+      const t = c.type('Příčka 100');
+      const xs = [0, 150, 3000, 3150, 6000];
+      const ids = xs.map((x) => c.line(vec(x, 0), vec(x, 3000), { typeId: t, autoConnect: false }));
+      const items = ids.slice(1).map((id, i) => ({
+        kind: 'linear',
+        refs: [
+          { wallId: ids[i], face: 'ref' },
+          { wallId: id, face: 'ref' },
+        ],
+      }));
+      const dims = c.run('dimension.createSet', { viewId: c.viewId, items, point: vec(3000, 3800) });
+      c.run('dimension.setTextShift', { dimensionIds: [dims[2] ?? ''], shift: 600 });
+    },
+  },
+  {
     key: 'kota-cela-stena',
     title: 'Kóta celé stěny se všemi stěnami',
     kind: 'scena',

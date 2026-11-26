@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { clickAt, dims, moveTo, open, perms, room, temps, wallById } from './helpers.ts';
+import { clickLock } from './helpers.ts';
 
 test.beforeEach(async ({ page }) => {
   await open(page);
@@ -115,8 +116,7 @@ test.describe('katalog-kresleni / část 4 a pravidla-interakce kóty 1, 2, 5 (r
     await input.press('Enter');
     expect((await dims(page))[0]?.locked).toBe(false);
     expect((await wallById(page, left)).path.start.x).toBeCloseTo(200, 6);
-    const lock = (await perms(page))[0]!.lock;
-    await page.mouse.click(lock.x, lock.y);
+    await clickLock(page);
     expect((await dims(page))[0]?.locked).toBe(true);
   });
 
@@ -125,8 +125,7 @@ test.describe('katalog-kresleni / část 4 a pravidla-interakce kóty 1, 2, 5 (r
     await clickAt(page, -150, 1500);
     await pinCross(page, 1500, 2200);
     await clickAt(page, 1500, 2200);
-    const lock = (await perms(page))[0]!.lock;
-    await page.mouse.click(lock.x, lock.y);
+    await clickLock(page);
     await clickAt(page, -150, 1500);
     await page.keyboard.press('ArrowRight');
     await expect(page.getByTestId('toast').last()).toBeVisible();
@@ -185,8 +184,7 @@ test('katalog 4 [R]: u odmítnuté změny se zvýrazní kóta a nabídne její o
   await clickAt(page, -150, 1500);
   await pinCross(page, 1500, 2200);
   await clickAt(page, 1500, 2200);
-  const lock = (await perms(page))[0]!.lock;
-  await page.mouse.click(lock.x, lock.y);
+  await clickLock(page);
   await clickAt(page, -150, 1500);
   await page.keyboard.press('ArrowRight');
   await page.getByTestId('toast-action').click();

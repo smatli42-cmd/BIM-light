@@ -125,7 +125,8 @@ export function hitAt(s: Session, p: Vec2, hidden: readonly Id[] = []): Hit | nu
   const temps = tempDimViews(s);
   const perms = s.tool.id === 'select' ? permDimViews(s, hidden) : [];
   for (const t of temps) if (t.pin && near(p, t.pin, 9)) return { kind: 'pin', temp: t };
-  for (const d of perms) if (near(p, d.lock, 9)) return { kind: 'lock', dim: d };
+  for (const d of perms)
+    if (s.selection.dims.includes(d.id) && near(p, d.lock, 9)) return { kind: 'lock', dim: d };
   for (const t of temps) if (t.lenEnd && near(p, t.lenEnd, 8)) return { kind: 'len-end', temp: t };
   for (const g of gripViews(s)) if (near(p, g.at, 9)) return { kind: 'grip', grip: g };
   for (const t of temps) if (inRect(p, t.textRect)) return { kind: 'temp-text', temp: t };

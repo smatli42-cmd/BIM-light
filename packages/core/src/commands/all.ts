@@ -6,6 +6,7 @@ import {
   dimensionSetLocked,
   dimensionSetOffset,
   dimensionSetText,
+  dimensionSetTextShift,
 } from './dimension/edit.ts';
 import { dimensionSetValue } from './dimension/set-value.ts';
 import { dimensionEqualize } from './dimension/equalize.ts';
@@ -129,6 +130,7 @@ export const CORE_COMMANDS = [
   dimensionSetValue,
   dimensionSetOffset,
   dimensionSetText,
+  dimensionSetTextShift,
   dimensionSetAlignGroup,
   dimensionPlace,
   dimensionCreateSet,

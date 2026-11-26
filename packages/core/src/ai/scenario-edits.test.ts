@@ -52,4 +52,12 @@ describe('AI scénář: pohodlí úprav (plán stěn Z9)', () => {
     });
     expect(c.ai.call<unknown[]>('model.check', {})).toEqual([]);
   });
+
+  it('číslo kóty posunuté mimo krátkou kótu (pokyn uživatele 2026-11-27)', () => {
+    const c = start();
+    const [left] = room(c);
+    const dims = c.ai.call<string[]>('dimension.wholeWall', { wallId: left, viewId: c.viewId });
+    c.ai.call('dimension.setTextShift', { dimensionIds: [dims[0]], shift: 700 });
+    expect(c.ai.call<{ id: string }[]>('dimension.list').length).toBeGreaterThan(0);
+  });
 });

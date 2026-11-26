@@ -109,3 +109,11 @@ export async function wallById(page: Page, id: string) {
 }
 
 export const near = (a: number, b: number, tol = 0.5) => Math.abs(a - b) <= tol;
+
+/** Vybere kótu (klik na její čáru) a klikne na její zámeček – zámeček je jen u vybrané kóty. */
+export async function clickLock(page: Page, i = 0) {
+  const p = (await perms(page))[i]!;
+  await page.mouse.click(p.line.x, p.line.y);
+  const lock = (await perms(page))[i]!.lock;
+  await page.mouse.click(lock.x, lock.y);
+}

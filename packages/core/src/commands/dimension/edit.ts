@@ -67,6 +67,25 @@ export const dimensionSetText = defineCommand<{ dimensionId: Id; text: string | 
   run: (model, p) => ({ model: updateAll(model, [p.dimensionId], (d) => ({ ...d, textOverride: p.text })) }),
 });
 
+export const dimensionSetTextShift = defineCommand<{ dimensionIds: Id[]; shift: number }>({
+  name: 'dimension.setTextShift',
+  label: 'Posunout číslo kóty',
+  description:
+    'Posune číslo kót po kótovací čáře o shift mm od středu (+ ve směru čáry, 0 = zpět doprostřed). Číslo ' +
+    'mimo kótu (krátké kóty) leží na prodloužené kótovací čáře.',
+  group: 'Kóta',
+  params: S.object({ dimensionIds: IDS, shift: S.number('mm od středu kóty po kótovací čáře') }, [
+    'dimensionIds',
+    'shift',
+  ]),
+  run: (model, p) => ({
+    model: updateAll(model, p.dimensionIds, (d) => {
+      const { textShift: _old, ...rest } = d;
+      return Math.abs(p.shift) < 1e-6 ? rest : { ...rest, textShift: p.shift };
+    }),
+  }),
+});
+
 export const dimensionSetAlignGroup = defineCommand<{ dimensionIds: Id[]; groupId: Id | null }>({
   name: 'dimension.setAlignGroup',
   label: 'Skupina zarovnání',

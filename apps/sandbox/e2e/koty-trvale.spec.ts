@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { clickAt, dims, dragPx, moveTo, open, perms, px, wall, wallById } from './helpers.ts';
+import { clickLock } from './helpers.ts';
 
 test.beforeEach(async ({ page }) => {
   await open(page);
@@ -169,8 +170,7 @@ test.describe('pravidla-interakce / kóty 9: úhlová kóta', () => {
     const ang =
       (Math.atan2(wb.path.end.y - wb.path.start.y, wb.path.end.x - wb.path.start.x) * 180) / Math.PI;
     expect(Math.abs(ang - 80) < 0.05 || Math.abs(ang - 100) < 0.05).toBe(true);
-    const lock = (await perms(page))[0]!.lock;
-    await page.mouse.click(lock.x, lock.y);
+    await clickLock(page);
     expect((await dims(page))[0]?.locked).toBe(true);
     const pp = await px(page, 0, 0);
     expect(pp.x).toBeGreaterThan(0);
@@ -208,4 +208,35 @@ test.describe('závada: kóta délky stěny s nepřipojeným koncem', () => {
     expect(d?.kind === 'linear' && d.refs.some((r) => r.wallId === b && r.face === 'end')).toBe(true);
     expect((await perms(page)).length).toBe(1);
   });
+});
+
+test('pokyn uživatele 2026-11-27: zámeček jen u vybrané kóty – u nevybrané klik na jeho místo nezamkne', async ({
+  page,
+}) => {
+  await three(page);
+  await chainThenSelect(page);
+  await page.mouse.click(5, 5);
+  const before = (await dims(page)).map((d) => d.locked);
+  const lock = (await perms(page))[0]!.lock;
+  await page.mouse.click(lock.x, lock.y);
+  expect((await dims(page)).map((d) => d.locked)).toEqual(before);
+  await clickLock(page);
+  expect((await dims(page)).some((d) => d.locked !== before[0])).toBe(true);
+});
+
+test('pokyn uživatele 2026-11-27: číslo vybrané kóty jde tažením posunout po kótovací čáře', async ({
+  page,
+}) => {
+  await three(page);
+  await chainThenSelect(page);
+  const p = (await perms(page))[0]!;
+  await page.mouse.click(p.line.x, p.line.y);
+  const t = (await perms(page))[0]!.text;
+  await page.mouse.move(t.x, t.y);
+  await page.mouse.down();
+  await page.mouse.move(t.x - 60, t.y, { steps: 6 });
+  await page.mouse.move(t.x - 120, t.y, { steps: 6 });
+  await page.mouse.up();
+  const d = (await dims(page)).find((x) => x.id === p.id)!;
+  expect(Math.abs(d.textShift ?? 0)).toBeGreaterThan(500);
 });

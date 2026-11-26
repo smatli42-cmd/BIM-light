@@ -17,6 +17,7 @@ import type { TempDimView } from '../../temp-layout.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../../types.ts';
 import { PermDimDragMode, TempDimDragMode } from './dim-drag.ts';
 import { BoxMode, PressWallMode } from './drag-modes.ts';
+import { DimTextMode } from './dim-text-mode.ts';
 import { dimMenu, edgeMenu, nodeMenu, openingMenu, wallMenu } from './menus.ts';
 import { CurveMode } from './curve-mode.ts';
 import { PressOpeningMode } from './opening-modes.ts';
@@ -118,6 +119,8 @@ export class SelectTool implements Tool {
       }
     } else if (hit.kind === 'temp-text' || hit.kind === 'temp-line')
       this.mode = new TempDimDragMode(s, hit.temp, hit.kind === 'temp-text', p);
+    else if (hit.kind === 'dim-text' && s.selection.dims.includes(hit.dim.id))
+      this.mode = new DimTextMode(s, hit.dim, p);
     else if (hit.kind === 'dim-text' || hit.kind === 'dim-line')
       this.mode = new PermDimDragMode(s, hit.dim, hit.kind === 'dim-text', p);
   }

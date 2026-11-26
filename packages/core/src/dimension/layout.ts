@@ -22,6 +22,7 @@ import {
   type Vec2,
 } from '../geometry/index.ts';
 import { arcRay, radialPoints } from './radial.ts';
+import { withTextShift } from './text-shift.ts';
 import type { Model } from '../model/types.ts';
 import type { PaperSizes } from '../style/types.ts';
 import { arcLine, measuredFace } from './arc-dim.ts';
@@ -221,7 +222,11 @@ export function layoutDimension(
   paper: PaperSizes,
 ): DimensionLayout | null {
   const ext: Ext = (f, t) => extension(f, t, paper.extensionGap * scale, paper.extensionOvershoot * scale);
-  if (d.kind === 'linear') return linearLayout(model, d, ext, scale, paper);
-  if (d.kind === 'length') return lengthLayout(model, d, ext, scale, paper);
-  return angularLayout(model, d, scale, paper);
+  const lay =
+    d.kind === 'linear'
+      ? linearLayout(model, d, ext, scale, paper)
+      : d.kind === 'length'
+        ? lengthLayout(model, d, ext, scale, paper)
+        : angularLayout(model, d, scale, paper);
+  return lay && withTextShift(model, d, lay, scale, paper);
 }

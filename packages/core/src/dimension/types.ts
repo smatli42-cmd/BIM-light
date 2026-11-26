@@ -27,6 +27,11 @@ interface DimensionBase {
   readonly textOverride: string | null;
   /** Skupina zarovnání (kóty se hýbou spolu); není to skupina anotací. */
   readonly alignGroupId: Id | null;
+  /**
+   * Posun čísla po kótovací čáře od středu (mm modelu, + ve směru čáry); chybí = uprostřed. Číslo mimo
+   * kótu (krátké kóty) – kótovací čára se pod ně prodlouží (pokyn uživatele 2026-11-27).
+   */
+  readonly textShift?: number;
 }
 
 /** Vzdálenost mezi dvěma rovnoběžnými líci (příčná kóta). */

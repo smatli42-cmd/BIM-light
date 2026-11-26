@@ -1,12 +1,20 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, kóta celé stěny se všemi stěnami.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, zámeček jen u vybrané kóty, posun čísla kóty.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Kóty: zámeček jen u vybrané, posun čísla, 2026-11-27 (pokyn uživatele; scéna `?ukazka=kota-cislo`)
+- **Zámeček** se kreslí a jde kliknout jen u vybrané kóty (jako Revit); u kóty, která brání změně, se dál
+  krátce rozsvítí.
+- **Posun čísla:** u vybrané kóty tažení čísla posune číslo po kótovací čáře (`DimTextMode`), i ven z krátké
+  kóty – kótovací čára se pod číslo prodlouží (`dimension/text-shift.ts`). Klik bez tažení dál otevře pole
+  pro číslo; nevybraná kóta se tažením čísla dál posouvá celá. Data: `textShift` (mm od středu, chybí =
+  uprostřed, bez migrace); příkaz `dimension.setTextShift`; nabídka „Číslo kóty doprostřed“.
 
 ### Kóta celé stěny se všemi stěnami, 2026-11-26 (pokyn uživatele; scéna `?ukazka=kota-cela-stena`)
 - `dimension.wholeWall` s `walls: true` (Revit „Entire Walls – Intersecting Walls“, Archicad automatické

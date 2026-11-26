@@ -71,7 +71,9 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   }
   if (s.tool.id === 'select') {
     const flash = new Set(s.flashDims);
-    for (const d of permDimViews(s, hidden)) drawLock(ctx, d, flash.has(d.id));
+    // Zámeček jen u vybrané kóty (jako Revit) a u kóty, která právě brání změně (pokyn uživatele 2026-11-27).
+    for (const d of permDimViews(s, hidden))
+      if (s.selection.dims.includes(d.id) || flash.has(d.id)) drawLock(ctx, d, flash.has(d.id));
     for (const t of tempDimViews(s, model)) drawTempDim(ctx, t);
     drawGrips(ctx, gripViews(s));
   }

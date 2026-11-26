@@ -49,6 +49,11 @@ export function dimMenu(s: Session, view: PermDimView, at: Vec2) {
       action: () => s.run('dimension.flipSide', { dimensionIds: [d.id] }),
     });
   items.push({ label: 'Přepsat text kóty', action: () => editText(s, view) });
+  if (d.textShift)
+    items.push({
+      label: 'Číslo kóty doprostřed',
+      action: () => s.run('dimension.setTextShift', { dimensionIds: [d.id], shift: 0 }),
+    });
   if (d.textOverride !== null)
     items.push({
       label: 'Vrátit skutečnou hodnotu',
