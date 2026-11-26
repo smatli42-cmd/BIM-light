@@ -7,6 +7,13 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ## Hotovo
 
+### Oprava: šikmé dočasné kóty, 2026-11-26 (hlášení uživatele se screenshotem)
+- Po kliknutí na stěnu, jejíž líce jsou po napojení různě dlouhé (roh jen na jednom konci, pokos), šla
+  příčná dočasná kóta šikmo a podélná měla šikmé odkazové čáry; stejně ujížděly úchyty (kolečko zakřivení,
+  šipka překlopení). Příčina: směr kolmo ke stěně se bral ze spojnice středů obou líců, které pak nejsou
+  proti sobě. Teď je to normála stěny uprostřed (`wallOutward` v `dimension/temporary.ts`), použitá
+  v jádře i v sandboxu. Test: `dimension/temporary.test.ts` (oprava 2026-11-26).
+
 ### Stěny Z8: výkazy, legenda skladeb a značka typu, 2026-11-26 (plán stěn, část 3)
 - **Výkazy jako jeden obecný mechanismus** (základ 8, `packages/core/src/schedule/`): definice výkazu jsou
   data v projektu (zdroj, sloupce, seskupení, po prvcích / součty, řazení, filtr podlaží / stavů / variant,

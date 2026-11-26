@@ -24,6 +24,30 @@ describe('katalog-kresleni / část 3: dočasné kóty', () => {
     expect(len?.value).toBeCloseTo(3000, 6);
   });
 
+  it('oprava 2026-11-26: líce různé délky (roh jen na jednom konci) – příčná kóta je kolmo k líci, ne šikmo', () => {
+    const f = fixture();
+    // horní stěna s rohem jen vpravo: vnitřní líc je kratší než vnější, středy líců nejsou proti sobě
+    const top = f.line(vec(0, 4000), vec(4000, 4000));
+    f.line(vec(4000, 4000), vec(4000, 0), { connections: [{ end: 'start', wallId: top, at: 'ATEND' }] });
+    const bottom = f.line(vec(-1000, 0), vec(5000, 0));
+    const geoms = allWallGeometry(f.model);
+    for (const mode of ['face', 'axis'] as const) {
+      const cross = temporaryDimensions(geoms.get(top)!, [...geoms.values()], mode).filter(
+        (x) => x.kind === 'cross',
+      );
+      expect(cross.length).toBeGreaterThan(0);
+      for (const c of cross) {
+        if (c.kind !== 'cross') continue;
+        expect(c.to.x - c.from.x).toBeCloseTo(0, 6);
+        expect(c.value).toBeCloseTo(Math.abs(c.to.y - c.from.y), 6);
+      }
+    }
+    const toBottom = temporaryDimensions(geoms.get(top)!, [...geoms.values()]).find(
+      (x) => x.kind === 'cross' && x.other.wallId === bottom,
+    );
+    expect(toBottom?.value).toBeCloseTo(4000 - 300, 6);
+  });
+
   it('3.2: osa je dostupná přepnutím', () => {
     const { ids, geoms, all } = setup();
     const t = temporaryDimensions(geoms.get(ids[0])!, all, 'axis');

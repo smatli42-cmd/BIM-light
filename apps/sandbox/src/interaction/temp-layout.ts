@@ -7,10 +7,10 @@ import {
   formatLength,
   mul,
   norm,
-  pointAt,
   sub,
   tangentAt,
   temporaryDimensions,
+  wallOutward,
   openingEdgePath,
   openingTempDimensions,
   type Opening,
@@ -56,7 +56,7 @@ function crossView(s: Session, t: Extract<TempDimension, { kind: 'cross' }>, fac
 function lengthView(s: Session, m: Model, t: TempDimension, wallId: Id): TempDimView | null {
   const g = allWallGeometry(m, s.storeyId).get(wallId);
   if (!g || g.faces.ref.kind !== 'line') return null;
-  const out = norm(sub(pointAt(g.faces.ref, 0.5), pointAt(g.faces.opp, 0.5)));
+  const out = wallOutward(g);
   const off = s.tempOffsets.len ?? s.viewport.px(30);
   const f = g.faces.ref;
   const A = add(f.start, mul(out, off));

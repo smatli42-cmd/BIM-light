@@ -2,6 +2,8 @@
 // straně, podélně délka líce. Měří se k lícům [R], osa je dostupná přepnutím.
 import {
   add,
+  arcData,
+  leftNormal,
   carrierOf,
   cross,
   dot,
@@ -13,6 +15,7 @@ import {
   pointAt,
   sub,
   tangentAt,
+  type Path,
   type Vec2,
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
@@ -74,6 +77,23 @@ function nearestHit(o: Vec2, d: Vec2, others: readonly WallGeometry[], faces: Wa
   return best;
 }
 
+/**
+ * Jednotková normála líce v jeho středu (kolmo k líci). Směr nejde brát ze spojnice středů líců:
+ * líce mohou být po napojení různě dlouhé (roh jen na jednom konci, pokos), středy pak nejsou proti
+ * sobě a kóta by vyšla šikmo (oprava 2026-11-26).
+ */
+function normalAtMid(p: Path): Vec2 {
+  if (p.kind === 'arc' && Math.abs(p.bulge) > 1e-9) return norm(sub(pointAt(p, 0.5), arcData(p).center));
+  return leftNormal(norm(sub(p.end, p.start)));
+}
+
+/** Jednotkový směr kolmo ke stěně uprostřed, od protilehlého líce k referenčnímu. */
+export function wallOutward(g: WallGeometry): Vec2 {
+  const n = normalAtMid(g.faces.axis);
+  const toRef = sub(pointAt(g.faces.ref, 0.5), pointAt(g.faces.opp, 0.5));
+  return dot(n, toRef) >= 0 ? n : mul(n, -1);
+}
+
 /** Dočasné kóty pro jednu vybranou stěnu. */
 export function temporaryDimensions(
   wall: WallGeometry,
@@ -81,9 +101,7 @@ export function temporaryDimensions(
   mode: TempMode = 'face',
 ): TempDimension[] {
   const out: TempDimension[] = [];
-  const refMid = pointAt(wall.faces.ref, 0.5);
-  const oppMid = pointAt(wall.faces.opp, 0.5);
-  const out1 = norm(sub(refMid, oppMid));
+  const out1 = wallOutward(wall);
   const sides: [WallFace, Vec2][] =
     mode === 'axis'
       ? [

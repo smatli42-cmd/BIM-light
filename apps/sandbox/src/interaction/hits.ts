@@ -6,6 +6,9 @@ import {
   measureDimension,
   pointAt,
   wallGeometry,
+  wallOutward,
+  add,
+  mul,
   isDimensionVisible,
   type Dimension,
   type Id,
@@ -86,8 +89,12 @@ function sideGrips(s: Session, w: Wall): GripView[] {
   const g = wallGeometry(s.model, w);
   const ref = s.viewport.toScreen(pointAt(g.faces.ref, 0.5));
   const opp = s.viewport.toScreen(pointAt(g.faces.opp, 0.5));
-  const d = Math.hypot(opp.x - ref.x, opp.y - ref.y) || 1;
-  const u = { x: (opp.x - ref.x) / d, y: (opp.y - ref.y) / d };
+  // Směr kolmo ke stěně (od ref k opp) na obrazovce; ne spojnice středů líců – ty po napojení
+  // nemusí být proti sobě (oprava 2026-11-26).
+  const o = wallOutward(g);
+  const ahead = s.viewport.toScreen(add(pointAt(g.faces.ref, 0.5), mul(o, -1000)));
+  const d = Math.hypot(ahead.x - ref.x, ahead.y - ref.y) || 1;
+  const u = { x: (ahead.x - ref.x) / d, y: (ahead.y - ref.y) / d };
   return [
     { wallId: w.id, end: 'mid', at: { x: opp.x + u.x * 16, y: opp.y + u.y * 16 } },
     // Šipka 36 px vedle středu, aby se nepotkala s dočasnou kótou uprostřed stěny.
