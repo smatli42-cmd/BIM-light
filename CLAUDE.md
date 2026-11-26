@@ -22,6 +22,9 @@ a `docs/STAV.md`.
 - Žádné pevné milimetry čar, barvy ani šrafy v generátorech: vždy přes funkci grafiky (základy 11, 32).
 - Žádný přímý přístup k souborům ani k prohlížeči z jádra (základy 9, 13); hlídá to ESLint.
 - Na konci každého kroku aktualizuj `docs/STAV.md` (hotovo, rozhodl Code, otevřené, 5 největších souborů).
+- **Ukázky (pokyn uživatele 2026-11-26):** ke každému hotovému kroku nebo opravě přidej testovací scénu
+  (recept z příkazů) nahoru do `packages/core/src/samples/scenes.ts`; nové funkce doplň i do ukázkového
+  projektu (`samples/house.ts`). Ve zprávě uživateli dej odkaz `…/BIM-light/?ukazka=<klíč>` a co zkusit.
 
 ## Dokumenty (zdroj pravdy)
 

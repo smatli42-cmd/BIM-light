@@ -1,12 +1,25 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z10 – kresba probourání a zazdívky, nástroj Vybourat úsek.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Ukázky (ukázkový projekt a testovací scény).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Ukázky: ukázkový projekt a testovací scény, 2026-11-26 (pokyn uživatele)
+- Tlačítko **Ukázky** v horní liště: ukázkový projekt „Rodinný dům – ukázka“ (vymyšlený; 1.NP rekonstrukce
+  se stávající, bouranou a novou konstrukcí, probouráním, zazdívkou, nikou a obloukovou příčkou, 2.NP
+  nástavba, kóty celé stěny, značky typů) a testovací scény k posledním krokům (Z10, Z9, skladby, oprava
+  oblouku). Jeden klik; odkaz `?ukazka=<klíč>` (např. `?ukazka=dum`). Ukázka se otevře přiblížená na celek.
+- Ukázky jsou recepty z příkazů jádra (`packages/core/src/samples/`), ne uložené soubory: vždy v aktuální
+  verzi modelu, každá je test (`samples.test.ts`; dům projde kontrolou modelu bez varování).
+- Pravidlo do `CLAUDE.md`: ke každému kroku nová scéna a odkaz ve zprávě.
+
+### Oprava: odkazová čára kóty začíná u líce nejblíž kótovací čáře, 2026-11-26
+- Kóta celé stěny táhla odkazové čáry od středu líce kolmé stěny přes celý dům (viditelné v ukázce).
+  Teď začíná v bodě líce nejblíž kótovací čáře (jako Revit / Archicad). Test `dimension/extension.test.ts`.
 
 ### Oprava: nová stěna místo vybouraného úseku se v plánovaném stavu napojí, 2026-11-26 (hlášení uživatele)
 - Po „Vybourat úsek“ a nakreslení nové stěny do mezery byly v plánovaném stavu stávající části a nová stěna

@@ -1,7 +1,8 @@
 // Okno aplikace v rozložení podle koncepce rozhraní (část 2): A horní lišta, B lišta příkazů,
 // C paleta nástrojů, D info box, E okno pohledu, F Obsah + F' lišta sekcí, G spodní lišta.
 import { Fragment } from 'preact';
-import { useMemo } from 'preact/hooks';
+import { useEffect, useMemo } from 'preact/hooks';
+import { zoomTo } from '../interaction/keyboard.ts';
 import { Controller } from '../interaction/controller.ts';
 import { Session } from '../session/session.ts';
 import { AppBar } from '../ui/layout/AppBar.tsx';
@@ -18,6 +19,7 @@ import { applyPanelSizes, applyWindowSplit } from '../ui/panel-sizes.ts';
 import { applyTheme } from '../ui/theme.ts';
 import { useSession } from '../ui/use-session.ts';
 import { installTestHook } from './test-hook.ts';
+import { sampleFromUrl } from '../ui/samples/open.ts';
 
 /** Okna pohledů vedle sebe (koncepce rozhraní, část 2 E). */
 function Windows({ s, controller }: { s: Session; controller: Controller }) {
@@ -35,13 +37,22 @@ function Windows({ s, controller }: { s: Session; controller: Controller }) {
 }
 
 export function App() {
-  const { session, controller } = useMemo(() => {
-    const s = new Session();
+  const { session, controller, sample } = useMemo(() => {
+    const model = sampleFromUrl(window.location.search);
+    const s = new Session(model);
     applyTheme(s.theme);
     applyPanelSizes();
     applyWindowSplit();
     installTestHook(s);
-    return { session: s, controller: new Controller(s) };
+    return { session: s, controller: new Controller(s), sample: !!model };
+  }, []);
+  // Ukázka se otevře přiblížená na celý výkres (jako Home), až okno zná svou velikost.
+  useEffect(() => {
+    if (!sample) return;
+    requestAnimationFrame(() => {
+      zoomTo(session, false);
+      session.changed();
+    });
   }, []);
   return (
     <div class="app">

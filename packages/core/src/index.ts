@@ -26,3 +26,4 @@ export * from './queries/index.ts';
 export * from './persistence/index.ts';
 export * from './composition/index.ts';
 export * from './check/walls.ts';
+export * from './samples/index.ts';

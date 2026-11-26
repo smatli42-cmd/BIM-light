@@ -6,6 +6,7 @@ import { ExportIfc } from '../ExportIfc.tsx';
 import { IconButton } from '../icons/Icon.tsx';
 import { useState } from 'preact/hooks';
 import { LessonsDialog } from '../lessons/LessonsDialog.tsx';
+import { SamplesDialog } from '../samples/SamplesDialog.tsx';
 import { useSession } from '../use-session.ts';
 import { StyleSwitch } from '../ViewControls.tsx';
 
@@ -30,6 +31,23 @@ function LookToggles({ s }: { s: Session }) {
         onClick={() => s.setLook({ theme: dark ? 'light' : 'dark', paper: dark ? 'light' : 'dark' })}
       />
     </div>
+  );
+}
+
+/** Ukázkový projekt a testovací scény (pokyn uživatele 2026-11-26). */
+function SamplesButton({ s }: { s: Session }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        data-testid="samples-open"
+        title="Ukázkový projekt a testovací scény"
+        onClick={() => setOpen(true)}
+      >
+        Ukázky
+      </button>
+      {open && <SamplesDialog s={s} onClose={() => setOpen(false)} />}
+    </>
   );
 }
 
@@ -65,6 +83,7 @@ export function AppBar({ s }: { s: Session }) {
           onClick={() => s.editor.redo()}
         />
       </div>
+      <SamplesButton s={s} />
       <ExportIfc s={s} />
       <a class="muted" href="#galerie" title="Galerie napojení stěn (pro vývoj)">
         Galerie napojení

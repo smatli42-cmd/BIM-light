@@ -11,6 +11,7 @@ import './styles/find-bar.css';
 import './styles/lessons.css';
 import './styles/schedule.css';
 import './styles/type-editor.css';
+import './styles/samples.css';
 
 const root = document.getElementById('app');
 // Galerie napojení stěn (plán stěn Z2): adresa …/BIM-light/#galerie.
