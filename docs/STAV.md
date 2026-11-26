@@ -1,11 +1,36 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, filtr rekonstrukce pohledu a stav nových prvků (po vyzkoušení Z6).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z7 – vlastnosti stěny a úplný IFC.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Stěny Z7: vlastnosti stěny a úplný IFC, 2026-11-26 (plán stěn, část 3)
+- **Vlastnosti stěny** (`packages/core/src/wall-props/`): funkce (obvodová / vnitřní / příčka / základová /
+  opěrná), nosná, vnější, požární odolnost a neprůzvučnost (volný text, např. „REI 60 DP1“, „R'w 52 dB“).
+  **Výchozí hodnoty nese typ** (jako Function a Fire Rating v Revitu), **stěna je může přepsat** (jako
+  Structural Usage v Revitu / Position v Archicadu); bez přepisu = „podle typu“.
+- **Jeden popis parametrů** (`wall-props/params.ts`, základ 15b): popisek, skupina, schéma hodnoty a
+  mapování na IFC. Z něj vzniká panel v info boxu, schéma příkazů pro AI i Pset_WallCommon v exportu.
+- Příkazy: **`wallType.setProperties`** (vlastnosti typu), **`wall.setProperties`** má nově `properties`
+  (přepis; `null` = zpět podle typu), `wallType.create` má volitelné `properties`. Nová tloušťka stěny
+  (nový typ) převezme vlastnosti původního typu. Dotaz pro AI **`wall.properties`** (výsledné hodnoty,
+  přepsané klíče, PredefinedType v IFC); krok scénáře AI.
+- Knihovní typy mají výchozí vlastnosti (Obvodová zateplená 465 = obvodová, nosná, vnější; Zdivo 300,
+  Nosná zeď 330, ŽB stěna 200 = vnitřní nosná; příčky = příčka, nenosná). Schéma projektu 12 → 13
+  (`wall-props/migrate-v12.ts`): typy dostanou vlastnosti podle knihovny, vlastní typy obecné výchozí.
+- **IFC** (`packages/ifc/src/pset.ts`): IfcWallType nese Pset_WallCommon s hodnotami typu (Reference,
+  LoadBearing, IsExternal, FireRating, AcousticRating) a PredefinedType podle funkce (příčka = PARTITIONING,
+  základová a opěrná = USERDEFINED s názvem druhu); IfcWall má Pset_WallCommon s výslednými hodnotami
+  (i s přepisy) a Status. Skladba (IfcMaterialLayerSet + Usage) a otvory byly hotové už z Z3–Z5.
+- **Info box:** sekce **Vlastnosti** u vybraných stěn (každé pole „podle typu (hodnota)“ nebo vlastní;
+  u textu tlačítko „typ“ vrátí hodnotu typu; u víc stěn „různé“), v záložce Typ sekce **Vlastnosti typu**.
+- **Konstrukční zobrazení „Jen jádro nosných“** ve spodní liště (dořešeno ze Z6): nenosné stěny se
+  nekreslí, nosné jen jádrem (jako Archicad).
+- Testy: jádro a nástroje 722 (`wall-props/wall-props.test.ts`, `ifc/src/pset.test.ts` přes web-ifc),
+  prohlížeč 137 (`vlastnosti.spec.ts`).
 
 ### Rekonstrukce: filtr rekonstrukce a stav nových prvků, 2026-11-26 (po vyzkoušení Z6, vzor Arditu)
 - **Filtr rekonstrukce je nastavení pohledu** (`view.phaseFilterId`, příkaz `view.setPhaseFilter`),
@@ -151,8 +176,8 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ### Stěny: Z1, Z2, Z3, Z4, Z5, Z6 hotovo (podrobnosti v `docs/STAV-steny.md`)
 - Z1 typ a skladba (2026-11-24), Z2 napojování vrstev (2026-11-24), Z3 výška a IFC (2026-11-24),
-  Z4 otvory (2026-11-25), Z5 oblouk (2026-11-25), **Z6 kresba v půdorysu (2026-11-26)**. Kroky Z7–Z10
-  rozpracuje uživatel po vyzkoušení Z1–Z6.
+  Z4 otvory (2026-11-25), Z5 oblouk (2026-11-25), **Z6 kresba v půdorysu (2026-11-26)**,
+  **Z7 vlastnosti a úplný IFC (2026-11-26, výše)**. Kroky Z8–Z10 podle plánu stěn, část 3.
 
 ### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
 - **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
@@ -200,6 +225,16 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 - Šrafy v knihovně mají verzi 3; uložené projekty si drží své kopie (základ 21).
 
 ## Rozhodl Code (k potvrzení)
+
+- **Z7 vlastnosti:** hodnoty na typu + přepis u stěny (Revit), ne jen u instance (Archicad) – typ se
+  vyplní jednou. Funkce a „vnější“ jsou nezávislé (obvodová funkce „vnější“ sama nezaškrtne).
+  Požární odolnost a neprůzvučnost jsou volný text (bez seznamu tříd podle ČSN); u knihovních typů
+  prázdné – hodnoty doplní projektant. Funkce jde do IFC jen jako PredefinedType (obvodová i vnitřní =
+  STANDARD, rozliší je IsExternal); vlastní sada vlastností BIM-light zatím není.
+- **Jen jádro nosných:** nenosné stěny zmizí úplně i se svými otvory (jako Archicad „Core of Load-bearing
+  Elements only“); kóty zůstávají.
+- **Kontrola v BIMvision** jsem nemohl udělat sám; export ověřuje knihovna web-ifc v testech (Pset typu
+  i instance, PredefinedType). Prosím otevřít export v BIMvision.
 
 - **Filtr rekonstrukce:** volba „podle okna“ z Arditu zatím není (výchozí je Vše); „Nový stav“ ukazuje
   nové stěny červeně, „Plánovaný stav“ normálně. Stav nových prvků se po obnovení stránky vrátí na Nový.
@@ -258,11 +293,16 @@ Velikost šraf (2026-11-25):
   trasování, vrstvy, izolovat / odhalit, pera).
 - UI5, stěny Z6 a rekonstrukce (filtr rekonstrukce, stav nových prvků) uživatel vyzkoušel 2026-11-26:
   „vše funguje“ (po opravě mezery v plánovaném stavu).
-- **Další:** uživatel zadá nový pokyn v nové session; podle plánu na řadě rozpracování kroků stěn Z7–Z10
-  (plán stěn, část 7) – zadání dodá uživatel.
+- **Uživatel vyzkouší Z7:** vybrat stěnu → info box Vlastnosti (nosná, požární odolnost), záložka Typ →
+  Vlastnosti typu, spodní lišta → Jen jádro nosných, Exportovat IFC a otevřít v BIMvision (Pset_WallCommon
+  u stěny i typu, skladba).
+- **Další:** stěny Z8 – výkazy a popisky (výkaz stěn, značka typu, legenda skladeb; plán stěn, část 3).
 
 ## Otevřené
 
+- Z7: hledání a výběr podle vlastností (nosná, funkce) v Najít a vybrat a pravidla grafiky podle
+  vlastností (např. nosné stěny tučněji) – patří k Z9 a k přepisům vzhledu. Součinitel prostupu tepla
+  (ThermalTransmittance) se zatím nepočítá – přijde s výpočty skladby.
 - Šrafy podle ČSN 01 3406 (k rozhodnutí): převládající hmota bez šrafy (předvolba pravidla ve stylu),
   tenké vrstvy (hydroizolace, plech) vyčernit automaticky pod danou tloušťkou na papíře, sousední
   konstrukce ze stejného materiálu se šrafou otočenou o 90°.
@@ -302,14 +342,14 @@ Velikost šraf (2026-11-25):
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po stěnách Z6)
+## Největší soubory (po stěnách Z7)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (487 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (505 souborů).
 
 | Řádky | Soubor |
 |---|---|
 | 247 | apps/sandbox/src/session/session.ts |
 | 236 | apps/sandbox/src/render/overlay.ts |
-| 234 | apps/sandbox/src/interaction/tools/wall-tool.ts |
-| 231 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
+| 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |
+| 232 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
 | 227 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
