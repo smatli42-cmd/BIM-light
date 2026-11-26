@@ -9,6 +9,7 @@ import {
   endPoint,
   leftNormal,
   mul,
+  nearestOnPath,
   norm,
   offsetPath,
   pointAt,
@@ -100,9 +101,12 @@ function linearLayout(model: Model, d: LinearDimension, ext: Ext, k: number, pap
   const fa = facePath(model, d.refs[0]);
   const pA = pointAt(fa, 0.5);
   const base = add(pA, mul(tangentAt(fa, 'start'), d.offset));
-  const cb = carrierOf(facePath(model, d.refs[1]));
-  const pB = projectOnCarrier(base, cb);
-  return straight(base, pB, [ext(pA, base), ext(projectOnCarrier(pA, cb), pB)].filter(kept), k, paper);
+  const fb = facePath(model, d.refs[1]);
+  const pB = projectOnCarrier(base, carrierOf(fb));
+  // Odkazová čára začíná v bodě líce nejblíž kótovací čáře (u konce líce), ne uprostřed líce – jinak by
+  // kóta k líci kolmé stěny (kóta celé stěny) táhla čáru přes celý dům (oprava 2026-11-26).
+  const [sA, sB] = [nearestOnPath(fa, base).point, nearestOnPath(fb, pB).point];
+  return straight(base, pB, [ext(sA, base), ext(sB, pB)].filter(kept), k, paper);
 }
 
 /** Tětiva oblouku: čára rovnoběžná s tětivou, odsazená o `offset` doleva. */
