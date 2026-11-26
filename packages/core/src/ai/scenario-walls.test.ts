@@ -213,4 +213,15 @@ describe('AI scénář: stěny (plán stěn Z1–Z5, Z7, Z8)', () => {
       /^Značka;Typ;/,
     );
   });
+
+  it('značky typu přes AI: označit vše, posunout na druhou stranu, změna značky typu (plán stěn Z8)', () => {
+    const c = start();
+    room(c);
+    expect(c.ai.call<string[]>('wallTag.tagAll', { viewId: c.viewId })).toHaveLength(4);
+    c.ai.call('wallType.setMark', { typeId: c.typeId, mark: 'Z1' });
+    const tags = c.ai.call<{ id: string; mark: string }[]>('wallTag.list', { viewId: c.viewId });
+    expect(tags.map((t) => t.mark)).toEqual(['Z1', 'Z1', 'Z1', 'Z1']);
+    c.ai.call('wallTag.move', { tagId: tags[0]!.id, side: 'opp', position: 0.25 });
+    expect(c.ai.call<{ side: string }[]>('wallTag.list', { viewId: c.viewId })[0]?.side).toBe('opp');
+  });
 });

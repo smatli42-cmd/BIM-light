@@ -10,6 +10,7 @@ import { viewInfo } from './views.ts';
 import { wallGet, wallList } from './walls.ts';
 import { wallPropertiesQuery } from './wall-properties.ts';
 import { scheduleFields, scheduleList, scheduleTable } from './schedules.ts';
+import { wallTagList } from './tags.ts';
 import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 
 export const CORE_QUERIES = [
@@ -30,4 +31,5 @@ export const CORE_QUERIES = [
   scheduleList,
   scheduleFields,
   scheduleTable,
+  wallTagList,
 ];

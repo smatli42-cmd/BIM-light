@@ -9,6 +9,7 @@ export * from './wall/index.ts';
 export * from './wall-type/index.ts';
 export * from './wall-props/index.ts';
 export * from './schedule/index.ts';
+export * from './tag/index.ts';
 export * from './wall-height/index.ts';
 export * from './opening/index.ts';
 export * from './relation/index.ts';

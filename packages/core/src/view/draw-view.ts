@@ -20,6 +20,7 @@ import type { Hatch } from '../hatch/types.ts';
 import type { View } from './types.ts';
 import { wallProperties } from '../wall-props/resolve.ts';
 import { drawOpening, openingFacts } from '../opening/draw.ts';
+import { drawWallTag, tagFacts } from '../tag/draw.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -89,6 +90,17 @@ function drawOpenings(model: Model, view: View, structure: Structure): Primitive
   return out;
 }
 
+/** Značky typu stěn podlaží (Z8): viditelnost podle skupiny anotací, stěna musí být vidět. */
+function drawTags(model: Model, view: View): Primitive[] {
+  const hidden = visibleWalls(model, view).hidden;
+  return Object.values(model.wallTags).flatMap((t) => {
+    if (t.storeyId !== view.storeyId || hidden.has(t.wallId)) return [];
+    if (!layerState(model.display, view, t.annotationLayerId).visible) return [];
+    const g = resolveGraphics(model.display, view, tagFacts(t)).effect;
+    return drawWallTag(model, t, view.scale, model.display.paperSizes, g);
+  });
+}
+
 /** Volby zobrazení okna (ne data pohledu): průchozí materiál (výchozí zapnuto). */
 export interface DrawOptions {
   readonly mergeMaterials?: boolean;
@@ -106,6 +118,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;
     out.push(...drawDimension(model, d, view.scale, model.display.paperSizes, g));
   }
+  out.push(...drawTags(model, view));
   return { scale: view.scale, primitives: out };
 }
 

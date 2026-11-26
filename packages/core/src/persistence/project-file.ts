@@ -14,6 +14,7 @@ import { projectV10toV11 } from '../style/migrate-v3.ts';
 import { projectV11toV12 } from '../view/migrate-v11.ts';
 import { projectV12toV13 } from '../wall-props/migrate-v12.ts';
 import { projectV13toV14 } from '../schedule/migrate-v13.ts';
+import { projectV14toV15 } from '../tag/migrate-v14.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -26,7 +27,7 @@ export const PROJECT_EXTENSION = '.bim';
  * 4 → 5: vršek „podlaží + N“ a horní profil stěny (Z3); 5 → 6: měřítko šraf a odvozené šrafy;
  * 6 → 7: otvory a rovina řezu pohledu (Z4); 10 → 11: konce stěn a značka osy v grafice (Z6);
  * 11 → 12: filtr rekonstrukce pohledu; 12 → 13: vlastnosti typů stěn (Z7);
- * 13 → 14: značky typů a výkazy (Z8).
+ * 13 → 14: značky typů a výkazy (Z8); 14 → 15: značky typu stěn v půdorysu (Z8).
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -42,6 +43,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   11: projectV11toV12,
   12: projectV12toV13,
   13: projectV13toV14,
+  14: projectV14toV15,
 };
 
 export function serializeProject(model: Model): string {

@@ -3,13 +3,13 @@
 // Nový typ prvku = nový řádek tabulky.
 import type { WallEdge } from '../wall/edges.ts';
 
-export type ElementKind = 'wall' | 'opening' | 'dimension';
+export type ElementKind = 'wall' | 'opening' | 'dimension' | 'tag';
 
 /** Druhy bodů a čar pro přichytávání (katalog kreslení, část 2, pořadí priorit). */
 export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'center' | 'quadrant' | 'face' | 'axis';
 
 /** Co se při smazání prvku smaže s ním. */
-export type DeleteCascade = 'dimensions' | 'connections' | 'openings';
+export type DeleteCascade = 'dimensions' | 'connections' | 'openings' | 'tags';
 
 export interface CrossRules {
   /** Na co jde navázat kóta (líce, osa, čela volných konců). */
@@ -44,7 +44,7 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     movable: true,
     offsettable: true,
     deletable: true,
-    onDelete: ['dimensions', 'connections', 'openings'],
+    onDelete: ['dimensions', 'connections', 'openings', 'tags'],
     hosts: ['wall', 'opening'],
     selectable: true,
   },
@@ -73,6 +73,20 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     onDelete: [],
     hosts: [],
     selectable: true,
+  },
+  /** Značka typu stěny (Z8): jde se stěnou (poloha je vázaná na stěnu), maže se příkazem. */
+  tag: {
+    dimensionFaces: [],
+    lengthDimension: false,
+    angularDimension: false,
+    lockable: false,
+    snaps: [],
+    movable: false,
+    offsettable: false,
+    deletable: true,
+    onDelete: [],
+    hosts: [],
+    selectable: false,
   },
 };
 

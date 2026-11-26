@@ -68,5 +68,6 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     display,
     views: { [view.id]: view },
     schedules: defaultSchedules(),
+    wallTags: {},
   };
 }

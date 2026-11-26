@@ -50,5 +50,9 @@ export function deleteElements(model: Model, ids: readonly Id[]): Model {
       dims.map((d) => d.id),
     );
   }
+  if (cascade.has('tags')) {
+    const wallTags = Object.fromEntries(Object.entries(m.wallTags).filter(([, t]) => !gone.has(t.wallId)));
+    m = { ...m, wallTags };
+  }
   return m;
 }

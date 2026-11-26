@@ -10,9 +10,10 @@ import type { View } from '../view/types.ts';
 import type { Opening } from '../opening/types.ts';
 import type { Category } from './categories.ts';
 import type { ScheduleDef } from '../schedule/types.ts';
+import type { WallTag } from '../tag/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -113,4 +114,6 @@ export interface Model {
   readonly views: Readonly<Record<Id, View>>;
   /** Výkazy a legendy (základ 8, plán stěn Z8): definice tabulek z modelu. */
   readonly schedules: Readonly<Record<Id, ScheduleDef>>;
+  /** Značky typu stěn v půdorysu (plán stěn Z8): popisky podlaží se skupinou anotací (základ 28). */
+  readonly wallTags: Readonly<Record<Id, WallTag>>;
 }
