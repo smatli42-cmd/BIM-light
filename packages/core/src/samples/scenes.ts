@@ -59,8 +59,8 @@ export const SCENES: readonly Sample[] = [
     kind: 'scena',
     date: '2026-11-26',
     description:
-      'Vyber spodní stěnu, pravé tlačítko → „Okótovat celou stěnu se všemi stěnami“: řetěz s tloušťkami ' +
-      'rohových stěn, okny a příčkami a pod ním celková délka. Levá stěna je už okótovaná.',
+      'Nástroj Kóta (D) → v info boxu „Celou stěnu“ (+ i šířky všech stěn) → klik na spodní stěnu, druhý ' +
+      'klik položí řetěz s tloušťkami rohů, okny a příčkami. Totéž z pravého tlačítka na stěně. Levá je hotová.',
     build(c) {
       const [, , bottom, left] = rect(c, 'Obvodová zateplená 465', 12000, 8000, 'new');
       for (const x of [4000, 8000]) c.line(vec(x, 0), vec(x, 8000), { typeId: c.type('Příčka 125') });

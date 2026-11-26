@@ -10,6 +10,7 @@ import {
   type FaceRef,
 } from '@bim-light/core';
 import { FACE_PX, type Session } from '../../session/session.ts';
+import { WholeWallPick } from './whole-wall-pick.ts';
 import { commitDrafts, draftOf, placeDrafts, type DraftItem, type Placed } from '../placing.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
 
@@ -44,11 +45,20 @@ export class DimensionTool implements Tool {
   private placed: Placed | null = null;
   /** Poloměr / průměr: první klik na oblouk, druhý do volna (hlášení uživatele 2026-11-26). */
   private radial: DraftItem | null = null;
+  private readonly whole: WholeWallPick;
   private hover: FaceHit | null = null;
 
-  constructor(private readonly s: Session) {}
+  constructor(private readonly s: Session) {
+    this.whole = new WholeWallPick(s);
+  }
+
+  /** Režim „Celou stěnu“ (volba v info boxu nástroje). */
+  private get wallMode(): boolean {
+    return this.s.options.dimPick === 'wall';
+  }
 
   hint(): string {
+    if (this.wallMode) return this.whole.hint();
     if (!this.prev) return 'Klikni na první líc, čelo volného konce nebo hranu otvoru (tolerance 12 px).';
     if (this.radial && !this.items.length)
       return 'Klik do volna = poloměr / průměr (volba v info boxu); druhý líc nebo hrana = vzdálenost.';
@@ -65,6 +75,7 @@ export class DimensionTool implements Tool {
   }
 
   move(p: PointerInfo) {
+    if (this.wallMode) return this.whole.move(p);
     this.hover = this.face(p);
     if (this.radial && !this.items.length)
       this.placed = placeDrafts(this.s, [draftOf(this.radial, 0, this.s.storeyId)], p.world, true);
@@ -73,6 +84,10 @@ export class DimensionTool implements Tool {
   }
 
   down(p: PointerInfo) {
+    if (this.wallMode) {
+      this.whole.down(p);
+      return;
+    }
     const f = p.button === 0 ? this.face(p) : null;
     if (!f) {
       if (this.items.length) this.finish(p);
@@ -138,12 +153,14 @@ export class DimensionTool implements Tool {
   }
 
   escape(): boolean {
+    if (this.wallMode) return this.whole.escape();
     if (!this.prev) return false;
     this.finish(null);
     return true;
   }
 
   overlay(): Overlay {
+    if (this.wallMode) return this.whole.overlay();
     const faces = [...this.used];
     if (this.hover) faces.push(refOf(this.hover));
     const pl = this.placed;

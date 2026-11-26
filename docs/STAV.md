@@ -12,7 +12,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - `dimension.wholeWall` s `walls: true` (Revit „Entire Walls – Intersecting Walls“, Archicad automatické
   kótování): řetěz obsahuje i tloušťky rohových stěn na koncích a oba líce napojených příček a křížících
   stěn, seřazené podél stěny; pod ním celková délka. Nabídka stěny i otvoru (pravé tlačítko): „Okótovat
-  celou stěnu“ (jen otvory) a „Okótovat celou stěnu se všemi stěnami“. Jen přímé stěny (u oblouku zatím
+  celou stěnu“ (jen otvory) a „Okótovat celou stěnu se všemi stěnami“. Také přímo v nástroji Kóta
+  (připomínka uživatele: pravé tlačítko není intuitivní; jako Revit „Vybrat: celé stěny“): info box
+  → Co kótovat: Líce a hrany / Celou stěnu, „i šířky všech stěn“; klik na stěnu u líce, řetěz se nese na
+  myši, druhý klik ho položí (`interaction/tools/whole-wall-pick.ts`). Jen přímé stěny (u oblouku zatím
   jen otvory). Ukázkový dům je okótovaný takto. Testy `dimension/whole-wall-walls.test.ts`, e2e `otvory`.
 
 ### Oprava kótování oblouků, 2026-11-26 (druhé hlášení uživatele; scéna `?ukazka=koty`)

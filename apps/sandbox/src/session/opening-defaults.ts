@@ -39,4 +39,8 @@ export const TOOL_OPTIONS = {
   splitGap: 0,
   /** Kóta oblouku nástrojem Kóta (klik na oblouk a do volna): poloměr R, nebo průměr ⌀. */
   arcDim: 'radius' as 'radius' | 'diameter',
+  /** Nástroj Kóta: kótovat líce a hrany jednotlivě, nebo celou stěnu (Revit „Celé stěny“). */
+  dimPick: 'faces' as 'faces' | 'wall',
+  /** Celá stěna i se šířkami všech stěn (rohy, příčky). */
+  dimWalls: true,
 };

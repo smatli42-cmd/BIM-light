@@ -112,31 +112,61 @@ export function CommandOptions({ s }: { s: Session }) {
   );
 }
 
-/** Nástroj Kóta: jak se kótuje oblouk kliknutím na líc a do volna (poloměr R / průměr ⌀). */
-export function DimensionOptions({ s }: { s: Session }) {
-  const set = (v: 'radius' | 'diameter') => ((s.options.arcDim = v), s.changed());
+type Opt<T> = { value: T; label: string; testid: string };
+
+function Radios<T extends string>(p: { name: string; value: T; options: Opt<T>[]; onPick: (v: T) => void }) {
   return (
-    <Section title="Kóta oblouku" info="Klik na líc obloukové stěny a pak do volného místa vloží tuto kótu.">
-      <label class="check">
-        <input
-          type="radio"
-          name="arc-dim"
-          data-testid="arc-dim-radius"
-          checked={s.options.arcDim === 'radius'}
-          onChange={() => set('radius')}
-        />
-        Poloměr (R)
-      </label>
-      <label class="check">
-        <input
-          type="radio"
-          name="arc-dim"
-          data-testid="arc-dim-diameter"
-          checked={s.options.arcDim === 'diameter'}
-          onChange={() => set('diameter')}
-        />
-        Průměr (⌀)
-      </label>
-    </Section>
+    <>
+      {p.options.map((o) => (
+        <label class="check" key={o.value}>
+          <input
+            type="radio"
+            name={p.name}
+            data-testid={o.testid}
+            checked={p.value === o.value}
+            onChange={() => p.onPick(o.value)}
+          />
+          {o.label}
+        </label>
+      ))}
+    </>
+  );
+}
+
+const PICK: Opt<'faces' | 'wall'>[] = [
+  { value: 'faces', label: 'Líce a hrany (jednotlivě)', testid: 'dim-pick-faces' },
+  { value: 'wall', label: 'Celou stěnu (řetěz)', testid: 'dim-pick-wall' },
+];
+const ARC: Opt<'radius' | 'diameter'>[] = [
+  { value: 'radius', label: 'Poloměr (R)', testid: 'arc-dim-radius' },
+  { value: 'diameter', label: 'Průměr (⌀)', testid: 'arc-dim-diameter' },
+];
+
+/** Nástroj Kóta: co se kótuje (Revit „Vybrat: jednotlivé reference / celé stěny“) a kóta oblouku. */
+export function DimensionOptions({ s }: { s: Session }) {
+  const set = (fn: () => void) => (fn(), s.changed());
+  const o = s.options;
+  return (
+    <>
+      <Section title="Co kótovat" info="Celou stěnu: klik na stěnu u líce, druhý klik položí řetěz.">
+        <Radios name="dim-pick" value={o.dimPick} options={PICK} onPick={(v) => set(() => (o.dimPick = v))} />
+        {o.dimPick === 'wall' && (
+          <Check
+            label="i šířky všech stěn (rohy, příčky)"
+            testid="dim-walls"
+            checked={o.dimWalls}
+            onSet={(v) => set(() => (o.dimWalls = v))}
+          />
+        )}
+      </Section>
+      {o.dimPick === 'faces' && (
+        <Section
+          title="Kóta oblouku"
+          info="Klik na líc obloukové stěny a pak do volného místa vloží tuto kótu."
+        >
+          <Radios name="arc-dim" value={o.arcDim} options={ARC} onPick={(v) => set(() => (o.arcDim = v))} />
+        </Section>
+      )}
+    </>
   );
 }
