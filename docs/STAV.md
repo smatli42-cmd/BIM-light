@@ -256,9 +256,10 @@ Velikost šraf (2026-11-25):
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2–UI4 (info box, Obsah a pohledy, Najít a vybrat, spodní lišta, dvě okna,
   trasování, vrstvy, izolovat / odhalit, pera).
-- Uživatel vyzkouší UI5 (paleta u uzlu a hrany, karta prvku, tracker, Změnit velikost, lekce) a stěny Z6
-  (stěna v řezu / pod / nad rovinou, podrobnosti, fáze, konstrukční zobrazení, „proč“ v panelu stěny).
-- Potom uživatel rozpracuje kroky stěn Z7–Z10 (podle plánu stěn, část 7).
+- UI5, stěny Z6 a rekonstrukce (filtr rekonstrukce, stav nových prvků) uživatel vyzkoušel 2026-11-26:
+  „vše funguje“ (po opravě mezery v plánovaném stavu).
+- **Další:** uživatel zadá nový pokyn v nové session; podle plánu na řadě rozpracování kroků stěn Z7–Z10
+  (plán stěn, část 7) – zadání dodá uživatel.
 
 ## Otevřené
 
@@ -282,6 +283,10 @@ Velikost šraf (2026-11-25):
 - UI2: metody natočený obdélník a oblouk středem (jsou ve vzoru) zatím nejsou; tracker u tečného oblouku
   a oblouku bodem jen ukazuje poloměr a úhel (číslo napsat nejde); rychlý výběr typu zatím jen u Stěny.
 - Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).
+- Úprava vzhledu fází (2026-11-26, odloženo uživatelem): vzhled je v pravidlech grafiky projektu (data,
+  ne kód), okno na úpravu zatím není. Návrh: „Fáze › Upravit fáze…“ – tabulka stav × fáze (zobrazit /
+  skrýt, barva a typ čáry, výplň, šrafa) jako Renovation Filter Options v Archicadu; udělat spolu
+  s návrhem přepisů vzhledu.
 - Přepisy vzhledu (pravidla grafiky, vlastní styly) – uživatel je ještě promýšlí; rozhraní pro ně se
   navrhne zvlášť (koncepce rozhraní, část 4).
 - Oblouk se zatím nedá kreslit „středem a poloměrem“ ani zadat tětivu číslem po zadání konce (jen při
