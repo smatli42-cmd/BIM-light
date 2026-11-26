@@ -1,11 +1,35 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z7 – vlastnosti stěny a úplný IFC.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z8 – výkazy, legenda skladeb a značky typu.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Stěny Z8: výkazy, legenda skladeb a značka typu, 2026-11-26 (plán stěn, část 3)
+- **Výkazy jako jeden obecný mechanismus** (základ 8, `packages/core/src/schedule/`): definice výkazu jsou
+  data v projektu (zdroj, sloupce, seskupení, po prvcích / součty, řazení, filtr podlaží / stavů / variant,
+  mez odečtu otvorů); tabulka se vždy spočítá z modelu. Zdroje: **stěny**, **vrstvy stěn** (výkaz materiálů),
+  **typy stěn** (legenda skladeb). Hodnoty se zaokrouhlí na řádku, součty tedy sedí s ručním přepočtem.
+- **Výměry z geometrie po napojení** (`schedule/quantities.ts`): délka osy, výška, plocha hrubá / otvory /
+  čistá, objem = plocha obrysu vrstev v půdorysu × výška − otvory a niky. Ověřeno ručně: stěna 4 × 3 m
+  s oknem 1,2 × 1,5 → 12 / 1,8 / 10,2 m², 3,06 m³; místnost 4 × 3 m zdivo 300 ven → osa 15,2 m, 13,68 m³.
+- **Pravidlo odečtu otvorů** (sekce 9): otvory do zadané plochy (m²) se z ploch neodečítají, z objemu ano.
+- Výchozí výkazy projektu: **Výkaz stěn** (podle typu), **Výkaz materiálů stěn** (podle materiálu),
+  **Legenda skladeb** (značka, typ, tloušťka, skladba, funkce, nosná, požární odolnost; jen použité typy).
+- **Značka typu** (`WallType.mark`, S1, S2…): nový typ dostane volnou, příkaz `wallType.setMark`, pole Značka
+  v záložce Typ. **Značka typu v půdorysu** (`tag/`, model `wallTags`): kroužek se značkou u referenčního
+  nebo protilehlého líce nebo na stěně; patří podlaží a skupině anotací (základ 28), jde se stěnou, smaže se
+  se stěnou (tabulka průřezových pravidel), velikost z „popis“ na papíře (základ 29).
+- Příkazy `schedule.create / update / delete`, `wallTag.create / tagAll / move / delete`; dotazy
+  `schedule.list`, `schedule.fields`, `schedule.table` (i CSV), `wallTag.list`; kroky scénáře AI.
+- **Rozhraní:** Obsah → Projekt → **Výkazy** (seznam, + Nový výkaz ze zvoleného zdroje); okno výkazu
+  s tabulkou, nastavením (název, seskupení, po prvcích, stav, mez otvorů / jen použité typy, sloupce),
+  **Exportovat CSV** (středník, desetinná čárka, pro Excel) a Smazat. Info box stěny: sekce **Popis**
+  (značka typu zap./vyp., poloha); nástroj Výběr bez výběru: **Označit všechny stěny**.
+- Schéma projektu 13 → 14 (značky typů S1… a výchozí výkazy), 14 → 15 (značky v půdorysu).
+- Testy: jádro a nástroje 763, prohlížeč 143 (`vykazy.spec.ts`, `znacky.spec.ts`).
 
 ### Stěny Z7: vlastnosti stěny a úplný IFC, 2026-11-26 (plán stěn, část 3)
 - **Vlastnosti stěny** (`packages/core/src/wall-props/`): funkce (obvodová / vnitřní / příčka / základová /
@@ -177,7 +201,7 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 ### Stěny: Z1, Z2, Z3, Z4, Z5, Z6 hotovo (podrobnosti v `docs/STAV-steny.md`)
 - Z1 typ a skladba (2026-11-24), Z2 napojování vrstev (2026-11-24), Z3 výška a IFC (2026-11-24),
   Z4 otvory (2026-11-25), Z5 oblouk (2026-11-25), **Z6 kresba v půdorysu (2026-11-26)**,
-  **Z7 vlastnosti a úplný IFC (2026-11-26, výše)**. Kroky Z8–Z10 podle plánu stěn, část 3.
+  **Z7 vlastnosti a úplný IFC**, **Z8 výkazy a popisky (2026-11-26, výše)**. Kroky Z9–Z10 podle plánu.
 
 ### Šrafy podle ČSN 01 3420 (grafické označení hmot): hotovo, 2026-11-24
 - **Nový druh rodiny „motiv“** (`hatch/motif.ts`): křivky (lomené / vyhlazené, otevřené / uzavřené) v mm
@@ -225,6 +249,17 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 - Šrafy v knihovně mají verzi 3; uložené projekty si drží své kopie (základ 21).
 
 ## Rozhodl Code (k potvrzení)
+
+- **Z8 výkazy:** délka stěny = délka osy po napojení (Revit měří po ose napojené stěny); plocha boku =
+  délka osy × výška; niky se z ploch neodečítají (jen z objemu). Výchozí mez odečtu otvorů 0 (odečíst
+  vše jako Revit); českou zvyklost (např. do 0,25 m²) jde nastavit u výkazu. Plocha vrstvy = objem / tloušťka,
+  takže omítka obalená kolem volného konce má plochu i s čelem. Výkaz bere pás typu v rovině řezu
+  (vícepásové typy zatím jako jeden pás); prodloužení vrstev nahoru / dolů se nezapočítává.
+- **Okno výkazu** je zatím dialog nad výkresem (jako výkaz v Revitu, ale ne v záložce okna); na výkres
+  (list) se výkazy vloží s etapou 7. Prosím o screenshot výkazu / legendy z Arditu – podle něj doladím vzhled.
+- **Značka typu v půdorysu:** výchozí poloha uprostřed stěny u referenčního (vnitřního) líce; kroužek
+  o poloměru 1,25 × výška popisu. Značka zatím nejde vybrat a táhnout myší – poloha a strana se mění v info
+  boxu stěny (a příkazem `wallTag.move`). Nový typ dostane první volnou značku S1, S2…
 
 - **Z7 vlastnosti:** hodnoty na typu + přepis u stěny (Revit), ne jen u instance (Archicad) – typ se
   vyplní jednou. Funkce a „vnější“ jsou nezávislé (obvodová funkce „vnější“ sama nezaškrtne).
@@ -293,13 +328,22 @@ Velikost šraf (2026-11-25):
   trasování, vrstvy, izolovat / odhalit, pera).
 - UI5, stěny Z6 a rekonstrukce (filtr rekonstrukce, stav nových prvků) uživatel vyzkoušel 2026-11-26:
   „vše funguje“ (po opravě mezery v plánovaném stavu).
+- **Uživatel vyzkouší Z8:** Obsah → Projekt → Výkazy → Výkaz stěn (přepočítá se po změně stěn), Výkaz
+  materiálů, Legenda skladeb, + Nový výkaz, Exportovat CSV a otevřít v Excelu; vybrat stěnu → Popis →
+  Značka typu v půdorysu; Výběr bez výběru → Označit všechny stěny; přepočet výkazu ručně na pilotním projektu.
 - **Uživatel vyzkouší Z7:** vybrat stěnu → info box Vlastnosti (nosná, požární odolnost), záložka Typ →
   Vlastnosti typu, spodní lišta → Jen jádro nosných, Exportovat IFC a otevřít v BIMvision (Pset_WallCommon
   u stěny i typu, skladba).
-- **Další:** stěny Z8 – výkazy a popisky (výkaz stěn, značka typu, legenda skladeb; plán stěn, část 3).
+- **Další:** stěny Z9 – pohodlí úprav (hromadná změna typu, kopírování vlastností, výběr stejných, rozdělení
+  s mezerou, sloučení stěn v přímce; plán stěn, část 3).
 
 ## Otevřené
 
+- `STAV.md` má 35 KB (limit ~40 KB): návrh rozdělení – sekce „Rozhraní UI1–UI5“ a „Šrafy“ z Hotovo
+  přesunout do `docs/STAV-rozhrani.md` a `docs/STAV-srafy.md` (jako `STAV-steny.md`); čeká na souhlas.
+- Z8: výběr a tažení značky typu myší (dnes jen info box a příkaz); legenda skladeb jako kresba (řez
+  skladbou se šrafami) na výkrese – s etapou 7 (listy); výkaz ve vlastní záložce okna; export XLSX
+  (dnes CSV); výkazy po variantách vedle sebe (porovnání A / B).
 - Z7: hledání a výběr podle vlastností (nosná, funkce) v Najít a vybrat a pravidla grafiky podle
   vlastností (např. nosné stěny tučněji) – patří k Z9 a k přepisům vzhledu. Součinitel prostupu tepla
   (ThermalTransmittance) se zatím nepočítá – přijde s výpočty skladby.
@@ -342,9 +386,9 @@ Velikost šraf (2026-11-25):
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po stěnách Z7)
+## Největší soubory (po stěnách Z8)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (505 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (534 souborů).
 
 | Řádky | Soubor |
 |---|---|
@@ -352,4 +396,4 @@ Výstup `npm run check:size`: varování 0, chyb 0 (505 souborů).
 | 236 | apps/sandbox/src/render/overlay.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |
 | 232 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
-| 227 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
+| 227 | packages/core/src/ai/scenario-walls.test.ts |
