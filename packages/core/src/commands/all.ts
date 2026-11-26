@@ -55,6 +55,7 @@ import {
 import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
 import { wallSplit } from './wall/split.ts';
 import { wallMatchProperties } from './wall/match.ts';
+import { wallDemolishPart } from './wall/demolish.ts';
 import { wallDeleteNode } from './wall/merge.ts';
 import { selectionDelete } from './edit/delete.ts';
 import { openingCreate } from './opening/create.ts';
@@ -104,6 +105,7 @@ export const CORE_COMMANDS = [
   wallSetProperties,
   wallSplit,
   wallMatchProperties,
+  wallDemolishPart,
   wallDeleteNode,
   selectionDelete,
   wallConnect,

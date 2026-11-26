@@ -10,6 +10,7 @@ export interface WallRow {
   id: string;
   length: number;
   thickness: number;
+  status?: string;
   ends: { start: string; end: string };
   connections: { own: string; otherWallId: string; other: string }[];
 }

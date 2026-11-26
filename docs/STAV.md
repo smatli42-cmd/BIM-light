@@ -1,12 +1,23 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z9 – pohodlí úprav.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z10 – rekonstrukce a kontroly (bez importu a kouzelné hůlky).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Stěny Z10: rekonstrukce a kontroly, 2026-11-26 (plán stěn, část 3; bez importu a kouzelné hůlky)
+- **Probourání a zazdívka** = otvor se stavem: otvor, který filtr rekonstrukce skryje, stěnu v kresbě
+  nevyřízne (`view/visible-walls.ts`). Nový otvor ve stávající stěně: ve stávajícím stavu stěna celá,
+  v novém stavu otvor; bouraný otvor (zazdívka): ve stávajícím stavu otvor, v plánovaném stavu stěna celá.
+- **Vybourat úsek stěny**: příkaz `wall.demolishPart` (rozdělí ve dvou bodech, prostřední část „bourání“,
+  jeden krok Zpět). V rozhraní zatím ručně: Rozdělit dvakrát + stav (viz Otevřené).
+- **Kontrola modelu**: dotaz `model.check` (`check/walls.ts`) – překrývající se stěny (bourání + nová na
+  stejném místě nevadí), nenapojený konec u jiné stěny, stěna kratší než mez (100 mm). Info box nástroje
+  Výběr bez výběru → Kontrola → „Zkontrolovat podlaží“; klik na varování vybere stěny. Jen varuje.
+- Testy `view/phase-openings.test.ts`, `check/check.test.ts`, scénář AI, e2e `kontrola.spec.ts`.
 
 ### Stěny Z9: pohodlí úprav, 2026-11-26 (plán stěn, část 3)
 - **Pipeta** (Revit Match Type, Archicad pipeta a stříkačka): příkaz `wall.matchProperties` – typ, výška
@@ -153,6 +164,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Z10:** probourání a zazdívka jsou otvor se stavem (žádný nový druh prvku); v Bouracích pracích se
+  zatím neukáže vybouraná část stěny v místě probourání žlutě ani zazdívka v novém stavu červeně – stěna je
+  jen celá / s otvorem. Kontrola: „nenapojený konec“ = volný konec blíž k referenční čáře jiné stěny než
+  její tloušťka + 100 mm; překryv jen u přímých rovnoběžných stěn (oblouky zatím ne); mezery v obrysu
+  místnosti až s místnostmi. Import ze zaměřování a kouzelná hůlka čekají na etapu 3 (otázka G).
+
 - **Z9 pipeta:** výchozí přenos = typ, výška a vlastnosti (jako Archicad bez stavu); stav rekonstrukce
   jen na vyžádání (`include: ['status']`, v info boxu zatím ne). Spodní podlaží a poloha cílové stěny se
   nemění. Zdroj pipety se pamatuje jen do obnovení stránky. Výběr stejných výchozí „stejný typ na podlaží“
@@ -201,7 +218,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   ji pak sdílí), upravit vrstvu a zkontrolovat druhý typ, Použít pro.
 - **Uživatel vyzkouší Z9:** vybrat stěnu → Úpravy → Nasát vlastnosti, vybrat jinou → Přenést; Úpravy →
   Vybrat stejné; nástroj Rozdělit s mezerou (Volby příkazu → mezera).
-- **Další:** stěny Z10 – rekonstrukce a kontroly (plán stěn, část 3).
+- **Uživatel vyzkouší Z10:** stávající stěna s novým otvorem (Otvor, stav nových prvků „Nový“) a filtr
+  rekonstrukce Stávající / Nový stav; Kontrola v info boxu (dvě překrývající se stěny, příčka 5 cm od zdi).
+- **Další:** podle `docs/postup-etapy-bim-light.md` (stěny Z1–Z10 hotové kromě importu ze zaměřování
+  a kouzelné hůlky, které čekají na etapu 3) – navrhnu další etapu, nebo desky (otázka E plánu stěn).
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
@@ -220,6 +240,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
+- **Z10 zbývá:** kresba probourání v Bouracích pracích (vybouraná část stěny žlutě) a zazdívky v novém
+  stavu (výplň jako nová konstrukce), nástroj „Vybourat úsek“ v rozhraní (dva kliky na stěnu), kontrola
+  překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze zaměřování a kouzelná hůlka (etapa 3).
 - **Skladby – další:** výpočty u skladby podle vzoru Arditu (U, R, plošná hmotnost, CO₂e, cena,
   kondenzace, Rw) – vyžadují vlastnosti materiálů (λ, hustota…); seznam samotných skladeb (bez typu)
   v okně a jejich přímé zakládání; desky a střechy skladby použijí, až budou.

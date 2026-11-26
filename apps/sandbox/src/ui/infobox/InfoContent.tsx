@@ -8,6 +8,7 @@ import type { Session } from '../../session/session.ts';
 import { OpeningPanel } from '../OpeningPanel.tsx';
 import { CommandOptions, SelectOptions } from './ToolOptions.tsx';
 import { TagAllSection } from './WallTags.tsx';
+import { ModelCheckSection } from './ModelCheck.tsx';
 import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
 
 const COMMANDS: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'align', 'trim', 'split'];
@@ -43,6 +44,7 @@ export function InfoContent({ s }: { s: Session }) {
     <>
       <SelectOptions s={s} />
       <TagAllSection s={s} />
+      <ModelCheckSection s={s} />
     </>
   );
 }
