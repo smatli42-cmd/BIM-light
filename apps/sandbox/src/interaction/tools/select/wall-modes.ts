@@ -15,6 +15,7 @@ import {
   type Vec2,
   type WallFace,
 } from '@bim-light/core';
+import { splitGap } from '../../../session/opening-defaults.ts';
 import type { Session } from '../../../session/session.ts';
 import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
 import { ClickOrDrag } from './click-or-drag.ts';
@@ -93,7 +94,7 @@ export class AddPointMode extends ClickOrDrag {
 
   protected finish() {
     this.done();
-    if (this.at) this.s.run('wall.split', { wallId: this.wallId, point: this.at });
+    if (this.at) this.s.run('wall.split', { wallId: this.wallId, point: this.at, ...splitGap(this.s) });
   }
 
   overlay(): Overlay {

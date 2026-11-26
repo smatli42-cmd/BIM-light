@@ -13,6 +13,7 @@ import { NewStatusField } from './NewStatus.tsx';
 import { WallDisplay } from './WallDisplay.tsx';
 import { TypePropsSection, WallPropsSection } from './WallProps.tsx';
 import { WallTagSection } from './WallTags.tsx';
+import { WallEditsSection } from './WallEdits.tsx';
 
 /** Záložka Typ: přehled skladby a otevření okna Editor typů (úprava vrstev). */
 function TypeTab({ s, type }: { s: Session; type: WallType }) {
@@ -122,6 +123,7 @@ function SelectedInstance({ s, walls }: { s: Session; walls: Wall[] }) {
       </Section>
       <WallPropsSection s={s} walls={walls} />
       <WallTagSection s={s} walls={walls} />
+      <WallEditsSection s={s} walls={walls} />
       <WallDisplay s={s} walls={walls} />
     </>
   );

@@ -97,6 +97,17 @@ export function CommandOptions({ s }: { s: Session }) {
         checked={s.options.arrayRadial}
         onSet={(v) => set(() => (s.options.arrayRadial = v))}
       />
+      <label>
+        Rozdělit – mezera (mm)
+        <input
+          data-testid="opt-split-gap"
+          type="number"
+          min={0}
+          step={10}
+          value={s.options.splitGap}
+          onInput={(e) => set(() => (s.options.splitGap = Math.max(0, Number(e.currentTarget.value) || 0)))}
+        />
+      </label>
     </Section>
   );
 }

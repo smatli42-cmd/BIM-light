@@ -43,36 +43,61 @@ function reassign(model: Model, a: Wall, b: Wall, tSplit: number): WallConnectio
   return out;
 }
 
-export const wallSplit = defineCommand<{ wallId: Id; point: Vec2 }>({
+/** Části dráhy před a za rozdělením; s mezerou `gap` (mm) se mezi nimi vynechá úsek. */
+function parts(w: Wall, sSplit: number, gap: number): [Wall['path'], Wall['path'], number] {
+  const len = pathLength(w.path);
+  const [s0, s1] = [sSplit - gap / 2, sSplit + gap / 2];
+  if (s0 < 1 || s1 > len - 1) fail('invalid', 'Mezera je delší než stěna po obou stranách bodu');
+  const [pa, rest] = splitPath(w.path, pointAt(w.path, s0 / len));
+  const pb = gap > 0 ? splitPath(rest, pointAt(w.path, s1 / len))[1] : rest;
+  return [pa, pb, s1];
+}
+
+export const wallSplit = defineCommand<{ wallId: Id; point: Vec2; gap?: number }>({
   name: 'wall.split',
   label: 'Rozdělit',
-  description: 'Rozdělí stěnu v bodě na dvě stěny spojené rohem; typ, výška a vlastnosti se zdědí.',
+  description:
+    'Rozdělí stěnu v bodě na dvě stěny spojené rohem; typ, výška a vlastnosti se zdědí. S mezerou „gap“ ' +
+    '(mm, jako Split with Gap v Revitu) se kolem bodu vynechá úsek a části zůstanou nespojené.',
   group: 'Úpravy',
   shortcut: 'X',
-  params: S.object({ wallId: S.id, point: S.point }, ['wallId', 'point']),
+  params: S.object(
+    {
+      wallId: S.id,
+      point: S.point,
+      gap: S.number('mezera mezi částmi (mm), 0 = bez mezery', { minimum: 0 }),
+    },
+    ['wallId', 'point'],
+  ),
   run(model, p, ctx) {
     const w = wallOf(model, p.wallId);
     const at = projectOnCarrier(p.point, carrierOf(w.path));
     const t = paramOf(w.path, at);
     if (!(t > 0.001 && t < 0.999)) fail('invalid', 'Bod rozdělení musí ležet uvnitř stěny');
+    const gap = p.gap ?? 0;
     const sSplit = t * pathLength(w.path);
     const ops = openingsOf(model, w.id);
-    if (ops.some((o) => o.offset < sSplit && o.offset + o.width > sSplit))
+    if (ops.some((o) => o.offset < sSplit + gap / 2 && o.offset + o.width > sSplit - gap / 2))
       fail('invalid', 'Stěnu nejde rozdělit přes otvor; posuňte bod rozdělení mimo otvor');
-    const [pa, pb] = splitPath(w.path, pointAt(w.path, t));
+    const [pa, pb, sB] = parts(w, sSplit, gap);
     const a: Wall = { ...w, path: pa };
     const b: Wall = { ...w, id: ctx.newId(), path: pb };
     const rehosted = ops
       .filter((o) => o.offset >= sSplit)
-      .map((o) => ({ ...o, hostId: b.id, offset: o.offset - sSplit }));
+      .map((o) => ({ ...o, hostId: b.id, offset: o.offset - sB }));
     const moved = reassign(model, w, b, t);
-    const join: WallConnection = {
-      id: ctx.newId(),
-      kind: 'wall-connection',
-      relating: { wallId: a.id, at: 'ATEND' },
-      related: { wallId: b.id, at: 'ATSTART' },
-    };
-    const m = rehostOpenings(putRelations(putElements(model, [a, b]), [...moved, join]), rehosted);
-    return { model: m, created: [b.id, join.id] };
+    const join: WallConnection[] =
+      gap > 0
+        ? []
+        : [
+            {
+              id: ctx.newId(),
+              kind: 'wall-connection',
+              relating: { wallId: a.id, at: 'ATEND' },
+              related: { wallId: b.id, at: 'ATSTART' },
+            },
+          ];
+    const m = rehostOpenings(putRelations(putElements(model, [a, b]), [...moved, ...join]), rehosted);
+    return { model: m, created: [b.id, ...join.map((j) => j.id)] };
   },
 });

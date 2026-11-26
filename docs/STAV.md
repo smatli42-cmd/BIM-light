@@ -1,12 +1,23 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Editor typů krok 3 (společné skladby, schéma 16).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z9 – pohodlí úprav.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Stěny Z9: pohodlí úprav, 2026-11-26 (plán stěn, část 3)
+- **Pipeta** (Revit Match Type, Archicad pipeta a stříkačka): příkaz `wall.matchProperties` – typ, výška
+  (odsazení a vršek; spodní podlaží cílové stěny zůstane), přepisy vlastností, na vyžádání stav. Info box
+  vybrané stěny → Úpravy → „Nasát vlastnosti“, pak vybrat jiné stěny → „Přenést z …“.
+- **Výběr stejných**: dotaz `wall.findSame` (typ / podlaží / stav); Úpravy → stejný typ na podlaží,
+  v projektu, nebo i se stejným stavem → Vybrat.
+- **Rozdělit s mezerou** (Split with Gap): `wall.split` s parametrem `gap`; volba „Rozdělit – mezera (mm)“
+  u příkazů (nástroj Rozdělit i rozdělení z palety stěny). Části nejsou spojené, otvor v mezeře odmítne.
+- Hromadná změna typu (`wall.setType` pro víc stěn, info box) a sloučení stěn v přímce (`wall.deleteNode`)
+  už byly. Testy `commands/wall/z9.test.ts`, scénář AI `ai/scenario-edits.test.ts`, e2e `upravy.spec.ts`.
 
 ### Editor typů, krok 3: skladby společné pro stěny, desky a střechy, 2026-11-26 (koncepce rozhraní 11a)
 - Skladba je samostatná položka projektu (`composition/`, pole modelu `compositions`): název, vrstvy,
@@ -141,6 +152,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Z9 pipeta:** výchozí přenos = typ, výška a vlastnosti (jako Archicad bez stavu); stav rekonstrukce
+  jen na vyžádání (`include: ['status']`, v info boxu zatím ne). Spodní podlaží a poloha cílové stěny se
+  nemění. Zdroj pipety se pamatuje jen do obnovení stránky. Výběr stejných výchozí „stejný typ na podlaží“
+  (Revit „ve viditelném pohledu“). Mezera rozdělení je volba příkazu, výchozí 0 (rozdělení s rohem).
+
 - **Skladby (krok 3 editoru typů):** úprava vrstev v editoru mění skladbu, tedy všechny typy, které ji
   sdílejí (to je smysl společné skladby; okno to píše). Duplikát typu dostane vlastní kopii skladby (jako
   Revit – kopii jde upravit bez vlivu na původní typ). Změna tloušťky stěny, která založí nový typ, založí
@@ -181,7 +197,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 ## Další krok
 
 - **Uživatel vyzkouší skladby (krok 3):** Editor typů → u typu pole Skladba – vybrat jinou skladbu (typ
-  ji pak sdílí), upravit vrstvu a zkontrolovat druhý typ, Použít pro. Pak dál podle plánu: stěny Z9.
+  ji pak sdílí), upravit vrstvu a zkontrolovat druhý typ, Použít pro.
+- **Uživatel vyzkouší Z9:** vybrat stěnu → Úpravy → Nasát vlastnosti, vybrat jinou → Přenést; Úpravy →
+  Vybrat stejné; nástroj Rozdělit s mezerou (Volby příkazu → mezera).
+- **Další:** stěny Z10 – rekonstrukce a kontroly (plán stěn, část 3).
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
@@ -197,8 +216,6 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - **Uživatel vyzkouší Z7:** vybrat stěnu → info box Vlastnosti (nosná, požární odolnost), záložka Typ →
   Vlastnosti typu, spodní lišta → Jen jádro nosných, Exportovat IFC a otevřít v BIMvision (Pset_WallCommon
   u stěny i typu, skladba).
-- **Další:** stěny Z9 – pohodlí úprav (hromadná změna typu, kopírování vlastností, výběr stejných, rozdělení
-  s mezerou, sloučení stěn v přímce; plán stěn, část 3).
 
 ## Otevřené
 

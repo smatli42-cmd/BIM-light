@@ -8,6 +8,7 @@ import { openingList } from './openings.ts';
 import { projectInfo } from './project.ts';
 import { viewInfo } from './views.ts';
 import { wallGet, wallList } from './walls.ts';
+import { wallFindSame } from './wall-same.ts';
 import { wallPropertiesQuery } from './wall-properties.ts';
 import { scheduleFields, scheduleList, scheduleTable } from './schedules.ts';
 import { wallTagList } from './tags.ts';
@@ -17,6 +18,7 @@ import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 export const CORE_QUERIES = [
   projectInfo,
   wallList,
+  wallFindSame,
   wallGet,
   wallPropertiesQuery,
   openingList,

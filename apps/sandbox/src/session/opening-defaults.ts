@@ -20,6 +20,10 @@ export const OPENING_DEFAULTS: Readonly<OpeningDefaults> = {
 };
 
 /** Volby příkazů nad výběrem (info box / okno příkazu): kopie, pole, mřížka, Změnit velikost. */
+/** Parametr mezery pro příkaz wall.split podle volby nástroje (prázdný = bez mezery). */
+export const splitGap = (s: { options: { splitGap: number } }) =>
+  s.options.splitGap > 0 ? { gap: s.options.splitGap } : {};
+
 export const TOOL_OPTIONS = {
   copy: false,
   arrayCount: 3,
@@ -31,4 +35,6 @@ export const TOOL_OPTIONS = {
   scaleOpenings: false,
   /** Stav nových prvků (fáze, jako v Archicadu): stávající = zaměření, nový = návrh. */
   newStatus: 'new' as Status,
+  /** Rozdělit s mezerou (plán stěn Z9, Split with Gap): mezera v mm, 0 = rozdělit bez mezery. */
+  splitGap: 0,
 };

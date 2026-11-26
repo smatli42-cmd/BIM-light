@@ -9,6 +9,7 @@ import {
   type Id,
   type Vec2,
 } from '@bim-light/core';
+import { splitGap } from '../../../session/opening-defaults.ts';
 import { FACE_PX, type Session } from '../../../session/session.ts';
 import type { Overlay } from '../../types.ts';
 import { PointCommand } from './base.ts';
@@ -93,7 +94,7 @@ export class SplitTool extends PointCommand {
     const id = raw ? wallAt(this.s, raw) : null;
     const w = id ? this.s.model.elements[id] : undefined;
     if (!w) return;
-    this.s.run('wall.split', { wallId: w.id, point: nearestOnPath(w.path, p).point });
+    this.s.run('wall.split', { wallId: w.id, point: nearestOnPath(w.path, p).point, ...splitGap(this.s) });
   }
 
   protected preview(): Overlay {
