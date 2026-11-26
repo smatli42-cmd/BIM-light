@@ -1,12 +1,23 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Ukázky (ukázkový projekt a testovací scény).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava kótování (hrany otvorů, oblouky, odkazové čáry řady).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Oprava kótování, 2026-11-26 (hlášení uživatele; scéna `?ukazka=koty`)
+- **Hrany otvorů v nástroji Kóta:** nástroj chytal jen líce a čela stěn. Teď chytí i hrany každého
+  zobrazeného otvoru – i bouraného otvoru a niky (`selection/pick-opening.ts`); otvor skrytý filtrem
+  rekonstrukce ne.
+- **Oblouky:** hrany přes obloukovou stěnu (čelo, hrana otvoru) dají kótu po oblouku na líci blíž kliknutí
+  (`dimension/pair.ts`, jako „délka oblouku“ v Revitu); soustředné líce téže stěny = tloušťka.
+  `dimension.createSet` přijímá `arc`.
+- **Odkazové čáry řady:** v řadě kót (skupina zarovnání) začínají všechny odkazové čáry u nejbližšího
+  kótovaného místa řady – přes příčku končí u líce obvodové stěny, ne za ní; řada uvnitř místnosti beze
+  změny. Testy `dimension/tool-rules.test.ts`, e2e `koty-otvory.spec.ts`.
 
 ### Ukázky: ukázkový projekt a testovací scény, 2026-11-26 (pokyn uživatele)
 - Tlačítko **Ukázky** v horní liště: ukázkový projekt „Rodinný dům – ukázka“ (vymyšlený; 1.NP rekonstrukce
@@ -301,7 +312,6 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   s etapami; Organizátor s etapou 7; hledání příkazů Ctrl+K přesunuto do UI5.
 - UI2: metody natočený obdélník a oblouk středem (jsou ve vzoru) zatím nejsou; tracker u tečného oblouku
   a oblouku bodem jen ukazuje poloměr a úhel (číslo napsat nejde); rychlý výběr typu zatím jen u Stěny.
-- Kóty u oblouku podle uživatele nefungují správně – probrat a opravit později (zadání upřesní uživatel).
 - Úprava vzhledu fází (2026-11-26, odloženo uživatelem): vzhled je v pravidlech grafiky projektu (data,
   ne kód), okno na úpravu zatím není. Návrh: „Fáze › Upravit fáze…“ – tabulka stav × fáze (zobrazit /
   skrýt, barva a typ čáry, výplň, šrafa) jako Renovation Filter Options v Archicadu; udělat spolu

@@ -42,6 +42,8 @@ export function wallsAt(geoms: readonly WallGeometry[], p: Vec2, tol: number): I
 export interface FaceHit {
   readonly wallId: Id;
   readonly face: WallEdge;
+  /** Hrana otvoru (face = start / end otvoru), jinak chybí. */
+  readonly openingId?: Id;
   readonly point: Vec2;
   /** Parametr 0..1 podél líce. */
   readonly t: number;

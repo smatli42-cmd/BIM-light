@@ -2,11 +2,10 @@
 // od druhého líce vzniká řada kót, která se celá nese na myši. Klik do prázdna řadu usadí a ukončí,
 // Shift+klik líc přeskočí úsek, Esc řadu nechá na místě. Kóty vzniknou až kliknutím (jeden krok Undo).
 import {
-  cross,
-  facePath,
+  dimensionPair,
   pickFace,
+  pickOpeningEdge,
   selectableWallGeometry,
-  tangentAt,
   type FaceHit,
   type FaceRef,
 } from '@bim-light/core';
@@ -17,7 +16,13 @@ import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types
 /** Kótovat jde líce i čela volných konců stěn (čelo = nepřipojený konec). */
 const DIM_EDGES = ['ref', 'opp', 'start', 'end'] as const;
 
-const same = (a: FaceRef, b: FaceRef) => a.wallId === b.wallId && a.face === b.face;
+const same = (a: FaceRef, b: FaceRef) =>
+  a.wallId === b.wallId && a.face === b.face && a.openingId === b.openingId;
+const refOf = (f: FaceHit): FaceRef => ({
+  wallId: f.wallId,
+  face: f.face,
+  ...(f.openingId ? { openingId: f.openingId } : {}),
+});
 
 export class DimensionTool implements Tool {
   readonly id = 'dimension';
@@ -30,14 +35,17 @@ export class DimensionTool implements Tool {
   constructor(private readonly s: Session) {}
 
   hint(): string {
-    if (!this.prev) return 'Klikni na první líc nebo čelo volného konce stěny (tolerance 12 px).';
-    if (!this.items.length) return 'Klikni na druhý rovnoběžný líc.';
+    if (!this.prev) return 'Klikni na první líc, čelo volného konce nebo hranu otvoru (tolerance 12 px).';
+    if (!this.items.length) return 'Klikni na druhý rovnoběžný líc (u obloukové stěny hranu přes stěnu).';
     return 'Další líc přidá kótu do řady, Shift+klik úsek přeskočí. Klik do prázdna řadu usadí, Esc ji nechá na místě.';
   }
 
+  /** Líc, čelo nebo hrana otvoru (i bouraného otvoru a niky) – nejbližší v toleranci. */
   private face(p: PointerInfo): FaceHit | null {
-    const geoms = selectableWallGeometry(this.s.model, this.s.view);
-    return pickFace(geoms, p.world, this.s.viewport.px(FACE_PX), DIM_EDGES);
+    const tol = this.s.viewport.px(FACE_PX);
+    const wall = pickFace(selectableWallGeometry(this.s.model, this.s.view), p.world, tol, DIM_EDGES);
+    const edge = pickOpeningEdge(this.s.model, this.s.view, p.world, tol);
+    return edge && (!wall || edge.distance <= wall.distance) ? edge : wall;
   }
 
   move(p: PointerInfo) {
@@ -53,7 +61,7 @@ export class DimensionTool implements Tool {
       else this.reset();
       return;
     }
-    const ref: FaceRef = { wallId: f.wallId, face: f.face };
+    const ref = refOf(f);
     if (this.used.some((u) => same(u, ref)))
       return this.s.toast('Tento líc už v řadě je; každý líc jen jednou.', 'bad');
     if (!this.prev) {
@@ -70,15 +78,16 @@ export class DimensionTool implements Tool {
   }
 
   private add(ref: FaceRef, p: PointerInfo) {
-    const m = this.s.model;
     const prev = this.prev as FaceRef;
-    const a = tangentAt(facePath(m, prev), 'start');
-    const b = tangentAt(facePath(m, ref), 'start');
-    if (Math.abs(cross(a, b)) > 0.01) {
-      this.s.toast('Líce nejsou rovnoběžné. Kótu lze vložit jen mezi rovnoběžné líce.', 'bad');
+    const pair = dimensionPair(this.s.model, prev, ref, p.world);
+    if (!pair) {
+      this.s.toast(
+        'Kótovat jde rovnoběžné líce, nebo hrany přes obloukovou stěnu (délka po oblouku).',
+        'bad',
+      );
       return;
     }
-    this.items.push({ kind: 'linear', refs: [prev, ref], ownerRef: 1 });
+    this.items.push({ kind: 'linear', refs: [prev, ref], ownerRef: 1, ...pair });
     this.prev = ref;
     this.used.push(ref);
     const drafts = this.items.map((it, i) => draftOf(it, i, this.s.storeyId));
@@ -111,8 +120,8 @@ export class DimensionTool implements Tool {
   }
 
   overlay(): Overlay {
-    const faces = this.used.map((u) => ({ wallId: u.wallId, face: u.face }));
-    if (this.hover) faces.push({ wallId: this.hover.wallId, face: this.hover.face });
+    const faces = [...this.used];
+    if (this.hover) faces.push(refOf(this.hover));
     const pl = this.placed;
     return { faces, draftDims: pl?.drafts ?? [], guides: pl?.guide ? [pl.guide] : [] };
   }

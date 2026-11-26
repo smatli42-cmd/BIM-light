@@ -6,7 +6,73 @@ import type { Sample, SampleContext } from './types.ts';
 const rect = (c: SampleContext, type: string, w: number, h: number, status = 'new') =>
   c.run('wall.rectangle', { storeyId: c.storeyId, typeId: c.type(type), a: vec(0, 0), b: vec(w, h), status });
 
+/** Řada kót pod domem přes příčku (scéna Kóty). */
+function rowAcross(c: SampleContext, right: string, p: string, left: string) {
+  c.run('dimension.createSet', {
+    viewId: c.viewId,
+    items: [
+      {
+        kind: 'linear',
+        refs: [
+          { wallId: right, face: 'opp' },
+          { wallId: p, face: 'ref' },
+        ],
+      },
+      {
+        kind: 'linear',
+        refs: [
+          { wallId: p, face: 'ref' },
+          { wallId: p, face: 'opp' },
+        ],
+      },
+      {
+        kind: 'linear',
+        refs: [
+          { wallId: p, face: 'opp' },
+          { wallId: left, face: 'opp' },
+        ],
+      },
+    ],
+    point: vec(5000, -1500),
+  });
+}
+
 export const SCENES: readonly Sample[] = [
+  {
+    key: 'koty',
+    title: 'Oprava – kótování otvorů, oblouků a řady přes příčku',
+    kind: 'scena',
+    date: '2026-11-26',
+    description:
+      'Nástroj Kóta (D): chytni hrany bouraného otvoru a niky ve spodní stěně; na oblouku hranu otvoru a čelo ' +
+      '(délka po oblouku na líci blíž kliknutí); řada pod domem přes příčku má odkazové čáry stejně dlouhé.',
+    build(c) {
+      const [, right = '', bottom, left = ''] = rect(c, 'Obvodová zateplená 465', 10000, 6000, 'existing');
+      const p = c.line(vec(5000, 0), vec(5000, 6000), { typeId: c.type('Příčka 125') });
+      c.run('opening.create', {
+        wallId: bottom,
+        offset: 1500,
+        width: 900,
+        height: 2100,
+        sill: 0,
+        status: 'demolished',
+      });
+      c.run('opening.create', {
+        wallId: bottom,
+        offset: 7000,
+        width: 600,
+        height: 1200,
+        sill: 900,
+        kind: 'niche',
+        depth: 150,
+        side: 'ref',
+      });
+      rowAcross(c, right, p, left);
+      const arc = { kind: 'arc', start: vec(14000, 0), end: vec(14000, 6000), bulge: 1 };
+      const [a] = c.run('wall.create', { storeyId: c.storeyId, typeId: c.type('Zdivo 300'), path: arc });
+      c.run('opening.create', { wallId: a, offset: 3500, width: 1000, height: 1500, sill: 900 });
+    },
+  },
   {
     key: 'z10-vybourani',
     title: 'Z10 – vybouraný úsek a nová stěna',

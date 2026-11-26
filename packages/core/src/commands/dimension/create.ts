@@ -23,6 +23,12 @@ export const FACE_REF_SCHEMA: JsonSchema = S.object(
   ['wallId', 'face'],
 );
 
+/** Kóta po oblouku: měřený líc obloukové stěny (plán stěn Z5). */
+export const ARC_SCHEMA: JsonSchema = {
+  ...S.object({ wallId: S.id, face: S.enumOf(['ref', 'opp'], 'měřený líc') }, ['wallId', 'face']),
+  description: 'kóta po oblouku: délka oblouku na líci obloukové stěny',
+};
+
 export type DimensionCreateParams = { annotationLayerId?: Id; viewId?: Id } & (
   | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef?: 0 | 1; offset?: number; arc?: ArcMeasure }
   | { kind: 'length'; ref: FaceRef; offset?: number; measure?: LengthMeasure }
@@ -119,10 +125,7 @@ export const dimensionCreate = defineCommand<DimensionCreateParams>({
           kind: S.enumOf(['linear'], ''),
           refs: { type: 'array', items: FACE_REF_SCHEMA, minItems: 2, maxItems: 2 },
           ownerRef: owner,
-          arc: {
-            ...S.object({ wallId: S.id, face: S.enumOf(['ref', 'opp'], 'měřený líc') }, ['wallId', 'face']),
-            description: 'kóta po oblouku: délka oblouku na líci obloukové stěny',
-          },
+          arc: ARC_SCHEMA,
           ...common,
         },
         ['kind', 'refs'],

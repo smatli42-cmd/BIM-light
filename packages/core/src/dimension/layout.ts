@@ -96,17 +96,38 @@ function arcLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper:
   };
 }
 
-function linearLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper: PaperSizes) {
-  if (d.arc) return arcLayout(model, d, ext, k, paper);
+/** Body na kótovací čáře (base, pB) a body líců nejblíž čáře (sA, sB) – odkud vedou odkazové čáry. */
+function anchors(model: Model, d: LinearDimension) {
   const fa = facePath(model, d.refs[0]);
-  const pA = pointAt(fa, 0.5);
-  const base = add(pA, mul(tangentAt(fa, 'start'), d.offset));
+  const base = add(pointAt(fa, 0.5), mul(tangentAt(fa, 'start'), d.offset));
   const fb = facePath(model, d.refs[1]);
   const pB = projectOnCarrier(base, carrierOf(fb));
   // Odkazová čára začíná v bodě líce nejblíž kótovací čáře (u konce líce), ne uprostřed líce – jinak by
   // kóta k líci kolmé stěny (kóta celé stěny) táhla čáru přes celý dům (oprava 2026-11-26).
   const [sA, sB] = [nearestOnPath(fa, base).point, nearestOnPath(fb, pB).point];
-  return straight(base, pB, [ext(sA, base), ext(sB, pB)].filter(kept), k, paper);
+  return { base, pB, sA, sB, reach: Math.min(dist(sA, base), dist(sB, pB)) };
+}
+
+/**
+ * Jak daleko od kótovací čáry začínají odkazové čáry celé řady (skupina zarovnání): u nejbližšího
+ * kótovaného místa řady. Řada kót celé stěny s příčkami pak má všechny odkazové čáry stejně dlouhé –
+ * končí u líce kótované stěny, ne za ní (hlášení uživatele 2026-11-26). 0 = řada kótovanou věc protíná.
+ */
+function rowReach(model: Model, d: LinearDimension, own: number): number {
+  if (!d.alignGroupId) return own;
+  const row = Object.values(model.dimensions).filter(
+    (x): x is LinearDimension =>
+      x.kind === 'linear' && !x.arc && x.alignGroupId === d.alignGroupId && x.id !== d.id,
+  );
+  return Math.min(own, ...row.map((x) => anchors(model, x).reach));
+}
+
+function linearLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper: PaperSizes) {
+  if (d.arc) return arcLayout(model, d, ext, k, paper);
+  const { base, pB, sA, sB, reach } = anchors(model, d);
+  const t = rowReach(model, d, reach);
+  const from = (s: Vec2, on: Vec2) => (t > 1 && dist(s, on) > t ? add(on, mul(norm(sub(s, on)), t)) : s);
+  return straight(base, pB, [ext(from(sA, base), base), ext(from(sB, pB), pB)].filter(kept), k, paper);
 }
 
 /** Tětiva oblouku: čára rovnoběžná s tětivou, odsazená o `offset` doleva. */

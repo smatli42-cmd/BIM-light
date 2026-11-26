@@ -1,0 +1,47 @@
+// Jakou kótu jde vložit mezi dva klinuté líce / hrany (nástroj Kóta, hlášení uživatele 2026-11-26):
+// rovnoběžné líce (i soustředné líce téže obloukové stěny) = vzdálenost; hrany přes obloukovou stěnu
+// (čelo, hrana otvoru – míří do středu oblouku) = délka po oblouku na líci blíž kliknutí (jako Revit
+// „délka oblouku“). Jinak nic – nástroj řekne proč.
+import {
+  arcData,
+  carrierOf,
+  cross,
+  dist,
+  distanceToCarrier,
+  tangentAt,
+  type Vec2,
+} from '../geometry/index.ts';
+import type { Model } from '../model/types.ts';
+import { getWall } from '../wall/queries.ts';
+import { measuredFace } from './arc-dim.ts';
+import { facePath } from './measure.ts';
+import type { ArcMeasure, FaceRef } from './types.ts';
+
+export type DimensionPair = { readonly arc?: ArcMeasure } | null;
+
+/** Střed obloukové stěny, nebo null u přímé. */
+const arcCenter = (m: Model, id: string): Vec2 | null => {
+  const p = m.elements[id] ? getWall(m, id).path : null;
+  return p && p.kind === 'arc' && Math.abs(p.bulge) > 1e-9 ? arcData(p).center : null;
+};
+
+/** Kóta mezi `a` a `b`: {} = rovnoběžné, {arc} = po oblouku, null = nejde. `near` = bod kliknutí. */
+export function dimensionPair(model: Model, a: FaceRef, b: FaceRef, near: Vec2): DimensionPair {
+  const [fa, fb] = [facePath(model, a), facePath(model, b)];
+  if (Math.abs(cross(tangentAt(fa, 'start'), tangentAt(fb, 'start'))) <= 0.01) return {};
+  if (fa.kind !== 'line' || fb.kind !== 'line') return null;
+  for (const wallId of new Set([a.wallId, b.wallId])) {
+    const c = arcCenter(model, wallId);
+    if (!c || distanceToCarrier(c, carrierOf(fa)) > 1 || distanceToCarrier(c, carrierOf(fb)) > 1) continue;
+    const r = dist(near, c);
+    const faces = (['ref', 'opp'] as const).map((face) => ({
+      face,
+      f: measuredFace(model, { wallId, face }),
+    }));
+    const pick = faces.reduce((x, y) =>
+      Math.abs((x.f ? arcData(x.f).radius : 0) - r) <= Math.abs((y.f ? arcData(y.f).radius : 0) - r) ? x : y,
+    );
+    return { arc: { wallId, face: pick.face } };
+  }
+  return null;
+}

@@ -58,7 +58,7 @@ export interface Overlay {
   /** Kóty, které se právě táhnou (kreslí se jen jejich náhled). */
   readonly hiddenDims?: readonly Id[];
   /** Zvýrazněný líc (nástroj Kóta, Zarovnat). */
-  readonly faces?: readonly { readonly wallId: Id; readonly face: WallEdge }[];
+  readonly faces?: readonly { readonly wallId: Id; readonly face: WallEdge; readonly openingId?: Id }[];
   /** Stěny zvýrazněné pod kurzorem. */
   readonly hover?: readonly Id[];
   /** Model po rozpracované změně (tažení uzlu): kreslí se místo skutečného, nic se neukládá. */

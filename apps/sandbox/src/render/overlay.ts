@@ -3,6 +3,7 @@
 import {
   allWallGeometry,
   edgePath,
+  facePath,
   openingOutline,
   tessellate,
   type Id,
@@ -104,7 +105,7 @@ export function drawOverlay(ctx: Ctx, s: Session, o: Overlay) {
   ctx.lineWidth = 3;
   for (const f of o.faces ?? []) {
     const g = geoms.get(f.wallId);
-    const path = g ? edgePath(g, f.face) : undefined;
+    const path = f.openingId ? facePath(s.model, f) : g ? edgePath(g, f.face) : undefined;
     if (!path) continue;
     poly(ctx, s, tessellate(path), false);
     ctx.stroke();

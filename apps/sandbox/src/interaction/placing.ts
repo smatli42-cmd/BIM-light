@@ -3,6 +3,7 @@
 import {
   snapDimensionLine,
   withLineThrough,
+  type ArcMeasure,
   type Dimension,
   type FaceRef,
   type Id,
@@ -14,7 +15,8 @@ import type { Mode } from './mode.ts';
 import type { Overlay, PointerInfo } from './types.ts';
 
 export type DraftItem =
-  { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef: 0 | 1 } | { kind: 'length'; ref: FaceRef };
+  | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef: 0 | 1; arc?: ArcMeasure }
+  | { kind: 'length'; ref: FaceRef };
 
 /** Kóta, která ještě není v modelu (náhled). */
 export function draftOf(item: DraftItem, i: number, storeyId: Id): Dimension {
@@ -28,7 +30,14 @@ export function draftOf(item: DraftItem, i: number, storeyId: Id): Dimension {
     alignGroupId: null,
   };
   return item.kind === 'linear'
-    ? { ...base, kind: 'linear', refs: item.refs, ownerRef: item.ownerRef, offset: 0 }
+    ? {
+        ...base,
+        kind: 'linear',
+        refs: item.refs,
+        ownerRef: item.ownerRef,
+        offset: 0,
+        ...(item.arc ? { arc: item.arc } : {}),
+      }
     : { ...base, kind: 'length', ref: item.ref, offset: 0 };
 }
 
