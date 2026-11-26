@@ -24,3 +24,24 @@ test('hlášení 2026-11-26: nástroj Kóta chytí hrany bouraného otvoru a nik
   const refs = dims.flatMap((d) => (d.kind === 'linear' ? d.refs : []));
   expect(refs.every((r) => r.openingId)).toBe(true);
 });
+
+test('hlášení 2026-11-26: oblouk – klik na líc a do volna = poloměr, s volbou průměr = průměr', async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    const h = window.__bim!;
+    h.run('wall.create', {
+      storeyId: h.storeyId(),
+      typeId: h.typeId('Zdivo 300'),
+      path: { kind: 'arc', start: { x: 5000, y: 0 }, end: { x: -5000, y: 0 }, bulge: 1 },
+    });
+  });
+  await page.keyboard.press('d');
+  await clickAt(page, 0, 5000);
+  await clickAt(page, 0, 2000);
+  await page.getByTestId('arc-dim-diameter').check();
+  await clickAt(page, 0, 5000);
+  await clickAt(page, -1000, 1000);
+  const dims = Object.values((await model(page)).dimensions);
+  expect(dims.map((d) => (d.kind === 'length' ? d.measure : d.kind))).toEqual(['radius', 'diameter']);
+});

@@ -5,6 +5,7 @@ import {
   withLineThrough,
   type ArcMeasure,
   type Dimension,
+  type LengthMeasure,
   type FaceRef,
   type Id,
   type Vec2,
@@ -16,7 +17,7 @@ import type { Overlay, PointerInfo } from './types.ts';
 
 export type DraftItem =
   | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef: 0 | 1; arc?: ArcMeasure }
-  | { kind: 'length'; ref: FaceRef };
+  | { kind: 'length'; ref: FaceRef; measure?: LengthMeasure };
 
 /** Kóta, která ještě není v modelu (náhled). */
 export function draftOf(item: DraftItem, i: number, storeyId: Id): Dimension {
@@ -38,7 +39,13 @@ export function draftOf(item: DraftItem, i: number, storeyId: Id): Dimension {
         offset: 0,
         ...(item.arc ? { arc: item.arc } : {}),
       }
-    : { ...base, kind: 'length', ref: item.ref, offset: 0 };
+    : {
+        ...base,
+        kind: 'length',
+        ref: item.ref,
+        offset: 0,
+        ...(item.measure ? { measure: item.measure } : {}),
+      };
 }
 
 export interface Placed {

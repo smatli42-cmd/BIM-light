@@ -6,7 +6,7 @@ import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
 import { withLineThrough } from '../../dimension/align.ts';
 import { measureDimension } from '../../dimension/measure.ts';
-import type { ArcMeasure, Dimension, FaceRef } from '../../dimension/types.ts';
+import type { ArcMeasure, Dimension, FaceRef, LengthMeasure } from '../../dimension/types.ts';
 import { dimensionOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -58,7 +58,7 @@ export const dimensionPlace = defineCommand<PlaceParams>({
 
 type SetItem =
   | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef?: 0 | 1; arc?: ArcMeasure }
-  | { kind: 'length'; ref: FaceRef };
+  | { kind: 'length'; ref: FaceRef; measure?: LengthMeasure };
 
 export interface CreateSetParams {
   viewId?: Id;
@@ -79,7 +79,14 @@ const ITEM_SCHEMA: JsonSchema = {
       },
       ['kind', 'refs'],
     ),
-    S.object({ kind: S.enumOf(['length'], ''), ref: FACE_REF_SCHEMA }, ['kind', 'ref']),
+    S.object(
+      {
+        kind: S.enumOf(['length'], ''),
+        ref: FACE_REF_SCHEMA,
+        measure: S.enumOf(['arc', 'chord', 'radius', 'diameter'], 'délka líce, tětiva, poloměr, průměr'),
+      },
+      ['kind', 'ref'],
+    ),
   ],
 };
 

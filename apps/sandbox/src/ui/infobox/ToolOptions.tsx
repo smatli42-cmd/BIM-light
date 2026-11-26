@@ -111,3 +111,32 @@ export function CommandOptions({ s }: { s: Session }) {
     </Section>
   );
 }
+
+/** Nástroj Kóta: jak se kótuje oblouk kliknutím na líc a do volna (poloměr R / průměr ⌀). */
+export function DimensionOptions({ s }: { s: Session }) {
+  const set = (v: 'radius' | 'diameter') => ((s.options.arcDim = v), s.changed());
+  return (
+    <Section title="Kóta oblouku" info="Klik na líc obloukové stěny a pak do volného místa vloží tuto kótu.">
+      <label class="check">
+        <input
+          type="radio"
+          name="arc-dim"
+          data-testid="arc-dim-radius"
+          checked={s.options.arcDim === 'radius'}
+          onChange={() => set('radius')}
+        />
+        Poloměr (R)
+      </label>
+      <label class="check">
+        <input
+          type="radio"
+          name="arc-dim"
+          data-testid="arc-dim-diameter"
+          checked={s.options.arcDim === 'diameter'}
+          onChange={() => set('diameter')}
+        />
+        Průměr (⌀)
+      </label>
+    </Section>
+  );
+}

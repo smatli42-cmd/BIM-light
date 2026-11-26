@@ -55,7 +55,10 @@ export interface ArcMeasure {
 /**
  * Co délková kóta měří (Z5): délku líce (u oblouku délku oblouku), tětivu oblouku, nebo poloměr líce.
  */
-export type LengthMeasure = 'arc' | 'chord' | 'radius';
+export type LengthMeasure = 'arc' | 'chord' | 'radius' | 'diameter';
+
+/** Poloměr a průměr: kóta přes střed oblouku, odsazení = poloha po oblouku od středu líce (mm). */
+export const isRadial = (m: LengthMeasure | undefined): boolean => m === 'radius' || m === 'diameter';
 
 /** Délka líce stěny (podélná kóta); u oblouku i tětiva nebo poloměr. */
 export interface LengthDimension extends DimensionBase {

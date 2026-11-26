@@ -37,4 +37,6 @@ export const TOOL_OPTIONS = {
   newStatus: 'new' as Status,
   /** Rozdělit s mezerou (plán stěn Z9, Split with Gap): mezera v mm, 0 = rozdělit bez mezery. */
   splitGap: 0,
+  /** Kóta oblouku nástrojem Kóta (klik na oblouk a do volna): poloměr R, nebo průměr ⌀. */
+  arcDim: 'radius' as 'radius' | 'diameter',
 };

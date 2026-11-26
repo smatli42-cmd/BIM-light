@@ -77,9 +77,10 @@ function applyLength(model: Model, d: LengthDimension, p: SetValueParams): Model
     return setWallLength(model, { wallId: d.ref.wallId, end, length: p.value, face });
   if (!isArcPath(path)) fail('invalid', 'Líc není oblouk');
   const a = arcData(path);
-  if (d.measure === 'radius') {
+  if (d.measure === 'radius' || d.measure === 'diameter') {
+    const r = d.measure === 'diameter' ? p.value / 2 : p.value;
     const ref = arcData(wallOf(model, d.ref.wallId).path as typeof path).radius;
-    return curveWall(model, d.ref.wallId, Math.sign(a.sweep) * (ref + p.value - a.radius));
+    return curveWall(model, d.ref.wallId, Math.sign(a.sweep) * (ref + r - a.radius));
   }
   if (p.value >= 2 * a.radius)
     fail('invalid', `Tětiva musí být kratší než průměr (${Math.round(2 * a.radius)} mm)`);

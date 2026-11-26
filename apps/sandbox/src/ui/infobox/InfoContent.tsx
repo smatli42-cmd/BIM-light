@@ -6,7 +6,7 @@ import { WALL_TOOLS } from '../../interaction/tools/wall-method.ts';
 import type { ToolId } from '../../interaction/types.ts';
 import type { Session } from '../../session/session.ts';
 import { OpeningPanel } from '../OpeningPanel.tsx';
-import { CommandOptions, SelectOptions } from './ToolOptions.tsx';
+import { CommandOptions, DimensionOptions, SelectOptions } from './ToolOptions.tsx';
 import { TagAllSection } from './WallTags.tsx';
 import { ModelCheckSection } from './ModelCheck.tsx';
 import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
@@ -38,6 +38,7 @@ export function InfoContent({ s }: { s: Session }) {
   const any = walls.length + openings.length + dims.length > 0;
   if (COMMANDS.includes(id)) return <CommandOptions s={s} />;
   if (id === 'opening') return <OpeningPanel s={s} />;
+  if (id === 'dimension' && !any) return <DimensionOptions s={s} />;
   if (any) return <Selection s={s} />;
   if (WALL_TOOLS.includes(id)) return <NewWallInfo s={s} />;
   return (

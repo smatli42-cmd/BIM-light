@@ -134,7 +134,10 @@ export const dimensionCreate = defineCommand<DimensionCreateParams>({
         {
           kind: S.enumOf(['length'], ''),
           ref: FACE_REF_SCHEMA,
-          measure: S.enumOf(['arc', 'chord', 'radius'], 'délka líce / oblouku, tětiva, nebo poloměr'),
+          measure: S.enumOf(
+            ['arc', 'chord', 'radius', 'diameter'],
+            'délka líce / oblouku, tětiva, poloměr, nebo průměr',
+          ),
           ...common,
         },
         ['kind', 'ref'],

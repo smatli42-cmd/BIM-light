@@ -74,6 +74,7 @@ export function measureDimension(model: Model, d: Dimension): number {
 export function lengthValue(face: Path, measure: LengthMeasure): number {
   if (measure === 'chord') return dist(face.start, face.end);
   if (measure === 'radius') return isArcPath(face) ? arcData(face).radius : Number.NaN;
+  if (measure === 'diameter') return isArcPath(face) ? 2 * arcData(face).radius : Number.NaN;
   return pathLength(face);
 }
 

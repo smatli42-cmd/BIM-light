@@ -21,11 +21,18 @@ import {
   type Path,
   type Vec2,
 } from '../geometry/index.ts';
+import { arcRay, radialPoints } from './radial.ts';
 import type { Model } from '../model/types.ts';
 import type { PaperSizes } from '../style/types.ts';
 import { arcLine, measuredFace } from './arc-dim.ts';
 import { angleGeometry, facePath, isArcPath } from './measure.ts';
-import type { AngularDimension, Dimension, LengthDimension, LinearDimension } from './types.ts';
+import {
+  isRadial,
+  type AngularDimension,
+  type Dimension,
+  type LengthDimension,
+  type LinearDimension,
+} from './types.ts';
 
 export interface DimensionLayout {
   /** Kótovací čára (u úhlové kóty oblouk rozložený na body). */
@@ -99,9 +106,10 @@ function arcLayout(model: Model, d: LinearDimension, ext: Ext, k: number, paper:
 /** Body na kótovací čáře (base, pB) a body líců nejblíž čáře (sA, sB) – odkud vedou odkazové čáry. */
 function anchors(model: Model, d: LinearDimension) {
   const fa = facePath(model, d.refs[0]);
-  const base = add(pointAt(fa, 0.5), mul(tangentAt(fa, 'start'), d.offset));
   const fb = facePath(model, d.refs[1]);
-  const pB = projectOnCarrier(base, carrierOf(fb));
+  const radial = radialPoints(fa, fb, d.offset);
+  const base = radial?.base ?? add(pointAt(fa, 0.5), mul(tangentAt(fa, 'start'), d.offset));
+  const pB = radial?.pB ?? projectOnCarrier(base, carrierOf(fb));
   // Odkazová čára začíná v bodě líce nejblíž kótovací čáře (u konce líce), ne uprostřed líce – jinak by
   // kóta k líci kolmé stěny (kóta celé stěny) táhla čáru přes celý dům (oprava 2026-11-26).
   const [sA, sB] = [nearestOnPath(fa, base).point, nearestOnPath(fb, pB).point];
@@ -137,18 +145,32 @@ function chordLayout(face: Path, d: LengthDimension, ext: Ext, k: number, paper:
   return straight(a, b, [ext(face.start, a), ext(face.end, b)].filter(kept), k, paper);
 }
 
-/** Poloměr: čára ze středu k bodu uprostřed líce, značka jen na líci. */
-function radiusLayout(face: Path, k: number, paper: PaperSizes): DimensionLayout | null {
+/**
+ * Poloměr: čára ze středu k líci, značka jen na líci; průměr: čára přes střed od líce k líci se značkami
+ * na obou koncích. Poloha po oblouku = odsazení od středu líce (kóta jde položit kamkoli na kružnici).
+ */
+function radiusLayout(face: Path, d: LengthDimension, k: number, paper: PaperSizes): DimensionLayout | null {
   if (!isArcPath(face)) return null;
-  const c = arcData(face).center;
-  const p = pointAt(face, 0.5);
-  return { ...straight(c, p, [], k, paper), ticks: [{ at: p, dir: norm(sub(p, c)) }] };
+  const { center: c, radius: r } = arcData(face);
+  const u = arcRay(face, d.offset) ?? norm(sub(pointAt(face, 0.5), c));
+  const p = add(c, mul(u, r));
+  if (d.measure === 'diameter') {
+    const q = sub(c, mul(u, r));
+    return {
+      ...straight(q, p, [], k, paper),
+      ticks: [
+        { at: q, dir: mul(u, -1) },
+        { at: p, dir: u },
+      ],
+    };
+  }
+  return { ...straight(c, p, [], k, paper), ticks: [{ at: p, dir: u }] };
 }
 
 function lengthLayout(model: Model, d: LengthDimension, ext: Ext, k: number, paper: PaperSizes) {
   const face = facePath(model, d.ref);
   if (d.measure === 'chord') return chordLayout(face, d, ext, k, paper);
-  if (d.measure === 'radius') return radiusLayout(face, k, paper);
+  if (isRadial(d.measure)) return radiusLayout(face, d, k, paper);
   const line = offsetPath(face, d.offset);
   const exts = (['start', 'end'] as const).map((e) => ext(endPoint(face, e), endPoint(line, e))).filter(kept);
   return {

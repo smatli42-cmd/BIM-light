@@ -6,6 +6,21 @@ import type { Sample, SampleContext } from './types.ts';
 const rect = (c: SampleContext, type: string, w: number, h: number, status = 'new') =>
   c.run('wall.rectangle', { storeyId: c.storeyId, typeId: c.type(type), a: vec(0, 0), b: vec(w, h), status });
 
+/** Poloměr, průměr a radiální tloušťka obloukové stěny (scéna Kóty). */
+function arcDims(c: SampleContext, wallId: string) {
+  const ref = { wallId, face: 'ref' as const };
+  for (const [measure, point] of [
+    ['radius', vec(15500, 4500)],
+    ['diameter', vec(15000, 1200)],
+  ] as const)
+    c.run('dimension.createSet', { viewId: c.viewId, items: [{ kind: 'length', ref, measure }], point });
+  c.run('dimension.createSet', {
+    viewId: c.viewId,
+    items: [{ kind: 'linear', refs: [ref, { wallId, face: 'opp' }] }],
+    point: vec(17000, 4000),
+  });
+}
+
 /** Řada kót pod domem přes příčku (scéna Kóty). */
 function rowAcross(c: SampleContext, right: string, p: string, left: string) {
   c.run('dimension.createSet', {
@@ -45,7 +60,8 @@ export const SCENES: readonly Sample[] = [
     date: '2026-11-26',
     description:
       'Nástroj Kóta (D): chytni hrany bouraného otvoru a niky ve spodní stěně; na oblouku hranu otvoru a čelo ' +
-      '(délka po oblouku na líci blíž kliknutí); řada pod domem přes příčku má odkazové čáry stejně dlouhé.',
+      '(délka po oblouku na líci blíž kliknutí); klik na oblouk a do volna = poloměr / průměr (volba v info ' +
+      'boxu); tloušťka oblouku radiálně. Řada pod domem přes příčku má odkazové čáry stejně dlouhé.',
     build(c) {
       const [, right = '', bottom, left = ''] = rect(c, 'Obvodová zateplená 465', 10000, 6000, 'existing');
       const p = c.line(vec(5000, 0), vec(5000, 6000), { typeId: c.type('Příčka 125') });
@@ -71,6 +87,7 @@ export const SCENES: readonly Sample[] = [
       const arc = { kind: 'arc', start: vec(14000, 0), end: vec(14000, 6000), bulge: 1 };
       const [a] = c.run('wall.create', { storeyId: c.storeyId, typeId: c.type('Zdivo 300'), path: arc });
       c.run('opening.create', { wallId: a, offset: 3500, width: 1000, height: 1500, sill: 900 });
+      arcDims(c, a ?? '');
     },
   },
   {

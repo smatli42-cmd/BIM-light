@@ -25,13 +25,19 @@ export function openingFacts(o: Opening): ElementFacts {
   return o.graphicOverride ? { ...facts, graphicOverride: o.graphicOverride } : facts;
 }
 
+/** Počet úseků obrysu otvoru po oblouku. */
+const ARC_STEPS = 16;
+
 /** Obrys otvoru v půdorysu (čtyřúhelník v tloušťce stěny, u niky do hloubky). */
 export function openingOutline(model: Model, o: Opening) {
   const host = getWall(model, o.hostId);
   const { s0, s1 } = openingSpan(o);
   const [a, b] = openingAcross(model, o);
   const at = (s: number, v: number) => pointAtStation(host.path, s, v);
-  return [at(s0, a), at(s1, a), at(s1, b), at(s0, b)];
+  // U obloukové stěny obrys sleduje líce (body po oblouku), ostění jsou radiální (hlášení 2026-11-26).
+  const n = host.path.kind === 'arc' && Math.abs(host.path.bulge) > 1e-9 ? ARC_STEPS : 1;
+  const st = Array.from({ length: n + 1 }, (_, i) => s0 + ((s1 - s0) * i) / n);
+  return [...st.map((s) => at(s, a)), ...st.reverse().map((s) => at(s, b))];
 }
 
 /** Čárkovaný obrys otvoru mimo rovinu řezu; otvor v řezu = nic. */

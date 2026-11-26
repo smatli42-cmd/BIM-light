@@ -1,12 +1,22 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava kótování (hrany otvorů, oblouky, odkazové čáry řady).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava kótování oblouků (poloměr, průměr, tloušťka, obrys otvoru).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Oprava kótování oblouků, 2026-11-26 (druhé hlášení uživatele; scéna `?ukazka=koty`)
+- **Poloměr a průměr:** nástroj Kóta – klik na líc obloukové stěny a pak do volna vloží poloměr (R) nebo
+  průměr (⌀) podle volby v info boxu nástroje („Kóta oblouku“). Kóta leží na paprsku v místě kliknutí,
+  průměr vede přes střed; změna čísla průměru změní poloměr stěny. Nová míra `diameter`.
+- **Tloušťka obloukové stěny** se kótuje radiálně v místě položení (`dimension/radial.ts`), dřív
+  vodorovnou čarou od začátku oblouku.
+- **Obrys otvoru v obloukové stěně** (náhled při vkládání, otvor mimo řez, záplaty rekonstrukce) sleduje
+  líce oblouku; dřív čtyřúhelník s rovnými stranami. Testy `dimension/arc-radial.test.ts`,
+  `opening/draw.test.ts`, e2e `koty-otvory.spec.ts`.
 
 ### Oprava kótování, 2026-11-26 (hlášení uživatele; scéna `?ukazka=koty`)
 - **Hrany otvorů v nástroji Kóta:** nástroj chytal jen líce a čela stěn. Teď chytí i hrany každého

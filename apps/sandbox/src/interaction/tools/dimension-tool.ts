@@ -18,6 +18,18 @@ const DIM_EDGES = ['ref', 'opp', 'start', 'end'] as const;
 
 const same = (a: FaceRef, b: FaceRef) =>
   a.wallId === b.wallId && a.face === b.face && a.openingId === b.openingId;
+/** Líc obloukové stěny (ne hrana otvoru): klik do volna pak dá poloměr / průměr. */
+function isArcFace(s: Session, r: FaceRef): boolean {
+  const p = s.model.elements[r.wallId]?.path;
+  return (
+    !r.openingId &&
+    (r.face === 'ref' || r.face === 'opp') &&
+    !!p &&
+    p.kind === 'arc' &&
+    Math.abs(p.bulge) > 1e-9
+  );
+}
+
 const refOf = (f: FaceHit): FaceRef => ({
   wallId: f.wallId,
   face: f.face,
@@ -30,12 +42,16 @@ export class DimensionTool implements Tool {
   private used: FaceRef[] = [];
   private items: DraftItem[] = [];
   private placed: Placed | null = null;
+  /** Poloměr / průměr: první klik na oblouk, druhý do volna (hlášení uživatele 2026-11-26). */
+  private radial: DraftItem | null = null;
   private hover: FaceHit | null = null;
 
   constructor(private readonly s: Session) {}
 
   hint(): string {
     if (!this.prev) return 'Klikni na první líc, čelo volného konce nebo hranu otvoru (tolerance 12 px).';
+    if (this.radial && !this.items.length)
+      return 'Klik do volna = poloměr / průměr (volba v info boxu); druhý líc nebo hrana = vzdálenost.';
     if (!this.items.length) return 'Klikni na druhý rovnoběžný líc (u obloukové stěny hranu přes stěnu).';
     return 'Další líc přidá kótu do řady, Shift+klik úsek přeskočí. Klik do prázdna řadu usadí, Esc ji nechá na místě.';
   }
@@ -50,6 +66,8 @@ export class DimensionTool implements Tool {
 
   move(p: PointerInfo) {
     this.hover = this.face(p);
+    if (this.radial && !this.items.length)
+      this.placed = placeDrafts(this.s, [draftOf(this.radial, 0, this.s.storeyId)], p.world, true);
     if (this.items.length && this.placed)
       this.placed = placeDrafts(this.s, this.placed.drafts, p.world, p.alt);
   }
@@ -58,7 +76,10 @@ export class DimensionTool implements Tool {
     const f = p.button === 0 ? this.face(p) : null;
     if (!f) {
       if (this.items.length) this.finish(p);
-      else this.reset();
+      else if (this.radial && this.placed) {
+        commitDrafts(this.s, [this.radial], this.placed);
+        this.reset();
+      } else this.reset();
       return;
     }
     const ref = refOf(f);
@@ -67,6 +88,7 @@ export class DimensionTool implements Tool {
     if (!this.prev) {
       this.prev = ref;
       this.used = [ref];
+      this.radial = isArcFace(this.s, ref) ? { kind: 'length', ref, measure: this.s.options.arcDim } : null;
       return;
     }
     if (p.shift && this.items.length) {
@@ -87,6 +109,7 @@ export class DimensionTool implements Tool {
       );
       return;
     }
+    this.radial = null;
     this.items.push({ kind: 'linear', refs: [prev, ref], ownerRef: 1, ...pair });
     this.prev = ref;
     this.used.push(ref);
@@ -101,6 +124,7 @@ export class DimensionTool implements Tool {
   }
 
   private reset() {
+    this.radial = null;
     this.prev = null;
     this.used = [];
     this.items = [];
