@@ -18,6 +18,7 @@ const L = (fn: WallLayer['function'], thickness: number, materialId = 'm'): Wall
 const T = (layers: WallLayer[], bands?: HeightBand[]): WallType => ({
   id: 't',
   name: 'Test',
+  mark: 'S1',
   bands: bands ?? [{ height: null, layers }],
   properties: DEFAULT_WALL_PROPERTIES,
 });

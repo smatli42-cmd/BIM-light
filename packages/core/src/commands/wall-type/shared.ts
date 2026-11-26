@@ -57,7 +57,25 @@ export function normalizeRefLines(model: Model): Model {
 }
 
 /** Uloží typ: validace skladby a jedinečný název; stěny typu bez jádra přepne na líc. */
-export function putValidType(model: Model, type: WallType): Model {
+/** Volná značka typu: S1, S2… (první nepoužité číslo). */
+export function freeMark(model: Model, except?: Id): string {
+  const used = new Set(
+    Object.values(model.wallTypes)
+      .filter((t) => t.id !== except)
+      .map((t) => t.mark),
+  );
+  let i = 1;
+  while (used.has(`S${i}`)) i++;
+  return `S${i}`;
+}
+
+/** Značka je prázdná nebo ji má jiný typ? */
+const markClash = (model: Model, type: WallType) =>
+  !type.mark || Object.values(model.wallTypes).some((t) => t.id !== type.id && t.mark === type.mark);
+
+/** Uloží platný typ; chybějící nebo obsazená značka dostane volnou (plán stěn Z8). */
+export function putValidType(model: Model, given: WallType): Model {
+  const type = markClash(model, given) ? { ...given, mark: freeMark(model, given.id) } : given;
   const errors = wallTypeErrors(type, (id) => !!model.materials[id]);
   if (errors.length) fail('invalid', errors.join('; '));
   const clash = Object.values(model.wallTypes).find((t) => t.id !== type.id && t.name === type.name);

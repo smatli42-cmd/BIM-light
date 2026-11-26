@@ -9,9 +9,10 @@ import type { DisplaySettings, GraphicEffect } from '../style/types.ts';
 import type { View } from '../view/types.ts';
 import type { Opening } from '../opening/types.ts';
 import type { Category } from './categories.ts';
+import type { ScheduleDef } from '../schedule/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -110,4 +111,6 @@ export interface Model {
   /** Nastavení zobrazení (základ 31): vrstvy, styly, pravidla, pera. */
   readonly display: DisplaySettings;
   readonly views: Readonly<Record<Id, View>>;
+  /** Výkazy a legendy (základ 8, plán stěn Z8): definice tabulek z modelu. */
+  readonly schedules: Readonly<Record<Id, ScheduleDef>>;
 }

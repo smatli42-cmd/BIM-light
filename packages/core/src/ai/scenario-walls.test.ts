@@ -1,9 +1,9 @@
-// Scénář „AI kreslí dům“, část stěny (plán stěn Z1–Z5, Z7): jen JSON volání nástrojů, žádná obrazovka.
+// Scénář „AI kreslí dům“, část stěny (plán stěn Z1–Z5, Z7, Z8): jen JSON volání nástrojů, žádná obrazovka.
 import { describe, expect, it } from 'vitest';
 import { room, row, start } from './scenario-helpers.ts';
 import type { DimRow, WallRow } from './scenario-helpers.ts';
 
-describe('AI scénář: stěny (plán stěn Z1–Z5, Z7)', () => {
+describe('AI scénář: stěny (plán stěn Z1–Z5, Z7, Z8)', () => {
   it('typ stěny přes AI: vlastní skladba, přiřazení stěně, smazání s náhradou (plán stěn Z1)', () => {
     interface TypeRow {
       id: string;
@@ -186,5 +186,31 @@ describe('AI scénář: stěny (plán stěn Z1–Z5, Z7)', () => {
     expect(t?.overridden.sort()).toEqual(['function', 'loadBearing']);
     c.ai.call('wall.setProperties', { wallIds: [top], properties: { function: null, loadBearing: null } });
     expect(c.ai.call<PropRow[]>('wall.properties', { wallIds: [top] })[0]?.overridden).toEqual([]);
+  });
+
+  it('výkazy přes AI: výkaz stěn, vlastní výkaz podle podlaží, legenda a CSV (plán stěn Z8)', () => {
+    interface Table {
+      rows: { kind: string; cells: Record<string, unknown> }[];
+    }
+    const c = start();
+    const [left] = room(c);
+    c.ai.call('opening.create', { wallId: left, offset: 1000, width: 1000, height: 2000 });
+    const list = c.ai.call<{ id: string; name: string }[]>('schedule.list');
+    const walls = list.find((s) => s.name === 'Výkaz stěn')!.id;
+    const t = c.ai.call<Table>('schedule.table', { scheduleId: walls });
+    expect(t.rows.find((r) => r.kind === 'total')?.cells).toMatchObject({ count: 4, openingArea: 2 });
+    const [own] = c.ai.call<string[]>('schedule.create', {
+      name: 'Objem podle stavu',
+      source: 'walls',
+      fields: ['status', 'volume'],
+      groupBy: ['status'],
+      itemize: false,
+    });
+    const rows = c.ai.call<Table>('schedule.table', { scheduleId: own }).rows;
+    expect(rows[0]?.cells.status).toBe('nový');
+    const legend = list.find((s) => s.name === 'Legenda skladeb')!.id;
+    expect(c.ai.call<string>('schedule.table', { scheduleId: legend, format: 'csv' })).toMatch(
+      /^Značka;Typ;/,
+    );
   });
 });

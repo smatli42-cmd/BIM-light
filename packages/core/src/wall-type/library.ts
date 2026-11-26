@@ -109,6 +109,7 @@ export function wallTypeFromLibrary(
   return {
     id: newId(),
     name: item.name,
+    mark: '',
     bands: [band],
     properties: { ...DEFAULT_WALL_PROPERTIES, ...item.properties },
     source: { libraryId: WALL_TYPE_LIBRARY_ID, itemId: item.key, version: 1 },

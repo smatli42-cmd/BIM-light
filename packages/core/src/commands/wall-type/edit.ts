@@ -61,7 +61,7 @@ export const wallTypeCreate = defineCommand<CreateParams>({
       ? p.bands.map((b) => ({ height: b.height, layers: b.layers.map(toLayer) }))
       : [{ height: null, layers: (p.layers ?? []).map(toLayer) }];
     const properties = { ...DEFAULT_WALL_PROPERTIES, ...p.properties };
-    const type: WallType = { id: ctx.newId(), name: p.name.trim(), bands, properties };
+    const type: WallType = { id: ctx.newId(), name: p.name.trim(), mark: '', bands, properties };
     return { model: putValidType(model, type), created: [type.id] };
   },
 });
@@ -74,7 +74,8 @@ export const wallTypeDuplicate = defineCommand<{ typeId: Id; name?: string }>({
   params: S.object({ typeId: S.id, name: { type: 'string', description: 'název kopie' } }, ['typeId']),
   run(model, p, ctx) {
     const { source: _s, ...src } = wallTypeOf(model, p.typeId);
-    const type: WallType = { ...src, id: ctx.newId(), name: freeTypeName(model, p.name?.trim() || src.name) };
+    const name = freeTypeName(model, p.name?.trim() || src.name);
+    const type: WallType = { ...src, id: ctx.newId(), name, mark: '' };
     return { model: putValidType(model, type), created: [type.id] };
   },
 });

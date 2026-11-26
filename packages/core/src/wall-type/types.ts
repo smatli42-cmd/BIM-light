@@ -30,6 +30,8 @@ export interface HeightBand {
 export interface WallType {
   readonly id: Id;
   readonly name: string;
+  /** Značka typu (plán stěn Z8) – krátké označení skladby v půdorysu a v legendě, např. „S1“. */
+  readonly mark: string;
   readonly bands: readonly HeightBand[];
   /** Vlastnosti typu (plán stěn Z7): funkce, nosná, vnější, požár, akustika. */
   readonly properties: WallProperties;

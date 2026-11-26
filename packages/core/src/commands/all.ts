@@ -43,7 +43,8 @@ import { wallMove, wallOffset, wallRotate } from './wall/move.ts';
 import { wallScale } from './wall/scale.ts';
 import { wallCurve, wallStraighten } from './wall/curve.ts';
 import { wallFlipSide, wallSetProperties, wallSetType } from './wall/properties.ts';
-import { wallTypeSetProperties } from './wall-type/properties.ts';
+import { wallTypeSetMark, wallTypeSetProperties } from './wall-type/properties.ts';
+import { scheduleCreate, scheduleDelete, scheduleUpdate } from './schedule/schedule.ts';
 import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
 import { wallSplit } from './wall/split.ts';
 import { wallDeleteNode } from './wall/merge.ts';
@@ -160,6 +161,10 @@ export const CORE_COMMANDS = [
   wallTypeRemoveLayer,
   wallTypeMoveLayer,
   wallTypeSetProperties,
+  wallTypeSetMark,
+  scheduleCreate,
+  scheduleUpdate,
+  scheduleDelete,
   wallTypeUpdateLayer,
 ];
 

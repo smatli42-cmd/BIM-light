@@ -10,6 +10,7 @@ import type { WallType } from '../wall/types.ts';
 import { WALL_TYPE_LIBRARY, wallTypeFromLibrary } from '../wall-type/library.ts';
 import { DEFAULT_CUT_HEIGHT } from '../wall/layers.ts';
 import { SCHEMA_VERSION, type Model } from './types.ts';
+import { defaultSchedules } from '../schedule/defaults.ts';
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
   Object.fromEntries(items.map((i) => [i.id, i]));
@@ -25,7 +26,10 @@ function materials(newId: IdGenerator): Material[] {
 /** Výchozí typy = kopie celé knihovny typů s odkazem na původ (základ 21). */
 function wallTypes(mats: Material[], newId: IdGenerator): WallType[] {
   const byKey = (key: string) => mats.find((m) => m.source?.itemId === key)?.id ?? '';
-  return WALL_TYPE_LIBRARY.map((item) => wallTypeFromLibrary(item, byKey, newId));
+  return WALL_TYPE_LIBRARY.map((item, i) => ({
+    ...wallTypeFromLibrary(item, byKey, newId),
+    mark: `S${i + 1}`,
+  }));
 }
 
 export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): Model {
@@ -63,5 +67,6 @@ export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): 
     variantSets: {},
     display,
     views: { [view.id]: view },
+    schedules: defaultSchedules(),
   };
 }
