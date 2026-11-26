@@ -12,6 +12,7 @@ import { InstanceTypeTabs, Section } from './Section.tsx';
 import { NewStatusField } from './NewStatus.tsx';
 import { WallDisplay } from './WallDisplay.tsx';
 import { TypePropsSection, WallPropsSection } from './WallProps.tsx';
+import { WallTagSection } from './WallTags.tsx';
 
 const REF_INFO = 'Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.';
 
@@ -108,6 +109,7 @@ function SelectedInstance({ s, walls }: { s: Session; walls: Wall[] }) {
         <WallHeightFields s={s} walls={walls} />
       </Section>
       <WallPropsSection s={s} walls={walls} />
+      <WallTagSection s={s} walls={walls} />
       <WallDisplay s={s} walls={walls} />
     </>
   );

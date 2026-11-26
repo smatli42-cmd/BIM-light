@@ -7,6 +7,7 @@ import type { ToolId } from '../../interaction/types.ts';
 import type { Session } from '../../session/session.ts';
 import { OpeningPanel } from '../OpeningPanel.tsx';
 import { CommandOptions, SelectOptions } from './ToolOptions.tsx';
+import { TagAllSection } from './WallTags.tsx';
 import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
 
 const COMMANDS: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'align', 'trim', 'split'];
@@ -38,5 +39,10 @@ export function InfoContent({ s }: { s: Session }) {
   if (id === 'opening') return <OpeningPanel s={s} />;
   if (any) return <Selection s={s} />;
   if (WALL_TOOLS.includes(id) || id === 'pickline') return <NewWallInfo s={s} />;
-  return <SelectOptions s={s} />;
+  return (
+    <>
+      <SelectOptions s={s} />
+      <TagAllSection s={s} />
+    </>
+  );
 }
