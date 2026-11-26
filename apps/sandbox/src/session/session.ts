@@ -28,7 +28,7 @@ import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
 import { Selection } from './selection.ts';
-import type { OpeningDefaults } from './opening-defaults.ts';
+import { OPENING_DEFAULTS, type OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
 import { DEFAULT_SCREEN, type ScreenOptions } from './screen.ts';
 import type { WindowState } from './screen.ts';
@@ -68,14 +68,7 @@ export class Session {
   /** grid = rozteč mřížky v mm, 0 = vypnutá (katalog kreslení 2.6: mřížka není, jde zapnout). */
   options = { copy: false, arrayCount: 3, arrayRadial: false, grid: 0 };
   /** Rozměry nového otvoru (nástroj Otvor, plán stěn Z4). */
-  openingDefaults: OpeningDefaults = {
-    width: 1200,
-    height: 1500,
-    sill: 900,
-    kind: 'through',
-    depth: 150,
-    side: 'ref',
-  };
+  openingDefaults: OpeningDefaults = { ...OPENING_DEFAULTS };
   typed: TypedInput = { field: 'len', len: '', ang: '' };
   menu: MenuState | null = null;
   /** Paleta u uzlu / hrany vybrané stěny (koncepce rozhraní, část 2 I). */
