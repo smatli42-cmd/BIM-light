@@ -74,7 +74,8 @@ function autoConnect(model: Model, newIds: readonly Id[], newId: IdGenerator): M
     for (const end of ['start', 'end'] as const) {
       const w = m.elements[id] as Wall;
       if (!isFreeEnd(m, id, end)) continue;
-      const link = connectionAt(m, w.storeyId, endPoint(w.path, end), [id], inwardDir(w.path, end));
+      const at = endPoint(w.path, end);
+      const link = connectionAt(m, w.storeyId, at, [id], inwardDir(w.path, end), w.status);
       if (!link) continue;
       const rel: WallConnection = {
         id: newId(),

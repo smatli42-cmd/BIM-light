@@ -14,7 +14,7 @@ export type Link = AutoLink;
 
 /** Kam se napojí konec nové stěny ležící v bodě `p` (nebo null). */
 export function connectionAt(s: Session, p: Vec2, exclude: readonly Id[], dir?: Vec2): Link | null {
-  return coreConnectionAt(s.model, s.storeyId, p, exclude, dir);
+  return coreConnectionAt(s.model, s.storeyId, p, exclude, dir, s.options.newStatus);
 }
 
 /** Tloušťka typu stěny (první pás) pro náhled. */

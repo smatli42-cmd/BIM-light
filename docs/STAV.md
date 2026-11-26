@@ -19,7 +19,11 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 - Schéma projektu 11 → 12, zobrazení 4 → 5 (`view/migrate-v11.ts`): fáze vybraná dřív v přepisech se
   přesune do filtru; „Fáze – nový stav“ se přejmenuje na „plánovaný“ a přibude nový „nový stav“.
 - AI: `view.info` vrací `phaseFilterId` a `phaseFilters`; scénář AI používá `view.setPhaseFilter`.
-- Testy: jádro 703 (`view/phase-filter.test.ts` – příklad uživatele: 4 stěny, bouraná a nová příčka),
+- **Oprava po vyzkoušení (mezera v plánovaném stavu):** stěny skryté v pohledu (filtr rekonstrukce,
+  vrstva, pravidlo „skrýt“) se v kresbě nenapojují (`view/visible-walls.ts`) – nová příčka přes bouranou
+  je v plánovaném stavu souvislá i u už nakreslených napojení. Při kreslení se nová stěna s bouranou
+  nenapojí vůbec (ani křížem, ani v T, `canJoinStatus`); stávající se napojuje s oběma.
+- Testy: jádro 706 (`view/phase-filter.test.ts` – příklad uživatele: 4 stěny, bouraná a nová příčka),
   prohlížeč 133 (`rekonstrukce.spec.ts`).
 
 ### Rozhraní: UI5 část 2 hotovo, 2026-11-26 (Změnit velikost a průvodní lekce podle Arditu)

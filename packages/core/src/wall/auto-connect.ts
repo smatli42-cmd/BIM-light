@@ -13,7 +13,7 @@ import {
   type Vec2,
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
-import type { Model } from '../model/types.ts';
+import type { Model, Status } from '../model/types.ts';
 import type { ConnectionType } from '../relation/types.ts';
 import { allWallGeometry } from './geometry.ts';
 import { allWalls, connectionsOf, endToType, sidesFor } from './queries.ts';
@@ -25,6 +25,13 @@ export interface AutoLink {
   readonly wallId: Id;
   readonly at: ConnectionType;
 }
+
+/**
+ * Smí se stěny napojit podle stavu (fáze)? Nová a bouraná nikdy (nová příčka přes bouranou nesmí
+ * po zbourání zůstat přerušená – pokyn uživatele 2026-11-26). Stávající se napojuje s oběma.
+ */
+export const canJoinStatus = (a: Status, b: Status): boolean =>
+  !((a === 'new' && b === 'demolished') || (a === 'demolished' && b === 'new'));
 
 /** Je konec stěny volný (bez napojení)? */
 export const isFreeEnd = (m: Model, wallId: Id, end: PathEnd): boolean =>
@@ -41,7 +48,7 @@ const PARALLEL = 0.05;
 
 /**
  * Kam se napojí konec ležící v bodě `p` na podlaží; null = nikam. Roh má přednost před T.
- * `dir` = směr nové stěny od tohoto konce: rovnoběžná stěna se jako hostitel v T přeskočí
+ * `status` = stav nové stěny (nová se nenapojí na bouranou). `dir` = směr nové stěny od tohoto konce: rovnoběžná stěna se jako hostitel v T přeskočí
  * (bod ve vnějším rohu leží na lících dvou stěn, napojit se má na tu kolmou).
  */
 export function connectionAt(
@@ -50,8 +57,11 @@ export function connectionAt(
   p: Vec2,
   exclude: readonly Id[] = [],
   dir?: Vec2,
+  status: Status = 'new',
 ): AutoLink | null {
-  const walls = allWalls(model).filter((w) => w.storeyId === storeyId && !exclude.includes(w.id));
+  const walls = allWalls(model).filter(
+    (w) => w.storeyId === storeyId && !exclude.includes(w.id) && canJoinStatus(w.status, status),
+  );
   for (const w of walls)
     for (const end of ['start', 'end'] as const) {
       if (dist(endPoint(w.path, end), p) <= CONNECT_TOL && isFreeEnd(model, w.id, end))
@@ -82,8 +92,10 @@ export function crossingWalls(model: Model, storeyId: Id, path: Path, wallId?: I
     wallId ? connectionsOf(model, wallId).map((c) => sidesFor(c, wallId).other.wallId) : [],
   );
   const inside = (q: Vec2, p: Path) => dist(q, p.start) > CONNECT_TOL && dist(q, p.end) > CONNECT_TOL;
+  const status = wallId ? model.elements[wallId]?.status : undefined;
   return allWalls(model)
     .filter((w) => w.storeyId === storeyId && w.id !== wallId && !linked.has(w.id))
+    .filter((w) => !status || canJoinStatus(w.status, status))
     .filter((w) => pathIntersections(path, w.path).some((q) => inside(q, path) && inside(q, w.path)))
     .map((w) => w.id);
 }

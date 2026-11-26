@@ -87,4 +87,54 @@ describe('pokyn uživatele 2026-11-26: filtr rekonstrukce pohledu (vzor Arditu /
     expect(names).toEqual(expect.arrayContaining(['Fáze – plánovaný stav', 'Fáze – nový stav']));
     expect(drawView(r.model, f.viewId).primitives.some((p) => p.source?.elementId === neu)).toBe(false);
   });
+
+  it('pokyn uživatele 2026-11-26: příčka označená k bourání až po napojení – plánovaný stav bez mezery', () => {
+    const f = fixture();
+    const old = f.line(vec(3000, 0), vec(3000, 4000));
+    f.run('wall.setProperties', { wallIds: [old], status: 'existing' });
+    const [neu] = f.run('wall.create', {
+      storeyId: f.storeyId,
+      typeId: f.type('Zdivo 300'),
+      path: { kind: 'line', start: vec(0, 2000), end: vec(6000, 2000) },
+      autoConnect: true,
+    });
+    expect(Object.values(f.model.relations).some((r) => r.kind === 'wall-connection')).toBe(true);
+    f.run('wall.setProperties', { wallIds: [old], status: 'demolished' });
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – plánovaný stav') });
+    const fills = drawn(f, neu!).filter((p) => p.source?.role === 'výplň');
+    expect(fills.length).toBe(1);
+  });
+
+  it('skrytá stěna fáze se v kresbě nenapojuje: stávající příčka napojená křížem na novou zůstane celá', () => {
+    const f = fixture();
+    const old = f.line(vec(3000, 0), vec(3000, 4000));
+    f.run('wall.setProperties', { wallIds: [old], status: 'existing' });
+    f.run('wall.create', {
+      storeyId: f.storeyId,
+      typeId: f.type('Zdivo 300'),
+      path: { kind: 'line', start: vec(0, 2000), end: vec(6000, 2000) },
+      autoConnect: true,
+    });
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – stávající stav') });
+    expect(drawn(f, old).filter((p) => p.source?.role === 'výplň').length).toBe(1);
+  });
+
+  it('pokyn uživatele 2026-11-26: nová stěna se při kreslení nenapojí na bouranou (ani křížem, ani v T)', () => {
+    const f = fixture();
+    const old = f.line(vec(3000, 0), vec(3000, 4000));
+    f.run('wall.setProperties', { wallIds: [old], status: 'demolished' });
+    f.run('wall.create', {
+      storeyId: f.storeyId,
+      typeId: f.type('Zdivo 300'),
+      path: { kind: 'line', start: vec(0, 2000), end: vec(6000, 2000) },
+      autoConnect: true,
+    });
+    f.run('wall.create', {
+      storeyId: f.storeyId,
+      typeId: f.type('Zdivo 300'),
+      path: { kind: 'line', start: vec(0, 3000), end: vec(3000, 3000) },
+      autoConnect: true,
+    });
+    expect(Object.values(f.model.relations).filter((r) => r.kind === 'wall-connection')).toEqual([]);
+  });
 });

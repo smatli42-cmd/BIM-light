@@ -49,7 +49,8 @@ function withAuto(model: Model, storeyId: string, p: WallCreateParams) {
   if (!p.autoConnect) return out;
   for (const end of ['start', 'end'] as const) {
     if (out.some((c) => c.end === end)) continue;
-    const link = connectionAt(model, storeyId, endPoint(p.path, end), [], inwardDir(p.path, end));
+    const at = endPoint(p.path, end);
+    const link = connectionAt(model, storeyId, at, [], inwardDir(p.path, end), p.status ?? 'new');
     if (link) out.push({ end, ...link });
   }
   return out;

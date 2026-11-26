@@ -6,14 +6,14 @@ import type { Drawing, Primitive } from '../drawing/primitives.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { rulesFor } from '../rules/cross-rules.ts';
-import { elementFacts, type ElementFacts } from '../style/conditions.ts';
+import { type ElementFacts } from '../style/conditions.ts';
 import { resolveGraphics } from '../style/graphics.ts';
 import { wallCutRelation } from '../wall/cut.ts';
+import { visibleWalls } from './visible-walls.ts';
 import { drawWalls as drawWallItems, type WallDrawItem } from '../wall/draw.ts';
 import { drawProjected, drawRefLine, filterLayers, type Structure } from '../wall/draw-extras.ts';
 import type { DrawLookup } from '../wall/draw-hatch.ts';
 import { allWallGeometry } from '../wall/geometry.ts';
-import { allWalls } from '../wall/queries.ts';
 import { categoryState, detailOf, layerState, styleOfView } from './effective.ts';
 import { scaleHatch } from '../hatch/scale.ts';
 import type { Hatch } from '../hatch/types.ts';
@@ -39,7 +39,8 @@ export const isDimensionVisible = (model: Model, view: View, d: Dimension): bool
 
 function drawWalls(model: Model, view: View, merge: boolean, structure: Structure): Primitive[] {
   const detail = detailOf(model.display, view);
-  const geoms = allWallGeometry(model, view.storeyId, view.cutPlane);
+  const vis = visibleWalls(model, view);
+  const geoms = allWallGeometry(vis.model, view.storeyId, view.cutPlane);
   const items: WallDrawItem[] = [];
   const k = styleOfView(model.display, view).hatchScale ?? 1;
   const scaled = new Map<string, Hatch | undefined>();
@@ -54,12 +55,9 @@ function drawWalls(model: Model, view: View, merge: boolean, structure: Structur
     },
   };
   const extra: Primitive[] = [];
-  for (const w of allWalls(model)) {
+  for (const { wall: w, g } of vis.shown) {
     const geom = geoms.get(w.id);
-    if (!geom || w.variant.kind !== 'main') continue;
-    if (!categoryState(model.display, view, w.category).visible) continue;
-    const g = resolveGraphics(model.display, view, elementFacts(model, w)).effect;
-    if (!g.visible) continue;
+    if (!geom) continue;
     // Plán stěn Z6: jen stěna, kterou protíná rovina řezu, se kreslí v řezu (výplň, šrafy, vrstvy).
     const cut = wallCutRelation(model, w, view.cutPlane);
     if (cut === 'cut') items.push({ geom: filterLayers(geom, structure), g });
@@ -72,8 +70,9 @@ function drawWalls(model: Model, view: View, merge: boolean, structure: Structur
 /** Otvory mimo rovinu řezu (čárkovaně, plán stěn Z4). */
 function drawOpenings(model: Model, view: View): Primitive[] {
   const out: Primitive[] = [];
+  const hidden = visibleWalls(model, view).hidden;
   for (const o of Object.values(model.openings)) {
-    if (o.storeyId !== view.storeyId || o.variant.kind !== 'main') continue;
+    if (o.storeyId !== view.storeyId || o.variant.kind !== 'main' || hidden.has(o.hostId)) continue;
     if (!categoryState(model.display, view, 'opening').visible) continue;
     const g = resolveGraphics(model.display, view, openingFacts(o)).effect;
     if (g.visible) out.push(...drawOpening(model, o, view.cutPlane, g));
