@@ -281,6 +281,15 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
+- **Příští session (dohoda s uživatelem 2026-11-27): dva paralelní proudy** podle
+  `docs/postup-etapy-bim-light.md` (Předplatné a paralelní práce):
+  - **Hlavní proud (tato session, jádro):** desky D1–D4 (data, kresba, IFC; kreslení obdélník /
+    mnohoúhelník / podle stěn; otvory v desce; vazba vršku stěny, výkazy). Před rozhraním vyžádat
+    screenshoty z Arditu (kreslení desky, info box desky, deska v půdorysu).
+  - **Druhý proud (samostatná session, vlastní worktree a větev):** 3D náhled modelu – nový modul, jádro jen
+    čte (3D geometrie stěn a otvorů), okno vedle půdorysu. Stav do `docs/STAV-3d.md`, scény do vlastního
+    souboru scén; jádro nemění (potřebuje-li změnu jádra, požádá hlavní session). Sloučení do `main` až po
+    zelených testech a souhlasu uživatele.
 - **Uživatel vyzkouší skladby (krok 3):** Editor typů → u typu pole Skladba – vybrat jinou skladbu (typ
   ji pak sdílí), upravit vrstvu a zkontrolovat druhý typ, Použít pro.
 - **Uživatel vyzkouší Z9:** vybrat stěnu → Úpravy → Nasát vlastnosti, vybrat jinou → Přenést; Úpravy →
