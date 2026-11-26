@@ -33,6 +33,7 @@ export type ToolId =
   | 'align'
   | 'trim'
   | 'split'
+  | 'demolish'
   | 'rect'
   | 'zoomwin'
   | 'paste'

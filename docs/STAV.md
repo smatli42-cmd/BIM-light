@@ -1,12 +1,20 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z10 – rekonstrukce a kontroly (bez importu a kouzelné hůlky).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, stěny Z10 – kresba probourání a zazdívky, nástroj Vybourat úsek.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Stěny Z10 dokončení: kresba probourání a zazdívky, nástroj Vybourat úsek, 2026-11-26
+- Místo otvoru v řezu stěny se kreslí jako část stěny v opačném stavu (`opening/renovation.ts`):
+  probourání (nový otvor ve stávající stěně) jako bourání – v Bouracích pracích a Srovnávacím žlutě
+  čárkovaně s výplní; zazdívka (bouraný otvor) jako nová konstrukce – v Novém stavu a Srovnávacím červeně.
+  Grafiku dává filtr rekonstrukce (žádné barvy v kódu); kde se neliší od stěny, nic navíc. Jen u otvorů
+  v rovině řezu a při zobrazení celé skladby.
+- Nástroj **Vybourat úsek** v liště úprav (vedle Rozdělit): dva kliky na stěnu → `wall.demolishPart`.
 
 ### Stěny Z10: rekonstrukce a kontroly, 2026-11-26 (plán stěn, část 3; bez importu a kouzelné hůlky)
 - **Probourání a zazdívka** = otvor se stavem: otvor, který filtr rekonstrukce skryje, stěnu v kresbě
@@ -164,9 +172,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
-- **Z10:** probourání a zazdívka jsou otvor se stavem (žádný nový druh prvku); v Bouracích pracích se
-  zatím neukáže vybouraná část stěny v místě probourání žlutě ani zazdívka v novém stavu červeně – stěna je
-  jen celá / s otvorem. Kontrola: „nenapojený konec“ = volný konec blíž k referenční čáře jiné stěny než
+- **Z10:** probourání a zazdívka jsou otvor se stavem (žádný nový druh prvku); jejich místo se kreslí
+  grafikou opačného stavu (probourání = bourání, zazdívka = nový), jen obrys a výplň, bez vlastní šrafy
+  zdiva u zazdívky (výplň podle pravidla). Kontrola: „nenapojený konec“ = volný konec blíž k referenční čáře jiné stěny než
   její tloušťka + 100 mm; překryv jen u přímých rovnoběžných stěn (oblouky zatím ne); mezery v obrysu
   místnosti až s místnostmi. Import ze zaměřování a kouzelná hůlka čekají na etapu 3 (otázka G).
 
@@ -240,9 +248,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
-- **Z10 zbývá:** kresba probourání v Bouracích pracích (vybouraná část stěny žlutě) a zazdívky v novém
-  stavu (výplň jako nová konstrukce), nástroj „Vybourat úsek“ v rozhraní (dva kliky na stěnu), kontrola
-  překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze zaměřování a kouzelná hůlka (etapa 3).
+- **Z10 zbývá:** kontrola překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze
+  zaměřování a kouzelná hůlka (etapa 3).
 - **Skladby – další:** výpočty u skladby podle vzoru Arditu (U, R, plošná hmotnost, CO₂e, cena,
   kondenzace, Rw) – vyžadují vlastnosti materiálů (λ, hustota…); seznam samotných skladeb (bez typu)
   v okně a jejich přímé zakládání; desky a střechy skladby použijí, až budou.

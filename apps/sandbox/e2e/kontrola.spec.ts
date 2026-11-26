@@ -1,6 +1,7 @@
-// Prohlížečové testy: kontrola modelu (plán stěn Z10) – varování v info boxu a výběr dotčených stěn.
+// Prohlížečové testy: kontrola modelu a rekonstrukce (plán stěn Z10) – varování v info boxu, výběr
+// dotčených stěn, nástroj Vybourat úsek.
 import { expect, test } from '@playwright/test';
-import { open, selection } from './helpers.ts';
+import { clickAt, model, open, room, selection } from './helpers.ts';
 
 test.beforeEach(async ({ page }) => {
   await open(page);
@@ -21,4 +22,17 @@ test('plan-steny / Z10: Zkontrolovat podlaží – překryv dvou stěn, klik vyb
   await expect(page.getByTestId('check-count')).toHaveText('Varování: 1');
   await page.getByTestId('check-issue').click();
   expect([...(await selection(page)).walls].sort()).toEqual([...ids].sort());
+});
+
+test('plan-steny / Z10: nástroj Vybourat úsek – dva kliky na stěnu, prostřední část má stav bourání', async ({
+  page,
+}) => {
+  const [left] = await room(page);
+  await page.getByTestId('tool-demolish').click();
+  await clickAt(page, -150, 1000);
+  await clickAt(page, -150, 2000);
+  const walls = Object.values((await model(page)).elements);
+  expect(walls).toHaveLength(6);
+  expect(walls.filter((w) => w.status === 'demolished')).toHaveLength(1);
+  expect(walls.map((w) => w.id)).toContain(left);
 });

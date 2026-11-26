@@ -34,6 +34,7 @@ export const ICONS = {
   align: ['M4 4v16', 'M8 7h12v4H8z', 'M8 14h8v4H8z'],
   trim: ['M4 20V6', 'M4 20h14', 'M8 16V3', 'M8 16h13'],
   split: ['M3 12h7', 'M14 12h7', 'M12 4v4', 'M12 16v4', 'M10 9l4 6'],
+  demolish: ['M3 9h18v6H3z', 'M9 9v6', 'M15 9v6', 'M10 10l4 4', 'M14 10l-4 4'],
   search: ['c:10.5,10.5,6.5', 'M15.5 15.5L21 21'],
   // Aplikace (lišta A)
   undo: ['M9 14L4 9l5-5', 'M4 9h10a6 6 0 0 1 0 12h-3'],

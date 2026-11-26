@@ -5,6 +5,7 @@ import { AngleTool } from './angle-tool.ts';
 import { ArcWallTool } from './arc-wall-tool.ts';
 import { ArrayTool } from './commands/array-tool.ts';
 import { AlignTool, RectTool, SplitTool, TrimTool, ZoomWindowTool } from './commands/edit-tools.ts';
+import { DemolishTool } from './commands/demolish-tool.ts';
 import { PasteTool } from './commands/paste-tool.ts';
 import { ScaleTool } from './commands/scale-tool.ts';
 import { CopyTool, MirrorTool, MoveTool, RotateTool } from './commands/transform-tools.ts';
@@ -29,6 +30,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   align: (s) => new AlignTool(s),
   trim: (s) => new TrimTool(s),
   split: (s) => new SplitTool(s),
+  demolish: (s) => new DemolishTool(s),
   rect: (s) => new RectTool(s),
   zoomwin: (s) => new ZoomWindowTool(s),
   paste: (s) => new PasteTool(s),

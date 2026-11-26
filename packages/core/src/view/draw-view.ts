@@ -20,6 +20,7 @@ import type { Hatch } from '../hatch/types.ts';
 import type { View } from './types.ts';
 import { wallProperties } from '../wall-props/resolve.ts';
 import { drawOpening, openingFacts } from '../opening/draw.ts';
+import { drawRenovationPatches } from '../opening/renovation.ts';
 import { drawWallTag, tagFacts } from '../tag/draw.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
@@ -112,7 +113,11 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
   const view = model.views[viewId];
   if (!view) throw new Error(`Pohled ${viewId} neexistuje`);
   const walls = drawWalls(model, view, options.mergeMaterials ?? true, options.structure ?? 'all');
-  const out = [...walls, ...drawOpenings(model, view, options.structure ?? 'all')];
+  const structure = options.structure ?? 'all';
+  // Záplaty rekonstrukce kryjí celou tloušťku stěny – jen při zobrazení celé skladby.
+  const patches =
+    structure === 'all' ? drawRenovationPatches(model, view, visibleWalls(model, view).shown) : [];
+  const out = [...walls, ...patches, ...drawOpenings(model, view, structure)];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;

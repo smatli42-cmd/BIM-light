@@ -11,6 +11,13 @@ const outlines = (f: Fixture, wallId: string) =>
     (p) => p.kind === 'line' && p.closed && p.source?.elementId === wallId && p.source.role === 'obrys',
   ).length;
 
+/** Kresba „záplaty“ otvoru (probourání / zazdívka) v řezu stěny. */
+const patch = (f: Fixture, openingId: string) =>
+  drawView(f.model, f.viewId).primitives.filter(
+    (p) =>
+      p.source?.elementId === openingId && (p.source.role === 'probourání' || p.source.role === 'zazdívka'),
+  );
+
 function wallWithOpening(status: 'new' | 'demolished') {
   const f = fixture();
   const w = f.line(vec(0, 0), vec(6000, 0));
@@ -34,5 +41,39 @@ describe('plan-steny / Z10: probourání a zazdívka jako otvor se stavem', () =
     expect(outlines(f, w)).toBe(2);
     f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – plánovaný stav') });
     expect(outlines(f, w)).toBe(1);
+  });
+
+  it('Bourací práce: místo probourání ve stávající stěně žlutě čárkovaně; ve stávajícím stavu nic navíc', () => {
+    const { f, w } = wallWithOpening('new');
+    const id = Object.keys(f.model.openings)[0]!;
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – bourací práce') });
+    expect(outlines(f, w)).toBe(1);
+    const fill = patch(f, id).find((p) => p.kind === 'fill');
+    const line = patch(f, id).find((p) => p.kind === 'line');
+    expect(fill?.kind === 'fill' && fill.color).toBe('#fff3b0');
+    expect(line?.kind === 'line' && line.stroke.lineType).toBe('dashed');
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – stávající stav') });
+    expect(patch(f, id)).toEqual([]);
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – srovnávací') });
+    expect(outlines(f, w)).toBe(2);
+    expect(patch(f, id).length).toBeGreaterThan(0);
+  });
+
+  it('Nový stav: zazdívka červeně jako nová konstrukce; v plánovaném stavu jen celá stěna', () => {
+    const { f, w } = wallWithOpening('demolished');
+    const id = Object.keys(f.model.openings)[0]!;
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – nový stav') });
+    expect(outlines(f, w)).toBe(1);
+    const line = patch(f, id).find((p) => p.kind === 'line');
+    expect(line?.kind === 'line' && line.stroke.color).toBe('#c62828');
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – plánovaný stav') });
+    expect(patch(f, id)).toEqual([]);
+  });
+
+  it('nový otvor v nové stěně ani bez filtru rekonstrukce nic navíc nekreslí', () => {
+    const f = fixture();
+    const w = f.line(vec(0, 0), vec(6000, 0));
+    const [o] = f.run('opening.create', { wallId: w, offset: 2000, width: 1000, height: 2100, sill: 0 });
+    expect(patch(f, o!)).toEqual([]);
   });
 });

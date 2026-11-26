@@ -41,6 +41,7 @@ export const EDITS: readonly (readonly ToolDef[])[] = [
     { tool: 'align', icon: 'align', command: 'wall.align' },
     { tool: 'trim', icon: 'trim', command: 'wall.trimToCorner' },
     { tool: 'split', icon: 'split', command: 'wall.split' },
+    { tool: 'demolish', icon: 'demolish', command: 'wall.demolishPart' },
   ],
 ];
 
