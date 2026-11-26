@@ -1,0 +1,97 @@
+/* Okno výkazu (plán stěn Z8): tabulka vlevo, nastavení vpravo. */
+.schedule-dialog {
+  width: min(1200px, 94vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.schedule-dialog .find-head {
+  gap: 12px;
+}
+.schedule-body {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+.schedule-scroll {
+  overflow: auto;
+  max-height: 68vh;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+.schedule-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12.5px;
+}
+.schedule-table th,
+.schedule-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+.schedule-table th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  font-weight: 600;
+}
+.schedule-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.schedule-table .unit {
+  color: var(--muted);
+  font-weight: 400;
+}
+.schedule-table tr.group td {
+  color: var(--heading);
+  font-weight: 600;
+  padding-top: 8px;
+}
+.schedule-table tr.subtotal td {
+  font-style: italic;
+}
+.schedule-table tr.total td {
+  font-weight: 600;
+  border-top: 2px solid var(--line);
+}
+.schedule-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  max-height: 68vh;
+}
+.schedule-settings fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.schedule-settings legend {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.content-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.content-row select {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 800px) {
+  .schedule-body {
+    grid-template-columns: 1fr;
+  }
+}

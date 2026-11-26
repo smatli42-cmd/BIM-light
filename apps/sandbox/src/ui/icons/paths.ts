@@ -108,6 +108,7 @@ export const ICONS = {
   'add-point': ['M3 16h18', 'c:12,16,2.5', 'M12 4v6', 'M9 7h6'],
   curve: ['M3 17c4-10 14-10 18 0', 'c:12,9.5,1.6'],
   card: ['M4 5h16v14H4z', 'M7 9h6', 'M7 13h10', 'M7 16h7'],
+  table: ['M4 5h16v14H4z', 'M4 10h16', 'M4 14.5h16', 'M10 5v14'],
 } as const;
 
 export type IconName = keyof typeof ICONS;

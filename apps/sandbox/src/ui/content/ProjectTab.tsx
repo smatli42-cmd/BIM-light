@@ -5,6 +5,7 @@ import type { Session } from '../../session/session.ts';
 import { openStorey } from '../../session/sets.ts';
 import { Icon } from '../icons/Icon.tsx';
 import { StoreysPanel } from '../StoreysPanel.tsx';
+import { Schedules } from './Schedules.tsx';
 
 const sign = (e: number) => (e > 0 ? `+${e}` : e < 0 ? `−${Math.abs(e)}` : '±0');
 
@@ -29,7 +30,8 @@ export function ProjectTab({ s }: { s: Session }) {
           </li>
         ))}
       </ul>
-      <p class="muted">Řezy, pohledy, 3D a výpisy přibudou s dalšími etapami.</p>
+      <Schedules s={s} />
+      <p class="muted">Řezy, pohledy a 3D přibudou s dalšími etapami.</p>
       <StoreysPanel s={s} />
     </>
   );

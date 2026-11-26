@@ -141,6 +141,17 @@ export function TypePropsSection({ s, type }: { s: Session; type: WallType }) {
       info="Platí pro všechny stěny typu, které hodnotu nepřepisují."
       testid="type-props"
     >
+      <label title="Krátké označení skladby v půdorysu a v legendě skladeb (jedinečné)">
+        Značka
+        <input
+          data-testid="type-mark"
+          key={`${type.id}-${type.mark}`}
+          defaultValue={type.mark}
+          onKeyDown={(e) =>
+            e.key === 'Enter' && s.run('wallType.setMark', { typeId: type.id, mark: e.currentTarget.value })
+          }
+        />
+      </label>
       {WALL_PROPERTY_PARAMS.map((p) => (
         <label key={p.key} title={p.description}>
           {p.label}
