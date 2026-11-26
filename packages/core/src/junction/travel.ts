@@ -1,6 +1,6 @@
 // „Jízda“ vrstvy přes uzel: v jakém pořadí potká vrstvy druhé stěny, kde je jejich bližší hranice,
 // a jestli vrstva druhé stěny v dané buňce skutečně je (po svém vlastním ořezu).
-import { add, angleOf, arcPoints, dot, mul, sub, type Vec2 } from '../geometry/index.ts';
+import { add, angleOf, arcPoints, dist, dot, mul, sub, type Vec2 } from '../geometry/index.ts';
 import { boundary, radiusAt, type Arm, type Frame, type FrameLayer } from './frame.ts';
 import { clipAll, MIN_AREA, signedArea, type Cut } from './half-plane.ts';
 
@@ -57,11 +57,21 @@ function wedge(f: Frame, reach: number): Cut[] {
   return [ray(ang - span, 1), ray(ang + span, -1)];
 }
 
-/** Buňka = průnik pásu vrstvy `x` ramene `a` a pásu vrstvy `y` stěny `other` (kolem uzlu). */
+const distTo = (poly: readonly Vec2[], q: Vec2) => Math.min(...poly.map((p) => dist(p, q)));
+
+/**
+ * Buňka = průnik pásu vrstvy `x` ramene `a` a pásu vrstvy `y` stěny `other` (kolem uzlu). Je-li jedna
+ * ze stěn oblouk, pás přímky a mezikruží se protnou dvakrát; platí jen kus u uzlu, druhý průsečík
+ * (kde se kružnice vrací) se zahodí – jinak by se vrstva zastavila o vrstvu, která u uzlu není.
+ */
 export function cell(a: Arm, x: FrameLayer, other: Frame, y: FrameLayer, reach: number): Vec2[][] {
   const n = other.normal;
   const cuts = [boundary(other, y.lo, n), boundary(other, y.hi, mul(n, -1)), ...wedge(other, reach)];
-  return clipAll(strip(a, x.lo, x.hi, reach), cuts);
+  const polys = clipAll(strip(a, x.lo, x.hi, reach), cuts);
+  if ((!a.arc && !other.arc) || polys.length < 2) return polys;
+  const d = polys.map((p) => distTo(p, a.origin));
+  const best = Math.min(...d);
+  return polys.filter((_, i) => d[i] === best);
 }
 
 /** Leží vrstva s ořezem `cuts` (aspoň kouskem) v buňce? */

@@ -1,11 +1,18 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava šraf na obrazovce (stejně silné čáry).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava napojení přímé stěny a oblouku pod malým úhlem.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Oprava: napojení přímé stěny a oblouku pod malým úhlem, 2026-11-26 (hlášení uživatele se screenshotem)
+- Na vnější straně zalomení se vrstva přímé stěny (omítka, u opačného zakřivení izolace) u uzlu
+  nezapokosovala, ale zmizela a líc ujel. Příčina: pás vrstvy oblouku (mezikruží) protne pás přímé
+  stěny dvakrát – u uzlu a daleko, kde se kružnice vrací; výpočet napojení vzal i ten vzdálený průsečík
+  a vrstvu zastavil o vrstvu, která u uzlu není. Teď platí jen kus buňky nejblíž uzlu (`cell`
+  v `junction/travel.ts`). Test: `junction/arc.test.ts` (oprava 2026-11-26, oba směry zakřivení).
 
 ### Oprava: šrafy na obrazovce stejně silné, 2026-11-26 (připomínka uživatele se screenshoty z Arditu)
 - Čáry šraf vycházely tenčí než pixel obrazovky (pero 0,13 mm ≈ 0,5 px); vyhlazování je pak podle polohy

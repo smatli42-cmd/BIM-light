@@ -202,4 +202,23 @@ describe('plan-steny / Z5: napojení oblouků', () => {
     expect(ownerAt(f, vec(-850, 1150))).toBe('Tepelná izolace EPS');
     expect(ownerAt(f, vec(0, 0))).toBe('');
   });
+
+  it('oprava 2026-11-26: přímá stěna plynule do oblouku (malý úhel) – omítka i izolace pokosem, bez mezery', () => {
+    for (const sweep of [-20, 20]) {
+      const f = fixture();
+      const t = f.type('Obvodová zateplená 465');
+      const a = f.line(vec(-5000, 0), vec(0, 0), { typeId: t });
+      arcWall(f, vec(0, 0), vec(5000, sweep < 0 ? 1500 : -300), sweep, {
+        typeId: t,
+        connections: [{ end: 'start', wallId: a, at: 'ATEND' }],
+      });
+      noOverlap(f, vec(0, 200), 700, 23);
+      areasMatch(f);
+      // Dříve se vrstva na vnější straně zalomení zastavila na druhém (vzdáleném) průsečíku s kružnicí.
+      const faces = wallGeometry(f.model, f.wall(a)).faces;
+      expect(Math.max(faces.ref.end.x, faces.opp.end.x)).toBeLessThan(100);
+      expect(ownerAt(f, vec(-300, 7))).toBe('Omítka');
+      expect(ownerAt(f, vec(-300, 390))).toBe('Tepelná izolace EPS');
+    }
+  });
 });
