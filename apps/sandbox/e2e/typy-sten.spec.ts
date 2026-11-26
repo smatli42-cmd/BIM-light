@@ -1,4 +1,4 @@
-// Prohlížečové testy: panel Typy stěn a editor skladby (plán stěn Z1).
+// Prohlížečové testy: okno Editor typů a skladba typu stěny (plán stěn Z1, rozhodnutí 2026-11-26).
 import { expect, test, type Page } from '@playwright/test';
 import { clickAt, model, open, wall } from './helpers.ts';
 
@@ -15,11 +15,12 @@ async function openType(page: Page, name: string) {
 const typeByName = async (page: Page, name: string) =>
   Object.values((await model(page)).wallTypes).find((t) => t.name === name);
 
-test.describe('plán stěn Z1 / panel Typy stěn', () => {
+test.describe('plán stěn Z1 / okno Editor typů', () => {
   test('seznam typů z knihovny, hledání a Použití', async ({ page }) => {
     await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
     await page.getByTestId('tab-types').click();
-    await expect(page.locator('[data-testid=wall-types] h2')).toContainText('Typy stěn · 8');
+    await expect(page.getByTestId('type-editor-dialog')).toBeVisible();
+    await expect(page.getByTestId('type-row')).toHaveCount(8);
     await page.getByTestId('type-search').fill('Zdivo 300');
     await expect(page.getByTestId('type-row')).toHaveCount(1);
     await page.getByTestId('type-row').click();
@@ -51,6 +52,9 @@ test.describe('plán stěn Z1 / panel Typy stěn', () => {
     await openType(page, 'Zdivo 300');
     await page.getByTestId('type-duplicate').click();
     expect(await typeByName(page, 'Zdivo 300 (2)')).toBeTruthy();
+    // Kopie se v okně hned vybere (jako v Revitu); smazat původní typ = vybrat ho v seznamu.
+    await expect(page.getByTestId('type-name')).toHaveValue('Zdivo 300 (2)');
+    await page.getByTestId('type-row').first().click();
     await page.getByTestId('type-delete').click();
     expect(await typeByName(page, 'Zdivo 300')).toBeUndefined();
     const m = await model(page);
@@ -66,6 +70,30 @@ test.describe('plán stěn Z1 / panel Typy stěn', () => {
     await page.getByTestId('type-library').selectOption({ label: 'SDK příčka 100' });
     await page.getByTestId('type-load').click();
     expect((await typeByName(page, 'SDK příčka 100'))?.source?.itemId).toBe('drywall-100');
+  });
+
+  test('rozhodnutí 2026-11-26: okno se otevře ze záložky Typ vybrané stěny na jejím typu, Esc zavře', async ({
+    page,
+  }) => {
+    await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
+    await clickAt(page, 2000, 150);
+    await page.getByTestId('ib-type').click();
+    await page.getByTestId('open-type-editor').click();
+    await expect(page.getByTestId('type-name')).toHaveValue('Zdivo 300');
+    await expect(page.getByRole('tab', { name: 'Desky' })).toBeDisabled();
+    await page.getByTestId('type-name').press('Escape');
+    await expect(page.getByTestId('type-editor-dialog')).toHaveCount(0);
+  });
+
+  test('rozhodnutí 2026-11-26: nový typ se v okně hned vybere a upravuje', async ({ page }) => {
+    await page.getByTestId('tab-types').click();
+    await page.getByTestId('type-new').click();
+    await expect(page.getByTestId('type-name')).toHaveValue('Nový typ');
+    await page.getByTestId('type-layer-0').getByTestId('field-thickness').fill('250');
+    await page.getByTestId('type-layer-0').getByTestId('field-thickness').press('Enter');
+    await expect(page.getByTestId('type-total')).toContainText('250 mm');
+    await page.getByTestId('type-editor-close').click();
+    await expect(page.getByTestId('type-editor-dialog')).toHaveCount(0);
   });
 
   test('vybraná stěna: změna typu v panelu Vlastnosti', async ({ page }) => {

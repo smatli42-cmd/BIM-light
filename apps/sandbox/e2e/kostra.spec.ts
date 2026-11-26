@@ -24,7 +24,7 @@ test('koncepce-rozhrani / 2: rozložení A–G (lišty, paleta, info box, okno, 
     await expect(page.getByTestId(id)).toBeVisible();
   await page.getByTestId('panel-close').click();
   await expect(page.getByTestId('panel')).toHaveCount(0);
-  await page.getByTestId('tab-types').click();
+  await page.getByTestId('tab-layers').click();
   await expect(page.getByTestId('panel')).toBeVisible();
 });
 

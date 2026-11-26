@@ -286,6 +286,18 @@ Před každým krokem: screenshot odpovídající části Arditu → porovnání
 5. **Pořadí: UI1–UI5 před stěnami Z6.**
 6. **Mockup obrazovky** = tento dokument (schéma v části 2) + prázdná kostra z kroku UI1.
 
+## 11a. Editor typů (rozhodnutí uživatele, 2026-11-26)
+
+- Typy všech prvků (stěny, desky, střechy, později okna, dveře, parametrický nábytek) se upravují v jednom
+  samostatném okně **Editor typů**: vlevo seznam podle druhu, uprostřed náhled, vpravo vrstvy a vlastnosti.
+  Otevírá se z lišty sekcí (ikona Editor typů) a ze záložky Typ v info boxu („Upravit v editoru typů…“).
+- Náhled: svislý řez skladbou (vrstvy nastojato jako skutečná stěna, šrafy, kóty tlouštěk) a pseudo-3D výsek
+  s odstupňovanými vrstvami; výběr vrstvy v náhledu = výběr v tabulce.
+- **Skladba je samostatná položka projektu společná pro stěny, desky a střechy** (vzor Arditu „Skladby“,
+  zaškrtávátka Použít pro); typ prvku na ni odkazuje a přidává své údaje (výška, referenční čára, vlastnosti).
+- Postup po krocích s vyzkoušením: 1) okno se seznamem a tabulkou vrstev, 2) řez a pseudo-3D náhled,
+  3) společné skladby (nová verze schématu s migrací).
+
 ## 12. Mimo rozsah tohoto návrhu
 
 3D okno a jeho lišta (přijde s etapou 3D), výkresy a organizátor výkresů (etapa 7), režim Elektro

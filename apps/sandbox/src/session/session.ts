@@ -74,6 +74,8 @@ export class Session {
   /** Paleta u uzlu / hrany vybrané stěny (koncepce rozhraní, část 2 I). */
   pet: PetState | null = null;
   valueEdit: ValueEditState | null = null;
+  /** Otevřené okno Editor typů: vybraný typ (null = zavřeno). */
+  typeEditor: Id | null = null;
   toasts: Toast[] = [];
   /** Kóty, které brání změně (zvýrazní se červeně). */
   flashDims: Id[] = [];

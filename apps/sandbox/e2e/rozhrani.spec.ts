@@ -66,7 +66,8 @@ test.describe('koncepce-rozhrani / UI2: paleta a info box', () => {
     await page.getByTestId('refline-axis').click();
     expect((await model(page)).elements[id]!.referenceLine).toBe('axis');
     await page.getByTestId('ib-type').click();
-    await expect(page.getByTestId('infobox').getByTestId('type-refline')).toBeVisible();
+    await expect(page.getByTestId('infobox').getByTestId('ib-thickness')).toHaveText('300 mm');
+    await expect(page.getByTestId('infobox').getByTestId('open-type-editor')).toBeVisible();
   });
 
   test('koncepce-rozhrani / 2 D: dvojitá šipka u vybrané stěny ji převrátí; ref. čára vně = protilehlý líc', async ({

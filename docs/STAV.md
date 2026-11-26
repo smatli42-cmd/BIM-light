@@ -1,11 +1,20 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava napojení přímé stěny a oblouku pod malým úhlem.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Editor typů krok 1 (okno se seznamem a vrstvami).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Editor typů, krok 1: samostatné okno, 2026-11-26 (rozhodnutí uživatele, koncepce rozhraní 11a)
+- Okno Editor typů (`ui/type-editor/`): záložky druhů (Stěny; Desky, Střechy, Okna a dveře zašedlé),
+  vlevo seznam se značkou, tloušťkou a použitím, hledání (i podle značky), nový typ, vyčistit, z knihovny;
+  uprostřed náhled skladby a referenční čára; vpravo název, vrstvy jako řádky materiál – mm – funkce
+  (vzor Arditu), „+ vrstva“, prodloužení vrstvy rozbalením, duplikovat / smazat, vlastnosti typu.
+- Otevírá se ikonou Editor typů v liště sekcí (dřív panel Typy stěn) a tlačítkem „Upravit v editoru
+  typů…“ v záložce Typ info boxu (tam zůstal přehled skladby a vlastnosti typu). Esc nebo křížek zavře.
+- Jen rozhraní nad stávajícími příkazy `wallType.*` – nové příkazy ani dotazy nebyly potřeba.
 
 ### Oprava: napojení přímé stěny a oblouku pod malým úhlem, 2026-11-26 (hlášení uživatele se screenshotem)
 - Na vnější straně zalomení se vrstva přímé stěny (omítka, u opačného zakřivení izolace) u uzlu
@@ -340,6 +349,8 @@ Velikost šraf (2026-11-25):
 
 ## Další krok
 
+- **Uživatel vyzkouší Editor typů (krok 1):** ikona Editor typů vpravo v liště sekcí; vybrat stěnu → záložka
+  Typ → Upravit v editoru typů…; nový typ, změna vrstev, duplikovat. Pak krok 2 (řez a pseudo-3D náhled).
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
@@ -360,13 +371,9 @@ Velikost šraf (2026-11-25):
 
 ## Otevřené
 
-- **Editor typů (návrh, čeká na rozhodnutí uživatele):** samostatné okno společné pro stěny, desky,
-  střechy, později okna, dveře a nábytek – vlevo seznam, uprostřed náhled (svislý řez s vrstvami nastojato
-  a pseudo-3D výsek s odstupňovanými vrstvami), vpravo vrstvy a vlastnosti. Vzor z Arditu (screenshot
-  2026-11-26): panel „Skladby“ je společný pro stěnu, desku a střechu (zaškrtávátka Použít pro), u skladby
-  je U, R, plošná hmotnost, splnění požadavku, CO₂e, cena za m², kondenzace v konstrukci, Rw; vrstvy jsou
-  řádky název – tloušťka – materiál, „+ vrstva“. Skladby u nás dnes patří jen typu stěny – sjednocení
-  skladeb pro stěny, desky a střechy probrat s uživatelem.
+- **Editor typů, další kroky (rozhodnuto 2026-11-26, koncepce rozhraní 11a):** krok 2 – svislý řez
+  a pseudo-3D náhled; krok 3 – společné skladby pro stěny, desky a střechy (schéma + migrace). Vzor
+  Arditu u skladby ukazuje i U, R, plošnou hmotnost, CO₂e, cenu, kondenzaci a Rw – výpočty později.
 - **Lineární prvek stěny (nápad uživatele 2026-11-26):** přidání nebo vybrání hmoty podle profilu (sokl,
   římsa, drážka) jako Obklad stěny / Drážka v Revitu; profil jako položka knihovny, součást typu nebo
   instance, vybrání přes společný mechanismus otvorů (základ 19). Zařadit po oknech a dveřích.

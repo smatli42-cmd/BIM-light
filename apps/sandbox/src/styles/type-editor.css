@@ -1,0 +1,116 @@
+/* Okno Editor typů (rozhodnutí uživatele 2026-11-26): seznam | náhled | vrstvy a vlastnosti. */
+.type-editor-dialog {
+  width: min(1240px, 96vw);
+  height: min(760px, 90vh);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.type-editor-dialog .find-head {
+  gap: 12px;
+}
+.te-kinds {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.te-kinds button {
+  border-radius: var(--r-sm);
+  padding: 3px 10px;
+}
+.te-kinds button.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.te-body {
+  display: grid;
+  grid-template-columns: 280px 1fr 460px;
+  gap: 14px;
+  min-height: 0;
+  flex: 1;
+}
+.te-list,
+.te-props {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  overflow: auto;
+}
+.te-list .material-list {
+  flex: 1;
+  overflow: auto;
+}
+.te-list .material-row.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.te-mark {
+  display: inline-block;
+  min-width: 28px;
+}
+.te-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+.te-preview .type-preview {
+  max-width: 100%;
+  height: auto;
+}
+.type-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.type-name input {
+  flex: 1;
+  font-weight: 600;
+}
+.type-layer-head,
+.type-layer-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 64px 92px auto;
+  align-items: center;
+  gap: 4px;
+}
+.type-layer-head {
+  font-size: 11.5px;
+}
+.type-layer-row input,
+.type-layer-row select {
+  width: 100%;
+  min-width: 0;
+}
+.type-layer-tools {
+  display: flex;
+  gap: 2px;
+}
+.type-layer-tools button {
+  min-width: 0;
+  padding: 2px 7px;
+}
+.type-layer-more summary {
+  font-size: 11.5px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.type-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+@media (max-width: 900px) {
+  .te-body {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+}

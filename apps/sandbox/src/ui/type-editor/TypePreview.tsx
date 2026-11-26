@@ -10,14 +10,14 @@ import {
   type ReferenceLine,
 } from '@bim-light/core';
 import { useEffect, useRef } from 'preact/hooks';
-import { paintHatch } from '../render/hatch-paint.ts';
-import { PX_PER_PAPER_MM } from '../render/primitives.ts';
+import { paintHatch } from '../../render/hatch-paint.ts';
+import { PX_PER_PAPER_MM } from '../../render/primitives.ts';
 
-const W = 260;
-const H = 90;
+const WIDTH = 260;
+const HEIGHT = 90;
 const PAD = 8;
 
-function paintLayers(ctx: CanvasRenderingContext2D, model: Model, band: HeightBand, k: number) {
+function paintLayers(ctx: CanvasRenderingContext2D, model: Model, band: HeightBand, k: number, H: number) {
   let x = PAD;
   for (const l of band.layers) {
     const w = l.thickness * k;
@@ -43,9 +43,17 @@ function paintLayers(ctx: CanvasRenderingContext2D, model: Model, band: HeightBa
   }
 }
 
-export function TypePreview(props: { model: Model; band: HeightBand; refLine: ReferenceLine }) {
+export function TypePreview(props: {
+  model: Model;
+  band: HeightBand;
+  refLine: ReferenceLine;
+  width?: number;
+  height?: number;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const { model, band, refLine } = props;
+  const W = props.width ?? WIDTH;
+  const H = props.height ?? HEIGHT;
   useEffect(() => {
     const ctx = ref.current?.getContext('2d');
     if (!ctx) return;
@@ -53,7 +61,7 @@ export function TypePreview(props: { model: Model; band: HeightBand; refLine: Re
     const t = bandThickness(band);
     if (t <= 0) return;
     const k = (W - 2 * PAD) / t;
-    paintLayers(ctx, model, band, k);
+    paintLayers(ctx, model, band, k, H);
     const rx = PAD + referenceDepth(band, refLine) * k;
     ctx.strokeStyle = '#d32f2f';
     ctx.lineWidth = 2;
@@ -63,6 +71,6 @@ export function TypePreview(props: { model: Model; band: HeightBand; refLine: Re
     ctx.lineTo(rx, H - 2);
     ctx.stroke();
     ctx.setLineDash([]);
-  }, [model, band, refLine]);
+  }, [model, band, refLine, W, H]);
   return <canvas ref={ref} width={W} height={H} class="type-preview" data-testid="type-preview" />;
 }

@@ -112,14 +112,6 @@
   border-top: 1px solid var(--line);
   padding: 4px 0;
 }
-.type-layer-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.type-layer-head span {
-  flex: 1;
-}
 .type-layer .schema-form {
   display: grid;
   grid-template-columns: 1fr 1fr;

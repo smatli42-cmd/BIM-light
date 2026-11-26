@@ -1,18 +1,30 @@
 // Info box stěny (koncepce rozhraní, část 2 D): výchozí nastavení nových stěn (nástroj Stěna) a vlastnosti
 // vybraných stěn. Instance = vlastnosti prvku, Typ = úprava skladby (platí pro všechny stěny typu).
-import { bandThickness, parseNumber, type Wall } from '@bim-light/core';
+import { bandThickness, parseNumber, type Wall, type WallType } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
 import { LayerMaterials } from '../LayerMaterials.tsx';
 import { TypeSelect } from '../WallFields.tsx';
 import { WallHeightFields } from '../WallHeightFields.tsx';
-import { WallTypeEditor } from '../WallTypeEditor.tsx';
+import { openTypeEditor } from '../type-editor/TypeEditorDialog.tsx';
 import { CompositionSummary, MethodButtons, RefLineButtons } from './wall-controls.tsx';
 import { InstanceTypeTabs, Section } from './Section.tsx';
 import { NewStatusField } from './NewStatus.tsx';
 import { WallDisplay } from './WallDisplay.tsx';
 import { TypePropsSection, WallPropsSection } from './WallProps.tsx';
 import { WallTagSection } from './WallTags.tsx';
+
+/** Záložka Typ: přehled skladby a otevření okna Editor typů (úprava vrstev). */
+function TypeTab({ s, type }: { s: Session; type: WallType }) {
+  return (
+    <Section title="Skladba" info="Platí pro všechny stěny typu; vrstvy se upravují v okně Editor typů.">
+      <CompositionSummary s={s} type={type} />
+      <button data-testid="open-type-editor" onClick={() => openTypeEditor(s, type.id)}>
+        Upravit v editoru typů…
+      </button>
+    </Section>
+  );
+}
 
 const REF_INFO = 'Čára, která zůstane na místě při změně tloušťky; stěna se rozšíří od ní.';
 
@@ -31,7 +43,7 @@ export function NewWallInfo({ s }: { s: Session }) {
         testid="new-type"
         onPick={(id) => set(() => (s.wallTypeId = id))}
       />
-      {tab === 'type' && type && <WallTypeEditor s={s} type={type} />}
+      {tab === 'type' && type && <TypeTab s={s} type={type} />}
       {tab === 'instance' && (
         <>
           <Section title="Geometrická metoda">
@@ -135,7 +147,7 @@ export function SelectedWallsInfo({ s, walls }: { s: Session; walls: Wall[] }) {
       {tab === 'type' && type && !mixed && (
         <>
           <TypePropsSection s={s} type={type} />
-          <WallTypeEditor s={s} type={type} />
+          <TypeTab s={s} type={type} />
         </>
       )}
       {tab === 'instance' && <SelectedInstance s={s} walls={walls} />}

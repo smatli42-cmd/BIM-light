@@ -7,16 +7,17 @@ import { HatchLibrary } from '../HatchLibrary.tsx';
 import { IconButton } from '../icons/Icon.tsx';
 import type { IconName } from '../icons/paths.ts';
 import { LayersPanel } from '../LayersPanel.tsx';
+import { openTypeEditor } from '../type-editor/TypeEditorDialog.tsx';
 import { MaterialsPanel } from '../MaterialsPanel.tsx';
 import { useSession } from '../use-session.ts';
-import { WallTypesPanel } from '../WallTypesPanel.tsx';
 import { Splitter } from './Splitter.tsx';
 
 type Section = 'contents' | 'layers' | 'types' | 'materials' | 'hatches';
+/** Typy se upravují ve vlastním okně Editor typů, ne v panelu. */
 const SECTIONS: [Section, IconName, string][] = [
   ['contents', 'contents', 'Obsah'],
   ['layers', 'layers', 'Vrstvy'],
-  ['types', 'wall-types', 'Typy stěn'],
+  ['types', 'wall-types', 'Editor typů'],
   ['materials', 'materials', 'Materiály'],
   ['hatches', 'hatches', 'Šrafy'],
 ];
@@ -36,7 +37,6 @@ export function ContentPanel({ s }: { s: Session }) {
           </div>
           {open === 'contents' && <Contents s={s} />}
           {open === 'layers' && <LayersPanel s={s} />}
-          {open === 'types' && <WallTypesPanel s={s} />}
           {open === 'materials' && <MaterialsPanel s={s} />}
           {open === 'hatches' && <HatchLibrary />}
         </aside>
@@ -48,8 +48,8 @@ export function ContentPanel({ s }: { s: Session }) {
             icon={icon}
             label={label}
             testid={`tab-${id}`}
-            pressed={open === id}
-            onClick={() => setOpen(id)}
+            pressed={id === 'types' ? s.typeEditor !== null : open === id}
+            onClick={() => (id === 'types' ? openTypeEditor(s) : setOpen(id))}
           />
         ))}
       </nav>
