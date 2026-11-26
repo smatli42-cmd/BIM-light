@@ -136,3 +136,20 @@ test('pokyn uživatele 2026-11-26: dvě okna – poměr tažením dělítka, dvo
   await page.getByTestId('splitter-windows').dblclick();
   expect(Math.abs((await first.boundingBox())!.width - box.width * 0.5)).toBeLessThan(3);
 });
+
+test('pokyn uživatele 2026-11-26: v úzkém okně se záhlaví neořízne, měřítko zůstane celé uvnitř okna', async ({
+  page,
+}) => {
+  await page.getByTestId('layout-2').click();
+  const box = (await page.locator('.windows').boundingBox())!;
+  const split = (await page.getByTestId('splitter-windows').boundingBox())!;
+  const y = split.y + split.height / 2;
+  await page.mouse.move(split.x + 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x, y, { steps: 5 });
+  await page.mouse.up();
+  const win = (await page.locator('.window').first().boundingBox())!;
+  const scale = (await page.locator('.window').first().locator('.window-head select').last().boundingBox())!;
+  expect(scale.x + scale.width).toBeLessThanOrEqual(win.x + win.width);
+  expect(scale.x).toBeGreaterThanOrEqual(win.x);
+});

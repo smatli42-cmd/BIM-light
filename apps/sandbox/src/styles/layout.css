@@ -163,7 +163,39 @@ body,
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
+/* Úzké okno: zkrátí se název pohledu (…), měřítko a tlačítka zůstanou celá. */
+.window-head > * {
+  flex: none;
+}
+.window-head > .spacer {
+  flex: 1;
+}
+.window-head > .window-tab,
+.window-head > .new-view {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.window-head select {
+  min-width: 56px;
+  text-overflow: ellipsis;
+}
+.window {
+  container-type: inline-size;
+}
+/* Pořadí ustupování v úzkém okně: tlačítko Nový pohled a ikona, až nakonec název pohledu. */
+@container (max-width: 260px) {
+  .window-head > .icon-btn,
+  .window-tab > .icon {
+    display: none;
+  }
+}
+@container (max-width: 160px) {
+  .window-head > .window-tab {
+    display: none;
+  }
+}
 .window-tab {
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   gap: 4px;
