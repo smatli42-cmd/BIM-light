@@ -1,4 +1,4 @@
-// Příkazy: strana tloušťky, typ, stav a profese stěny (výška je v height.ts).
+// Příkazy: strana tloušťky, typ, stav, profese a přepisy vlastností stěny (výška je v height.ts).
 import type { Id } from '../../ids/index.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
 import { putElements } from '../../model/update.ts';
@@ -8,6 +8,12 @@ import { S } from '../schema.ts';
 import { defineCommand } from '../types.ts';
 import { WALL_IDS } from './shared.ts';
 import { normalizeRefLines } from '../wall-type/shared.ts';
+import { INSTANCE_PROPERTIES_SCHEMA } from '../../wall-props/params.ts';
+import { applyOverrides } from '../../wall-props/resolve.ts';
+import type { WallProperties } from '../../wall-props/types.ts';
+
+/** Přepisy vlastností: hodnota, nebo null = podle typu. */
+type PropertyChange = { [K in keyof WallProperties]?: WallProperties[K] | null };
 
 const update = (ids: Id[], model: Parameters<typeof wallOf>[0], fn: (w: Wall) => Wall) =>
   putElements(
@@ -40,20 +46,36 @@ export const wallSetType = defineCommand<{ wallIds: Id[]; typeId: Id }>({
   },
 });
 
-export const wallSetProperties = defineCommand<{ wallIds: Id[]; status?: Status; discipline?: string }>({
+interface SetPropertiesParams {
+  wallIds: Id[];
+  status?: Status;
+  discipline?: string;
+  properties?: PropertyChange;
+}
+
+export const wallSetProperties = defineCommand<SetPropertiesParams>({
   name: 'wall.setProperties',
   label: 'Vlastnosti stěny',
-  description: 'Změní stav (stávající / bourání / nový) nebo profesi stěn.',
+  description:
+    'Změní stav (stávající / bourání / nový), profesi nebo vlastnosti stěn. „properties“ přepíše ' +
+    'vlastnosti typu jen u těchto stěn (funkce, nosná, vnější, požární odolnost, neprůzvučnost); ' +
+    'null vrátí hodnotu podle typu.',
   group: 'Stěna',
   params: S.object(
-    { wallIds: WALL_IDS, status: S.enumOf(STATUSES, 'stav'), discipline: { type: 'string' } },
+    {
+      wallIds: WALL_IDS,
+      status: S.enumOf(STATUSES, 'stav'),
+      discipline: { type: 'string' },
+      properties: INSTANCE_PROPERTIES_SCHEMA,
+    },
     ['wallIds'],
   ),
   run: (model, p) => ({
-    model: update(p.wallIds, model, (w) => ({
-      ...w,
-      status: p.status ?? w.status,
-      discipline: p.discipline ?? w.discipline,
-    })),
+    model: update(p.wallIds, model, (w) =>
+      applyOverrides(
+        { ...w, status: p.status ?? w.status, discipline: p.discipline ?? w.discipline },
+        p.properties ?? {},
+      ),
+    ),
   }),
 });

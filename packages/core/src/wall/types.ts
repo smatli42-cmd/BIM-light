@@ -4,6 +4,7 @@ import type { ElementBase } from '../model/types.ts';
 export type { HeightBand, LayerFunction, WallLayer, WallType } from '../wall-type/types.ts';
 import type { HeightBinding } from '../model/height.ts';
 import type { TopProfile } from '../wall-height/top-profile.ts';
+import type { WallPropertyOverrides } from '../wall-props/types.ts';
 
 /**
  * Referenční čára: líc na straně první vrstvy (výchozí, „uvnitř“), osa („uprostřed“), protilehlý líc
@@ -26,6 +27,8 @@ export interface Wall extends ElementBase {
   readonly height: HeightBinding;
   /** Horní profil (plán stěn Z3): zatím vždy rovný. */
   readonly topProfile: TopProfile;
+  /** Přepisy vlastností typu (plán stěn Z7); chybějící klíč = podle typu. */
+  readonly properties?: WallPropertyOverrides;
 }
 
 /** Líc stěny pro kóty a přichytávání: referenční strana, protilehlá strana, osa. */

@@ -1,6 +1,7 @@
 // Výchozí knihovna typů stěn (plán stěn Z1; vymyšlená data). Vrstvy odkazují materiály z knihovny
 // materiálů klíčem; projekt dostane kopie typů s odkazem na původ (základ 21).
 import type { IdGenerator } from '../ids/index.ts';
+import { DEFAULT_WALL_PROPERTIES, type WallProperties } from '../wall-props/types.ts';
 import type { HeightBand, LayerFunction, WallType } from './types.ts';
 
 export const WALL_TYPE_LIBRARY_ID = 'bim-light-wall-types';
@@ -16,6 +17,8 @@ export interface LibraryWallType {
   readonly key: string;
   readonly name: string;
   readonly layers: readonly LibraryLayer[];
+  /** Výchozí vlastnosti typu (plán stěn Z7); chybějící = obecné výchozí. */
+  readonly properties?: Partial<WallProperties>;
 }
 
 const L = (material: string, thickness: number, fn: LayerFunction): LibraryLayer => ({
@@ -26,11 +29,22 @@ const L = (material: string, thickness: number, fn: LayerFunction): LibraryLayer
 
 /** Pořadí vrstev: od referenční (vnitřní) strany ke straně tloušťky. */
 export const WALL_TYPE_LIBRARY: readonly LibraryWallType[] = [
-  { key: 'masonry-300', name: 'Zdivo 300', layers: [L('masonry-ceramic', 300, 'core')] },
-  { key: 'partition-125', name: 'Příčka 125', layers: [L('masonry-ceramic', 125, 'core')] },
+  {
+    key: 'masonry-300',
+    name: 'Zdivo 300',
+    properties: { function: 'interior', loadBearing: true },
+    layers: [L('masonry-ceramic', 300, 'core')],
+  },
+  {
+    key: 'partition-125',
+    name: 'Příčka 125',
+    properties: { function: 'partition' },
+    layers: [L('masonry-ceramic', 125, 'core')],
+  },
   {
     key: 'external-465',
     name: 'Obvodová zateplená 465',
+    properties: { function: 'exterior', loadBearing: true, isExternal: true },
     layers: [
       L('plaster', 15, 'finish'),
       L('masonry-ceramic', 300, 'core'),
@@ -40,22 +54,31 @@ export const WALL_TYPE_LIBRARY: readonly LibraryWallType[] = [
   {
     key: 'bearing-330',
     name: 'Nosná zeď 330',
+    properties: { function: 'interior', loadBearing: true },
     layers: [L('plaster', 15, 'finish'), L('masonry-ceramic', 300, 'core'), L('plaster', 15, 'finish')],
   },
   {
     key: 'partition-100',
     name: 'Příčka 100',
+    properties: { function: 'partition' },
     layers: [L('plaster', 10, 'finish'), L('masonry-ceramic', 80, 'core'), L('plaster', 10, 'finish')],
   },
   {
     key: 'partition-150',
     name: 'Příčka 150',
+    properties: { function: 'partition' },
     layers: [L('plaster', 10, 'finish'), L('masonry-ceramic', 130, 'core'), L('plaster', 10, 'finish')],
   },
-  { key: 'rc-200', name: 'ŽB stěna 200', layers: [L('reinforced-concrete', 200, 'core')] },
+  {
+    key: 'rc-200',
+    name: 'ŽB stěna 200',
+    properties: { function: 'interior', loadBearing: true },
+    layers: [L('reinforced-concrete', 200, 'core')],
+  },
   {
     key: 'drywall-100',
     name: 'SDK příčka 100',
+    properties: { function: 'partition' },
     layers: [
       L('plasterboard', 12.5, 'finish'),
       L('mineral-wool', 75, 'core'),
@@ -87,6 +110,7 @@ export function wallTypeFromLibrary(
     id: newId(),
     name: item.name,
     bands: [band],
+    properties: { ...DEFAULT_WALL_PROPERTIES, ...item.properties },
     source: { libraryId: WALL_TYPE_LIBRARY_ID, itemId: item.key, version: 1 },
   };
 }

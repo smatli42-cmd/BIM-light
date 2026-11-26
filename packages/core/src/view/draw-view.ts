@@ -18,6 +18,7 @@ import { categoryState, detailOf, layerState, styleOfView } from './effective.ts
 import { scaleHatch } from '../hatch/scale.ts';
 import type { Hatch } from '../hatch/types.ts';
 import type { View } from './types.ts';
+import { wallProperties } from '../wall-props/resolve.ts';
 import { drawOpening, openingFacts } from '../opening/draw.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
@@ -58,6 +59,7 @@ function drawWalls(model: Model, view: View, merge: boolean, structure: Structur
   for (const { wall: w, g } of vis.shown) {
     const geom = geoms.get(w.id);
     if (!geom) continue;
+    if (structure === 'bearing-core' && !wallProperties(model, w).loadBearing) continue;
     // Plán stěn Z6: jen stěna, kterou protíná rovina řezu, se kreslí v řezu (výplň, šrafy, vrstvy).
     const cut = wallCutRelation(model, w, view.cutPlane);
     if (cut === 'cut') items.push({ geom: filterLayers(geom, structure), g });
@@ -67,12 +69,19 @@ function drawWalls(model: Model, view: View, merge: boolean, structure: Structur
   return [...drawWallItems(items, detail, look, merge), ...extra];
 }
 
+/** Je hostitel nosná stěna? (Jen jádro nosných skryje otvory nenosných stěn, plán stěn Z7.) */
+function hostBearing(model: Model, hostId: Id): boolean {
+  const host = model.elements[hostId];
+  return !!host && wallProperties(model, host).loadBearing;
+}
+
 /** Otvory mimo rovinu řezu (čárkovaně, plán stěn Z4). */
-function drawOpenings(model: Model, view: View): Primitive[] {
+function drawOpenings(model: Model, view: View, structure: Structure): Primitive[] {
   const out: Primitive[] = [];
   const hidden = visibleWalls(model, view).hidden;
   for (const o of Object.values(model.openings)) {
     if (o.storeyId !== view.storeyId || o.variant.kind !== 'main' || hidden.has(o.hostId)) continue;
+    if (structure === 'bearing-core' && !hostBearing(model, o.hostId)) continue;
     if (!categoryState(model.display, view, 'opening').visible) continue;
     const g = resolveGraphics(model.display, view, openingFacts(o)).effect;
     if (g.visible) out.push(...drawOpening(model, o, view.cutPlane, g));
@@ -83,7 +92,7 @@ function drawOpenings(model: Model, view: View): Primitive[] {
 /** Volby zobrazení okna (ne data pohledu): průchozí materiál (výchozí zapnuto). */
 export interface DrawOptions {
   readonly mergeMaterials?: boolean;
-  /** Konstrukční zobrazení: celá skladba (výchozí), bez povrchů, jen jádro. */
+  /** Konstrukční zobrazení: celá skladba (výchozí), bez povrchů, jen jádro, jen jádro nosných. */
   readonly structure?: Structure;
 }
 
@@ -91,7 +100,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
   const view = model.views[viewId];
   if (!view) throw new Error(`Pohled ${viewId} neexistuje`);
   const walls = drawWalls(model, view, options.mergeMaterials ?? true, options.structure ?? 'all');
-  const out = [...walls, ...drawOpenings(model, view)];
+  const out = [...walls, ...drawOpenings(model, view, options.structure ?? 'all')];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;

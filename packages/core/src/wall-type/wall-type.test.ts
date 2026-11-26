@@ -7,6 +7,7 @@ import { projectV2toV3 } from './migrate-v2.ts';
 import type { HeightBand, WallLayer, WallType } from './types.ts';
 import { wallTypeErrors } from './validate.ts';
 
+import { DEFAULT_WALL_PROPERTIES } from '../wall-props/types.ts';
 const L = (fn: WallLayer['function'], thickness: number, materialId = 'm'): WallLayer => ({
   materialId,
   thickness,
@@ -18,6 +19,7 @@ const T = (layers: WallLayer[], bands?: HeightBand[]): WallType => ({
   id: 't',
   name: 'Test',
   bands: bands ?? [{ height: null, layers }],
+  properties: DEFAULT_WALL_PROPERTIES,
 });
 const ok = () => true;
 

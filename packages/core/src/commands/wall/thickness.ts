@@ -22,7 +22,7 @@ function typeForThickness(model: Model, type: WallType, thickness: number, newId
   if (existing) return { type: existing, isNew: false };
   const base = type.name.replace(/\s+\d+(\s*mm)?$/, '');
   const name = freeTypeName(model, `${base} ${thickness}`);
-  return { type: { id: newId(), name, bands } as WallType, isNew: true };
+  return { type: { id: newId(), name, bands, properties: type.properties } as WallType, isNew: true };
 }
 
 export const wallSetThickness = defineCommand<{ wallId: Id; thickness: number }>({

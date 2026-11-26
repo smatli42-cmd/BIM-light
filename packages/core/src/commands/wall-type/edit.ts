@@ -8,6 +8,8 @@ import { unusedWallTypes } from '../../wall-type/usage.ts';
 import { wallTypeOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
+import { DEFAULT_WALL_PROPERTIES, type WallProperties } from '../../wall-props/types.ts';
+import { TYPE_PROPERTIES_SCHEMA } from '../../wall-props/params.ts';
 import {
   freeTypeName,
   LAYER_SCHEMA,
@@ -32,6 +34,7 @@ interface CreateParams {
   name: string;
   layers?: LayerInput[];
   bands?: { height: number | null; layers: LayerInput[] }[];
+  properties?: Partial<WallProperties>;
 }
 
 export const wallTypeCreate = defineCommand<CreateParams>({
@@ -40,17 +43,25 @@ export const wallTypeCreate = defineCommand<CreateParams>({
   description:
     'Vytvoří typ stěny: název (jedinečný) a vrstvy od referenční (vnitřní) strany (materiál, tloušťka mm, ' +
     'funkce core / insulation / finish, prodloužení nahoře a dole). Jádro musí být jedna souvislá skupina. ' +
-    'Místo „layers“ jde zadat „bands“ (výškové pásy). Tloušťka typu = součet vrstev.',
+    'Místo „layers“ jde zadat „bands“ (výškové pásy). Tloušťka typu = součet vrstev. ' +
+    'Volitelně „properties“ (funkce, nosná, vnější, požární odolnost, neprůzvučnost).',
   group: 'Typ stěny',
-  params: S.object({ name: { type: 'string', description: 'název' }, layers: LAYERS, bands: BANDS }, [
-    'name',
-  ]),
+  params: S.object(
+    {
+      name: { type: 'string', description: 'název' },
+      layers: LAYERS,
+      bands: BANDS,
+      properties: TYPE_PROPERTIES_SCHEMA,
+    },
+    ['name'],
+  ),
   run(model, p, ctx) {
     if (!p.layers === !p.bands) fail('invalid-params', 'Zadej buď „layers“, nebo „bands“');
     const bands = p.bands
       ? p.bands.map((b) => ({ height: b.height, layers: b.layers.map(toLayer) }))
       : [{ height: null, layers: (p.layers ?? []).map(toLayer) }];
-    const type: WallType = { id: ctx.newId(), name: p.name.trim(), bands };
+    const properties = { ...DEFAULT_WALL_PROPERTIES, ...p.properties };
+    const type: WallType = { id: ctx.newId(), name: p.name.trim(), bands, properties };
     return { model: putValidType(model, type), created: [type.id] };
   },
 });

@@ -8,14 +8,17 @@ import type { ResolvedEffect } from '../style/types.ts';
 import type { WallCut } from './cut.ts';
 import type { WallGeometry } from './geometry.ts';
 
-/** Konstrukční zobrazení (koncepce rozhraní 2 G, položka 9): celá skladba, bez povrchů, jen jádro. */
-export type Structure = 'all' | 'no-finish' | 'core';
+/**
+ * Konstrukční zobrazení (koncepce rozhraní 2 G, položka 9): celá skladba, bez povrchů, jen jádro,
+ * jen jádro nosných (plán stěn Z7: nenosné stěny se nekreslí, jako Archicad).
+ */
+export type Structure = 'all' | 'no-finish' | 'core' | 'bearing-core';
 
 /** Geometrie jen s vrstvami, které konstrukční zobrazení ukazuje (obrys = jejich mnohoúhelníky). */
 export function filterLayers(geom: WallGeometry, structure: Structure): WallGeometry {
   if (structure === 'all') return geom;
   const keep = geom.layers.filter((l) =>
-    structure === 'core' ? l.span.layer.function === 'core' : l.span.layer.function !== 'finish',
+    structure === 'no-finish' ? l.span.layer.function !== 'finish' : l.span.layer.function === 'core',
   );
   if (!keep.length || keep.length === geom.layers.length) return geom;
   const outlines = keep.flatMap((l) => l.polygons);

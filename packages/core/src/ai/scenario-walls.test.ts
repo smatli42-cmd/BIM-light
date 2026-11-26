@@ -1,9 +1,9 @@
-// Scénář „AI kreslí dům“, část stěny (plán stěn Z1–Z5): jen JSON volání nástrojů, žádná obrazovka.
+// Scénář „AI kreslí dům“, část stěny (plán stěn Z1–Z5, Z7): jen JSON volání nástrojů, žádná obrazovka.
 import { describe, expect, it } from 'vitest';
 import { room, row, start } from './scenario-helpers.ts';
 import type { DimRow, WallRow } from './scenario-helpers.ts';
 
-describe('AI scénář: stěny (plán stěn Z1–Z5)', () => {
+describe('AI scénář: stěny (plán stěn Z1–Z5, Z7)', () => {
   it('typ stěny přes AI: vlastní skladba, přiřazení stěně, smazání s náhradou (plán stěn Z1)', () => {
     interface TypeRow {
       id: string;
@@ -157,5 +157,34 @@ describe('AI scénář: stěny (plán stěn Z1–Z5)', () => {
     expect(c.ai.raw('wall.curve', { wallId: short, radius: 200 }).error?.message).toMatch(/oloměr/);
     c.ai.call('wall.straighten', { wallIds: [w] });
     expect((row(c.ai.call<ArcRow[]>('wall.list'), w!) as ArcRow).arc).toBeNull();
+  });
+
+  it('vlastnosti stěny přes AI: typ obvodový a nosný, přepis u jedné stěny, návrat k typu (plán stěn Z7)', () => {
+    interface PropRow {
+      wallId: string;
+      properties: { function: string; loadBearing: boolean; isExternal: boolean; fireRating: string };
+      overridden: string[];
+      ifcPredefinedType: string;
+    }
+    const c = start();
+    const [left, top] = room(c);
+    c.ai.call('wallType.setProperties', {
+      typeId: c.typeId,
+      properties: { function: 'exterior', isExternal: true, fireRating: 'REI 90 DP1' },
+    });
+    c.ai.call('wall.setProperties', {
+      wallIds: [top],
+      properties: { function: 'partition', loadBearing: false },
+    });
+    const [l, t] = c.ai.call<PropRow[]>('wall.properties', { wallIds: [left, top] });
+    expect(l?.properties).toMatchObject({
+      function: 'exterior',
+      loadBearing: true,
+      fireRating: 'REI 90 DP1',
+    });
+    expect(t?.ifcPredefinedType).toBe('PARTITIONING');
+    expect(t?.overridden.sort()).toEqual(['function', 'loadBearing']);
+    c.ai.call('wall.setProperties', { wallIds: [top], properties: { function: null, loadBearing: null } });
+    expect(c.ai.call<PropRow[]>('wall.properties', { wallIds: [top] })[0]?.overridden).toEqual([]);
   });
 });

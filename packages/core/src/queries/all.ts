@@ -8,12 +8,14 @@ import { openingList } from './openings.ts';
 import { projectInfo } from './project.ts';
 import { viewInfo } from './views.ts';
 import { wallGet, wallList } from './walls.ts';
+import { wallPropertiesQuery } from './wall-properties.ts';
 import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 
 export const CORE_QUERIES = [
   projectInfo,
   wallList,
   wallGet,
+  wallPropertiesQuery,
   openingList,
   dimensionList,
   hatchList,

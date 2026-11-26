@@ -2,6 +2,7 @@
 // Vrstvy jsou seřazené od referenční strany ke straně tloušťky; tloušťka typu = součet vrstev.
 import type { Id } from '../ids/index.ts';
 import type { LibraryRef } from '../model/types.ts';
+import type { WallProperties } from '../wall-props/types.ts';
 
 /** Funkce vrstvy: jádro / izolace / povrch. */
 export type LayerFunction = 'core' | 'insulation' | 'finish';
@@ -30,6 +31,8 @@ export interface WallType {
   readonly id: Id;
   readonly name: string;
   readonly bands: readonly HeightBand[];
+  /** Vlastnosti typu (plán stěn Z7): funkce, nosná, vnější, požár, akustika. */
+  readonly properties: WallProperties;
   /** Původ v knihovně typů (základ 21); kopie vytvořená v projektu ho nemá. */
   readonly source?: LibraryRef;
 }
