@@ -33,7 +33,15 @@ import type { Paper } from '../render/paper.ts';
 import { DEFAULT_SCREEN, type ScreenOptions } from './screen.ts';
 import type { WindowState } from './screen.ts';
 import { applyTheme, loadUi, saveUi, type Theme } from '../ui/theme.ts';
-import type { MenuState, Toast, ToastAction, ToastKind, TypedInput, ValueEditState } from './ui-state.ts';
+import type {
+  MenuState,
+  PetState,
+  Toast,
+  ToastAction,
+  ToastKind,
+  TypedInput,
+  ValueEditState,
+} from './ui-state.ts';
 
 /** Tolerance přichycení a výběru v px (katalog kreslení 2, pravidla-interakce kóty 7). */
 export const SNAP_PX = 10;
@@ -70,6 +78,8 @@ export class Session {
   };
   typed: TypedInput = { field: 'len', len: '', ang: '' };
   menu: MenuState | null = null;
+  /** Paleta u uzlu / hrany vybrané stěny (koncepce rozhraní, část 2 I). */
+  pet: PetState | null = null;
   valueEdit: ValueEditState | null = null;
   toasts: Toast[] = [];
   /** Kóty, které brání změně (zvýrazní se červeně). */
@@ -188,6 +198,7 @@ export class Session {
 
   setTool(id: ToolId) {
     this.menu = null;
+    this.pet = null;
     this.valueEdit = null;
     this.snapCycle = 0;
     this.typed = { field: 'len', len: '', ang: '' };

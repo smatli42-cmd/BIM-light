@@ -1,5 +1,5 @@
 // Spodní lišta – vzhled okna (koncepce rozhraní, část 2 G): skutečná tloušťka čar, průchozí materiál,
-// izolovat popisy, pera a barvy, grafické přepisy a Odhalit.
+// izolovat popisy, karty prvků, pera a barvy, grafické přepisy a Odhalit.
 // Podrobnost (hrubá / střední / jemná) v liště není – nastavuje se jinde (pokyn uživatele 2026-11-26).
 import { styleOfView } from '@bim-light/core';
 import { useState } from 'preact/hooks';
@@ -12,7 +12,8 @@ import { PensDialog } from './PensDialog.tsx';
 export function LookGroup({ s }: { s: Session }) {
   const sc = s.screen;
   const [pens, setPens] = useState(false);
-  const toggle = (k: 'trueWeight' | 'mergeMaterials' | 'isolate') => setScreen(s, { [k]: !sc[k] });
+  const toggle = (k: 'trueWeight' | 'mergeMaterials' | 'isolate' | 'infoCards') =>
+    setScreen(s, { [k]: !sc[k] });
   return (
     <div class="tool-group">
       <IconButton
@@ -35,6 +36,15 @@ export function LookGroup({ s }: { s: Session }) {
         testid="isolate-toggle"
         pressed={sc.isolate}
         onClick={() => toggle('isolate')}
+      />
+      <IconButton
+        icon="card"
+        label={
+          sc.infoCards ? 'Karty prvků po podržení myši (zapnuto)' : 'Karty prvků po podržení myši (vypnuto)'
+        }
+        testid="cards-toggle"
+        pressed={sc.infoCards}
+        onClick={() => toggle('infoCards')}
       />
       <IconButton icon="pen" label="Pera a barvy" testid="pens-open" onClick={() => setPens(true)} />
       {pens && <PensDialog s={s} onClose={() => setPens(false)} />}

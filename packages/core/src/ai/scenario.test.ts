@@ -114,3 +114,16 @@ describe('AI scénář: místnost, příčka, stěna s volným koncem, kóta', (
     expect(none.walls).toEqual([]);
   });
 });
+
+describe('AI scénář: karta prvku (koncepce rozhraní, 2 I)', () => {
+  it('element.info vrátí stejný souhrn stěny, jaký ukáže karta po podržení myši', () => {
+    const c = start();
+    const [left] = room(c);
+    const info = c.ai.call<{ kind: string; length: number; sideArea: number }>('element.info', {
+      elementId: left,
+    });
+    expect(info.kind).toBe('wall');
+    expect(info.length).toBeGreaterThan(0);
+    expect(info.sideArea).toBeGreaterThan(0);
+  });
+});

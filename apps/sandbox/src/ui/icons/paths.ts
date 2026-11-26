@@ -96,6 +96,15 @@ export const ICONS = {
   close: ['M6 6l12 12', 'M18 6L6 18'],
   flip: ['M12 3v18', 'M8 8L4 12l4 4', 'M16 8l4 4-4 4'],
   info: ['c:12,12,9', 'M12 11v6', 'M12 7.5h.01'],
+  // Paleta u uzlu a hrany (koncepce rozhraní, část 2 I)
+  'node-move': ['M4 20L15 9', 'c:17,7,2.5', 'M10 4l4 0', 'M19 14v4'],
+  disconnect: ['M3 12h6', 'M15 12h6', 'M9 8v8', 'M15 8v8'],
+  join: ['M4 18V6h14', 'M8 18V10h10', 'M15 3l3 3-3 3'],
+  'node-delete': ['c:12,12,3', 'M5 5l14 14', 'M19 5L5 19'],
+  offset: ['M4 16h16', 'M4 8h16', 'M12 15V9', 'M10 11l2-2 2 2'],
+  'add-point': ['M3 16h18', 'c:12,16,2.5', 'M12 4v6', 'M9 7h6'],
+  curve: ['M3 17c4-10 14-10 18 0', 'c:12,9.5,1.6'],
+  card: ['M4 5h16v14H4z', 'M7 9h6', 'M7 13h10', 'M7 16h7'],
 } as const;
 
 export type IconName = keyof typeof ICONS;

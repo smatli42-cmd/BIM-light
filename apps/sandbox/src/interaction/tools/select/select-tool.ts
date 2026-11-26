@@ -21,6 +21,7 @@ import { dimMenu, edgeMenu, nodeMenu, openingMenu, wallMenu } from './menus.ts';
 import { CurveMode } from './curve-mode.ts';
 import { PressOpeningMode } from './opening-modes.ts';
 import { NodeMode } from './node-mode.ts';
+import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
@@ -35,6 +36,9 @@ export class SelectTool implements Tool {
   private mode: Mode | null = null;
   private hover: Id | null = null;
   private tab = 0;
+  /** Paleta, která se ukáže po kliku (ne tažení) na uzel nebo hranu (koncepce rozhraní 2 I). */
+  private petOnClick: (() => void) | null = null;
+  private readonly setMode = (m: Mode | null) => (this.mode = m);
 
   constructor(private readonly s: Session) {}
 
@@ -66,13 +70,19 @@ export class SelectTool implements Tool {
   down(p: PointerInfo) {
     if (this.mode?.active && this.mode.down(p)) return this.cleanup();
     this.mode = null;
+    this.petOnClick = null;
+    this.s.pet = null;
     if (p.button === 2) return this.context(p);
     if (p.button !== 0) return;
     const hit = hitAt(this.s, p.screen);
     const onLine = hit?.kind === 'temp-line' || hit?.kind === 'dim-line';
     if (hit && !onLine) return this.onHit(hit, p);
     // Líc vybrané stěny má přednost před čárou kóty, která na něm začíná.
-    if (this.faceOfSelected(p, (face, id) => (this.mode = new OffsetMode(this.s, id, face, p, true)))) return;
+    const onFace = (face: 'ref' | 'opp', id: Id) => {
+      this.mode = new OffsetMode(this.s, id, face, p, true);
+      this.petOnClick = () => edgePet(this.s, id, face, p, this.setMode);
+    };
+    if (this.faceOfSelected(p, onFace)) return;
     if (hit) return this.onHit(hit, p);
     const op = this.openingUnder(p);
     if (op && p.shift) return this.s.selection.toggleOpening(op);
@@ -101,7 +111,11 @@ export class SelectTool implements Tool {
       const e = hit.grip.end;
       const id = hit.grip.wallId;
       if (e === 'flip') s.run('wall.flipSide', { wallIds: [id] });
-      else this.mode = e === 'mid' ? new CurveMode(s, id, p, true) : new NodeMode(s, id, e, p, true);
+      else if (e === 'mid') this.mode = new CurveMode(s, id, p, true);
+      else {
+        this.mode = new NodeMode(s, id, e, p, true);
+        this.petOnClick = () => nodePet(s, id, e, this.setMode);
+      }
     } else if (hit.kind === 'temp-text' || hit.kind === 'temp-line')
       this.mode = new TempDimDragMode(s, hit.temp, hit.kind === 'temp-text', p);
     else if (hit.kind === 'dim-text' || hit.kind === 'dim-line')
@@ -148,10 +162,19 @@ export class SelectTool implements Tool {
   up(p: PointerInfo) {
     if (this.mode?.active) this.mode.up(p);
     this.cleanup();
+    // Klik bez tažení: režim běží dál a u uzlu / hrany se ukáže paleta.
+    if (this.mode?.active && this.petOnClick) this.petOnClick();
+    this.petOnClick = null;
   }
 
   private cleanup() {
     if (this.mode && !this.mode.active) this.mode = null;
+    if (!this.mode) this.s.pet = null;
+  }
+
+  /** Prvek pod kurzorem pro kartu prvku (jen když neběží žádný režim). */
+  hoverId(): Id | null {
+    return this.mode?.active ? null : this.hover;
   }
 
   key(k: KeyInfo): boolean {
@@ -183,6 +206,7 @@ export class SelectTool implements Tool {
     if (this.mode?.active) {
       this.mode.escape();
       this.mode = null;
+      this.s.pet = null;
       return true;
     }
     if (!this.s.selection.empty) {

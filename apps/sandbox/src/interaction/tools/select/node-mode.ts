@@ -2,7 +2,8 @@
 // náhled a dočasné kóty během tažení, napojení na volný konec jiné stěny.
 import { dist, endPoint, type Id, type Model, type PathEnd, type Vec2 } from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
-import type { Overlay, PointerInfo } from '../../types.ts';
+import { deltaFields, trackerMm } from '../../tracker-fields.ts';
+import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
 import { ClickOrDrag } from './click-or-drag.ts';
 
 /** Volný konec jiné stěny pod bodem (přitažení uzlu = napojení, katalog kreslení 5). */
@@ -21,6 +22,7 @@ function nodeTarget(s: Session, wallId: Id, p: Vec2, tol: number) {
 export class NodeMode extends ClickOrDrag {
   readonly hint = 'Klikni nebo pusť uzel na nové místo (přichytává se). U uzlu jiné stěny se konec napojí.';
   private point: Vec2;
+  private readonly origin: Vec2;
   private preview: Model | null = null;
 
   constructor(
@@ -34,6 +36,7 @@ export class NodeMode extends ClickOrDrag {
     s.lenEnd = end;
     const w = s.model.elements[wallId];
     this.point = w ? endPoint(w.path, end) : start.world;
+    this.origin = this.point;
   }
 
   protected update(p: PointerInfo) {
@@ -62,6 +65,18 @@ export class NodeMode extends ClickOrDrag {
     this.done();
     this.preview = null;
     this.s.run('wall.moveEndpoint', this.params());
+  }
+
+  /** Délka stěny po posunu (u přímé stěny), vzdálenost posunu a ΔX / ΔY. */
+  tracker(): TrackerField[] | null {
+    const w = this.s.model.elements[this.wallId];
+    if (!w) return null;
+    const other = endPoint(w.path, this.end === 'start' ? 'end' : 'start');
+    const fields: TrackerField[] = [];
+    if (w.path.kind === 'line')
+      fields.push({ label: 'Délka', value: trackerMm(dist(other, this.point)), active: true });
+    fields.push({ label: 'Vzdálenost', value: trackerMm(dist(this.origin, this.point)), active: false });
+    return [...fields, ...deltaFields(this.origin, this.point)];
   }
 
   overlay(): Overlay {

@@ -85,6 +85,8 @@ export interface Tool {
   escape(): boolean;
   overlay(): Overlay;
   tracker(): readonly TrackerField[] | null;
+  /** Prvek pod kurzorem pro kartu prvku (koncepce rozhraní 2 I); nástroj bez karty ho nemá. */
+  hoverId?(): string | null;
 }
 
 export const EMPTY_OVERLAY: Overlay = {};

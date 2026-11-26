@@ -1,5 +1,6 @@
 // Stav ovládacích prvků nad výkresem: nabídka na pravé tlačítko, pole pro číslo, hlášky.
 import type { Vec2 } from '@bim-light/core';
+import type { IconName } from '../ui/icons/paths.ts';
 
 export interface MenuItem {
   readonly label: string;
@@ -72,3 +73,17 @@ export const clearTyped = (t: TypedInput) => {
   t.ang = '';
   t.field = 'len';
 };
+
+/** Položka palety u uzlu / hrany (koncepce rozhraní, část 2 I). */
+export interface PetItem {
+  readonly icon: IconName;
+  readonly label: string;
+  readonly active?: boolean;
+  readonly action: () => void;
+}
+
+/** Paleta u uzlu nebo hrany vybrané stěny: kotva ve světových souřadnicích, řádky ikon. */
+export interface PetState {
+  readonly at: Vec2;
+  readonly rows: readonly (readonly PetItem[])[];
+}

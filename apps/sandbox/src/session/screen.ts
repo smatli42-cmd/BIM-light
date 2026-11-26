@@ -26,6 +26,8 @@ export interface ScreenOptions {
   isolate: boolean;
   /** Odhalit: skryté prvky purpurově a vybíratelné. */
   reveal: boolean;
+  /** Karta prvku po podržení myši nad prvkem (vypínač ve spodní liště). */
+  infoCards: boolean;
   /** Trasování: průsvitný odkaz jiného podlaží. */
   trace: { on: boolean; ref: TraceRef; intensity: 'weak' | 'mid' | 'strong'; over: boolean };
 }
@@ -38,6 +40,7 @@ export const DEFAULT_SCREEN: ScreenOptions = {
   mergeMaterials: true,
   isolate: false,
   reveal: false,
+  infoCards: true,
   trace: { on: false, ref: 'below', intensity: 'mid', over: false },
 };
 

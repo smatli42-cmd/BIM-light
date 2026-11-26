@@ -1,11 +1,24 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, panely bez mezer, šířka panelů tažením, podrobnost z lišty pryč.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, UI5 část 1 – paleta u uzlu a hrany, karta prvku, tracker.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Rozhraní: UI5 část 1 hotovo, 2026-11-26 (plovoucí prvky podle screenshotů z Arditu)
+- **Paleta u uzlu** (`interaction/tools/select/pet.ts`, `ui/PetPalette.tsx`): klik (ne tažení) na koncový
+  uzel vybrané stěny spustí posun uzlu a ukáže paletu – nahoře Posun uzlu (běží), Odpojit roh a
+  Spojovat / Nespojovat (jen u napojeného konce), Smazat uzel; dole Přesunout, Kopírovat, Otočit,
+  Zrcadlit, Pole. **Paleta u hrany** (klik na líc): Odsadit (běží), Přidat bod, Zakřivit + stejný dolní řádek.
+- **Karta prvku** (`ui/HoverCard.tsx`): kurzor stojí 0,8 s nad stěnou / otvorem → souhrn (stěna: délka ·
+  čistá plocha boku, tloušťka, výška, skladba, plocha boku / čistá, vrstva; otvor: šířka × výška,
+  parapet, spodní hrana, stěna, vrstva). Pohyb kartu schová. **Vypínač ve spodní liště** (ikona karty).
+  Data počítá jádro `selection/element-info.ts`; pro AI nový dotaz **`element.info`** (+ krok scénáře).
+- **Tracker jako panel** (řádky popis – číslo, aktivní modře): při kreslení stěny Délka, Úhel, ΔX, ΔY;
+  při posunu uzlu Délka, Vzdálenost, ΔX, ΔY. Karta, tracker i paleta se u okraje okna překlopí dovnitř.
+- Testy: jádro a nástroje 672, prohlížeč 126 (nové `plovouci.spec.ts`).
 
 ### Rozhraní: pracovní plocha, 2026-11-26 (pokyn uživatele)
 - **Panely bez mezer:** paleta, info box, okna a Obsah těsně vedle sebe, oddělené čarou; zaoblená
@@ -156,6 +169,11 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ## Rozhodl Code (k potvrzení)
 
+- **UI5 paleta u uzlu:** horní řádek jsem podle vzoru naplnil našimi příkazy uzlu (Posun uzlu, Odpojit
+  roh, Spojovat / Nespojovat, Smazat uzel); dolní řádek = příkazy celé stěny. Kolečko zakřivení a
+  nabídka na pravé tlačítko zatím zůstávají (koncepce je chce paletou nahradit – po vyzkoušení odebrat).
+  Karta prvku po 0,8 s; při běžícím příkazu nebo otevřené paletě se neukazuje; volba se nepamatuje
+  po obnovení stránky (stejně jako ostatní volby okna).
 - **Vzhled:** rámeček aktivního okna se ukazuje jen při dvou oknech vedle sebe (u jednoho okna rušil);
   písmo Segoe UI Variable (Windows), jinak systémové – bez stahování webového písma.
 Rozhraní UI2 (2026-11-25):
@@ -196,9 +214,9 @@ Velikost šraf (2026-11-25):
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2–UI4 (info box, Obsah a pohledy, Najít a vybrat, spodní lišta, dvě okna,
   trasování, vrstvy, izolovat / odhalit, pera).
-- Potom **UI5 – plovoucí prvky**: hledání příkazů Ctrl+K, tracker Vzdálenost / Úhel / ΔX / ΔY,
-  kontextová paleta u uzlu a hrany, průvodce prostředím. Před začátkem screenshot trackeru a palety
-  u uzlu z Arditu. Až po UI5 stěny Z6.
+- Uživatel vyzkouší UI5 část 1 (paleta u uzlu a hrany, karta prvku, tracker).
+- Potom **UI5 část 2**: hledání příkazů Ctrl+K a průvodce prostředím (před začátkem screenshot z Arditu).
+  Až po UI5 stěny Z6.
 
 ## Otevřené
 

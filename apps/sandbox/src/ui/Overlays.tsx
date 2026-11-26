@@ -2,6 +2,9 @@
 // pole pro číslo kóty (čitelný tmavý text, pravidla-interakce kóty 5) a hlášky.
 import { useEffect, useRef } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
+import { HoverCard } from './HoverCard.tsx';
+import { useKeepInside } from './keep-inside.ts';
+import { PetPalette } from './PetPalette.tsx';
 import { SegmentMenu } from './SegmentMenu.tsx';
 import { useSession } from './use-session.ts';
 
@@ -68,14 +71,15 @@ function Menu({ s }: { s: Session }) {
 
 function Tracker({ s }: { s: Session }) {
   const fields = s.tool.tracker();
+  const ref = useKeepInside<HTMLDivElement>(s.cursor.screen, { x: 28, y: 24 });
   if (!fields || !s.cursor.inside) return null;
   const { x, y } = s.cursor.screen;
   return (
-    <div class="tracker" data-testid="tracker" style={{ left: `${x + 16}px`, top: `${y + 16}px` }}>
+    <div ref={ref} class="tracker" data-testid="tracker" style={{ left: `${x + 28}px`, top: `${y + 24}px` }}>
       {fields.map((f) => (
-        <span key={f.label} class={f.active ? 'field on' : 'field'} data-testid={`tracker-${f.label}`}>
-          {f.label} <b>{f.value}</b>
-        </span>
+        <div key={f.label} class={f.active ? 'field on' : 'field'} data-testid={`tracker-${f.label}`}>
+          <span>{f.label}</span> <b>{f.value}</b>
+        </div>
       ))}
     </div>
   );
@@ -88,6 +92,8 @@ export function CanvasOverlays({ session }: { session: Session }) {
     <>
       <Tracker s={s} />
       <SegmentMenu s={s} />
+      <PetPalette s={s} />
+      <HoverCard s={s} />
       <Menu s={s} />
       <ValueEditor s={s} />
       <div class="toasts">

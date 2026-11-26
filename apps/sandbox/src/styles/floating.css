@@ -1,23 +1,34 @@
 /* Plovoucí prvky u kurzoru, nabídky a hlášky (barvy z motivu, styles/theme.css). */
 .tracker {
   position: absolute;
+  z-index: 10;
+  min-width: 150px;
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 10px;
   pointer-events: none;
-  font:
-    12px ui-monospace,
-    monospace;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  font-size: 12px;
 }
 .tracker .field {
-  background: var(--surface);
-  border: 1px solid var(--aux);
-  border-radius: var(--r-sm);
-  padding: 1px 6px;
-  color: var(--ink);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
 }
-.tracker .field.on {
-  border-color: var(--aux);
-  background: var(--accent-soft);
+.tracker .field b {
+  color: var(--ink);
+  font-family: ui-monospace, 'Cascadia Mono', monospace;
+  font-weight: 600;
+}
+.tracker .field.on,
+.tracker .field.on b {
+  color: var(--accent);
+  font-weight: 700;
 }
 .value-edit {
   position: absolute;
@@ -151,4 +162,86 @@
 .quick-pick button.active {
   color: var(--accent);
   font-weight: 600;
+}
+
+/* Paleta u uzlu / hrany (koncepce rozhraní, část 2 I). */
+.pet {
+  position: absolute;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 4px 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+.pet::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  border-left: 2px dotted var(--line-strong);
+}
+.pet-row {
+  display: flex;
+  gap: 2px;
+}
+.pet .icon-btn {
+  width: 34px;
+  height: 32px;
+}
+
+/* Karta prvku po podržení myši (koncepce rozhraní, část 2 I). */
+.hover-card {
+  position: absolute;
+  z-index: 12;
+  width: 260px;
+  padding: 10px 12px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+}
+.hc-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.hc-title strong {
+  font-size: 13px;
+}
+.hc-sub {
+  color: var(--muted);
+  font-size: 11px;
+}
+.hc-head {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.hc-head strong {
+  font-size: 14px;
+}
+.hc-rows {
+  margin: 6px 0 0;
+}
+.hc-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1px 0;
+}
+.hc-rows dt {
+  color: var(--muted);
+}
+.hc-rows dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }

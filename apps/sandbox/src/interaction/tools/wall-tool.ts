@@ -6,6 +6,7 @@
 import { dist, trackerPoint, type Id, type Path, type SnapResult, type Vec2 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { clearTyped, editTyped } from '../../session/ui-state.ts';
+import { deltaFields } from '../tracker-fields.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
 import { arcGhost, arcInfo } from './arc-helpers.ts';
 import { chainLinks, snapLabel, type Chain } from './wall-chain.ts';
@@ -227,6 +228,7 @@ export class WallTool implements Tool {
         value: t.ang !== '' ? `${t.ang}▏` : `${String(ang).replace('.', ',')}°`,
         active: t.field === 'ang',
       },
+      ...deltaFields(this.path.start, this.path.end),
     ];
   }
 }
