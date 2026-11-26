@@ -1,12 +1,15 @@
 // Generátor půdorysu stěn (základy 5, 11; katalog pohledů: „Stěna: smlouva s kreslením“; plán stěn Z2).
 // Stěna nevolí barvu, šrafu ani pero sama: vše dostane z funkce grafiky.
-// Hrubá: sjednocený obrys všech viditelných stěn + jedna výplň. Střední (a zatím jemná): navíc vrstvy
-// po napojení se šrafou materiálu a čáry mezi různými materiály. Mezi stejnými materiály se nekreslí.
+// Hrubá: sjednocený obrys všech viditelných stěn + jedna výplň. Střední: navíc vrstvy po napojení se
+// šrafou materiálu a čáry mezi různými materiály (mezi stejnými se nekreslí). Jemná (Z6): jako střední,
+// hranice nosného jádra perem řezu. Čelní čára volného konce jen se zapnutými konci stěn (`endLines`).
 import type { Primitive, Stroke } from '../drawing/primitives.ts';
 import { chain } from '../junction/chain.ts';
 import { neighbours, subEdges, type SubEdge } from '../junction/edges.ts';
+import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Detail, ResolvedEffect } from '../style/types.ts';
+import { freeEndCaps, onCap } from './draw-extras.ts';
 import { layerBandFrame, layerHatch, type DrawLookup } from './draw-hatch.ts';
 import type { WallGeometry } from './geometry.ts';
 
@@ -43,9 +46,10 @@ interface Piece {
   readonly item: number;
   readonly layer: number;
   readonly materialId: Id;
+  readonly core: boolean;
 }
 
-type Role = 'obrys' | 'hranice vrstvy';
+type Role = 'obrys' | 'hranice vrstvy' | 'hranice jádra';
 
 /** Co se kreslí na dílčí hraně: obrys (za ní nic), hranice vrstvy (jiný materiál), nebo nic. */
 function roleOf(p: Piece, q: Piece | null, detail: Detail, emitter: boolean, merge: boolean): Role | null {
@@ -53,7 +57,7 @@ function roleOf(p: Piece, q: Piece | null, detail: Detail, emitter: boolean, mer
   if (detail === 'coarse' || !emitter) return null;
   if (q.item === p.item && q.layer === p.layer) return null;
   if (merge && q.item !== p.item && q.materialId === p.materialId) return null;
-  return 'hranice vrstvy';
+  return detail === 'fine' && p.core !== q.core ? 'hranice jádra' : 'hranice vrstvy';
 }
 
 /** Čáry všech stěn najednou (obrys sjednocený přes napojené stěny). */
@@ -62,13 +66,24 @@ export function drawWallLines(items: readonly WallDrawItem[], detail: Detail, me
   const polys = items.flatMap((it, item) =>
     it.geom.layers.flatMap((l, layer) =>
       l.polygons.map((poly) => {
-        pieces.push({ item, layer, materialId: l.span.layer.materialId });
+        pieces.push({
+          item,
+          layer,
+          materialId: l.span.layer.materialId,
+          core: l.span.layer.function === 'core',
+        });
         return poly;
       }),
     ),
   );
   const set = subEdges(polys);
   const nb = neighbours(set);
+  // Čela volných konců stěn, které mají konce stěn vypnuté (grafika `endLines`), se nekreslí.
+  const hidden = items.map((it) => (it.g.endLines ? [] : freeEndCaps(it.geom)));
+  const isHiddenCap = (e: SubEdge) =>
+    (hidden[(pieces[e.owner] as Piece).item] ?? []).some((c) =>
+      onCap(set.points[e.ia] as Vec2, set.points[e.ib] as Vec2, c),
+    );
   // Čáry se stejným perem, barvou a typem se skládají přes stěny: roh je jedna souvislá čára.
   const groups = new Map<string, { stroke: Stroke; role: Role; edges: SubEdge[] }>();
   set.edges.forEach((e, i) => {
@@ -76,10 +91,10 @@ export function drawWallLines(items: readonly WallDrawItem[], detail: Detail, me
     const other = j >= 0 ? (set.edges[j] as SubEdge).owner : -1;
     const p = pieces[e.owner] as Piece;
     const role = roleOf(p, other >= 0 ? (pieces[other] as Piece) : null, detail, e.owner < other, merge);
-    if (!role) return;
+    if (!role || (role === 'obrys' && isHiddenCap(e))) return;
     const { g } = items[p.item] as WallDrawItem;
     const stroke: Stroke = {
-      pen: role === 'obrys' ? g.cutPen : g.layerPen,
+      pen: role === 'hranice vrstvy' ? g.layerPen : g.cutPen,
       color: g.lineColor,
       lineType: g.lineType,
     };
@@ -99,7 +114,6 @@ export function drawWallLines(items: readonly WallDrawItem[], detail: Detail, me
   return out;
 }
 
-/** Kresba stěn: výplně a šrafy, potom čáry. */
 /**
  * Kresba stěn: výplně a šrafy, potom čáry. `merge` = průchozí materiál: stejný materiál sousedních stěn
  * bez dělicí čáry (výchozí; vypnutí je volba zobrazení okna, koncepce rozhraní 2 G).

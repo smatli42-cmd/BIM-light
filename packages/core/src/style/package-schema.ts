@@ -9,6 +9,8 @@ const effect: JsonSchema = {
   additionalProperties: false,
   properties: {
     visible: { type: 'boolean' },
+    endLines: { type: 'boolean' },
+    refLine: { type: 'boolean' },
     cutPen: { type: 'integer', minimum: 1 },
     projectionPen: { type: 'integer', minimum: 1 },
     layerPen: { type: 'integer', minimum: 1 },

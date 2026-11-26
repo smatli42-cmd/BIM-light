@@ -8,7 +8,9 @@ import type { Model } from '../model/types.ts';
 import { rulesFor } from '../rules/cross-rules.ts';
 import { elementFacts, type ElementFacts } from '../style/conditions.ts';
 import { resolveGraphics } from '../style/graphics.ts';
+import { wallCutRelation } from '../wall/cut.ts';
 import { drawWalls as drawWallItems, type WallDrawItem } from '../wall/draw.ts';
+import { drawProjected, drawRefLine, filterLayers, type Structure } from '../wall/draw-extras.ts';
 import type { DrawLookup } from '../wall/draw-hatch.ts';
 import { allWallGeometry } from '../wall/geometry.ts';
 import { allWalls } from '../wall/queries.ts';
@@ -35,7 +37,7 @@ export function dimensionFacts(d: Dimension): ElementFacts {
 export const isDimensionVisible = (model: Model, view: View, d: Dimension): boolean =>
   d.storeyId === view.storeyId && layerState(model.display, view, d.annotationLayerId).visible;
 
-function drawWalls(model: Model, view: View, merge: boolean): Primitive[] {
+function drawWalls(model: Model, view: View, merge: boolean, structure: Structure): Primitive[] {
   const detail = detailOf(model.display, view);
   const geoms = allWallGeometry(model, view.storeyId, view.cutPlane);
   const items: WallDrawItem[] = [];
@@ -51,14 +53,20 @@ function drawWalls(model: Model, view: View, merge: boolean): Primitive[] {
       return scaled.get(id);
     },
   };
+  const extra: Primitive[] = [];
   for (const w of allWalls(model)) {
     const geom = geoms.get(w.id);
     if (!geom || w.variant.kind !== 'main') continue;
     if (!categoryState(model.display, view, w.category).visible) continue;
     const g = resolveGraphics(model.display, view, elementFacts(model, w)).effect;
-    if (g.visible) items.push({ geom, g });
+    if (!g.visible) continue;
+    // Plán stěn Z6: jen stěna, kterou protíná rovina řezu, se kreslí v řezu (výplň, šrafy, vrstvy).
+    const cut = wallCutRelation(model, w, view.cutPlane);
+    if (cut === 'cut') items.push({ geom: filterLayers(geom, structure), g });
+    else extra.push(...drawProjected(geom, g, cut));
+    extra.push(...drawRefLine(geom, g));
   }
-  return drawWallItems(items, detail, look, merge);
+  return [...drawWallItems(items, detail, look, merge), ...extra];
 }
 
 /** Otvory mimo rovinu řezu (čárkovaně, plán stěn Z4). */
@@ -73,16 +81,18 @@ function drawOpenings(model: Model, view: View): Primitive[] {
   return out;
 }
 
-/** Kresba pohledu jako seznam primitiv. */
 /** Volby zobrazení okna (ne data pohledu): průchozí materiál (výchozí zapnuto). */
 export interface DrawOptions {
   readonly mergeMaterials?: boolean;
+  /** Konstrukční zobrazení: celá skladba (výchozí), bez povrchů, jen jádro. */
+  readonly structure?: Structure;
 }
 
 export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): Drawing {
   const view = model.views[viewId];
   if (!view) throw new Error(`Pohled ${viewId} neexistuje`);
-  const out = [...drawWalls(model, view, options.mergeMaterials ?? true), ...drawOpenings(model, view)];
+  const walls = drawWalls(model, view, options.mergeMaterials ?? true, options.structure ?? 'all');
+  const out = [...walls, ...drawOpenings(model, view)];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;

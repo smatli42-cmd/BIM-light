@@ -37,6 +37,10 @@ export interface GraphicEffect {
   readonly hatch?: 'material' | 'none' | HatchEffect;
   /** Průhlednost 0–100 %. */
   readonly transparency?: number;
+  /** Čelní čára u volného konce stěny (plán stěn Z6, Wall End Lines); výchozí zapnuto. */
+  readonly endLines?: boolean;
+  /** Značka referenční čáry stěny: tenká čerchovaná čára (plán stěn Z6); výchozí vypnuto. */
+  readonly refLine?: boolean;
 }
 
 /** Úplná grafika (patro 1 musí určit vše). */

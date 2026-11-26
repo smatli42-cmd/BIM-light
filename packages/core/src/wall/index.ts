@@ -7,3 +7,5 @@ export * from './propagate.ts';
 export * from './draw.ts';
 export * from './edges.ts';
 export * from './auto-connect.ts';
+export * from './cut.ts';
+export * from './draw-extras.ts';

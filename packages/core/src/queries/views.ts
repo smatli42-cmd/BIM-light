@@ -15,7 +15,8 @@ export const viewInfo = defineQuery<{ viewId: string }, unknown>({
   label: 'Zobrazení pohledu',
   description:
     'Vrátí pohled: podlaží, styl, zda má místní úpravy („upraveno“), podrobnost, měřítko, aktivní skupinu ' +
-    'anotací (kam jdou nové kóty) a stav každé vrstvy (viditelná / zamčená, druh kategorie / anotace).',
+    'anotací (kam jdou nové kóty), stav každé vrstvy (viditelná / zamčená, druh kategorie / anotace), ' +
+    'použitou kombinaci přepisů a všechny dostupné (fáze, šrafy…).',
   group: 'Zobrazení',
   params: S.object({ viewId: S.id }, ['viewId']),
   run(m, p) {
@@ -30,6 +31,8 @@ export const viewInfo = defineQuery<{ viewId: string }, unknown>({
       detail: detailOf(d, v),
       scale: v.scale,
       activeAnnotationLayerId: activeAnnotationLayer(m, v),
+      overrideCombinationId: v.local.overrideCombinationId ?? styleOfView(d, v).overrideCombinationId,
+      overrideCombinations: Object.values(d.overrideCombinations).map((c) => ({ id: c.id, name: c.name })),
       layers: Object.values(d.layers).map((l) => ({
         id: l.id,
         name: l.name,

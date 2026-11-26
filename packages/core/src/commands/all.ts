@@ -16,6 +16,7 @@ import { storeyDelete, storeyUpdate } from './project/storey-edit.ts';
 import { CORE_QUERIES } from '../queries/all.ts';
 import { CommandRegistry } from './registry.ts';
 import { displayImport, displaySetPenWidth, styleSaveFromView, styleSetHatchScale } from './view/display.ts';
+import { styleSetWallDrawing } from './view/wall-drawing.ts';
 import { elementSetGraphicOverride } from './view/overrides.ts';
 import { viewDelete, viewLoadSettings, viewRename, viewSave } from './view/saved.ts';
 import {
@@ -138,6 +139,7 @@ export const CORE_COMMANDS = [
   elementSetGraphicOverride,
   styleSaveFromView,
   styleSetHatchScale,
+  styleSetWallDrawing,
   displayImport,
   displaySetPenWidth,
   materialCreate,

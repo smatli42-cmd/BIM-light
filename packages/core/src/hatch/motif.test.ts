@@ -5,6 +5,7 @@ import { parseProject, serializeProject } from '../persistence/project-file.ts';
 import { curvePoints, motifStrokes } from './motif.ts';
 import { HATCH_LIBRARY, validateHatches } from './registry.ts';
 import { scaleHatch } from './scale.ts';
+import { DISPLAY_SCHEMA_VERSION } from '../style/presets/create.ts';
 import { entry, motif, polyline, smooth, type MotifFamily } from './types.ts';
 
 const RANGE = { u0: 0, u1: 20, v0: 0, v1: 20 };
@@ -122,6 +123,6 @@ describe('katalog-sraf-materialu: příznak základní / odvozená a migrace', (
     if (!r.ok) throw new Error(r.error);
     expect(Object.values(r.model.display.styles).every((s) => s.hatchScale === 1)).toBe(true);
     expect(r.model.display.hatches['hatch.zdivo']?.derived).toBe(false);
-    expect(r.model.display.schemaVersion).toBe(3);
+    expect(r.model.display.schemaVersion).toBe(DISPLAY_SCHEMA_VERSION);
   });
 });

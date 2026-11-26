@@ -13,6 +13,8 @@ export const BASE_GRAPHICS: ResolvedEffect = {
   fillColor: null,
   hatch: 'none',
   transparency: 0,
+  endLines: true,
+  refLine: false,
 };
 
 export const CATEGORY_GRAPHICS: CategoryGraphics = {
