@@ -8,6 +8,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
+### Oprava: nová stěna místo vybouraného úseku se v plánovaném stavu napojí, 2026-11-26 (hlášení uživatele)
+- Po „Vybourat úsek“ a nakreslení nové stěny do mezery byly v plánovaném stavu stávající části a nová stěna
+  oddělené omítkou: napojení vedlo jen na skrytý bouraný úsek. Teď se v kresbě konec, který ztratil
+  napojení kvůli skryté stěně, napojí na volný konec zobrazené stěny ve stejném bodě (`view/rejoin.ts`,
+  jako v Archicadu – napojení mezi zobrazenými prvky). Model se nemění; ručně odpojené konce zůstanou.
+  `wall.demolishPart` vrací id v pořadí bouraný úsek, zbylá část, napojení. Test `view/phase-joins.test.ts`.
+
 ### Stěny Z10 dokončení: kresba probourání a zazdívky, nástroj Vybourat úsek, 2026-11-26
 - Místo otvoru v řezu stěny se kreslí jako část stěny v opačném stavu (`opening/renovation.ts`):
   probourání (nový otvor ve stávající stěně) jako bourání – v Bouracích pracích a Srovnávacím žlutě

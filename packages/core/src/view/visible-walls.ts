@@ -1,11 +1,13 @@
 // Stěny skryté v pohledu (vrstva, filtr rekonstrukce, pravidlo „skrýt“) se v kresbě nenapojují
 // (pokyn uživatele 2026-11-26: plánovaný stav bez mezery po bourané příčce; jako v Archicadu se
 // napojení počítá jen mezi zobrazenými prvky). Stejně otvor skrytý filtrem rekonstrukce stěnu nevyřízne
+// Konec, který ztratil napojení na skrytou stěnu, se napojí na zobrazený konec ve stejném bodě (rejoin.ts).
 // (plán stěn Z10: probourání = nový otvor, ve stávajícím stavu stěna celá; zazdívka = bouraný otvor,
 // v plánovaném stavu stěna celá). Model se nemění – kresba počítá z jeho kopie.
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { removeElements, removeOpenings, removeRelations } from '../model/update.ts';
+import { rejoinOrphans } from './rejoin.ts';
 import { openingFacts } from '../opening/draw.ts';
 import { elementFacts } from '../style/conditions.ts';
 import { resolveGraphics } from '../style/graphics.ts';
@@ -51,12 +53,20 @@ export function visibleWalls(model: Model, view: View): VisibleWalls {
     if (categoryState(model.display, view, w.category).visible && g.visible) shown.push({ wall: w, g });
     else hidden.add(w.id);
   }
-  const rels = Object.values(model.relations)
-    .filter(
-      (r) => r.kind === 'wall-connection' && (hidden.has(r.relating.wallId) || hidden.has(r.related.wallId)),
-    )
-    .map((r) => r.id);
-  const withWalls = hidden.size ? removeRelations(removeElements(model, hidden), rels) : model;
+  const removed = Object.values(model.relations).filter(
+    (r) => r.kind === 'wall-connection' && (hidden.has(r.relating.wallId) || hidden.has(r.related.wallId)),
+  );
+  const withWalls = hidden.size
+    ? rejoinOrphans(
+        model,
+        removeRelations(
+          removeElements(model, hidden),
+          removed.map((r) => r.id),
+        ),
+        removed,
+        hidden,
+      )
+    : model;
   const m = withoutHiddenOpenings(withWalls, view);
   const out = { shown, model: m, hidden };
   const byView = cache.get(model) ?? new Map<string, VisibleWalls>();
