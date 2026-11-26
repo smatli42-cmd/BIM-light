@@ -79,16 +79,18 @@ export function StyleSwitch({ s }: { s: Session }) {
   const set = currentSet(s);
   return (
     <span class="style-switch">
-      {Object.values(s.model.display.styles).map((st) => (
-        <button
-          key={st.id}
-          data-testid={`style-${st.name}`}
-          class={st.id === set ? 'active' : ''}
-          onClick={() => switchSet(s, st.id)}
-        >
-          {st.name}
-        </button>
-      ))}
+      <span class="seg">
+        {Object.values(s.model.display.styles).map((st) => (
+          <button
+            key={st.id}
+            data-testid={`style-${st.name}`}
+            class={st.id === set ? 'active' : ''}
+            onClick={() => switchSet(s, st.id)}
+          >
+            {st.name}
+          </button>
+        ))}
+      </span>
       <span class="muted" data-testid="style-state">
         {v.saved ? `pohled: ${v.name} · ` : ''}styl: {style.name}
         {modified ? ' (upraveno)' : ''}

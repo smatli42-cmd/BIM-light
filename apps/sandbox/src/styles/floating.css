@@ -11,7 +11,8 @@
 .tracker .field {
   background: var(--surface);
   border: 1px solid var(--aux);
-  padding: 1px 5px;
+  border-radius: var(--r-sm);
+  padding: 1px 6px;
   color: var(--ink);
 }
 .tracker .field.on {
@@ -27,13 +28,16 @@
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--aux);
-  padding: 2px 4px;
+  border-radius: var(--r-sm);
+  padding: 2px 6px;
 }
 .menu {
   position: absolute;
   min-width: 170px;
+  padding: 4px;
   background: var(--surface);
   border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
@@ -46,8 +50,9 @@
 .menu button {
   text-align: left;
   font: inherit;
-  padding: 4px 8px;
+  padding: 5px 8px;
   border: 0;
+  border-radius: var(--r-sm);
   background: none;
   color: var(--ink);
   cursor: pointer;
@@ -68,7 +73,9 @@
 .toast {
   background: var(--surface);
   border: 1px solid var(--aux);
-  padding: 4px 10px;
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 6px 12px;
   font-size: 0.8rem;
 }
 .toast.bad {
@@ -81,6 +88,7 @@
   font: inherit;
   color: var(--ink);
   border: 1px solid var(--danger);
+  border-radius: var(--r-sm);
   background: var(--surface);
   cursor: pointer;
 }
@@ -93,7 +101,7 @@
   padding: 3px;
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .has-pick {
@@ -121,7 +129,7 @@
   padding: 4px;
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .quick-pick-title {
@@ -133,7 +141,7 @@
   text-align: left;
   padding: 5px 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   background: none;
   cursor: pointer;
 }

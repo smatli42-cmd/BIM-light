@@ -1,4 +1,5 @@
-/* Ovládací prvky v obou motivech: tlačítka s ikonou, běžná tlačítka, pole, záložky. */
+/* Ovládací prvky v obou motivech: tlačítka s ikonou, běžná tlačítka, pole, záložky.
+   Pole (--field) a tlačítka (--btn) mají vlastní barvu odlišenou od panelu, zaoblené rohy. */
 .icon {
   display: block;
 }
@@ -10,10 +11,13 @@
   justify-content: center;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: var(--r);
   background: transparent;
   color: var(--ink);
   cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 .icon-btn:hover:not(:disabled) {
   background: var(--hover);
@@ -21,6 +25,7 @@
 .icon-btn[aria-pressed='true'] {
   background: var(--accent);
   color: var(--accent-ink);
+  box-shadow: 0 2px 6px var(--accent-ring);
 }
 .icon-btn:disabled {
   opacity: 0.4;
@@ -46,51 +51,105 @@ textarea {
   justify-content: space-between;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  border-radius: 4px;
+  min-height: 28px;
+  padding: 4px 12px;
+  border: 1px solid var(--btn-line);
+  background: var(--btn);
+  border-radius: var(--r);
+  box-shadow: var(--btn-shadow);
+  font-weight: 600;
   cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 }
-.panel button:hover,
-.appbar button:not(.icon-btn):hover {
-  background: var(--hover);
+.panel button:hover:not(:disabled),
+.appbar button:not(.icon-btn):hover,
+.window-head button:not(.icon-btn):hover {
+  background: var(--btn-hover);
+}
+.panel button:disabled {
+  cursor: default;
 }
 select,
-input:not([type='checkbox']):not([type='color']),
+input:not([type='checkbox']):not([type='color']):not([type='radio']):not([type='range']),
 textarea {
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  padding: 2px 6px;
+  min-height: 30px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: var(--r);
+  padding: 4px 10px;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+select {
+  appearance: none;
+  padding-right: 28px;
+  background-image: var(--chevron);
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  cursor: pointer;
+}
+select:hover,
+input:not([type='checkbox']):not([type='color']):not([type='radio']):not([type='range']):hover {
+  border-color: var(--line-strong);
 }
 input:focus,
-select:focus {
-  outline: 2px solid var(--accent-soft);
+select:focus,
+textarea:focus {
+  outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+input::placeholder {
+  color: var(--muted);
+}
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'] {
+  accent-color: var(--accent);
+}
+input[type='color'] {
+  border: 1px solid var(--field-line);
+  border-radius: var(--r-sm);
+  background: var(--field);
+  padding: 2px;
+}
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 kbd {
   font-size: 11px;
   color: var(--muted);
   font-family: ui-monospace, monospace;
 }
+
+/* Segmentový přepínač (sady Studie / Projekt / Elektro, Instance / Typ): zaoblená „kapsle“. */
 .style-switch {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 8px;
 }
-.style-switch > button {
-  border-radius: 0;
+.seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: calc(var(--r) + 3px);
 }
-.style-switch > button:first-child {
-  border-radius: 5px 0 0 5px;
+.appbar .seg > button,
+.panel .seg > button {
+  min-height: 26px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
 }
-.style-switch > button:nth-last-child(1),
-.style-switch > button:nth-last-child(2) {
-  border-radius: 0 5px 5px 0;
-}
-.style-switch > .muted {
-  margin-left: 8px;
+.appbar .seg > button:hover:not(.active),
+.panel .seg > button:hover:not(.active) {
+  background: var(--hover);
 }
 .appbar button.active,
 .panel button.active,
@@ -98,6 +157,11 @@ kbd {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
+}
+.appbar .seg > button.active,
+.panel .seg > button.active {
+  background: var(--accent);
+  box-shadow: 0 2px 6px var(--accent-ring);
 }
 .bottombar label,
 .window-head label {

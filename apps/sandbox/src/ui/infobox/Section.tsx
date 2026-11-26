@@ -34,7 +34,7 @@ export function InstanceTypeTabs(props: {
   onPick: (v: 'instance' | 'type') => void;
 }) {
   return (
-    <div class="ib-tabs" role="tablist">
+    <div class="ib-tabs seg" role="tablist">
       {(['instance', 'type'] as const).map((v) => (
         <button
           key={v}

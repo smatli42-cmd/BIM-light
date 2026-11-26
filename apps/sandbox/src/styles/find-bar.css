@@ -16,7 +16,7 @@
   padding: 10px 12px;
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .find-head {
@@ -32,10 +32,10 @@
   gap: 4px;
 }
 .chip {
-  padding: 3px 10px;
-  border: 1px solid var(--line-strong);
+  padding: 4px 12px;
+  border: 1px solid var(--btn-line);
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--btn);
   cursor: pointer;
 }
 .chip.on {
@@ -63,7 +63,7 @@
 .find-count {
   padding: 6px 8px;
   background: var(--surface-2);
-  border-radius: 4px;
+  border-radius: var(--r-sm);
 }
 .find-actions {
   display: flex;
@@ -71,10 +71,12 @@
   gap: 4px;
 }
 .find-actions button {
-  padding: 4px 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  background: var(--surface);
+  padding: 5px 12px;
+  border: 1px solid var(--btn-line);
+  border-radius: var(--r);
+  background: var(--btn);
+  box-shadow: var(--btn-shadow);
+  font-weight: 600;
   cursor: pointer;
 }
 .find-actions button.primary {
@@ -108,8 +110,10 @@
   height: 28px;
   padding: 0 6px;
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: var(--r);
   background: none;
+  box-shadow: none;
+  font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -125,7 +129,7 @@
   padding: 4px;
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .bar-sec-title {
@@ -140,8 +144,10 @@
   gap: 4px;
   padding: 4px 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   background: none;
+  box-shadow: none;
+  font-weight: 400;
   text-align: left;
   cursor: pointer;
 }
@@ -167,7 +173,7 @@
 .dialog {
   width: min(900px, 90vw);
   max-height: 80vh;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .pen-table input {

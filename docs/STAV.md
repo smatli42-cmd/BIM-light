@@ -1,11 +1,22 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, rozhraní UI4 – spodní lišta a okna.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, moderní vzhled rozhraní (pole a tlačítka odlišená, zaoblení).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Rozhraní: moderní vzhled, 2026-11-26 (připomínka uživatele podle vzoru)
+- **Tři roviny barev** v obou motivech (`styles/theme.css`): podklad aplikace < panely (karty) a v nich
+  barevně odlišená **pole k vyplnění** (`--field`, v tmavém tmavší, ve světlém bílá) a **tlačítka**
+  (`--btn`, v tmavém světlejší, ve světlém bílá se stínem). Nadpisy sekcí tmavomodré (`--heading`).
+- **Zaoblení** přes `--r-sm` / `--r` / `--r-lg` (6 / 9 / 14 px): panely, paleta a okna jsou karty s
+  mezerou 6 px na podkladu; lišty A, B, G leží na podkladu bez čar. Rozbalovací pole mají vlastní šipku,
+  zaměřené pole modrý prstenec, tenké posuvníky. Přepínače Studie / Projekt a Instance / Typ jsou
+  segmentové „kapsle“ (`.seg`). Modrý rámeček aktivního okna jen při dvou oknech.
+- `panels.css` (631 ř.) rozdělen na `panels.css`, `floating.css`, `infobox-content.css`, `find-bar.css`.
+- Testy beze změny zelené: jádro 668, prohlížeč 116.
 
 ### Rozhraní: UI4 hotovo, 2026-11-26 (spodní lišta a okna, podle tabulky v koncepci, část 2 G)
 - **Jádro:** příkazy `view.setLayerCombination` (kombinace vrstev okna, null = podle stylu) a
@@ -132,6 +143,8 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ## Rozhodl Code (k potvrzení)
 
+- **Vzhled:** rámeček aktivního okna se ukazuje jen při dvou oknech vedle sebe (u jednoho okna rušil);
+  písmo Segoe UI Variable (Windows), jinak systémové – bez stahování webového písma.
 Rozhraní UI2 (2026-11-25):
 - **Uvnitř = líc u první vrstvy skladby** (výchozí „líc“ dosavadních stěn), **vně = líc u poslední vrstvy**.
   U knihovních typů je první vrstva vnitřní omítka, takže to odpovídá; u vlastních typů rozhoduje pořadí

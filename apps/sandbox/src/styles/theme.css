@@ -1,45 +1,78 @@
 /* Motivy rozhraní (koncepce rozhraní, část 5): barvy jen jako proměnné na jednom místě.
-   Výchozí světlý; tmavý přes <html data-theme="dark">. Pomocná modrá je v obou motivech. */
+   Výchozí světlý; tmavý přes <html data-theme="dark">. Pomocná modrá je v obou motivech.
+   Tři roviny podle vzoru: podklad aplikace (--bg) < panely (--surface) a v nich odlišená
+   pole k vyplnění (--field) a tlačítka (--btn). Zaoblení přes --r-sm / --r / --r-lg. */
 :root {
-  --bg: #f3f4f6;
-  --surface: #ffffff;
-  --surface-2: #f7f8fa;
+  --bg: #e7eaf0;
+  --surface: #f8f9fb;
+  --surface-2: #eef1f5;
   --paper: #ffffff;
-  --ink: #1b1f24;
-  --muted: #6b7280;
-  --line: #dfe2e7;
-  --line-strong: #c7ccd4;
-  --accent: #2b7de0;
+  --ink: #182033;
+  --muted: #687386;
+  --line: #e0e4ea;
+  --line-strong: #cdd3dc;
+  --field: #ffffff;
+  --field-line: #d3d9e2;
+  --btn: #ffffff;
+  --btn-line: #d3d9e2;
+  --btn-hover: #f0f3f8;
+  --btn-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+  --accent: #2463eb;
   --accent-ink: #ffffff;
-  --accent-soft: #e4effc;
-  --hover: #eef1f5;
-  --danger: #c62828;
-  --danger-soft: #fdecec;
+  --accent-soft: #e3ecfd;
+  --accent-ring: rgba(36, 99, 235, 0.22);
+  --heading: #1c3a7a;
+  --hover: #e9edf3;
+  --danger: #d32f2f;
+  --danger-soft: #fdeceb;
   --aux: #2b8cff;
-  --shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  --shadow: 0 10px 30px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.06);
+  --card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  --scroll: #c3cad5;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23687386' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --r-sm: 6px;
+  --r: 9px;
+  --r-lg: 14px;
   color-scheme: light;
-  font-family: system-ui, 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   color: var(--ink);
   background: var(--bg);
 }
 
 :root[data-theme='dark'] {
-  --bg: #12161c;
-  --surface: #1a1f27;
-  --surface-2: #20262f;
+  --bg: #0b0e13;
+  --surface: #161a21;
+  --surface-2: #1d222b;
   --paper: #1c2027;
-  --ink: #e6e9ee;
-  --muted: #8b94a3;
-  --line: #2c333e;
-  --line-strong: #3b4452;
-  --accent: #3d8bfd;
+  --ink: #e7eaf0;
+  --muted: #8b94a4;
+  --line: #262c36;
+  --line-strong: #343b47;
+  --field: #0e1116;
+  --field-line: #2c333e;
+  --btn: #222833;
+  --btn-line: #313846;
+  --btn-hover: #2b3240;
+  --btn-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --accent: #4a8dff;
   --accent-ink: #ffffff;
-  --accent-soft: #1e3352;
-  --hover: #262d38;
-  --danger: #ef5350;
-  --danger-soft: #3a1f22;
+  --accent-soft: #1b2d4d;
+  --accent-ring: rgba(74, 141, 255, 0.3);
+  --heading: #8fb6ff;
+  --hover: #232a35;
+  --danger: #ff6b66;
+  --danger-soft: #3a1d20;
   --aux: #4aa3ff;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --scroll: #353d4a;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b94a4' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   color-scheme: dark;
+}
+
+/* Tenké zaoblené posuvníky v obou motivech. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll) transparent;
 }
