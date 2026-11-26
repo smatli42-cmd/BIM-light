@@ -127,13 +127,20 @@ export function wallMenu(s: Session, wallId: Id, at: Vec2) {
     cmd('Otočit (R)', 'rotate'),
     cmd('Zrcadlit (F)', 'mirror'),
     cmd('Pole (P)', 'array'),
-    {
-      label: 'Okótovat celou stěnu',
-      action: () => s.run('dimension.wholeWall', { wallId, side: 'opp', viewId: s.viewId }),
-    },
+    ...wholeWallItems(s, wallId),
     ...arcItems(s, wallId),
     { label: 'Smazat (Del)', action: () => s.run('selection.delete', { wallIds: s.selection.walls }) },
   ]);
+}
+
+/** Okótovat celou stěnu: jen otvory, nebo i šířky všech stěn (pokyn uživatele 2026-11-26). */
+function wholeWallItems(s: Session, wallId: Id) {
+  const run = (walls: boolean) =>
+    s.run('dimension.wholeWall', { wallId, side: 'opp', viewId: s.viewId, walls });
+  return [
+    { label: 'Okótovat celou stěnu', action: () => run(false) },
+    { label: 'Okótovat celou stěnu se všemi stěnami', action: () => run(true) },
+  ];
 }
 
 /** Nabídka otvoru (plán stěn Z4). */
@@ -148,14 +155,7 @@ export function openingMenu(s: Session, openingId: Id, at: Vec2) {
     cmd('Přesunout (M)', 'move'),
     cmd('Kopírovat (K)', 'copy'),
     cmd('Zrcadlit (F)', 'mirror'),
-    ...(hostId
-      ? [
-          {
-            label: 'Okótovat celou stěnu',
-            action: () => s.run('dimension.wholeWall', { wallId: hostId, side: 'opp', viewId: s.viewId }),
-          },
-        ]
-      : []),
+    ...(hostId ? [...wholeWallItems(s, hostId)] : []),
     { label: 'Smazat otvor (Del)', action: () => s.run('opening.delete', { openingIds: ids }) },
   ]);
 }

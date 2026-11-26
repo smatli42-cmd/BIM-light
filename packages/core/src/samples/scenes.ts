@@ -54,6 +54,24 @@ function rowAcross(c: SampleContext, right: string, p: string, left: string) {
 
 export const SCENES: readonly Sample[] = [
   {
+    key: 'kota-cela-stena',
+    title: 'Kóta celé stěny se všemi stěnami',
+    kind: 'scena',
+    date: '2026-11-26',
+    description:
+      'Vyber spodní stěnu, pravé tlačítko → „Okótovat celou stěnu se všemi stěnami“: řetěz s tloušťkami ' +
+      'rohových stěn, okny a příčkami a pod ním celková délka. Levá stěna je už okótovaná.',
+    build(c) {
+      const [, , bottom, left] = rect(c, 'Obvodová zateplená 465', 12000, 8000, 'new');
+      for (const x of [4000, 8000]) c.line(vec(x, 0), vec(x, 8000), { typeId: c.type('Příčka 125') });
+      c.line(vec(0, 4500), vec(4000, 4500), { typeId: c.type('Příčka 100') });
+      for (const offset of [1500, 5500, 9500])
+        c.run('opening.create', { wallId: bottom, offset, width: 1200, height: 1500, sill: 900 });
+      c.run('opening.create', { wallId: left, offset: 1500, width: 1000, height: 2100, sill: 0 });
+      c.run('dimension.wholeWall', { wallId: left, viewId: c.viewId, walls: true });
+    },
+  },
+  {
     key: 'koty',
     title: 'Oprava – kótování otvorů, oblouků a řady přes příčku',
     kind: 'scena',

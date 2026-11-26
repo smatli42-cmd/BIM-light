@@ -62,9 +62,35 @@ test.describe('plan-steny / Z4: otvory ve stěně v sandboxu', () => {
     const w = await wall(page, { x: 0, y: 0 }, { x: 6000, y: 0 });
     await page.evaluate((id) => window.__bim!.run('opening.create', { wallId: id, offset: 1400 }), w);
     await clickPx(page, await px(page, 500, 150), 'right');
-    await page.getByText('Okótovat celou stěnu').click();
+    await page.getByText('Okótovat celou stěnu', { exact: true }).click();
     const dims = Object.values((await model(page)).dimensions);
     expect(dims).toHaveLength(4);
+  });
+
+  test('pokyn uživatele 2026-11-26: Okótovat celou stěnu se všemi stěnami přidá příčky a rohy', async ({
+    page,
+  }) => {
+    await page.evaluate(() => {
+      const h = window.__bim!;
+      const [, , bottom] = h.run('wall.rectangle', {
+        storeyId: h.storeyId(),
+        typeId: h.typeId('Obvodová zateplená 465'),
+        a: { x: 0, y: 0 },
+        b: { x: 6000, y: 4000 },
+      });
+      h.run('wall.create', {
+        storeyId: h.storeyId(),
+        typeId: h.typeId('Příčka 125'),
+        path: { kind: 'line', start: { x: 3000, y: 0 }, end: { x: 3000, y: 4000 } },
+        autoConnect: true,
+      });
+      return bottom;
+    });
+    await clickPx(page, await px(page, 1500, -230), 'right');
+    await page.getByText('Okótovat celou stěnu se všemi stěnami').click();
+    const dims = Object.values((await model(page)).dimensions);
+    // řetěz: roh 465 – 2875 – příčka 125 – 3000 – roh 465, a celková délka
+    expect(dims).toHaveLength(6);
   });
 
   test('plan-steny / Z4: rovina řezu v liště pohledu', async ({ page }) => {

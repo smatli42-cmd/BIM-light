@@ -1,12 +1,19 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, oprava kótování oblouků (poloměr, průměr, tloušťka, obrys otvoru).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, kóta celé stěny se všemi stěnami.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Kóta celé stěny se všemi stěnami, 2026-11-26 (pokyn uživatele; scéna `?ukazka=kota-cela-stena`)
+- `dimension.wholeWall` s `walls: true` (Revit „Entire Walls – Intersecting Walls“, Archicad automatické
+  kótování): řetěz obsahuje i tloušťky rohových stěn na koncích a oba líce napojených příček a křížících
+  stěn, seřazené podél stěny; pod ním celková délka. Nabídka stěny i otvoru (pravé tlačítko): „Okótovat
+  celou stěnu“ (jen otvory) a „Okótovat celou stěnu se všemi stěnami“. Jen přímé stěny (u oblouku zatím
+  jen otvory). Ukázkový dům je okótovaný takto. Testy `dimension/whole-wall-walls.test.ts`, e2e `otvory`.
 
 ### Oprava kótování oblouků, 2026-11-26 (druhé hlášení uživatele; scéna `?ukazka=koty`)
 - **Poloměr a průměr:** nástroj Kóta – klik na líc obloukové stěny a pak do volna vloží poloměr (R) nebo

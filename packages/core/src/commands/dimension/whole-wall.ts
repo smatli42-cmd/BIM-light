@@ -38,6 +38,7 @@ export interface WholeWallParams {
   wallId: Id;
   side?: 'ref' | 'opp';
   distance?: number;
+  walls?: boolean;
   viewId?: Id;
   annotationLayerId?: Id;
 }
@@ -47,14 +48,16 @@ export const dimensionWholeWall = defineCommand<WholeWallParams>({
   label: 'Okótovat celou stěnu',
   description:
     'Okótuje stěnu podél líce (side: ref / opp, výchozí opp): řetěz líc – hrany otvorů – líc a pod ním ' +
-    'celkovou délku. distance = vzdálenost první řady od líce (mm, výchozí 800). Kóty jdou do aktivní ' +
-    'skupiny anotací pohledu.',
+    'celkovou délku. distance = vzdálenost první řady od líce (mm, výchozí 800). walls: true přidá do ' +
+    'řetězu i šířky všech stěn – tloušťky rohových stěn a líce napojených příček a křížících stěn ' +
+    '(jen přímá stěna). Kóty jdou do aktivní skupiny anotací pohledu.',
   group: 'Kóta',
   params: S.object(
     {
       wallId: S.id,
       side: S.enumOf(['ref', 'opp'], 'líc'),
       distance: S.number('mm', { exclusiveMinimum: 0 }),
+      walls: { type: 'boolean', description: 'i rohové stěny a příčky (šířky všech stěn)' },
       viewId: S.id,
       annotationLayerId: S.id,
     },
@@ -64,7 +67,7 @@ export const dimensionWholeWall = defineCommand<WholeWallParams>({
     const layer = annotationLayerFor(model, p);
     const distance = p.distance ?? 800;
     const rows =
-      wholeWallRows(model, p.wallId, p.side ?? 'opp', distance, distance / 2) ??
+      wholeWallRows(model, p.wallId, p.side ?? 'opp', distance, distance / 2, { walls: p.walls ?? false }) ??
       fail('invalid', 'Konce stěny nejsou kolmé na stěnu; okótujte je ručně');
     const w = wallOf(model, p.wallId);
     const arc =

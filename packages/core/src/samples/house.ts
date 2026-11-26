@@ -47,7 +47,8 @@ function ground(c: SampleContext) {
   opening(c, hall, 1000, 800, 2000, 0, ex);
   opening(c, bearing, 2000, 900, 2100, 0, { status: 'new' });
   opening(c, bearing, 6500, 600, 1200, 900, { ...ex, kind: 'niche', depth: 150, side: 'opp' });
-  for (const wallId of [bottom, left]) c.run('dimension.wholeWall', { wallId, viewId: c.viewId });
+  for (const wallId of [bottom, left])
+    c.run('dimension.wholeWall', { wallId, viewId: c.viewId, walls: true });
   c.run('wallTag.tagAll', { viewId: c.viewId });
 }
 
