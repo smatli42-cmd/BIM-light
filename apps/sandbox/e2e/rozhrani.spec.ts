@@ -84,3 +84,38 @@ test.describe('koncepce-rozhrani / UI2: paleta a info box', () => {
     expect(w.path.start.y).toBeCloseTo(-300, 6);
   });
 });
+
+test.describe('pokyn uživatele 2026-11-26: pracovní plocha', () => {
+  test('pokyn uživatele 2026-11-26: panely bez mezer, šířka info boxu a Obsahu tažením dělítka, dvojklik vrátí výchozí', async ({
+    page,
+  }) => {
+    const palette = (await page.locator('.palette').boundingBox())!;
+    const info = page.getByTestId('infobox');
+    expect(Math.abs((await info.boundingBox())!.x - (palette.x + palette.width))).toBeLessThan(1);
+    const split = (await page.getByTestId('splitter-infobox').boundingBox())!;
+    const y = split.y + split.height / 2;
+    await page.mouse.move(split.x + 2, y);
+    await page.mouse.down();
+    await page.mouse.move(split.x + 102, y, { steps: 5 });
+    await page.mouse.up();
+    expect(Math.round((await info.boundingBox())!.width)).toBe(370);
+    const content = page.getByTestId('panel');
+    const cs = (await page.getByTestId('splitter-content').boundingBox())!;
+    await page.mouse.move(cs.x + 2, y);
+    await page.mouse.down();
+    await page.mouse.move(cs.x - 48, y, { steps: 5 });
+    await page.mouse.up();
+    expect(Math.round((await content.boundingBox())!.width)).toBe(350);
+    await page.reload();
+    expect(Math.round((await page.getByTestId('infobox').boundingBox())!.width)).toBe(370);
+    await page.getByTestId('splitter-infobox').dblclick();
+    expect(Math.round((await page.getByTestId('infobox').boundingBox())!.width)).toBe(270);
+  });
+
+  test('pokyn uživatele 2026-11-26: volba podrobnosti (hrubá / střední / jemná) není ve spodní liště', async ({
+    page,
+  }) => {
+    await expect(page.getByTestId('bottombar')).toBeVisible();
+    await expect(page.getByTestId('detail-menu')).toHaveCount(0);
+  });
+});

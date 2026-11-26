@@ -1,10 +1,10 @@
 // G – spodní lišta zobrazení aktivního okna (koncepce rozhraní, část 2 G, podle vzoru): zoom a okna,
-// trasování, přichytávání, vrstvy, vzhled (čáry, materiál, popisy, pera), přepisy, podrobnost, šrafy,
+// trasování, přichytávání, vrstvy, vzhled (čáry, materiál, popisy, pera), přepisy, šrafy,
 // rovina řezu, skupina anotací, Odhalit; vpravo nápověda a souřadnice.
 import type { Session } from '../../session/session.ts';
 import { LayerGroup, SnapGroup, ZoomGroup } from '../bottom/groups.tsx';
 import { TraceGroup } from '../bottom/trace.tsx';
-import { DetailMenu, LookGroup, OverridesMenu, RevealToggle } from '../bottom/look.tsx';
+import { LookGroup, OverridesMenu, RevealToggle } from '../bottom/look.tsx';
 import { WindowsGroup } from '../bottom/windows.tsx';
 import { useSession } from '../use-session.ts';
 import { AnnotationGroup, CutPlane, HatchScale } from '../ViewControls.tsx';
@@ -21,7 +21,6 @@ export function BottomBar({ s }: { s: Session }) {
       <LayerGroup s={s} />
       <LookGroup s={s} />
       <OverridesMenu s={s} />
-      <DetailMenu s={s} />
       <HatchScale s={s} />
       <CutPlane s={s} />
       <AnnotationGroup s={s} />

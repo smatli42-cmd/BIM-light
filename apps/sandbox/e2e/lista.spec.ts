@@ -25,14 +25,11 @@ test.describe('koncepce-rozhrani / 2 G: spodní lišta a okna', () => {
     await expect(page.locator('.window')).toHaveCount(1);
   });
 
-  test('kombinace vrstev, podrobnost a grafické přepisy jdou příkazy do pohledu okna', async ({ page }) => {
+  test('kombinace vrstev a grafické přepisy jdou příkazy do pohledu okna', async ({ page }) => {
     await page.getByTestId('combo-menu').click();
     const items = page.getByTestId('combo-menu-menu').getByRole('menuitem');
     await items.nth(1).click();
     expect((await view(page)).local.layerStates).toBeDefined();
-    await page.getByTestId('detail-menu').click();
-    await page.getByTestId('detail-menu-menu').getByText('Jemná').click();
-    expect((await view(page)).local.detail).toBe('fine');
     await page.getByTestId('overrides-menu').click();
     await page.getByTestId('overrides-menu-menu').getByRole('menuitem').last().click();
     expect((await view(page)).local.overrideCombinationId ?? (await view(page)).styleId).toBeTruthy();

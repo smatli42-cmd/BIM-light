@@ -1,6 +1,6 @@
 /* Rozložení okna aplikace (koncepce rozhraní, části 2 a 8): A 44 px, B 36 px, C 44 px, D 270 px,
-   E zbytek, F 300 px (lze skrýt), F' 40 px, G 36 px. Lišty leží na podkladu (--bg), panely a okna
-   jsou zaoblené karty (--surface) s mezerou 6 px. */
+   E zbytek, F 300 px (lze skrýt), F' 40 px, G 36 px. Panely těsně vedle sebe bez mezer
+   (každý milimetr pracovní plochy), oddělené čarou; šířku D a F lze měnit tažením dělítka. */
 * {
   box-sizing: border-box;
 }
@@ -19,8 +19,8 @@ body,
   flex: 1;
   min-height: 0;
   display: flex;
-  gap: 6px;
-  padding: 0 6px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .muted {
   color: var(--muted);
@@ -38,7 +38,7 @@ body,
   align-items: center;
   gap: 10px;
   padding: 0 12px;
-  background: var(--bg);
+  background: var(--surface);
   flex: none;
 }
 .appbar {
@@ -82,10 +82,10 @@ body,
   gap: 2px;
   padding: 6px 0;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--card-shadow);
   overflow-y: auto;
+}
+.palette {
+  border-right: 1px solid var(--line);
 }
 .palette .tool-group {
   display: flex;
@@ -97,18 +97,16 @@ body,
 }
 .sections {
   width: 40px;
+  border-left: 1px solid var(--line);
 }
 .panel {
   overflow-y: auto;
   padding: 12px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--card-shadow);
   flex: none;
 }
 .infobox {
-  width: 270px;
+  width: var(--infobox-w, 270px);
 }
 .infobox-head {
   display: flex;
@@ -123,7 +121,7 @@ body,
   color: var(--heading);
 }
 .content {
-  width: 300px;
+  width: var(--content-w, 300px);
 }
 .content-head {
   display: flex;
@@ -143,14 +141,15 @@ body,
   min-width: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--card-shadow);
   overflow: hidden;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+.window + .window {
+  border-left: 1px solid var(--line);
 }
 .windows:has(.window + .window) .window.active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-ring);
+  outline-color: var(--accent);
 }
 .window-head {
   height: 36px;
@@ -200,5 +199,19 @@ body,
   flex: 1;
   min-width: 0;
   display: flex;
-  gap: 6px;
+}
+
+/* Dělítko mezi panely: tažením mění šířku, dvojklik vrátí výchozí. */
+.splitter {
+  flex: none;
+  width: 5px;
+  margin: 0 -2px;
+  z-index: 5;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.12s;
+}
+.splitter:hover,
+.splitter.dragging {
+  background: var(--accent);
 }

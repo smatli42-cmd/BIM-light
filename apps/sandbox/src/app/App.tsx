@@ -9,7 +9,9 @@ import { CommandBar } from '../ui/layout/CommandBar.tsx';
 import { ContentPanel } from '../ui/layout/ContentPanel.tsx';
 import { InfoBox } from '../ui/layout/InfoBox.tsx';
 import { ToolPalette } from '../ui/layout/ToolPalette.tsx';
+import { Splitter } from '../ui/layout/Splitter.tsx';
 import { ViewWindow } from '../ui/layout/ViewWindow.tsx';
+import { applyPanelSizes } from '../ui/panel-sizes.ts';
 import { applyTheme } from '../ui/theme.ts';
 import { useSession } from '../ui/use-session.ts';
 import { installTestHook } from './test-hook.ts';
@@ -30,6 +32,7 @@ export function App() {
   const { session, controller } = useMemo(() => {
     const s = new Session();
     applyTheme(s.theme);
+    applyPanelSizes();
     installTestHook(s);
     return { session: s, controller: new Controller(s) };
   }, []);
@@ -40,6 +43,7 @@ export function App() {
       <div class="main">
         <ToolPalette s={session} />
         <InfoBox s={session} />
+        <Splitter panel="infobox" dir={1} />
         <Windows s={session} controller={controller} />
         <ContentPanel s={session} />
       </div>

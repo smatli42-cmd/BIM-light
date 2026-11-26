@@ -135,7 +135,7 @@ bubliny jsou stručné. Zleva doprava:
 | 10 | **Zobrazit výběr ve 3D** (F4), **Zobrazit vše ve 3D** (Ctrl+F4) | 3D okno | 3D | etapa 3D |
 | 11 | **Odhalit** | dočasně ukáže skryté prvky (skrytou vrstvou, fází, filtrem) purpurově a jdou vybrat | nové | UI4 |
 | 12 | **Fáze** › (Stávající / Bourací práce / Nový / Srovnávací) | filtr rekonstrukce aktivního okna | pravidla fází | stěny Z6 |
-| 13 | Podrobnost › (hrubá / střední / jemná), Šrafy ×, Řez (rovina řezu), Kóty do | naše položky navíc | máme | UI4 (přesun do G) |
+| 13 | Šrafy ×, Řez (rovina řezu), Kóty do | naše položky navíc | máme | UI4 (přesun do G); podrobnost z lišty odebrána na pokyn uživatele 2026-11-26 (bude se nastavovat jinde) |
 
 Vpravo zůstane nápověda „co dělat dál“ a souřadnice kurzoru. Na úzké obrazovce se položky schovají
 do rozbalovací nabídky „…“.

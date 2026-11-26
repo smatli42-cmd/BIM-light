@@ -10,6 +10,7 @@ import { LayersPanel } from '../LayersPanel.tsx';
 import { MaterialsPanel } from '../MaterialsPanel.tsx';
 import { useSession } from '../use-session.ts';
 import { WallTypesPanel } from '../WallTypesPanel.tsx';
+import { Splitter } from './Splitter.tsx';
 
 type Section = 'contents' | 'layers' | 'types' | 'materials' | 'hatches';
 const SECTIONS: [Section, IconName, string][] = [
@@ -26,6 +27,7 @@ export function ContentPanel({ s }: { s: Session }) {
   const title = SECTIONS.find((x) => x[0] === open)?.[2] ?? '';
   return (
     <>
+      {open && <Splitter panel="content" dir={-1} />}
       {open && (
         <aside class="content panel" data-testid="panel">
           <div class="content-head">

@@ -1,18 +1,13 @@
 // Spodní lišta – vzhled okna (koncepce rozhraní, část 2 G): skutečná tloušťka čar, průchozí materiál,
-// izolovat popisy, pera a barvy, grafické přepisy, podrobnost a Odhalit.
-import { detailOf, styleOfView, type Detail } from '@bim-light/core';
+// izolovat popisy, pera a barvy, grafické přepisy a Odhalit.
+// Podrobnost (hrubá / střední / jemná) v liště není – nastavuje se jinde (pokyn uživatele 2026-11-26).
+import { styleOfView } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
 import { IconButton } from '../icons/Icon.tsx';
 import { BarMenu } from './BarMenu.tsx';
 import { setScreen } from './groups.tsx';
 import { PensDialog } from './PensDialog.tsx';
-
-const DETAILS: [Detail, string][] = [
-  ['coarse', 'Hrubá'],
-  ['medium', 'Střední'],
-  ['fine', 'Jemná'],
-];
 
 export function LookGroup({ s }: { s: Session }) {
   const sc = s.screen;
@@ -61,24 +56,6 @@ export function OverridesMenu({ s }: { s: Session }) {
       label={d.overrideCombinations[cur]?.name ?? '–'}
       title="Grafické přepisy"
       testid="overrides-menu"
-      sections={[{ items }]}
-    />
-  );
-}
-
-export function DetailMenu({ s }: { s: Session }) {
-  const cur = detailOf(s.model.display, s.view);
-  const items = DETAILS.map(([v, label]) => ({
-    label,
-    checked: v === cur,
-    onPick: () => s.run('view.setDetail', { viewId: s.view.id, detail: v }),
-  }));
-  return (
-    <BarMenu
-      icon="detail"
-      label={DETAILS.find((x) => x[0] === cur)?.[1] ?? ''}
-      title="Podrobnost"
-      testid="detail-menu"
       sections={[{ items }]}
     />
   );
