@@ -35,7 +35,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   stěnu po něm; s 2D kresbou (základ 22) bude brát i nakreslené čáry (kontrolní seznam pravidel interakce).
 
 ### Editor typů, krok 2: náhled skladby Půdorys / Řez / 3D, 2026-11-26 (koncepce rozhraní 11a)
-- Záložky náhledu: **Půdorys** (úsek stěny vodorovně, vrstvy jako pásy, referenční strana dole),
+- Záložky náhledu: **Půdorys** (úsek stěny vodorovně, vrstvy jako pásy shora dolů ve stejném pořadí jako tabulka –
+  referenční strana nahoře; opraveno po připomínce uživatele, šipky ↑↓ teď odpovídají náhledu),
   **Řez** (stěna nastojato, vrstvy svisle i s prodloužením nahoru / dolů), **3D** (izometrický výsek,
   vrstvy odstupňované jako schody – vnitřní nejdelší, u každé vidět čelo se šrafou, horní plochu a líc).
   Vše ve skutečném poměru, šrafy materiálů v měřítku 1 : 20, kóty tlouštěk a celková tloušťka (půdorys,

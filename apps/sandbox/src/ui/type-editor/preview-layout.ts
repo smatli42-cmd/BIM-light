@@ -1,5 +1,5 @@
 // Rozložení náhledu skladby v okně Editor typů (krok 2, koncepce rozhraní 11a): půdorys (stěna vodorovně,
-// vrstvy jako pásy), řez (stěna nastojato, vrstvy svisle i s prodloužením nahoru / dolů) a pseudo-3D
+// vrstvy jako pásy shora dolů v pořadí tabulky), řez (stěna nastojato, vrstvy svisle i s prodloužením nahoru / dolů) a pseudo-3D
 // výsek s vrstvami odstupňovanými jako schody. Vše ve skutečném poměru; čistá funkce bez plátna (testy).
 import type { Vec2 } from '@bim-light/core';
 import { iso } from './preview-iso.ts';
@@ -35,21 +35,21 @@ function chain(ls: readonly PreviewLayer[], at: (d: number) => Vec2, k: number, 
   return out;
 }
 
-/** Půdorys: úsek stěny vodorovně, referenční (vnitřní) strana dole, kóty tlouštěk vpravo. */
+/** Půdorys: úsek stěny vodorovně, vrstvy shora dolů v pořadí tabulky (referenční strana nahoře), kóty vpravo. */
 function plan(ls: readonly PreviewLayer[], ref: number, W: number, H: number): PreviewLayout {
   const t = total(ls);
   const L = Math.max(1200, 2.5 * t);
   const k = Math.min((W - 2 * PAD - DIM) / L, (H - 2 * PAD) / t);
   const x0 = (W - DIM - L * k) / 2;
-  const yb = (H + t * k) / 2;
+  const yt = (H - t * k) / 2;
   const d0 = offsets(ls);
   const faces = ls.map((l, i) => {
-    const y = yb - ((d0[i] ?? 0) + l.thickness) * k;
+    const y = yt + (d0[i] ?? 0) * k;
     return face(i, 'cut', rect(x0, y, L * k, l.thickness * k), v(x0, y), v(k, 0), v(0, k), L, l.thickness);
   });
   const xr = x0 + L * k + 12;
-  const dims = chain(ls, (d) => v(xr, yb - d * k), k, v(20, 0));
-  const yr = yb - ref * k;
+  const dims = chain(ls, (d) => v(xr, yt + d * k), k, v(20, 0));
+  const yr = yt + ref * k;
   return { faces, refLine: [v(x0 - 8, yr), v(x0 + L * k + 8, yr)], dims, k };
 }
 

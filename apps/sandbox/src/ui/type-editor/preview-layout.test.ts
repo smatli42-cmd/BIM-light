@@ -13,16 +13,17 @@ const box = (f: PreviewFace) => {
 };
 
 describe('koncepce rozhraní 11a / Editor typů krok 2: náhled skladby', () => {
-  it('půdorys: vrstvy jako vodorovné pásy ve skutečném poměru, referenční strana dole', () => {
+  it('připomínka uživatele 2026-11-26: půdorys má vrstvy shora dolů ve stejném pořadí jako tabulka', () => {
     const lay = previewLayout('plan', L, 0, W, H);
     const [a, b, c] = lay.faces.map(box);
     expect(b!.y1 - b!.y0).toBeCloseTo(((a!.y1 - a!.y0) * 300) / 15);
-    expect(a!.y0).toBeGreaterThan(b!.y0);
-    expect(b!.y0).toBeGreaterThan(c!.y0);
+    // první vrstva (referenční strana) nahoře, šipka „nahoru“ v tabulce ji posune nahoru i v náhledu
+    expect(a!.y0).toBeLessThan(b!.y0);
+    expect(b!.y0).toBeLessThan(c!.y0);
     // stěna je delší než tlustá (úsek stěny, ne roztažený pruh)
-    expect(a!.x1 - a!.x0).toBeGreaterThan(2 * (a!.y1 - c!.y0));
+    expect(a!.x1 - a!.x0).toBeGreaterThan(2 * (c!.y1 - a!.y0));
     // referenční čára na líci u první vrstvy
-    expect(lay.refLine?.[0].y).toBeCloseTo(a!.y1);
+    expect(lay.refLine?.[0].y).toBeCloseTo(a!.y0);
   });
 
   it('půdorys: kóty tlouštěk (malé vrstvy jen v celkové kótě) a celková tloušťka', () => {
