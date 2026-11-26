@@ -1,11 +1,23 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, UI5 část 1 – paleta u uzlu a hrany, karta prvku, tracker.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, UI5 hotovo – Změnit velikost (Ctrl+K) a průvodní lekce.
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 
 ## Hotovo
+
+### Rozhraní: UI5 část 2 hotovo, 2026-11-26 (Změnit velikost a průvodní lekce podle Arditu)
+- **Ctrl+K = Změnit velikost** (jako Resize v Archicadu; „hledání příkazů“ z plánu vypuštěno, v Arditu
+  Ctrl+K není). Jádro: příkaz **`wall.scale`** (vybrané stěny, výchozí bod, poměr; tloušťky a výšky
+  zůstávají; otvory drží poměrnou polohu středu, šířka jen se `scaleOpenings`), `scalePath` v geometrii,
+  krok scénáře AI. Sandbox: okno Měřítko (%) + Změnit i rozměry oken, dveří a otvorů → Pokračovat →
+  klik výchozího bodu (náhled kolem kurzoru); ikona v liště B za Polem.
+- **Průvodní lekce** (ikona ? v horní liště): seznam lekcí s počtem kroků, budoucí zašedlé
+  („připravujeme“). Krok = modrý rámeček kolem části okna + bublina (Zpět / Další / Ukončit).
+  **Prostředí aplikace** (8 kroků) a **Výběr a úpravy** (4 kroky, cvičný projekt – místnost s oknem;
+  po ukončení se vrátí původní projekt i s historií Zpět: `Editor.saveState / restoreState` v jádře).
+- Testy: jádro a nástroje 680, prohlížeč 130 (nové `velikost.spec.ts`, `lekce.spec.ts`).
 
 ### Rozhraní: UI5 část 1 hotovo, 2026-11-26 (plovoucí prvky podle screenshotů z Arditu)
 - **Paleta u uzlu** (`interaction/tools/select/pet.ts`, `ui/PetPalette.tsx`): klik (ne tažení) na koncový
@@ -169,6 +181,11 @@ Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-st
 
 ## Rozhodl Code (k potvrzení)
 
+- **Změnit velikost:** mění se jen půdorysné vzdálenosti; výšky stěn, výšky otvorů a parapety stojí
+  (zaškrtnutí změní jen šířku otvoru). Volba „Změnit i velikost textu“ z Arditu vynechána – volné texty
+  zatím nejsou a kóty mají text pevně na papíře (základ 29). Okno se otevře jen s vybranými stěnami.
+- **Lekce:** jen pro hotové funkce; ostatní v seznamu zašedlé s poznámkou, kdy přibudou. Lekce se
+  nespouští sama při prvním otevření (jen tlačítkem ?).
 - **UI5 paleta u uzlu:** horní řádek jsem podle vzoru naplnil našimi příkazy uzlu (Posun uzlu, Odpojit
   roh, Spojovat / Nespojovat, Smazat uzel); dolní řádek = příkazy celé stěny. Kolečko zakřivení a
   nabídka na pravé tlačítko zatím zůstávají (koncepce je chce paletou nahradit – po vyzkoušení odebrat).
@@ -214,9 +231,8 @@ Velikost šraf (2026-11-25):
   body „Rozhodl Code“ u Z4 a Z5.
 - Uživatel vyzkouší UI2–UI4 (info box, Obsah a pohledy, Najít a vybrat, spodní lišta, dvě okna,
   trasování, vrstvy, izolovat / odhalit, pera).
-- Uživatel vyzkouší UI5 část 1 (paleta u uzlu a hrany, karta prvku, tracker).
-- Potom **UI5 část 2**: hledání příkazů Ctrl+K a průvodce prostředím (před začátkem screenshot z Arditu).
-  Až po UI5 stěny Z6.
+- Uživatel vyzkouší UI5 (paleta u uzlu a hrany, karta prvku, tracker, Změnit velikost, lekce).
+- Potom **stěny Z6** (podle plánu stěn).
 
 ## Otevřené
 

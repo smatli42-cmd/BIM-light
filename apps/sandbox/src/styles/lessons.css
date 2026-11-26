@@ -1,0 +1,65 @@
+/* Průvodní lekce: okno se seznamem, modrý rámeček kolem popisované části a bublina. */
+.lessons-dialog {
+  width: min(540px, 94vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.panel .lesson-item {
+  width: 100%;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 400;
+}
+.panel .lesson-item:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.lesson-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lesson-text strong {
+  font-size: 14px;
+}
+.lesson-frame {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  border: 2px solid var(--accent);
+  border-radius: var(--r);
+  box-shadow:
+    0 0 0 4px var(--accent-ring),
+    0 0 24px var(--accent-ring);
+  transition:
+    left 0.2s,
+    top 0.2s,
+    width 0.2s,
+    height 0.2s;
+}
+.lesson-bubble {
+  position: fixed;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+.lesson-title {
+  font-size: 15px;
+  color: var(--heading);
+}
+.lesson-bubble p {
+  margin: 0;
+  line-height: 1.45;
+}

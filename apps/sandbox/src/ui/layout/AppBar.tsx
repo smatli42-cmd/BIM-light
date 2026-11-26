@@ -4,6 +4,8 @@ import { CORE_NAME } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { ExportIfc } from '../ExportIfc.tsx';
 import { IconButton } from '../icons/Icon.tsx';
+import { useState } from 'preact/hooks';
+import { LessonsDialog } from '../lessons/LessonsDialog.tsx';
 import { useSession } from '../use-session.ts';
 import { StyleSwitch } from '../ViewControls.tsx';
 
@@ -33,6 +35,7 @@ function LookToggles({ s }: { s: Session }) {
 
 export function AppBar({ s }: { s: Session }) {
   useSession(s);
+  const [lessons, setLessons] = useState(false);
   return (
     <header class="appbar" data-testid="appbar">
       <span class="brand">BIM-light</span>
@@ -66,6 +69,8 @@ export function AppBar({ s }: { s: Session }) {
       <a class="muted" href="#galerie" title="Galerie napojení stěn (pro vývoj)">
         Galerie napojení
       </a>
+      <IconButton icon="help" label="Průvodní lekce" testid="lessons-open" onClick={() => setLessons(true)} />
+      {lessons && <LessonsDialog s={s} onClose={() => setLessons(false)} />}
       <LookToggles s={s} />
     </header>
   );

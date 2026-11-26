@@ -8,6 +8,7 @@ import './styles/panels.css';
 import './styles/floating.css';
 import './styles/infobox-content.css';
 import './styles/find-bar.css';
+import './styles/lessons.css';
 
 const root = document.getElementById('app');
 // Galerie napojení stěn (plán stěn Z2): adresa …/BIM-light/#galerie.

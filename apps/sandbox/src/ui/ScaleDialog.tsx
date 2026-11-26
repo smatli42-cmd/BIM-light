@@ -4,6 +4,34 @@ import { ScaleTool } from '../interaction/tools/commands/scale-tool.ts';
 import type { Session } from '../session/session.ts';
 import { IconButton } from './icons/Icon.tsx';
 
+function ScaleFields({ s }: { s: Session }) {
+  return (
+    <>
+      <label class="scale-row">
+        Měřítko (%)
+        <input
+          type="number"
+          min="1"
+          step="1"
+          autoFocus
+          data-testid="scale-percent"
+          value={s.options.scalePercent}
+          onInput={(e) => (s.options.scalePercent = Number(e.currentTarget.value) || 0)}
+        />
+      </label>
+      <label class="check scale-row">
+        Změnit i rozměry oken, dveří a otvorů
+        <input
+          type="checkbox"
+          data-testid="scale-openings"
+          checked={s.options.scaleOpenings}
+          onChange={(e) => (s.options.scaleOpenings = e.currentTarget.checked)}
+        />
+      </label>
+    </>
+  );
+}
+
 export function ScaleDialog({ s }: { s: Session }) {
   const tool = s.tool;
   if (!(tool instanceof ScaleTool) || !tool.dialog) return null;
@@ -26,27 +54,7 @@ export function ScaleDialog({ s }: { s: Session }) {
           <h2 class="content-title">Změnit velikost</h2>
           <IconButton icon="close" label="Zavřít" onClick={cancel} />
         </div>
-        <label class="scale-row">
-          Měřítko (%)
-          <input
-            type="number"
-            min="1"
-            step="1"
-            autoFocus
-            data-testid="scale-percent"
-            value={s.options.scalePercent}
-            onInput={(e) => (s.options.scalePercent = Number(e.currentTarget.value) || 0)}
-          />
-        </label>
-        <label class="check scale-row">
-          Změnit i rozměry oken, dveří a otvorů
-          <input
-            type="checkbox"
-            data-testid="scale-openings"
-            checked={s.options.scaleOpenings}
-            onChange={(e) => (s.options.scaleOpenings = e.currentTarget.checked)}
-          />
-        </label>
+        <ScaleFields s={s} />
         <p class="muted">
           Pak klikni výchozí bod – vzdálenosti od něj se změní v daném poměru. Tloušťky stěn a výšky
           zůstávají.

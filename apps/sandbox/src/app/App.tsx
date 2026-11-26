@@ -12,6 +12,7 @@ import { InfoBox } from '../ui/layout/InfoBox.tsx';
 import { ToolPalette } from '../ui/layout/ToolPalette.tsx';
 import { Splitter } from '../ui/layout/Splitter.tsx';
 import { ViewWindow } from '../ui/layout/ViewWindow.tsx';
+import { LessonGuide } from '../ui/lessons/LessonGuide.tsx';
 import { WindowSplitter } from '../ui/layout/WindowSplitter.tsx';
 import { applyPanelSizes, applyWindowSplit } from '../ui/panel-sizes.ts';
 import { applyTheme } from '../ui/theme.ts';
@@ -54,6 +55,7 @@ export function App() {
         <ContentPanel s={session} />
       </div>
       <BottomBar s={session} />
+      <LessonGuide s={session} />
     </div>
   );
 }

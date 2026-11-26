@@ -23,6 +23,13 @@ interface HistoryEntry {
   readonly after: Model;
 }
 
+/** Uložený stav editoru (model + historie); zvenku neprůhledný. */
+export interface EditorState {
+  readonly model: Model;
+  readonly undo: readonly HistoryEntry[];
+  readonly redo: readonly HistoryEntry[];
+}
+
 export interface EditorOptions {
   readonly registry: CommandRegistry;
   readonly newId: IdGenerator;
@@ -160,6 +167,18 @@ export class Editor {
     this.undoStack = [];
     this.redoStack = [];
     this.set(model);
+  }
+
+  /** Uloží model i historii (cvičný projekt v lekci: po skončení se vrátí původní stav). */
+  saveState(): EditorState {
+    return { model: this.current, undo: [...this.undoStack], redo: [...this.redoStack] };
+  }
+
+  /** Vrátí stav uložený `saveState` (model i Zpět / Znovu). */
+  restoreState(state: EditorState) {
+    this.undoStack = [...state.undo];
+    this.redoStack = [...state.redo];
+    this.set(state.model);
   }
 
   private set(model: Model) {
