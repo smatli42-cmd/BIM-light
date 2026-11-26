@@ -1,12 +1,21 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Editor typů krok 1 (okno se seznamem a vrstvami).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-26, Editor typů krok 2 (náhled Půdorys / Řez / 3D).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Editor typů, krok 2: náhled skladby Půdorys / Řez / 3D, 2026-11-26 (koncepce rozhraní 11a)
+- Záložky náhledu: **Půdorys** (úsek stěny vodorovně, vrstvy jako pásy, referenční strana dole),
+  **Řez** (stěna nastojato, vrstvy svisle i s prodloužením nahoru / dolů), **3D** (izometrický výsek,
+  vrstvy odstupňované jako schody – vnitřní nejdelší, u každé vidět čelo se šrafou, horní plochu a líc).
+  Vše ve skutečném poměru, šrafy materiálů v měřítku 1 : 20, kóty tlouštěk a celková tloušťka (půdorys,
+  řez), červená referenční čára.
+- Klik na vrstvu v náhledu ji vybere i v tabulce vrstev a obráceně (zvýraznění barvou). Rozložení je čistá
+  funkce s testy (`ui/type-editor/preview-layout.ts`, `preview-iso.ts`), kreslení v `preview-paint.ts`.
 
 ### Editor typů, krok 1: samostatné okno, 2026-11-26 (rozhodnutí uživatele, koncepce rozhraní 11a)
 - Okno Editor typů (`ui/type-editor/`): záložky druhů (Stěny; Desky, Střechy, Okna a dveře zašedlé),
@@ -147,8 +156,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Uživatel vyzkouší Editor typů (krok 1):** ikona Editor typů vpravo v liště sekcí; vybrat stěnu → záložka
-  Typ → Upravit v editoru typů…; nový typ, změna vrstev, duplikovat. Pak krok 2 (řez a pseudo-3D náhled).
+- **Uživatel vyzkouší Editor typů (kroky 1 a 2):** ikona Editor typů vpravo v liště sekcí; vybrat stěnu →
+  záložka Typ → Upravit v editoru typů…; nový typ, změna vrstev; náhled Půdorys / Řez / 3D, klik na vrstvu.
+  Pak krok 3 – společné skladby pro stěny, desky a střechy (schéma + migrace).
 - Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
   Projekt) a řekne, které doladit.
 - Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
@@ -169,8 +179,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
-- **Editor typů, další kroky (rozhodnuto 2026-11-26, koncepce rozhraní 11a):** krok 2 – svislý řez
-  a pseudo-3D náhled; krok 3 – společné skladby pro stěny, desky a střechy (schéma + migrace). Vzor
+- **Editor typů, další krok (rozhodnuto 2026-11-26, koncepce rozhraní 11a):** krok 3 – společné skladby pro stěny, desky a střechy (schéma + migrace). Vzor
   Arditu u skladby ukazuje i U, R, plošnou hmotnost, CO₂e, cenu, kondenzaci a Rw – výpočty později.
 - **Lineární prvek stěny (nápad uživatele 2026-11-26):** přidání nebo vybrání hmoty podle profilu (sokl,
   římsa, drážka) jako Obklad stěny / Drážka v Revitu; profil jako položka knihovny, součást typu nebo

@@ -90,13 +90,28 @@ function Swatch({ s, materialId }: { s: Session; materialId: string }) {
   );
 }
 
-function LayerRow(props: { s: Session; type: WallType; layer: WallLayer; i: number; count: number }) {
+interface RowProps {
+  s: Session;
+  type: WallType;
+  layer: WallLayer;
+  i: number;
+  count: number;
+  selected: boolean;
+  onSelect: (i: number) => void;
+}
+
+function LayerRow(props: RowProps) {
   const { s, type, layer, i, count } = props;
   const run = (name: string, extra: object) => s.run(name, { typeId: type.id, ...extra });
   const update = (key: string, value: unknown) =>
     run('wallType.updateLayer', { layerIndex: i, [key]: value });
   return (
-    <div class="type-layer" data-testid={`type-layer-${i}`}>
+    <div
+      class={props.selected ? 'type-layer selected' : 'type-layer'}
+      data-testid={`type-layer-${i}`}
+      onFocusIn={() => props.onSelect(i)}
+      onMouseDown={() => props.onSelect(i)}
+    >
       <div class="type-layer-row">
         <Swatch s={s} materialId={layer.materialId} />
         <Choice
@@ -186,10 +201,33 @@ function TypeActions({ s, type }: { s: Session; type: WallType }) {
   );
 }
 
-export function WallTypeEditor({ s, type }: { s: Session; type: WallType }) {
+function AddLayer({ s, type }: { s: Session; type: WallType }) {
+  const layers = type.bands[0]?.layers ?? [];
+  const firstMaterial = layers[layers.length - 1]?.materialId ?? '';
+  return (
+    <button
+      data-testid="layer-add"
+      onClick={() =>
+        s.run('wallType.addLayer', {
+          typeId: type.id,
+          layer: { materialId: firstMaterial, thickness: 10, function: 'finish' },
+        })
+      }
+    >
+      + vrstva
+    </button>
+  );
+}
+
+export function WallTypeEditor(props: {
+  s: Session;
+  type: WallType;
+  selected?: number | null;
+  onSelect?: (layer: number | null) => void;
+}) {
+  const { s, type } = props;
   const band = type.bands[0];
   if (!band) return null;
-  const firstMaterial = band.layers[band.layers.length - 1]?.materialId ?? '';
   return (
     <div class="type-editor" data-testid="type-editor">
       <label class="type-name">
@@ -210,19 +248,18 @@ export function WallTypeEditor({ s, type }: { s: Session; type: WallType }) {
         <span />
       </div>
       {band.layers.map((l, i) => (
-        <LayerRow key={i} s={s} type={type} layer={l} i={i} count={band.layers.length} />
+        <LayerRow
+          key={i}
+          s={s}
+          type={type}
+          layer={l}
+          i={i}
+          count={band.layers.length}
+          selected={props.selected === i}
+          onSelect={(x) => props.onSelect?.(x)}
+        />
       ))}
-      <button
-        data-testid="layer-add"
-        onClick={() =>
-          s.run('wallType.addLayer', {
-            typeId: type.id,
-            layer: { materialId: firstMaterial, thickness: 10, function: 'finish' },
-          })
-        }
-      >
-        + vrstva
-      </button>
+      <AddLayer s={s} type={type} />
       <TypeActions s={s} type={type} />
     </div>
   );

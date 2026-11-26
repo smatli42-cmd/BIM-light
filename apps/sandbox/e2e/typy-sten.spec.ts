@@ -96,6 +96,23 @@ test.describe('plán stěn Z1 / okno Editor typů', () => {
     await expect(page.getByTestId('type-editor-dialog')).toHaveCount(0);
   });
 
+  test('koncepce rozhraní 11a / krok 2: náhled Půdorys / Řez / 3D, klik na vrstvu ji vybere v tabulce', async ({
+    page,
+  }) => {
+    await openType(page, 'Obvodová');
+    const preview = page.getByTestId('type-preview');
+    await expect(preview).toHaveAttribute('data-mode', 'plan');
+    await preview.click();
+    await expect(page.getByTestId('type-layer-1')).toHaveClass(/selected/);
+    await page.getByTestId('preview-section').click();
+    await expect(preview).toHaveAttribute('data-mode', 'section');
+    await page.getByTestId('preview-iso').click();
+    await expect(preview).toHaveAttribute('data-mode', 'iso');
+    await page.getByTestId('type-layer-2').getByTestId('field-thickness').click();
+    await expect(page.getByTestId('type-layer-2')).toHaveClass(/selected/);
+    await expect(page.getByTestId('type-layer-1')).not.toHaveClass(/selected/);
+  });
+
   test('vybraná stěna: změna typu v panelu Vlastnosti', async ({ page }) => {
     await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
     await clickAt(page, 2000, 150);
