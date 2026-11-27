@@ -20,8 +20,8 @@ test.describe('katalog-sraf-materialu / UI', () => {
   }) => {
     await wall(page, { x: 0, y: 0 }, { x: 4000, y: 0 });
     await page.getByTestId('tab-materials').click();
-    await expect(page.locator('[data-testid=materials] h2')).toContainText('Materiály · 15');
-    await page.getByTestId('material-search').fill('keram');
+    await expect(page.locator('[data-testid=materials] h2')).toContainText('Materiály · 20'); // 15 základních + 5 úprav povrchů
+    await page.getByTestId('material-search').fill('zdivo keram');
     await expect(page.getByTestId('material-row')).toHaveCount(1);
     await page.getByTestId('material-row').click();
     await expect(page.getByTestId('material-usage')).toContainText('1 prvků');
