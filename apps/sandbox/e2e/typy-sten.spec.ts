@@ -80,7 +80,7 @@ test.describe('plán stěn Z1 / okno Editor typů', () => {
     await page.getByTestId('ib-type').click();
     await page.getByTestId('open-type-editor').click();
     await expect(page.getByTestId('type-name')).toHaveValue('Zdivo 300');
-    await expect(page.getByRole('tab', { name: 'Desky' })).toBeDisabled();
+    await expect(page.getByRole('tab', { name: 'Střechy' })).toBeDisabled();
     await page.getByTestId('type-name').press('Escape');
     await expect(page.getByTestId('type-editor-dialog')).toHaveCount(0);
   });

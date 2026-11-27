@@ -1,6 +1,6 @@
 // Náhled skladby v okně Editor typů (krok 2, koncepce rozhraní 11a): záložky Půdorys / Řez / 3D, skutečný
 // poměr vrstev, šrafy, kóty tlouštěk a referenční čára. Klik na vrstvu ji vybere (i v tabulce vrstev).
-import { referenceDepth, type HeightBand, type Model, type ReferenceLine } from '@bim-light/core';
+import type { Model, WallLayer } from '@bim-light/core';
 import { useEffect, useRef } from 'preact/hooks';
 import { layerAt, previewLayout, type PreviewMode } from './preview-layout.ts';
 import { paintPreview, type PreviewColors } from './preview-paint.ts';
@@ -26,18 +26,30 @@ function colors(el: HTMLElement): PreviewColors {
 
 interface Props {
   readonly model: Model;
-  readonly band: HeightBand;
-  readonly refLine: ReferenceLine;
+  /** Vrstvy v pořadí náhledu (stěna od referenční strany, deska shora dolů). */
+  readonly layers: readonly WallLayer[];
+  /** Hloubka referenční čáry od první vrstvy (mm). */
+  readonly refDepth: number;
+  /** Nejmenší délka úseku v náhledu (mm, výchozí 1200). */
+  readonly minLength?: number;
+  /** Nabízené pohledy (výchozí všechny). */
+  readonly modes?: readonly PreviewMode[];
   readonly mode: PreviewMode;
   readonly onMode: (m: PreviewMode) => void;
   readonly selected: number | null;
   readonly onSelect: (layer: number | null) => void;
 }
 
-function ModeTabs(p: { mode: PreviewMode; onMode: (m: PreviewMode) => void }) {
+function ModeTabs(p: {
+  mode: PreviewMode;
+  modes?: readonly PreviewMode[] | undefined;
+  onMode: (m: PreviewMode) => void;
+}) {
+  const shown = MODES.filter(([m]) => !p.modes || p.modes.includes(m));
+  if (shown.length < 2) return null;
   return (
     <span class="te-modes" role="tablist">
-      {MODES.map(([m, label]) => (
+      {shown.map(([m, label]) => (
         <button
           key={m}
           role="tab"
@@ -55,8 +67,8 @@ function ModeTabs(p: { mode: PreviewMode; onMode: (m: PreviewMode) => void }) {
 
 export function CompositionPreview(p: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const layers = p.band.layers;
-  const layout = previewLayout(p.mode, layers, referenceDepth(p.band, p.refLine), W, H);
+  const layers = p.layers;
+  const layout = previewLayout(p.mode, layers, p.refDepth, W, H, p.minLength);
   useEffect(() => {
     const el = ref.current;
     const ctx = el?.getContext('2d');
@@ -79,7 +91,7 @@ export function CompositionPreview(p: Props) {
   };
   return (
     <div class="te-canvas">
-      <ModeTabs mode={p.mode} onMode={p.onMode} />
+      <ModeTabs mode={p.mode} modes={p.modes} onMode={p.onMode} />
       <canvas
         ref={ref}
         class="type-preview"

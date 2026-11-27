@@ -36,9 +36,9 @@ function chain(ls: readonly PreviewLayer[], at: (d: number) => Vec2, k: number, 
 }
 
 /** Půdorys: úsek stěny vodorovně, vrstvy shora dolů v pořadí tabulky (referenční strana nahoře), kóty vpravo. */
-function plan(ls: readonly PreviewLayer[], ref: number, W: number, H: number): PreviewLayout {
+function plan(ls: readonly PreviewLayer[], ref: number, W: number, H: number, minL: number): PreviewLayout {
   const t = total(ls);
-  const L = Math.max(1200, 2.5 * t);
+  const L = Math.max(minL, 2.5 * t);
   const k = Math.min((W - 2 * PAD - DIM) / L, (H - 2 * PAD) / t);
   const x0 = (W - DIM - L * k) / 2;
   const yt = (H - t * k) / 2;
@@ -81,11 +81,13 @@ export function previewLayout(
   ref: number,
   W: number,
   H: number,
+  /** Nejmenší délka úseku v půdorysu (mm); deska kratší (600) = větší náhled tenkých vrstev. */
+  minLength = 1200,
 ): PreviewLayout {
   if (total(ls) <= 0) return { faces: [], refLine: null, dims: [], k: 1 };
   if (mode === 'section') return section(ls, ref, W, H);
   if (mode === 'iso') return iso(ls, W, H);
-  return plan(ls, ref, W, H);
+  return plan(ls, ref, W, H, minLength);
 }
 
 /** Vrstva pod bodem (nejvrchnější nakreslená plocha), nebo null. */

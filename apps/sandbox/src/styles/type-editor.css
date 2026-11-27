@@ -156,3 +156,9 @@
   align-items: center;
   gap: 1.2rem;
 }
+.te-group {
+  margin: 0.8rem 0 0.2rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}

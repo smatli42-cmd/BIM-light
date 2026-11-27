@@ -108,7 +108,8 @@ export function WallTypeEditor(props: {
         <LayerRow
           key={i}
           s={s}
-          type={type}
+          kind="wallType"
+          typeId={type.id}
           layer={l}
           i={i}
           count={band.layers.length}

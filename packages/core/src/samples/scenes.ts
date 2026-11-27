@@ -2,13 +2,39 @@
 // se naposledy dělalo, aby se nemuselo pokaždé kreslit znovu. Nová scéna = nová položka nahoře.
 import { vec } from '../geometry/index.ts';
 import type { Sample } from './types.ts';
-import { rect } from './scene-helpers.ts';
+import { rect, tiledFloor } from './scene-helpers.ts';
 import { DIMENSION_SCENES } from './scenes-koty.ts';
 import { SLAB_SCENES } from './scenes-desky.ts';
 import { ROOM_SCENES } from './scenes-mistnosti.ts';
 import { VIEW3D_SCENES } from './scenes-3d.ts';
 
 export const SCENES: readonly Sample[] = [
+  {
+    key: 'typy-desek',
+    title: 'Editor typů – typy desek (nosné desky a podlahy)',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Místnost 6 × 4 m se stropem „ŽB strop 200“ a podlahou „Podlaha dlažba 160“ – oba typy vznikly ' +
+      'duplikováním v editoru typů (vlastní skladba). Zkus: levý panel → Editor typů → záložka Desky; ' +
+      'seznam je rozdělený na Nosné desky a Podlahy. Vyber typ, změň tloušťku vrstvy, přidej vrstvu navrch, ' +
+      'přesuň ji šipkou, klikni na vrstvu v náhledu řezu. Duplikovat, přejmenovat, Smazat (jen nepoužitý). ' +
+      'Nebo vyber desku → info box Konstrukce → Upravit v editoru typů.',
+    build(c) {
+      rect(c, 'Zdivo 300', 6000, 4000);
+      const [rc] = c.run('slabType.duplicate', {
+        typeId: c.slabType('ŽB strop 250'),
+        name: 'ŽB strop 200',
+        ownComposition: true,
+      });
+      c.run('slabType.update', { typeId: rc, mark: 'D3' });
+      c.run('slabType.updateLayer', { typeId: rc, layerIndex: 1, thickness: 200 });
+      const floor = tiledFloor(c);
+      const sid = c.storeyId;
+      c.run('slab.create', { storeyId: sid, typeId: rc, rect: { a: vec(-300, -300), b: vec(6300, 4300) } });
+      c.run('slab.create', { storeyId: sid, typeId: floor, rect: { a: vec(0, 0), b: vec(6000, 4000) } });
+    },
+  },
   ...VIEW3D_SCENES,
   ...ROOM_SCENES,
   ...SLAB_SCENES,

@@ -68,4 +68,16 @@ describe('koncepce rozhraní 11a / Editor typů krok 2: náhled skladby', () => 
     const cut = box(iso.faces.find((f) => f.layer === 2 && f.kind === 'cut')!);
     expect(layerAt(iso, { x: (cut.x0 + cut.x1) / 2, y: (cut.y0 + cut.y1) / 2 })).toBe(2);
   });
+
+  it('editor typů desek: řez deskou – kratší úsek (600 mm) zvětší náhled tenké skladby', () => {
+    const floor: PreviewLayer[] = [10, 50, 100].map((thickness) => ({
+      thickness,
+      extendTop: 0,
+      extendBottom: 0,
+    }));
+    const wide = previewLayout('plan', floor, 0, W, H);
+    const slab = previewLayout('plan', floor, 0, W, H, 600);
+    expect(slab.k).toBeGreaterThan(1.5 * wide.k);
+    expect(slab.refLine?.[0].y).toBeCloseTo(box(slab.faces[0]!).y0);
+  });
 });

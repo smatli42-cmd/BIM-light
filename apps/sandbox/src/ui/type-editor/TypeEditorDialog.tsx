@@ -1,7 +1,8 @@
 // Okno Editor typů (rozhodnutí uživatele 2026-11-26, krok 1): jedno okno pro typy všech prvků –
-// vlevo seznam, uprostřed náhled skladby, vpravo vrstvy a vlastnosti. Zatím jen stěny; desky, střechy,
-// okna a dveře se zapojí jako další druh. Mění model jen přes příkazy jádra (základ 6).
-import { bandThickness, typeHasCore } from '@bim-light/core';
+// vlevo seznam, uprostřed náhled skladby, vpravo vrstvy a vlastnosti. Stěny a desky; střechy, okna
+// a dveře se zapojí jako další druh. Druh se pozná z vybraného typu (s.typeEditor). Mění model jen přes
+// příkazy jádra (základ 6).
+import { bandThickness, referenceDepth, typeHasCore } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
 import { IconButton } from '../icons/Icon.tsx';
@@ -11,12 +12,17 @@ import { RefLineSelect } from '../WallFields.tsx';
 import { TypeList } from './TypeList.tsx';
 import { CompositionPreview } from './CompositionPreview.tsx';
 import type { PreviewMode } from './preview-layout.ts';
+import { SlabPreview } from './SlabPreview.tsx';
+import { SlabTypeEditor } from './SlabTypeEditor.tsx';
+import { SlabTypeList } from './SlabTypeList.tsx';
 import { WallTypeEditor } from './WallTypeEditor.tsx';
 
-/** Druhy typů v okně; zatím jen stěny, ostatní přibudou se svými prvky. */
+type Kind = 'walls' | 'slabs';
+
+/** Druhy typů v okně; stěny a desky, ostatní přibudou se svými prvky. */
 const KINDS: [string, string, boolean][] = [
   ['walls', 'Stěny', true],
-  ['slabs', 'Desky', false],
+  ['slabs', 'Desky', true],
   ['roofs', 'Střechy', false],
   ['openings', 'Okna a dveře', false],
 ];
@@ -48,8 +54,8 @@ function Preview({ s, typeId, pick }: { s: Session; typeId: string; pick: Pick }
     <div class="te-preview">
       <CompositionPreview
         model={s.model}
-        band={band}
-        refLine={refLine}
+        layers={band.layers}
+        refDepth={referenceDepth(band, refLine)}
         mode={mode}
         onMode={setMode}
         selected={pick.selected}
@@ -69,7 +75,14 @@ function Preview({ s, typeId, pick }: { s: Session; typeId: string; pick: Pick }
   );
 }
 
-function Head({ s }: { s: Session }) {
+/** První typ druhu (u desek nosná deska z nástroje Deska, jinak první v seznamu). */
+function firstOf(s: Session, kind: Kind): string | null {
+  if (kind === 'walls')
+    return s.model.wallTypes[s.wallTypeId] ? s.wallTypeId : (Object.keys(s.model.wallTypes)[0] ?? null);
+  return s.model.slabTypes[s.slab.typeId] ? s.slab.typeId : (Object.keys(s.model.slabTypes)[0] ?? null);
+}
+
+function Head({ s, kind }: { s: Session; kind: Kind }) {
   return (
     <div class="find-head">
       <strong>Editor typů</strong>
@@ -78,9 +91,11 @@ function Head({ s }: { s: Session }) {
           <button
             key={id}
             role="tab"
-            aria-selected={id === 'walls'}
-            class={id === 'walls' ? 'active' : ''}
+            data-testid={`type-kind-${id}`}
+            aria-selected={id === kind}
+            class={id === kind ? 'active' : ''}
             disabled={!on}
+            onClick={() => id !== kind && ((s.typeEditor = firstOf(s, id as Kind) ?? ''), s.changed())}
             title={on ? label : `${label} přibudou s dalšími prvky`}
           >
             {label}
@@ -96,10 +111,13 @@ export function TypeEditorDialog({ s }: { s: Session }) {
   useSession(s);
   const [sel, setSel] = useState<{ typeId: string; layer: number | null } | null>(null);
   if (s.typeEditor === null) return null;
-  const type = s.model.wallTypes[s.typeEditor] ?? Object.values(s.model.wallTypes)[0];
+  const slab = s.model.slabTypes[s.typeEditor];
+  const kind: Kind = slab ? 'slabs' : 'walls';
+  const type = slab ? undefined : (s.model.wallTypes[s.typeEditor] ?? Object.values(s.model.wallTypes)[0]);
+  const id = slab?.id ?? type?.id;
   const pick: Pick = {
-    selected: type && sel?.typeId === type.id ? sel.layer : null,
-    onSelect: (layer) => type && setSel({ typeId: type.id, layer }),
+    selected: id && sel?.typeId === id ? sel.layer : null,
+    onSelect: (layer) => id && setSel({ typeId: id, layer }),
   };
   return (
     <div class="dialog-back" onMouseDown={(e) => e.target === e.currentTarget && close(s)}>
@@ -113,15 +131,25 @@ export function TypeEditorDialog({ s }: { s: Session }) {
           if (e.key === 'Escape') close(s);
         }}
       >
-        <Head s={s} />
-        <div class="te-body">
-          <TypeList s={s} />
-          {type ? <Preview s={s} typeId={type.id} pick={pick} /> : <div />}
-          <div class="te-props">
-            {type && <WallTypeEditor key={type.id} s={s} type={type} {...pick} />}
-            {type && <TypePropsSection s={s} type={type} />}
+        <Head s={s} kind={kind} />
+        {slab ? (
+          <div class="te-body">
+            <SlabTypeList s={s} />
+            <SlabPreview s={s} type={slab} {...pick} />
+            <div class="te-props">
+              <SlabTypeEditor key={slab.id} s={s} type={slab} {...pick} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div class="te-body">
+            <TypeList s={s} />
+            {type ? <Preview s={s} typeId={type.id} pick={pick} /> : <div />}
+            <div class="te-props">
+              {type && <WallTypeEditor key={type.id} s={s} type={type} {...pick} />}
+              {type && <TypePropsSection s={s} type={type} />}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

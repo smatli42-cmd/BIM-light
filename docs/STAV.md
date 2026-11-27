@@ -1,12 +1,25 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Typy desek v editoru typů, 2026-11-27 (hlášení uživatele; scéna `?ukazka=typy-desek`, typ P3 i v `?ukazka=dum`)
+
+- Editor typů → záložka **Desky**: seznam rozdělený na Nosné desky a Podlahy (podle funkce), hledání,
+  značka, tloušťka a počet desek. Vpravo název, značka, funkce, nosná, skladba (výběr skladeb „pro desku“,
+  název, upozornění na sdílení) a vrstvy **shora dolů** (materiál, tloušťka, funkce, ↑ ↓, ×, „+ vrstva
+  navrch“); Duplikovat, Smazat (jen nepoužitý typ). Uprostřed náhled řezu deskou (šrafy, kóty, horní líc =
+  referenční rovina, klik vybere vrstvu). Info box desky → Konstrukce → „Upravit v editoru typů…“.
+- Jádro: příkazy `slabType.addLayer / removeLayer / moveLayer / updateLayer` (vrstvy odspodu, mění skladbu
+  a tím všechny typy, které ji sdílejí, i typy stěn – ty se zkontrolují); `slabType.duplicate` má
+  `ownComposition`; dotaz `slabType.list` vrací u vrstev i `materialId`.
+- Testy: `commands/slab/type-layers.test.ts`, AI `ai/scenario-slab-types.test.ts`, náhled
+  `preview-layout.test.ts`, e2e `typy-desek.spec.ts`.
 
 ### Vazba desky na místnost a stěny, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-vazba`, podlahy po místnostech i v `?ukazka=dum`)
 
@@ -207,6 +220,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Typy desek v editoru:** Duplikovat v editoru dá kopii **vlastní skladbu** (jako Duplikovat v Revitu –
+  úprava kopie nemění původní typ); AI může kopii se sdílenou skladbou (`ownComposition` vynechat). Vrstvy
+  desky se v editoru ukazují shora dolů (jako řez a Revit „Upravit skladbu“), „+ vrstva“ přidá navrch.
+  Smazat jde jen typ bez desek (bez náhrady – na rozdíl od stěn). Nový typ desky jen duplikováním (Nový typ
+  a načtení z knihovny zatím ne). Náhled desky má jen řez (půdorys a 3D vrstev desky nic nového neukážou).
+
 - **Vazba desky:** obrys vázané desky se ukládá jako poslední spočítaný (přepočítá ho editor po každém
   příkazu), aby kresba, 3D, IFC, výkazy, otvory i kóty četly jedno `outline` – zdroj pravdy je vazba.
   Revit: podlaha z hranice místnosti je po místnostech; příčka ji rozdělí (podlaha zůstane v místnosti
@@ -325,10 +344,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
+- **Uživatel vyzkouší typy desek:** `?ukazka=typy-desek` – levý panel → Editor typů → Desky; změnit tloušťku
+  vrstvy, přidat vrstvu navrch, Duplikovat a přejmenovat, Smazat; vybrat desku → Upravit v editoru typů.
 - **Uživatel vyzkouší vazbu desky:** `?ukazka=desky-vazba` – M a posun příčky / pravé stěny (podlahy
   i strop se přepočítají, ve 2.NP ruční podlaha ne); klik na podlahu u hrany → Vazba obrysu; tažení rohu →
   „zamčeno“ → Obnovit vazbu; S → Podle místnosti a klik do místnosti; Výkazy → Výkaz desek.
-- **Editor typů desek** (čekající session) může pokračovat.
 - **Uživatel vyzkouší spárořez:** `?ukazka=sparorez` – klik do koupelny → Povrchy → Spárořez (úzké řezy),
   táhni křížek počátku dlažby, nebo X 0 / Y 200; posuň příčku; Výkazy → Výkaz dlaždic (prořez 10 %).
 - **3D proud:** spáry ve 3D z dotazu `covering.joints` (tvar v poznámkách koordinátora).
@@ -408,8 +428,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 - **Místnosti – zbývá:** šikmé stropy (< 1,30 m, ČSN 73 4301) po střechách; volba 1 desetinného místa v nastavení
   projektu (funkce `areaM2` ji umí); úprava ručního obrysu myší (příkaz je); místnosti ve variantách v kresbě.
-- **Desky – zbývá:** záložka Typ desky v info boxu a typ desky v editoru typů, úprava vrstev skladby jen pro
-  desku (příkazy vrstev jsou zatím `wallType.*`), oblouky v obrysu; vršek stěny po tvaru šikmé desky;
+- **Desky – zbývá:** záložka Typ desky v info boxu (dnes tlačítko do editoru typů), Nový typ desky a načtení
+  z knihovny v editoru, oblouky v obrysu; vršek stěny po tvaru šikmé desky;
   délková kóta hrany desky (dnes jen vzdálenost); vazba vršku v IFC (IfcRelConnectsElements) zatím není.
 - **Z10 zbývá:** kontrola překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze
   zaměřování a kouzelná hůlka (etapa 3).

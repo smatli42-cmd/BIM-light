@@ -15,6 +15,7 @@ import type { Session } from '../../session/session.ts';
 import { IconButton } from '../icons/Icon.tsx';
 import type { IconName } from '../icons/paths.ts';
 import { NumberInput } from '../NumberInput.tsx';
+import { openTypeEditor } from '../type-editor/TypeEditorDialog.tsx';
 import { NewStatusField } from './NewStatus.tsx';
 import { Section } from './Section.tsx';
 import { SlabLinkSection } from './SlabLinkSection.tsx';
@@ -76,6 +77,9 @@ function Construction({ s, typeId }: { s: Session; typeId: string }) {
         <input type="checkbox" checked={t.loadBearing} disabled />
         Nosný (LoadBearing)
       </label>
+      <button data-testid="open-slab-type-editor" onClick={() => openTypeEditor(s, t.id)}>
+        Upravit v editoru typů…
+      </button>
     </Section>
   );
 }

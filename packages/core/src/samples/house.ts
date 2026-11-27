@@ -4,6 +4,7 @@
 import { vec } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Sample, SampleContext } from './types.ts';
+import { tiledFloor } from './scene-helpers.ts';
 
 const W = 12000;
 const H = 9000;
@@ -51,6 +52,8 @@ function ground(c: SampleContext) {
     c.run('dimension.wholeWall', { wallId, viewId: c.viewId, walls: true });
   c.run('wallTag.tagAll', { viewId: c.viewId });
   slabs(c, c.storeyId, 'ŽB základová deska 300', 465);
+  // Typ podlahy s dlažbou (editor typů desek) – připravený v projektu pro koupelnu a kuchyni.
+  tiledFloor(c);
   rooms(c, c.storeyId, [
     [800, 3500, 'Obývací pokoj'],
     [1700, 7000, 'Pokoj'],
