@@ -71,7 +71,7 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 
 - **Jádro** (malé změny s testy): View3d má navíc `projection`, `renderMode`, `sun` (stíny, ručně / podle
   data a času), `cutPlane` (bod + směr) a `grid`; příkazy `view3d.setProjection / setRenderMode / setSun /
-  setCutPlane / setGrid`, `view3d.list` vrací i vypočtenou polohu slunce; migrace 23 → 24; krok v AI
+  setCutPlane / setGrid`, `view3d.list` vrací i vypočtenou polohu slunce; migrace 25 → 26; krok v AI
   scénáři. Poloha slunce `core/src/sun/` (S-JTSK → zeměpisné souřadnice, algoritmus NOAA, SEČ / SELČ).
 - **Lišta** (vpravo, jako Ardit): otáčet / posouvat (ruka) / přiblížit vše, **Persp. / Axon.**, režim
   **Materiály / Bílý model / Čárový / Skryté hrany / Skica** (kreslené hrany s přetažením), **Slunce

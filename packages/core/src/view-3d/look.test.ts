@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fixture } from '../testing/fixture.ts';
-import { projectV23toV24 } from './migrate-v23.ts';
+import { projectV25toV26 } from './migrate-v25.ts';
 import { VIEW3D_LOOK } from './types.ts';
 
 const first = (f: ReturnType<typeof fixture>) => Object.keys(f.model.views3d)[0]!;
@@ -48,8 +48,8 @@ describe('3D náhled / lišta podle Arditu: projekce, režim, slunce, řez a mř
     expect(f.model.views3d[viewId]!.cutPlane).toBeNull();
   });
 
-  it('základ 9: migrace 23 → 24 doplní výchozí vzhled, uložené hodnoty nechá', () => {
-    const out = projectV23toV24({ views3d: { a: { id: 'a' }, b: { id: 'b', renderMode: 'white' } } });
+  it('základ 9: migrace 25 → 26 doplní výchozí vzhled, uložené hodnoty nechá', () => {
+    const out = projectV25toV26({ views3d: { a: { id: 'a' }, b: { id: 'b', renderMode: 'white' } } });
     const v = out['views3d'] as Record<string, Record<string, unknown>>;
     expect(v['a']).toMatchObject(VIEW3D_LOOK);
     expect(v['b']!['renderMode']).toBe('white');
