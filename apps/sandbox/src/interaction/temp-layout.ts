@@ -23,6 +23,7 @@ import {
   type TempDimension,
   type Vec2,
 } from '@bim-light/core';
+import { uiPx } from '../session/ui-scale.ts';
 import type { Session } from '../session/session.ts';
 import { screenText, type ScreenRect } from './screen.ts';
 
@@ -99,7 +100,7 @@ function finish(
   if (Math.hypot(feet[0].x - A.x, feet[0].y - A.y) > 1) ext.push([v.toScreen(feet[0]), a]);
   if (Math.hypot(feet[1].x - B.x, feet[1].y - B.y) > 1) ext.push([v.toScreen(feet[1]), b]);
   const text = formatLength(temp.value);
-  const st = screenText(a, b, text, 12, 9);
+  const st = screenText(a, b, text, uiPx(12), 9);
   const pin = pinned ? add(st.at, mul(st.dir, st.width / 2 + 14)) : null;
   const end = s.lenEnd === 'start' ? a : b;
   const away = norm(sub(end, s.lenEnd === 'start' ? b : a));

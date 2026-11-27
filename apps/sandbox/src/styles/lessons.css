@@ -1,20 +1,20 @@
 /* Průvodní lekce: okno se seznamem, modrý rámeček kolem popisované části a bublina. */
 .lessons-dialog {
-  width: min(540px, 94vw);
+  width: min(54rem, 94vw);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1rem;
 }
 .lesson-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.8rem;
 }
 .panel .lesson-item {
   width: 100%;
   align-items: flex-start;
-  gap: 16px;
-  padding: 10px 14px;
+  gap: 1.6rem;
+  padding: 1rem 1.4rem;
   text-align: left;
   font-weight: 400;
 }
@@ -25,10 +25,10 @@
 .lesson-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.2rem;
 }
 .lesson-text strong {
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 .lesson-frame {
   position: fixed;
@@ -50,13 +50,13 @@
   z-index: 61;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.6rem;
   border: 1px solid var(--accent);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .lesson-title {
-  font-size: 15px;
+  font-size: 1.5rem;
   color: var(--heading);
 }
 .lesson-bubble p {

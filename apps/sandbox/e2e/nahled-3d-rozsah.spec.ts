@@ -10,7 +10,8 @@ const storeysIn3d = async (page: Page) => {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.setViewportSize({ width: 1700, height: 1000 });
+  // Větší okno: s větším rozhraním (velikost-ui) musí 3D okno zůstat dost velké na tažení kvádru.
+  await page.setViewportSize({ width: 1900, height: 1100 });
   await page.goto('./?ukazka=dum&3d');
   await expect.poll(() => page.evaluate(() => window.__bim3d?.drawn())).toBe(true);
 });

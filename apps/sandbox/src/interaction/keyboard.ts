@@ -64,6 +64,12 @@ function ctrlKey(s: Session, key: string): boolean {
       s.clipboard = copyWalls(s.model, s.selection.walls) ?? s.clipboard;
       if (s.selection.walls.length) s.setTool('paste');
       return true;
+    // Ctrl + / Ctrl − přibližuje jen výkres; velikost rozhraní má vlastní volbu (pokyn uživatele 2026-11-27).
+    case '+':
+    case '=':
+    case '-':
+      s.viewport.zoomAt({ x: s.viewport.width / 2, y: s.viewport.height / 2 }, key === '-' ? 1 / 1.25 : 1.25);
+      return true;
   }
   return false;
 }

@@ -16,7 +16,11 @@ export async function open(page: Page) {
   await page.setViewportSize({ width: 1700, height: 1000 });
   await page.goto('./');
   await page.waitForFunction(() => !!window.__bim);
-  await page.evaluate(() => window.__bim!.setView(0.1, 300, 500));
+  // Rozměry rozhraní jsou v rem, plátno tak může začínat na zlomku px; počátek modelu se posune na celý px
+  // stránky, aby body testů (násobky 10 mm) padly přesně na pixely myši.
+  const c = (await page.getByTestId('drawing-canvas').boundingBox())!;
+  const [dx, dy] = [Math.round(c.x) - c.x, Math.round(c.y) - c.y];
+  await page.evaluate(([x, y]) => window.__bim!.setView(0.1, 300 + x, 500 + y), [dx, dy] as const);
 }
 
 export const px = (page: Page, x: number, y: number): Promise<Pt> =>

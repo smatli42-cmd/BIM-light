@@ -33,6 +33,7 @@ import type { Paper } from '../render/paper.ts';
 import { DEFAULT_SCREEN, type ScreenOptions } from './screen.ts';
 import type { WindowState } from './screen.ts';
 import { applyTheme, loadUi, saveUi, type Theme } from '../ui/theme.ts';
+import { applyUiSize, type UiSize } from './ui-scale.ts';
 import type {
   MenuState,
   PetState,
@@ -96,6 +97,7 @@ export class Session {
   /** Motiv rozhraní a podklad výkresu (koncepce rozhraní, část 5). */
   theme: Theme;
   paper: Paper;
+  uiSize: UiSize;
   private toastSeq = 0;
   private readonly listeners = new Set<() => void>();
   private readonly snapCache = new SnapCache();
@@ -111,6 +113,8 @@ export class Session {
     const ui = loadUi();
     this.theme = ui.theme;
     this.paper = ui.paper;
+    this.uiSize = ui.size;
+    applyUiSize(this.uiSize);
     this.editor.subscribe(() => {
       // Pohled mohl zmizet (Undo nového pohledu): přepne se na první existující.
       for (const w of this.windows)
@@ -121,12 +125,14 @@ export class Session {
     });
   }
 
-  /** Přepne motiv (světlý / tmavý) nebo podklad výkresu a zapamatuje volbu. */
-  setLook(look: { theme?: Theme; paper?: Paper }) {
+  /** Přepne motiv (světlý / tmavý), podklad výkresu nebo velikost rozhraní a zapamatuje volbu. */
+  setLook(look: { theme?: Theme; paper?: Paper; size?: UiSize }) {
     this.theme = look.theme ?? this.theme;
     this.paper = look.paper ?? this.paper;
+    this.uiSize = look.size ?? this.uiSize;
     applyTheme(this.theme);
-    saveUi({ theme: this.theme, paper: this.paper });
+    applyUiSize(this.uiSize);
+    saveUi({ theme: this.theme, paper: this.paper, size: this.uiSize });
     this.changed();
   }
 

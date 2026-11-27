@@ -93,24 +93,26 @@ test.describe('pokyn uživatele 2026-11-26: pracovní plocha', () => {
     const palette = (await page.locator('.palette').boundingBox())!;
     const info = page.getByTestId('infobox');
     expect(Math.abs((await info.boundingBox())!.x - (palette.x + palette.width))).toBeLessThan(1);
+    const w0 = Math.round((await info.boundingBox())!.width);
     const split = (await page.getByTestId('splitter-infobox').boundingBox())!;
     const y = split.y + split.height / 2;
     await page.mouse.move(split.x + 2, y);
     await page.mouse.down();
     await page.mouse.move(split.x + 102, y, { steps: 5 });
     await page.mouse.up();
-    expect(Math.round((await info.boundingBox())!.width)).toBe(370);
+    expect(Math.round((await info.boundingBox())!.width)).toBe(w0 + 100);
     const content = page.getByTestId('panel');
+    const c0 = Math.round((await content.boundingBox())!.width);
     const cs = (await page.getByTestId('splitter-content').boundingBox())!;
     await page.mouse.move(cs.x + 2, y);
     await page.mouse.down();
     await page.mouse.move(cs.x - 48, y, { steps: 5 });
     await page.mouse.up();
-    expect(Math.round((await content.boundingBox())!.width)).toBe(350);
+    expect(Math.round((await content.boundingBox())!.width)).toBe(c0 + 50);
     await page.reload();
-    expect(Math.round((await page.getByTestId('infobox').boundingBox())!.width)).toBe(370);
+    expect(Math.round((await page.getByTestId('infobox').boundingBox())!.width)).toBe(w0 + 100);
     await page.getByTestId('splitter-infobox').dblclick();
-    expect(Math.round((await page.getByTestId('infobox').boundingBox())!.width)).toBe(270);
+    expect(Math.round((await page.getByTestId('infobox').boundingBox())!.width)).toBe(w0);
   });
 
   test('pokyn uživatele 2026-11-26: volba podrobnosti (hrubá / střední / jemná) není ve spodní liště', async ({

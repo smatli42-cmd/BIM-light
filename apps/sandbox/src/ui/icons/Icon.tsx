@@ -1,4 +1,5 @@
 // Komponenta ikony (koncepce rozhraní, část 6): jedna sada SVG pro světlý i tmavý motiv, barva z textu.
+// Velikost v rem, takže roste s velikostí rozhraní (1 rem = 10 px × násobek, session/ui-scale.ts).
 import { ICONS, type IconName } from './paths.ts';
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
@@ -7,6 +8,7 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
       class="icon"
       width={size}
       height={size}
+      style={{ width: `${size / 10}rem`, height: `${size / 10}rem` }}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

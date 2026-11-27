@@ -2,6 +2,7 @@
 // okna), Zpět / Znovu, export IFC, motiv a podklad výkresu.
 import { CORE_NAME } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
+import { isUiSize, UI_SIZES } from '../../session/ui-scale.ts';
 import { ExportIfc } from '../ExportIfc.tsx';
 import { IconButton } from '../icons/Icon.tsx';
 import { useState } from 'preact/hooks';
@@ -30,6 +31,23 @@ function LookToggles({ s }: { s: Session }) {
         testid="theme-toggle"
         onClick={() => s.setLook({ theme: dark ? 'light' : 'dark', paper: dark ? 'light' : 'dark' })}
       />
+      <select
+        class="ui-size"
+        data-testid="ui-size"
+        aria-label="Velikost rozhraní"
+        title="Velikost rozhraní (písmo, ikony, panely; výkres se nemění)"
+        value={s.uiSize}
+        onChange={(e) => {
+          const v = e.currentTarget.value;
+          if (isUiSize(v)) s.setLook({ size: v });
+        }}
+      >
+        {UI_SIZES.map((o) => (
+          <option key={o.id} value={o.id}>
+            {`Aa ${o.label}`}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

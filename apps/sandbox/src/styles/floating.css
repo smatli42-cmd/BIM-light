@@ -2,22 +2,22 @@
 .tracker {
   position: absolute;
   z-index: 10;
-  min-width: 150px;
+  min-width: 15rem;
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 6px 10px;
+  padding: 0.6rem 1rem;
   pointer-events: none;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--r);
   box-shadow: var(--shadow);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 .tracker .field {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 1.6rem;
   color: var(--muted);
 }
 .tracker .field b {
@@ -32,36 +32,36 @@
 }
 .value-edit {
   position: absolute;
-  width: 96px;
+  width: 9.6rem;
   font:
-    13px ui-monospace,
+    1.3rem ui-monospace,
     monospace;
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--aux);
   border-radius: var(--r-sm);
-  padding: 2px 6px;
+  padding: 0.2rem 0.6rem;
 }
 .menu {
   position: absolute;
-  min-width: 170px;
-  padding: 4px;
+  min-width: 17rem;
+  padding: 0.4rem;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  font-size: 0.8rem;
+  font-size: 1.04rem;
 }
 .menu-title {
-  padding: 4px 8px;
+  padding: 0.4rem 0.8rem;
   color: var(--muted);
 }
 .menu button {
   text-align: left;
   font: inherit;
-  padding: 5px 8px;
+  padding: 0.5rem 0.8rem;
   border: 0;
   border-radius: var(--r-sm);
   background: none;
@@ -74,11 +74,11 @@
 .toasts {
   position: absolute;
   left: 50%;
-  bottom: 12px;
+  bottom: 1.2rem;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.4rem;
   pointer-events: none;
 }
 .toast {
@@ -86,8 +86,8 @@
   border: 1px solid var(--aux);
   border-radius: var(--r);
   box-shadow: var(--shadow);
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1.04rem;
 }
 .toast.bad {
   border-color: var(--danger);
@@ -95,7 +95,7 @@
 }
 .toast button {
   pointer-events: auto;
-  margin-left: 8px;
+  margin-left: 0.8rem;
   font: inherit;
   color: var(--ink);
   border: 1px solid var(--danger);
@@ -108,8 +108,8 @@
 .segment-menu {
   position: absolute;
   display: flex;
-  gap: 2px;
-  padding: 3px;
+  gap: 0.2rem;
+  padding: 0.3rem;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
@@ -121,8 +121,8 @@
 }
 .pick-mark {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
+  right: 0.2rem;
+  bottom: 0.2rem;
   width: 0;
   height: 0;
   border-left: 4px solid transparent;
@@ -131,26 +131,26 @@
 }
 .quick-pick {
   position: absolute;
-  left: 36px;
+  left: 3.6rem;
   top: 0;
   z-index: 20;
-  min-width: 220px;
+  min-width: 22rem;
   display: flex;
   flex-direction: column;
-  padding: 4px;
+  padding: 0.4rem;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
 }
 .quick-pick-title {
-  padding: 4px 8px;
+  padding: 0.4rem 0.8rem;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 .quick-pick button {
   text-align: left;
-  padding: 5px 8px;
+  padding: 0.5rem 0.8rem;
   border: 0;
   border-radius: var(--r-sm);
   background: none;
@@ -170,8 +170,8 @@
   z-index: 15;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 4px 4px 10px;
+  gap: 0.2rem;
+  padding: 0.4rem 0.4rem 0.4rem 1rem;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
@@ -180,61 +180,61 @@
 .pet::before {
   content: '';
   position: absolute;
-  left: 4px;
-  top: 8px;
-  bottom: 8px;
+  left: 0.4rem;
+  top: 0.8rem;
+  bottom: 0.8rem;
   border-left: 2px dotted var(--line-strong);
 }
 .pet-row {
   display: flex;
-  gap: 2px;
+  gap: 0.2rem;
 }
 .pet .icon-btn {
-  width: 34px;
-  height: 32px;
+  width: 3.4rem;
+  height: 3.2rem;
 }
 
 /* Karta prvku po podržení myši (koncepce rozhraní, část 2 I). */
 .hover-card {
   position: absolute;
   z-index: 12;
-  width: 260px;
-  padding: 10px 12px;
+  width: 26rem;
+  padding: 1rem 1.2rem;
   pointer-events: none;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 .hc-title {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding-bottom: 8px;
+  gap: 0.8rem;
+  padding-bottom: 0.8rem;
   border-bottom: 1px solid var(--line);
 }
 .hc-title strong {
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 .hc-sub {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 1.1rem;
 }
 .hc-head {
-  padding: 8px 0;
+  padding: 0.8rem 0;
   border-bottom: 1px solid var(--line);
 }
 .hc-head strong {
-  font-size: 14px;
+  font-size: 1.4rem;
 }
 .hc-rows {
-  margin: 6px 0 0;
+  margin: 0.6rem 0 0;
 }
 .hc-rows > div {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 1.2rem;
   padding: 1px 0;
 }
 .hc-rows dt {

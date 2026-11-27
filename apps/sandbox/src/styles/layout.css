@@ -24,7 +24,7 @@ body,
 }
 .muted {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 1.2rem;
 }
 .spacer {
   flex: 1;
@@ -36,35 +36,53 @@ body,
 .bottombar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  padding: 0.4rem 1.2rem;
   background: var(--surface);
   flex: none;
 }
+/* Úzké okno nebo velké rozhraní: lišty se zalomí do dalšího řádku, nic nepřeteče. */
 .appbar {
-  height: 44px;
+  min-height: 4.4rem;
+  flex-wrap: nowrap;
+}
+.appbar > * {
+  flex: none;
+}
+/* Popisky projektu se v úzkém okně zkrátí, tlačítka zůstanou celá. */
+.appbar > .project,
+.appbar > .muted {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.appbar > .spacer {
+  flex: 1;
 }
 .appbar .brand {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 1.5rem;
   color: var(--heading);
 }
 .appbar .project {
   color: var(--muted);
 }
 .commandbar {
-  height: 38px;
+  min-height: 3.8rem;
 }
 .commandbar .tool-group + .tool-group {
   border-left: 1px solid var(--line);
-  padding-left: 8px;
+  padding-left: 0.8rem;
 }
 .bottombar {
-  height: 38px;
-  font-size: 12px;
+  min-height: 3.8rem;
+  font-size: 1.2rem;
 }
 .bottombar .hint {
-  flex: 1;
+  flex: 1 1 16rem;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -74,13 +92,13 @@ body,
 /* C paleta, D info box, F Obsah, F' lišta sekcí */
 .palette,
 .sections {
-  width: 44px;
+  width: 4.4rem;
   flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 6px 0;
+  gap: 0.2rem;
+  padding: 0.6rem 0;
   background: var(--surface);
   overflow-y: auto;
 }
@@ -90,47 +108,48 @@ body,
 .palette .tool-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-bottom: 6px;
-  margin-bottom: 6px;
+  gap: 0.2rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
   border-bottom: 1px solid var(--line);
 }
 .sections {
-  width: 40px;
+  width: 4rem;
   border-left: 1px solid var(--line);
 }
 .panel {
   overflow-y: auto;
-  padding: 12px;
+  padding: 1.2rem;
   background: var(--surface);
   flex: none;
 }
 .infobox {
-  width: var(--infobox-w, 270px);
+  /* V úzkém okně nejvýš čtvrtina šířky, aby výkresu zbylo místo. */
+  width: min(var(--infobox-w, 27rem), 25vw);
 }
 .infobox-head {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
+  gap: 0.2rem;
+  padding-bottom: 0.8rem;
+  margin-bottom: 0.8rem;
   border-bottom: 1px solid var(--line);
 }
 .panel .infobox-head strong {
-  font-size: 16px;
+  font-size: 1.6rem;
   color: var(--heading);
 }
 .content {
-  width: var(--content-w, 300px);
+  width: min(var(--content-w, 30rem), 25vw);
 }
 .content-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 0.8rem;
 }
 .panel .content-title {
-  font-size: 16px;
+  font-size: 1.6rem;
   margin: 0;
   color: var(--heading);
 }
@@ -164,11 +183,11 @@ body,
   z-index: 5;
 }
 .window-head {
-  height: 36px;
+  height: 3.6rem;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 8px;
+  gap: 0.6rem;
+  padding: 0 0.8rem;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
@@ -185,20 +204,20 @@ body,
   min-width: 0;
 }
 .window-head select {
-  min-width: 56px;
+  min-width: 5.6rem;
   text-overflow: ellipsis;
 }
 .window {
   container-type: inline-size;
 }
 /* Pořadí ustupování v úzkém okně: tlačítko Nový pohled a ikona, až nakonec název pohledu. */
-@container (max-width: 260px) {
+@container (max-width: 26rem) {
   .window-head > .icon-btn,
   .window-tab > .icon {
     display: none;
   }
 }
-@container (max-width: 160px) {
+@container (max-width: 16rem) {
   .window-head > .window-tab {
     display: none;
   }
@@ -207,7 +226,7 @@ body,
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.4rem;
   color: var(--accent);
   font-weight: 600;
 }
@@ -227,10 +246,10 @@ body,
 }
 .view-label {
   position: absolute;
-  left: 8px;
-  top: 6px;
-  padding: 2px 8px;
-  font-size: 11px;
+  left: 0.8rem;
+  top: 0.6rem;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.1rem;
   color: var(--muted);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -248,8 +267,8 @@ body,
 /* Dělítko mezi panely: tažením mění šířku, dvojklik vrátí výchozí. */
 .splitter {
   flex: none;
-  width: 5px;
-  margin: 0 -2px;
+  width: 0.5rem;
+  margin: 0 -0.2rem;
   z-index: 5;
   cursor: col-resize;
   background: transparent;

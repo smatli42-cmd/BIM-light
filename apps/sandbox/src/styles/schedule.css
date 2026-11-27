@@ -1,18 +1,18 @@
 /* Okno výkazu (plán stěn Z8): tabulka vlevo, nastavení vpravo. */
 .schedule-dialog {
-  width: min(1200px, 94vw);
+  width: min(120rem, 94vw);
   max-height: 86vh;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1rem;
 }
 .schedule-dialog .find-head {
-  gap: 12px;
+  gap: 1.2rem;
 }
 .schedule-body {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 12px;
+  grid-template-columns: 1fr 24rem;
+  gap: 1.2rem;
   min-height: 0;
   overflow: hidden;
 }
@@ -25,11 +25,11 @@
 .schedule-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 12.5px;
+  font-size: 1.25rem;
 }
 .schedule-table th,
 .schedule-table td {
-  padding: 4px 8px;
+  padding: 0.4rem 0.8rem;
   border-bottom: 1px solid var(--line);
   text-align: left;
   white-space: nowrap;
@@ -51,7 +51,7 @@
 .schedule-table tr.group td {
   color: var(--heading);
   font-weight: 600;
-  padding-top: 8px;
+  padding-top: 0.8rem;
 }
 .schedule-table tr.subtotal td {
   font-style: italic;
@@ -63,7 +63,7 @@
 .schedule-settings {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.8rem;
   overflow: auto;
   max-height: 68vh;
 }
@@ -73,18 +73,18 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.2rem;
 }
 .schedule-settings legend {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 0.2rem;
 }
 .content-row {
   display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
 }
 .content-row select {
   flex: 1;

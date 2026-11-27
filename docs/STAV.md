@@ -23,6 +23,16 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   beze změny, pravoúhlý obrys = kříž v každém obdélníku rozkladu, obecný = úhlopříčky obálky jen uvnitř.
   Test `cross.test.ts`, scéna `?ukazka=desky-otvory`.
 
+### Velikost rozhraní, 2026-11-27 (pokyn uživatele: rozhraní a ikony jsou malé)
+
+- Horní lišta vpravo vedle motivu: volba **Aa Malé / Střední / Velké / Největší** (85 / 100 / 115 / 130 %),
+  pamatuje se jako motiv (`ui/theme.ts`). Výchozí Střední = o 20 % větší než dřív (úroveň Arditu).
+- CSS v rem (1 rem = 10 px × `--ui-k`, `styles/theme.css`, `session/ui-scale.ts`), rámečky a stíny v px;
+  ikony v rem, šířky panelů rostou s velikostí (nejvýš 25 % okna). Lišty se v úzkém okně zalomí.
+- Texty u kurzoru kreslené do plátna (přichycení, dočasné kóty) rostou s volbou; výkres z jádra se nemění.
+  Ctrl + / Ctrl − přibližují jen výkres (dřív zvětšoval prohlížeč celou stránku).
+- Testy: `session/ui-scale.test.ts`, e2e `velikost-ui.spec.ts`.
+
 ### Desky D4, 2026-11-27 (scéna `?ukazka=desky-d4`; příčky k stropu a kóta k otvoru v `?ukazka=dum`)
 
 - **Vršek stěny k desce:** druh vršku `{ kind: 'slab', slabId, offset }` ve výšce stěny (spodní líc desky +
@@ -332,6 +342,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   bodů (stojí, klik na číslo je posune; velikost pak trackerem) – Revit u náčrtu edituje jen položené.
   Měří se od krajní hrany (nebo krajního rohu) obrysu ve směru X / Y; líc stěny má přednost před hranou desky
   na něm; hrana desky ležící na líci = vzdálenost 0 se přeskočí (měří se k dalšímu prvku).
+
+- **Velikost rozhraní:** je volba obrazovky (jako motiv), ne data projektu, proto bez příkazu a bez ukázkové
+  scény. Malé (85 %) ≈ dřívější velikost. Panely v úzkém okně max. čtvrtina šířky; tažení dělítka se tam zastaví.
 
 - **Desky D4:** vazba vršku je druh vršku ve výšce stěny (ne samostatný vztah) – jako Archicad „spojit
   s deskou“; celá stěna končí na spodním líci (Revit by stěnu ořízl po tvaru desky, šikmé desky zatím nejsou).

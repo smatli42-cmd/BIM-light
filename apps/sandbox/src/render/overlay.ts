@@ -12,6 +12,7 @@ import {
   type Vec2,
   type Model,
 } from '@bim-light/core';
+import { uiPx } from '../session/ui-scale.ts';
 import type { Session } from '../session/session.ts';
 import type { PermDimView } from '../interaction/hits.ts';
 import type { TempDimView } from '../interaction/temp-layout.ts';
@@ -82,7 +83,7 @@ function drawSnap(ctx: Ctx, s: Session, o: Overlay) {
   ctx.lineWidth = 1.5;
   ctx.strokeRect(p.x - 5, p.y - 5, 10, 10);
   if (!o.snap.label) return;
-  ctx.font = '12px system-ui, sans-serif';
+  ctx.font = `${uiPx(12)}px system-ui, sans-serif`;
   ctx.fillStyle = AUX;
   ctx.fillText(o.snap.label, p.x + 10, p.y - 10);
 }
@@ -153,7 +154,7 @@ export function drawTempDim(ctx: Ctx, t: TempDimView) {
   ctx.save();
   ctx.translate(t.textAt.x, t.textAt.y);
   ctx.rotate(t.angle);
-  ctx.font = '500 12px ui-monospace, monospace';
+  ctx.font = `500 ${uiPx(12)}px ui-monospace, monospace`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(t.text, 0, 0);

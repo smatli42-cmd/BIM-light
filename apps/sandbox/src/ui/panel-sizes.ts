@@ -1,5 +1,6 @@
 // Šířky panelů D (info box) a F (Obsah) nastavené tažením dělítka (koncepce rozhraní, část 2).
 // Pamatují se v prohlížeči (pohodlí jednoho uživatele, ne data projektu) a platí přes proměnné CSS.
+// Šířka je v px při původní velikosti rozhraní; v CSS jde v rem, takže roste s velikostí rozhraní.
 
 export type PanelName = 'infobox' | 'content';
 
@@ -38,14 +39,14 @@ function save(sizes: Record<PanelName, number>) {
 export function setPanelWidth(name: PanelName, w: number) {
   const sizes = loadPanelSizes();
   sizes[name] = clampPanel(w);
-  document.documentElement.style.setProperty(`--${name}-w`, `${sizes[name]}px`);
+  document.documentElement.style.setProperty(`--${name}-w`, `${sizes[name] / 10}rem`);
   save(sizes);
 }
 
 export function applyPanelSizes() {
   const sizes = loadPanelSizes();
   for (const name of Object.keys(sizes) as PanelName[]) {
-    document.documentElement.style.setProperty(`--${name}-w`, `${sizes[name]}px`);
+    document.documentElement.style.setProperty(`--${name}-w`, `${sizes[name] / 10}rem`);
   }
 }
 
