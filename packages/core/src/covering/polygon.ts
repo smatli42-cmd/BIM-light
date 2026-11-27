@@ -52,3 +52,9 @@ export const polygonsArea = (polys: readonly PlanePolygon[]): number =>
     (s, p) => s + Math.abs(signedArea(p.outer)) - p.holes.reduce((h, x) => h + Math.abs(signedArea(x)), 0),
     0,
   );
+
+/** Sjednocení mnohoúhelníků (obrys + díry) a dalších obrysů. */
+export function union(a: readonly PlanePolygon[], add: readonly (readonly Vec2[])[]): PlanePolygon[] {
+  if (!add.length) return [...a];
+  return fromMulti(pc.union(toMulti(a), ...add.map((c) => [[ring(c)]] as MultiPolygon)));
+}

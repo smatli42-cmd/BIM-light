@@ -42,7 +42,7 @@ export const nicheCounts = (o: Opening): boolean =>
   o.kind === 'niche' && o.sill <= 1 && o.depth >= NICHE_MIN_DEPTH && o.height >= NICHE_MIN_HEIGHT;
 
 /** Body křivky mezi poměry délky t0..t1. */
-function subPath(p: Path, t0: number, t1: number): Vec2[] {
+export function subPath(p: Path, t0: number, t1: number): Vec2[] {
   const n = p.kind === 'arc' ? Math.max(2, tessellate(p).length) : 2;
   return Array.from({ length: n }, (_, i) => pointAt(p, t0 + ((t1 - t0) * i) / (n - 1)));
 }

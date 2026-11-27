@@ -7,6 +7,7 @@ import { dist, type Vec2 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
 import { putElements, removeDimensions } from '../model/update.ts';
 import { dimensionOutlineIds, pruneOutlineDimensions } from '../dimension/outline-ref.ts';
+import { roomFloorShape } from '../room/floor.ts';
 import { roomGeometry } from '../room/geometry.ts';
 import { findWall } from '../wall/queries.ts';
 import { outlineFromWalls } from './from-walls.ts';
@@ -25,9 +26,11 @@ export function linkedShape(model: Model, link: SlabLink): SlabShape | null {
     if (link.kind === 'room') {
       const room = model.rooms[link.roomId];
       const g = room ? roomGeometry(model, room) : undefined;
-      if (!g || g.state !== 'ok' || !g.outline.length) return null;
-      const outline = normalizeOutline(g.outline);
-      return outlineError(outline) ? null : { outline, holes: g.holes };
+      if (!room || !g || g.state !== 'ok' || !g.outline.length) return null;
+      // Podlaha vede i pod otvory dveří (proužky v otvorech, room/floor.ts).
+      const f = roomFloorShape(model, room, g);
+      const outline = normalizeOutline(f.outline);
+      return outlineError(outline) ? null : { outline, holes: f.holes };
     }
     const outline = normalizeOutline(outlineFromWalls(model, link.wallIds, link.boundary));
     return outlineError(outline) ? null : { outline, holes: [] };

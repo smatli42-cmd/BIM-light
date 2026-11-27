@@ -33,6 +33,14 @@ const OPTIONS = {
   ],
 };
 
+/** Podlaha v otvoru až k podlaze (opening.setFloorSplit): A = místnost u referenčního líce. */
+const FLOOR_LABELS = [
+  ['split', 'rozdělit (do osy stěny)'],
+  ['ref', 'celá z místnosti A (ref. líc)'],
+  ['opp', 'celá z místnosti B (protější líc)'],
+  ['none', 'žádná'],
+] as const;
+
 /** Pole z popisu parametrů příkazu; nika bez hloubky a strany se u průchozího otvoru neukazuje. */
 function fieldsOf(s: Session, command: string, keys: readonly string[], niche: boolean) {
   const props = s.registry.get(command)?.params.properties ?? {};
@@ -85,6 +93,24 @@ function SelectedOpenings({ s }: { s: Session }) {
         value={first as unknown as Record<string, unknown>}
         onChange={(k, v) => s.run('opening.update', { openingIds: ids, [k]: v })}
       />
+      {first.kind === 'through' && first.sill <= 1 && (
+        <label>
+          Podlaha v otvoru
+          <select
+            data-testid="opening-floor-split"
+            value={first.floorSplit ?? 'split'}
+            onChange={(e) =>
+              s.run('opening.setFloorSplit', { openingIds: ids, split: e.currentTarget.value })
+            }
+          >
+            {FLOOR_LABELS.map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {warnings.map((w) => (
         <p class="warn" key={w}>
           {w}

@@ -54,4 +54,36 @@ describe('AI scénář: vazba desky na místnost a stěny', () => {
     c.ai.call('slab.unlink', { slabIds: [rc] });
     expect(get(rc).link).toBeNull();
   });
+
+  it('podlaha pod dveřmi: otvor k podlaze v příčce, opening.list ukáže floorSplit, celá z jedné místnosti', () => {
+    const c = start();
+    room(c);
+    const types = c.ai.call<{ id: string; name: string }[]>('slabType.list');
+    const floorType = must(types.find((t) => t.name === 'Podlaha anhydrit 150')).id;
+    const [p] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId: c.typeId,
+      path: { kind: 'line', start: { x: 3000, y: 0 }, end: { x: 3000, y: 4000 } },
+      autoConnect: true,
+    });
+    const [door] = c.ai.call<string[]>('opening.create', {
+      wallId: p,
+      offset: 1500,
+      width: 900,
+      height: 2100,
+      sill: 0,
+    });
+    const floors = [1500, 4500].map((x) => {
+      const [roomId] = c.ai.call<string[]>('room.create', { storeyId: c.storeyId, point: { x, y: 2000 } });
+      return must(c.ai.call<string[]>('slab.create', { storeyId: c.storeyId, typeId: floorType, roomId })[0]);
+    });
+    const area = () =>
+      floors.map((id) => must(c.ai.call<SlabRow[]>('slab.list').find((s) => s.id === id)).area);
+    const ops = c.ai.call<{ id: string; floorSplit?: string }[]>('opening.list', { wallId: p });
+    expect(must(ops[0]).floorSplit).toBe('split');
+    const split = area();
+    c.ai.call('opening.setFloorSplit', { openingIds: [door], split: 'none' });
+    const none = area();
+    expect(split.map((a, i) => a > (none[i] ?? 0))).toEqual([true, true]);
+  });
 });

@@ -49,11 +49,11 @@ describe('prvky stavby 9: výkaz povrchů (základ 8)', () => {
     expect(none['area']).toBe(37.8);
   });
 
-  it('prvky stavby 9: podlaha po místnostech, plocha = plocha místnosti', () => {
-    const { f } = setup();
+  it('prvky stavby 9 / podlaha v otvoru: podlaha = plocha místnosti + proužek ve dveřích do osy stěny', () => {
+    const { f, half } = setup();
     const t = computeSchedule(f.model, f.model.schedules['schedule-coverings']!);
     const floor = t.rows.find((r) => r.kind === 'item' && r.cells['type'] === 'Dlažba 600×600 šedá');
-    expect(floor?.cells['area']).toBe(12);
+    expect(floor?.cells['area']).toBeCloseTo(12 + (2000 * half) / 1e6, 6);
     expect(floor?.cells['room']).toBe('1.01 Koupelna');
   });
 });

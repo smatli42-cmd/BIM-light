@@ -5,6 +5,7 @@ import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { boundingWalls } from '../room/bounding.ts';
+import { roomFloorShape } from '../room/floor.ts';
 import { roomInfo } from '../room/queries.ts';
 import type { Room } from '../room/types.ts';
 import type { Wall } from '../wall/types.ts';
@@ -64,7 +65,8 @@ function compute(model: Model, room: Room): CoveringSurface[] {
     ];
   });
   return [
-    flatSurface(room, 'floor', g, floorZ),
+    // Podlaha i pod otvory dveří (proužky v otvorech); obvod (sokl) zůstává podle místnosti.
+    flatSurface(room, 'floor', { ...roomFloorShape(model, room, g), perimeter: g.perimeter }, floorZ),
     ...wallSurfaces,
     flatSurface(room, 'ceiling', g, floorZ + g.height),
   ];

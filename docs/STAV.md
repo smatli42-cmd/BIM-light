@@ -8,6 +8,17 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
+### Podlaha pod dveřmi, 2026-11-27 (pokyn uživatele; scéna `?ukazka=podlaha-dvere`, dveře v `?ukazka=dum`)
+
+- Jádro `room/floor.ts`: průchozí otvor až k podlaze (parapet 0, stav viditelný pro místnost) přidá podlaze
+  místnosti proužek v šířce otvoru přes tloušťku stěny. Výchozí `split`: každá místnost do dělicí linie
+  (`floorLine` – dnes osa stěny, s dveřmi linie křídla / zárubně); bez místnosti venku jen do linie.
+  Volba u otvoru `floorSplit` (split / ref = celá z A / opp = celá z B / none), příkaz `opening.setFloorSplit`,
+  `opening.list` ji vrací; migrace 29 → 30. Okna s parapetem a niky nic nemění.
+- Plocha místnosti (ČSN 73 4301) beze změny; proužek započítá podlaha vázaná na místnost (výkaz desek, 3D),
+  povrch podlahy a spárořez (`covering.surfaces`). Posun otvoru / stěny ho přepočítá.
+- Sandbox: vybraný otvor → Podlaha v otvoru. Testy `room/floor.test.ts`, AI krok v `scenario-slab-link.test.ts`.
+
 ### Typy desek v editoru typů, 2026-11-27 (hlášení uživatele; scéna `?ukazka=typy-desek`, typ P3 i v `?ukazka=dum`)
 
 - Editor typů → záložka **Desky**: seznam rozdělený na Nosné desky a Podlahy (podle funkce), hledání,
@@ -220,6 +231,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Podlaha pod dveřmi:** A = místnost u referenčního líce stěny, B = u protilehlého. Sokl (obvod podlahy)
+  zůstává podle místnosti, proužek ho nemění. Volba platí jen pro průchozí otvor k podlaze (parapet ≤ 1 mm).
+
 - **Typy desek v editoru:** Duplikovat v editoru dá kopii **vlastní skladbu** (jako Duplikovat v Revitu –
   úprava kopie nemění původní typ); AI může kopii se sdílenou skladbou (`ownComposition` vynechat). Vrstvy
   desky se v editoru ukazují shora dolů (jako řez a Revit „Upravit skladbu“), „+ vrstva“ přidá navrch.
@@ -344,6 +358,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
+- **Uživatel vyzkouší podlahu pod dveřmi:** `?ukazka=podlaha-dvere` – klik na otvor v příčce → Podlaha
+  v otvoru; posun otvoru / příčky; klik na podlahu → plocha; 3D (F4).
 - **Uživatel vyzkouší typy desek:** `?ukazka=typy-desek` – levý panel → Editor typů → Desky; změnit tloušťku
   vrstvy, přidat vrstvu navrch, Duplikovat a přejmenovat, Smazat; vybrat desku → Upravit v editoru typů.
 - **Uživatel vyzkouší vazbu desky:** `?ukazka=desky-vazba` – M a posun příčky / pravé stěny (podlahy

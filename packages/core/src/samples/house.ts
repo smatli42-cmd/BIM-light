@@ -18,7 +18,7 @@ function opening(
   sill: number,
   extra = {},
 ) {
-  c.run('opening.create', { wallId, offset, width, height, sill, ...extra });
+  return c.run('opening.create', { wallId, offset, width, height, sill, ...extra })[0];
 }
 
 /** 1.NP: stávající dům s bouranou příčkou, novými příčkami a probouráním. */
@@ -46,7 +46,9 @@ function ground(c: SampleContext) {
   opening(c, right, 1000, 1000, 2100, 0, ex);
   opening(c, left, 2000, 900, 1500, 900, { status: 'demolished' });
   opening(c, hall, 1000, 800, 2000, 0, ex);
-  opening(c, bearing, 2000, 900, 2100, 0, { status: 'new' });
+  const pass = opening(c, bearing, 2000, 900, 2100, 0, { status: 'new' });
+  // Podlaha v novém průchodu celá z jedné strany (ostatní dveře: každá místnost do osy stěny).
+  if (pass) c.run('opening.setFloorSplit', { openingIds: [pass], split: 'ref' });
   opening(c, bearing, 6500, 600, 1200, 900, { ...ex, kind: 'niche', depth: 150, side: 'opp' });
   for (const wallId of [bottom, left])
     c.run('dimension.wholeWall', { wallId, viewId: c.viewId, walls: true });

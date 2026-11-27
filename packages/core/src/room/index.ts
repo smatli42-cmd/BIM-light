@@ -8,3 +8,4 @@ export * from './draw-view.ts';
 export * from './pick.ts';
 export * from './stamp.ts';
 export * from './category.ts';
+export * from './floor.ts';

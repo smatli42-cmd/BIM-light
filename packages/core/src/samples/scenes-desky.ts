@@ -5,6 +5,42 @@ import type { Sample } from './types.ts';
 
 export const SLAB_SCENES: readonly Sample[] = [
   {
+    key: 'podlaha-dvere',
+    title: 'Podlaha pod dveřmi – proužek v otvoru',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Dvě místnosti s podlahami vázanými na místnost, v příčce 100 otvor 900 až k podlaze: každá podlaha ' +
+      'vede do osy příčky (o 900 × 50 větší), vstupní otvor vlevo do osy obvodové stěny, okno s parapetem ' +
+      'nic. Zkus: klik na otvor v příčce → Podlaha v otvoru (celá z A / B / žádná); posuň otvor nebo ' +
+      'příčku (M); klik na podlahu → plocha v info boxu; 3D (F4) a Výkaz desek.',
+    build(c) {
+      const sid = c.storeyId;
+      const walls = rect(c, 'Zdivo 300', 6000, 4000);
+      const p = c.line(vec(3000, 0), vec(3000, 4000), {
+        typeId: c.type('Příčka 100'),
+        referenceLine: 'axis',
+      });
+      c.run('opening.create', { wallId: p, offset: 1500, width: 900, height: 2100, sill: 0 });
+      const left = walls.find((w) => {
+        const e = c.model.elements[w];
+        return e?.category === 'wall' && e.path.start.x === 0 && e.path.end.x === 0;
+      });
+      if (left) {
+        c.run('opening.create', { wallId: left, offset: 1000, width: 1000, height: 2100, sill: 0 });
+        c.run('opening.create', { wallId: left, offset: 2600, width: 900, height: 1200, sill: 900 });
+      }
+      const floor = c.slabType('Podlaha anhydrit 150');
+      for (const [x, name] of [
+        [1500, 'Předsíň'],
+        [4500, 'Pokoj'],
+      ] as const) {
+        const [roomId] = c.run('room.create', { storeyId: sid, point: vec(x, 2000), name });
+        c.run('slab.create', { storeyId: sid, typeId: floor, roomId });
+      }
+    },
+  },
+  {
     key: 'desky-vazba',
     title: 'Vazba desky – podlaha podle místnosti, strop podle stěn',
     kind: 'scena',

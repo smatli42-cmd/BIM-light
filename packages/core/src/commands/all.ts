@@ -63,6 +63,7 @@ import { selectionDelete } from './edit/delete.ts';
 import { openingCreate } from './opening/create.ts';
 import { openingDelete, openingMove, openingUpdate } from './opening/edit.ts';
 import { openingCopy, openingMirror } from './opening/copy.ts';
+import { openingSetFloorSplit } from './opening/floor.ts';
 import { viewSetCutPlane } from './view/cut-plane.ts';
 import { materialCreate, materialDelete, materialDuplicate, materialUpdate } from './material/edit.ts';
 import { wallTypeSetLayerMaterial } from './material/layer.ts';
@@ -132,6 +133,7 @@ export const CORE_COMMANDS = [
   openingCreate,
   openingMove,
   openingUpdate,
+  openingSetFloorSplit,
   openingDelete,
   openingCopy,
   openingMirror,

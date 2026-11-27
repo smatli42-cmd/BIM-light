@@ -19,6 +19,14 @@ export type OpeningSide = 'ref' | 'opp';
 export type OpeningProfile =
   { readonly kind: 'rect' } | { readonly kind: 'polygon'; readonly points: readonly Vec2[] };
 
+/**
+ * Podlaha v otvoru až k podlaze (základ 14, ukládá se logicky): split = každá místnost dotáhne podlahu
+ * do dělicí linie (dnes osa stěny, s dveřmi linie křídla / zárubně), ref = celá z místnosti u
+ * referenčního líce (A), opp = celá z místnosti u protilehlého líce (B), none = žádná.
+ */
+export type FloorSplit = 'split' | 'ref' | 'opp' | 'none';
+export const FLOOR_SPLITS: readonly FloorSplit[] = ['split', 'ref', 'opp', 'none'];
+
 export interface Opening {
   readonly id: Id;
   readonly ifcClass: 'IfcOpeningElement';
@@ -41,6 +49,8 @@ export interface Opening {
   readonly depth: number;
   readonly side: OpeningSide;
   readonly profile: OpeningProfile;
+  /** Podlaha v otvoru (jen průchozí otvor k podlaze); bez hodnoty = split. */
+  readonly floorSplit?: FloorSplit;
   /** Přepis grafiky „ve všech pohledech“ (patro 5). */
   readonly graphicOverride?: GraphicEffect;
 }
