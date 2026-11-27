@@ -1,12 +1,31 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Výškové kóty v řezech a pohledech (ČSN 01 3420), 2026-11-27 (scéna `?ukazka=rezy`, Řez A i v `?ukazka=dum`)
+
+- Jádro `level-dim/`: praporek podle ČSN 01 3420 – rovnoramenný pravoúhlý trojúhelník (vrchol 90°) hrotem na
+  kótované úrovni, vodorovné raménko na úrovni (širší než trojúhelník), text nad trojúhelníkem (praporek pod
+  hranou: pod ním). Zápis ±0,000 / +2,750 / -0,450 (metry, 3 místa, čárka, bez „m“); absolutní kóta
+  „250,850 m n. m.“ z georeference, `zeroToBpv` = „±0,000 = 250,850 m n. m. Bpv“ (pro razítko). Relativní
+  kóta nevyplněná, absolutní plná; styl může vyplňovat vždy (`style.setLevelMarkFill`, vzor Arditu).
+  Velikost trojúhelníku `display.paperSizes.levelMark` (2,5 mm), pero a barva z grafiky kategorie kót.
+- Kóta je anotace řezu, asociativní: odkazuje na úroveň podlaží nebo horní / spodní hranu stěny či desky
+  (ne na souřadnici) – po změně výšky se přepočítá. Skupina anotací (výchozí Řezy a pohledy) a zámek
+  (zamčenou nejde posunout ani změnit). Smazaný prvek / řez vezme své kóty. Migrace 32 → 33.
+- Příkazy `levelDim.create / move / update / delete`, `selection.delete` s `levelDimIds`; dotazy
+  `levelDim.list` (hodnota a text z modelu) a `levelDim.targets` (kam jde kótu dát). AI krok
+  v `scenario-sections`. Automatické kóty úrovní podlaží v řezu jsou teď stejné praporky.
+- Sandbox: nástroj **Výšková kóta** v paletě (anotace). V okně řezu: klik na hranu prvku nebo úroveň
+  podlaží (přichytí do 8 px, čárkovaná modrá úroveň), druhý klik umístí praporek (myš pod hranou = praporek
+  pod ní). Výběr klikem (Shift přidá), tažení posune, Del smaže, Esc ukončí nástroj. Info box: hodnota,
+  co kótuje, absolutní, pod hranou, zámek. E2E `vyskove-koty.spec.ts`. Ve fasádách funguje stejně.
 
 ### Řez a pohled v pracovním okně, 2026-11-27 (pokyn uživatele; scéna `?ukazka=rezy`)
 
@@ -175,6 +194,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Výškové kóty:** výplň podle ČSN 01 3420 (relativní nevyplněná), ne podle Arditu (plná) – přepínač ve
+  stylu `style.setLevelMarkFill` (zatím bez tlačítka v rozhraní). Kóta patří řezu (ne podlaží jako kóty
+  v půdorysu) – v jiném řezu by měla jinou polohu. Kótovat jde úroveň podlaží a horní / spodní hranu stěny
+  nebo desky (hrany vrstev desky, parapety a terén zatím ne). Hrana prvku má při přichycení přednost před
+  úrovní podlaží ve stejné výšce. Text praporku je nad trojúhelníkem uprostřed (screenshot Arditu), raménko
+  1,6 × výška trojúhelníku na každou stranu. Automatické kóty podlaží zůstávají spočítané (nejsou data).
+
 - **Řez v okně:** styl a měřítko řezu jsou v záhlaví okna řezu (spodní lišta dál patří půdorysu, protože
   nástroje kreslí do půdorysu). Výběr prvků v řezu zatím není – klik do řezu jen aktivuje okno; nástroje
   a klávesy dál pracují s půdorysem okna (Revit dovoluje kreslit i v řezu – přijde s 2D kresbou).
@@ -336,7 +362,7 @@ Stav k 2026-11-27 večer (přechod na jiný počítač): vše je v `main`, CI ze
 Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou
 v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
 
-1. **Řezy – dál:** výběr prvků v okně řezu, „Řez A / Řez B“ v rozbalovači 3D okna (data:
+1. **Řezy – dál:** výškové kóty parapetů, nadpraží a terénu, tlačítko „plné praporky“ ve stylu, výběr prvků v okně řezu, „Řez A / Řez B“ v rozbalovači 3D okna (data:
    `section.list` → `cutPlane3d`), popis skladeb u řezu, okna a dveře v řezu (etapa 4), terén.
 2. **Spáry ve 3D** (3D okno) z dotazu `covering.joints` (tvar ve `docs/STAV-3d.md` / popis dotazu v registru).
 3. **Podlahy a stropy** (poslední část povrchů místností) a rozvinutý pohled stěny se spárořezem (Otevřené).

@@ -1,13 +1,16 @@
-// Plátno řezu / pohledu v pracovním okně: kresba z jádra (drawSection) přes stejné vykreslení primitiv jako půdorys
-// (pera podle měřítka řezu, podklad podle motivu). Kolečko přiblíží, tažení posune; při otevření se kresba
-// vejde do okna. Překreslí se při každé změně modelu (řez se počítá z modelu, nic se neukládá).
+// Plátno řezu / pohledu v pracovním okně: kresba z jádra (drawSection) přes stejné vykreslení primitiv jako
+// půdorys (pera podle měřítka řezu, podklad podle motivu); vybrané výškové kóty barvou výběru, náhled nástroje
+// Výšková kóta (section-input.ts). Kolečko přiblíží; při otevření se kresba vejde do okna. Překreslí se při
+// každé změně modelu (řez se počítá z modelu, nic se neukládá).
 import { drawSection, type Drawing, type Vec2 } from '@bim-light/core';
 import { useEffect, useRef } from 'preact/hooks';
 import { Viewport } from '../../canvas/viewport.ts';
+import { SELECT } from '../../render/overlay.ts';
 import { PAPER_BG } from '../../render/paper.ts';
-import { drawDrawing, type RenderContext } from '../../render/primitives.ts';
+import { drawDrawing, drawPrimitive, type RenderContext } from '../../render/primitives.ts';
 import type { Session } from '../../session/session.ts';
 import { activate } from '../../session/windows.ts';
+import { SectionInput } from './section-input.ts';
 
 function pointsOf(d: Drawing): Vec2[] {
   return d.primitives.flatMap((p) =>
@@ -24,43 +27,54 @@ function fit(v: Viewport, d: Drawing) {
   v.zoomToBox(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), 40);
 }
 
-/** Kolečko přiblíží, tažení posune; vrací úklid. */
-function panZoom(canvas: HTMLCanvasElement, v: Viewport, schedule: () => void): () => void {
+interface Ctx {
+  readonly canvas: HTMLCanvasElement;
+  readonly s: Session;
+  readonly v: Viewport;
+  readonly input: SectionInput;
+  readonly schedule: () => void;
+  readonly index: number;
+}
+
+/** Myš, kolečko a klávesy; vrací úklid. */
+function events(c: Ctx): () => void {
+  const { canvas, v, input, schedule } = c;
+  const at = (e: MouseEvent) => {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
   const onWheel = (e: WheelEvent) => {
     e.preventDefault();
-    const r = canvas.getBoundingClientRect();
-    v.zoomAt({ x: e.clientX - r.left, y: e.clientY - r.top }, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+    v.zoomAt(at(e), e.deltaY < 0 ? 1.15 : 1 / 1.15);
     schedule();
   };
-  let drag: Vec2 | null = null;
-  const onDown = (e: MouseEvent) => (drag = { x: e.clientX, y: e.clientY });
-  const onMove = (e: MouseEvent) => {
-    if (!drag) return;
-    v.pan(e.clientX - drag.x, e.clientY - drag.y);
-    drag = { x: e.clientX, y: e.clientY };
+  const onDown = (e: MouseEvent) => (input.down(at(e), e.button, e.shiftKey), schedule());
+  const onMove = (e: MouseEvent) => input.move(at(e)) && schedule();
+  const onUp = (e: MouseEvent) => (input.up(at(e)), schedule());
+  const onKey = (e: KeyboardEvent) => {
+    const t = e.target;
+    if (c.s.active !== c.index || t instanceof HTMLInputElement || t instanceof HTMLSelectElement) return;
+    if (!input.key(e.key)) return;
+    e.preventDefault();
     schedule();
   };
-  const onUp = () => (drag = null);
   canvas.addEventListener('wheel', onWheel, { passive: false });
   canvas.addEventListener('mousedown', onDown);
   window.addEventListener('mousemove', onMove);
   window.addEventListener('mouseup', onUp);
+  window.addEventListener('keydown', onKey);
   return () => {
     canvas.removeEventListener('wheel', onWheel);
     canvas.removeEventListener('mousedown', onDown);
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);
+    window.removeEventListener('keydown', onKey);
   };
 }
 
 /** Vykreslí řez do plátna; při prvním kreslení přiblíží na celou kresbu. */
-function painter(
-  canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-  s: Session,
-  id: string,
-  v: Viewport,
-) {
+function painter(c: Omit<Ctx, 'schedule'>, ctx: CanvasRenderingContext2D, id: string) {
+  const { canvas, s, v } = c;
   let fitted = false;
   return () => {
     if (!s.model.sections[id]) return;
@@ -71,21 +85,28 @@ function painter(
     }
     canvas.dataset['primitives'] = String(d.primitives.length);
     canvas.dataset['hatches'] = String(d.primitives.filter((p) => p.kind === 'hatch').length);
+    // Převod mm výkresu → px plátna pro prohlížečové testy.
+    canvas.dataset['view'] = JSON.stringify({ s: v.s, ox: v.ox, oy: v.oy });
     const ratio = window.devicePixelRatio || 1;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.fillStyle = PAPER_BG[s.paper];
     ctx.fillRect(0, 0, v.width, v.height);
     const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: d.scale, paper: s.paper };
     drawDrawing(r, d);
+    const sel = new Set(s.selection.levelDims);
+    for (const p of d.primitives)
+      if (p.source.dimensionId && sel.has(p.source.dimensionId)) drawPrimitive(r, p, SELECT);
+    c.input.overlay(r);
   };
 }
 
 /** Překreslování, velikost plátna a ovládání; vrací úklid. */
-function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string): () => void {
+function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string, index: number): () => void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return () => undefined;
   const v = new Viewport();
-  const paint = painter(canvas, ctx, s, sectionId, v);
+  const input = new SectionInput(s, sectionId, v);
+  const paint = painter({ canvas, s, v, input, index }, ctx, sectionId);
   let frame = 0;
   const schedule = () => {
     if (!frame)
@@ -106,19 +127,22 @@ function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string): () =>
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   const off = s.subscribe(schedule);
-  const offPointer = panZoom(canvas, v, schedule);
+  const offEvents = events({ canvas, s, v, input, schedule, index });
   return () => {
     cancelAnimationFrame(frame);
     observer.disconnect();
     off();
-    offPointer();
+    offEvents();
   };
 }
 
 /** Plátno řezu v pracovním okně `index`; klik nebo kolečko udělá okno aktivním. */
 export function SectionCanvas({ s, sectionId, index }: { s: Session; sectionId: string; index: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => (ref.current ? attach(ref.current, s, sectionId) : undefined), [s, sectionId]);
+  useEffect(
+    () => (ref.current ? attach(ref.current, s, sectionId, index) : undefined),
+    [s, sectionId, index],
+  );
   return (
     <canvas
       ref={ref}

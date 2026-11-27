@@ -59,3 +59,12 @@ export function sectionCreateParams(s: Session) {
     ...(d.layerId && s.model.display.layers[d.layerId] ? { annotationLayerId: d.layerId } : {}),
   };
 }
+
+/** Výchozí nastavení nové výškové kóty (nástroj Výšková kóta): relativní / absolutní. */
+const levelStore = new WeakMap<Session, { absolute: boolean }>();
+
+export function levelDimDefaults(s: Session): { absolute: boolean } {
+  let d = levelStore.get(s);
+  if (!d) levelStore.set(s, (d = { absolute: false }));
+  return d;
+}

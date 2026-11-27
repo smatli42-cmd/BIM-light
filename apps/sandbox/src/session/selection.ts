@@ -21,6 +21,8 @@ export class Selection {
   rooms: Id[] = [];
   /** Vybrané řezy (značka v půdorysu). */
   sections: Id[] = [];
+  /** Vybrané výškové kóty v okně řezu. */
+  levelDims: Id[] = [];
   /** Vybraný líc stěny ve vybrané místnosti (klik u líce). */
   face: FacePick | null = null;
 
@@ -30,7 +32,14 @@ export class Selection {
 
   private get count(): number {
     const n = this.walls.length + this.dims.length + this.openings.length;
-    return n + this.slabs.length + this.slabOpenings.length + this.rooms.length + this.sections.length;
+    return (
+      n +
+      this.slabs.length +
+      this.slabOpenings.length +
+      this.rooms.length +
+      this.sections.length +
+      this.levelDims.length
+    );
   }
 
   /** Právě jedna vybraná stěna (ukazují se dočasné kóty a uzly). */
@@ -66,6 +75,7 @@ export class Selection {
     slabOpenings: readonly Id[] = [],
     rooms: readonly Id[] = [],
     sections: readonly Id[] = [],
+    levelDims: readonly Id[] = [],
   ) {
     this.walls = [...new Set(walls)];
     this.dims = [...new Set(dims)];
@@ -74,6 +84,7 @@ export class Selection {
     this.slabOpenings = [...new Set(slabOpenings)];
     this.rooms = [...new Set(rooms)];
     this.sections = [...new Set(sections)];
+    this.levelDims = [...new Set(levelDims)];
     if (this.face && !this.rooms.includes(this.face.roomId)) this.face = null;
   }
 
@@ -110,6 +121,10 @@ export class Selection {
     this.sections = Selection.toggle(this.sections, id);
   }
 
+  toggleLevelDim(id: Id) {
+    this.levelDims = Selection.toggle(this.levelDims, id);
+  }
+
   toggleRoom(id: Id) {
     this.rooms = Selection.toggle(this.rooms, id);
   }
@@ -123,6 +138,7 @@ export class Selection {
       this.slabOpenings,
       this.rooms,
       this.sections,
+      this.levelDims,
     ];
     return lists.some((l) => l.includes(id));
   }
@@ -137,6 +153,7 @@ export class Selection {
       slabOpeningIds: this.slabOpenings,
       roomIds: this.rooms,
       sectionIds: this.sections,
+      levelDimIds: this.levelDims,
     };
   }
 
@@ -149,6 +166,7 @@ export class Selection {
     this.slabOpenings = this.slabOpenings.filter((id) => model.slabOpenings[id]);
     this.rooms = this.rooms.filter((id) => model.rooms[id]);
     this.sections = this.sections.filter((id) => model.sections[id]);
+    this.levelDims = this.levelDims.filter((id) => model.levelDims[id]);
     if (this.face && (!model.rooms[this.face.roomId] || !model.elements[this.face.wallId])) this.face = null;
   }
 }

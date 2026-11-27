@@ -14,6 +14,7 @@ import { OpeningTool } from './opening-tool.ts';
 import { PickLineTool } from './pick-line-tool.ts';
 import { RoomTool } from './room-tool.ts';
 import { SectionTool } from './section-tool.ts';
+import { LevelDimTool } from './level-dim-tool.ts';
 import { SlabTool } from './slab-tool.ts';
 import { SlabRoomTool } from './slab-room-tool.ts';
 import { SlabWallsTool } from './slab-walls-tool.ts';
@@ -50,6 +51,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
         : new SlabTool(s),
   room: (s) => new RoomTool(s),
   section: (s) => new SectionTool(s),
+  levelDim: (s) => new LevelDimTool(s),
 };
 
 /** Nástroje, které pracují s vybranými stěnami (přesun, kopie a zrcadlení i s otvory). */
