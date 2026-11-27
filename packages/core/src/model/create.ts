@@ -3,7 +3,7 @@
 import { defaultRoomCategories } from '../room/category.ts';
 import { coveringLibraryFor } from '../covering/library.ts';
 import { newView3d } from '../view-3d/types.ts';
-import { defaultSectionPresets } from '../section/presets.ts';
+import { emptySectionData } from '../section/presets.ts';
 import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
 import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
@@ -90,11 +90,5 @@ function emptyProject(newId: IdGenerator, name: string): Model {
   };
   // Výchozí 3D pohled (jako {3D} v Revitu); id se bere až na konci, ostatní id se neposunou.
   const view3d = newView3d(newId(), '3D', study.id);
-  const sections = {
-    sections: {},
-    sectionPresets: defaultSectionPresets(),
-    levelDims: {},
-    planLevelDims: {},
-  };
-  return { ...model, ...sections, views3d: { [view3d.id]: view3d } };
+  return { ...model, ...emptySectionData(), views3d: { [view3d.id]: view3d } };
 }

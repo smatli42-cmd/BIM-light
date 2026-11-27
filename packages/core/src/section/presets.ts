@@ -12,3 +12,11 @@ export function defaultSectionPresets(): Record<Id, SectionPreset> {
     }),
   );
 }
+
+/** Řezy a výškové kóty nového projektu: žádné řezy ani kóty, výchozí styly řezu. */
+export const emptySectionData = () => ({
+  sections: {},
+  sectionPresets: defaultSectionPresets(),
+  levelDims: {},
+  planLevelDims: {},
+});

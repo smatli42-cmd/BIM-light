@@ -23,7 +23,8 @@ export const SCENES: readonly Sample[] = [
       'prvky tence šedě). Nástroj Řez v paletě: klik začátek, konec, klik na stranu pohledu; v info boxu ' +
       'styl, vrstva, rovný / zalomený, hloubka, vzdálená oblast. Výběr: klik na čáru řezu, úchyty na koncích, ' +
       'tažení čáry posune, dvojklik otevře řez, Del smaže. V Řezu A jsou výškové kóty podle ČSN 01 3420; ' +
-      'nástroj Výšková kóta v paletě: v okně řezu klik na hranu nebo úroveň, druhý klik umístí praporek.',
+      'nástroj Výšková kóta v paletě: v okně řezu klik na hranu nebo úroveň, druhý klik umístí praporek. ' +
+      'V půdorysu 1.NP: výšková kóta podlahy v rámečku a kroužek v rohu stavby (týž nástroj v půdorysu).',
     build(c) {
       HOUSE.build(c);
     },

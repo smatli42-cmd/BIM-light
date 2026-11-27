@@ -61,6 +61,36 @@ const circle = (c: Vec2, r: number, a0: number, a1: number, n = 24): Vec2[] =>
     return { x: c.x + r * Math.cos(a), y: c.y + r * Math.sin(a) };
   });
 
+interface Painter {
+  readonly text: (at: Vec2, t: string) => Primitive;
+  readonly line: (points: Vec2[], closed?: boolean) => Primitive;
+  readonly fill: (polygon: Vec2[]) => Primitive;
+}
+
+function painter(id: Id, g: ResolvedEffect, th: number): Painter {
+  const source: PrimitiveSource = { dimensionId: id, role: 'výšková kóta' };
+  const stroke: Stroke = { pen: g.projectionPen, color: g.lineColor, lineType: 'solid' };
+  return {
+    text: (at, t) => ({ kind: 'text', at, text: t, heightMm: th, angle: 0, color: g.lineColor, source }),
+    line: (points, closed = false) => ({ kind: 'line', points, closed, stroke, source }),
+    fill: (polygon) => ({ kind: 'fill', polygon, color: g.lineColor, transparency: 0, source }),
+  };
+}
+
+/** Rámeček kolem hodnoty (tenká čára). */
+function boxMark(d: PlanLevelDimension, text: string, th: number, scale: number, p: Painter): Primitive[] {
+  const w = (textWidth(text, th) / 2 + th * 0.4) * scale;
+  const h = th * 0.9 * scale;
+  const { x, y } = d.textAt;
+  const box = [
+    { x: x - w, y: y - h },
+    { x: x + w, y: y - h },
+    { x: x + w, y: y + h },
+    { x: x - w, y: y + h },
+  ];
+  return [p.line(box, true), p.text(d.textAt, text)];
+}
+
 export function drawPlanLevel(
   d: PlanLevelDimension,
   texts: { main: string; second: string },
@@ -68,54 +98,20 @@ export function drawPlanLevel(
   scale: number,
   g: ResolvedEffect,
 ): Primitive[] {
-  const src: PrimitiveSource = { dimensionId: d.id, role: 'výšková kóta' };
-  const stroke: Stroke = { pen: g.projectionPen, color: g.lineColor, lineType: 'solid' };
   const th = sizes.labelText;
-  const text = (at: Vec2, t: string): Primitive => ({
-    kind: 'text',
-    at,
-    text: t,
-    heightMm: th,
-    angle: 0,
-    color: g.lineColor,
-    source: src,
-  });
-  const line = (points: Vec2[], closed = false): Primitive => ({
-    kind: 'line',
-    points,
-    closed,
-    stroke,
-    source: src,
-  });
-  if (d.marker === 'box') {
-    const w = (textWidth(texts.main, th) / 2 + th * 0.4) * scale;
-    const h = th * 0.9 * scale;
-    const { x, y } = d.textAt;
-    const box = [
-      { x: x - w, y: y - h },
-      { x: x + w, y: y - h },
-      { x: x + w, y: y + h },
-      { x: x - w, y: y + h },
-    ];
-    return [line(box, true), text(d.textAt, texts.main)];
-  }
+  const p = painter(d.id, g, th);
+  if (d.marker === 'box') return boxMark(d, texts.main, th, scale, p);
   const r = (levelMarkSize(sizes) / 2) * scale;
   const shelf = Math.max(textWidth(texts.main, th), textWidth(texts.second, th)) * scale;
   const dir = d.textAt.x >= d.point.x ? 1 : -1;
   const end = { x: d.textAt.x + dir * shelf, y: d.textAt.y };
   const mid = (d.textAt.x + end.x) / 2;
   return [
-    {
-      kind: 'fill',
-      polygon: circle(d.point, r, 0, Math.PI),
-      color: g.lineColor,
-      transparency: 0,
-      source: src,
-    },
-    line(circle(d.point, r, 0, 2 * Math.PI), true),
-    line([d.point, d.textAt, end]),
-    text({ x: mid, y: d.textAt.y + th * 0.8 * scale }, texts.main),
-    text({ x: mid, y: d.textAt.y - th * 0.8 * scale }, texts.second),
+    p.fill(circle(d.point, r, 0, Math.PI)),
+    p.line(circle(d.point, r, 0, 2 * Math.PI), true),
+    p.line([d.point, d.textAt, end]),
+    p.text({ x: mid, y: d.textAt.y + th * 0.8 * scale }, texts.main),
+    p.text({ x: mid, y: d.textAt.y - th * 0.8 * scale }, texts.second),
   ];
 }
 
