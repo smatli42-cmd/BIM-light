@@ -29,6 +29,7 @@ import { faceOverlay, flatUnder, pressRoom, roomUnder, stampUnder } from './room
 import { pressTileOrigin, withTileOrigin } from './tile-origin-mode.ts';
 import { openSectionAt, pressSection, withSectionMarks } from './section-modes.ts';
 import { cycleUnder } from './tab-cycle.ts';
+import { pressPlanLevel } from './plan-level-modes.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
@@ -83,7 +84,8 @@ export class SelectTool implements Tool {
     const hit = hitAt(this.s, p.screen);
     const onLine = hit?.kind === 'temp-line' || hit?.kind === 'dim-line';
     if (hit && !onLine) return this.onHit(hit, p);
-    if ((this.mode = pressTileOrigin(this.s, p) ?? pressSection(this.s, p))) return;
+    if ((this.mode = pressTileOrigin(this.s, p) ?? pressSection(this.s, p) ?? pressPlanLevel(this.s, p)))
+      return;
     // Líc vybrané stěny má přednost před čárou kóty, která na něm začíná.
     const onFace = (face: 'ref' | 'opp', id: Id) => {
       this.mode = new OffsetMode(this.s, id, face, p, true);

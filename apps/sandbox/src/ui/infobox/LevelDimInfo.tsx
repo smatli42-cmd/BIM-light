@@ -1,6 +1,14 @@
 // Info box výškové kóty (ČSN 01 3420): nástroj = výchozí relativní / absolutní kóta; vybraná kóta = hodnota
-// spočítaná z modelu, na co ukazuje, absolutní, praporek pod hranou, zámek, smazání (příkazy levelDim.*).
-import { absoluteText, elevationText, levelZ, type LevelDimension } from '@bim-light/core';
+// spočítaná z modelu, na co ukazuje, absolutní, praporek pod hranou (v řezu) / značka (v půdorysu), zámek,
+// smazání (příkazy levelDim.*, planLevelDim.*).
+import {
+  absoluteText,
+  elevationText,
+  levelZ,
+  planLevelTexts,
+  type LevelDimension,
+  type PlanLevelDimension,
+} from '@bim-light/core';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
 import type { Session } from '../../session/session.ts';
 import { Section } from './Section.tsx';
@@ -31,15 +39,67 @@ export function NewLevelDimInfo({ s }: { s: Session }) {
         checked={d.absolute}
         onSet={(v) => ((d.absolute = v), s.changed())}
       />
+      <MarkerSelect
+        value={d.marker}
+        testid="level-marker-default"
+        onPick={(m) => ((d.marker = m), s.changed())}
+      />
     </Section>
   );
 }
 
-function refLabel(s: Session, d: LevelDimension): string {
-  if (d.ref.kind === 'storey') return `úroveň podlaží ${s.model.storeys[d.ref.storeyId]?.name ?? '?'}`;
-  const el = s.model.elements[d.ref.elementId];
+/** Značka výškové kóty v půdorysu: hodnota v rámečku (hlavní), nebo kroužek s poličkou. */
+function MarkerSelect(p: { value: 'box' | 'circle'; testid: string; onPick: (m: 'box' | 'circle') => void }) {
+  return (
+    <label>
+      Značka v půdorysu
+      <select
+        data-testid={p.testid}
+        value={p.value}
+        onChange={(e) => p.onPick(e.currentTarget.value as 'box' | 'circle')}
+      >
+        <option value="box">hodnota v rámečku</option>
+        <option value="circle">kroužek s poličkou</option>
+      </select>
+    </label>
+  );
+}
+
+/** Vybraná výšková kóta v půdorysu: hodnota, značka, absolutní, zámek. */
+function PlanOne({ s, d }: { s: Session; d: PlanLevelDimension }) {
+  const upd = (patch: Record<string, unknown>) =>
+    s.run('planLevelDim.update', { levelDimId: d.id, ...patch });
+  const t = planLevelTexts(s.model, d);
+  return (
+    <Section
+      title="Výšková kóta"
+      info="Hodnota horního líce desky pod bodem (jinak úroveň podlaží), z modelu."
+    >
+      <div class="ib-row">
+        <span class="muted">Hodnota</span>
+        <strong data-testid="level-value">{t?.main ?? '–'}</strong>
+      </div>
+      <div class="ib-row">
+        <span class="muted">Kótuje</span>
+        <span>{refLabel(s, d.ref)}</span>
+      </div>
+      <MarkerSelect value={d.marker} testid="level-marker" onPick={(marker) => upd({ marker })} />
+      <Check
+        label="Absolutní (m n. m. Bpv)"
+        testid="level-absolute"
+        checked={d.absolute}
+        onSet={(v) => upd({ absolute: v })}
+      />
+      <Check label="Zamknout" testid="level-locked" checked={d.locked} onSet={(v) => upd({ locked: v })} />
+    </Section>
+  );
+}
+
+function refLabel(s: Session, ref: LevelDimension['ref']): string {
+  if (ref.kind === 'storey') return `úroveň podlaží ${s.model.storeys[ref.storeyId]?.name ?? '?'}`;
+  const el = s.model.elements[ref.elementId];
   const what = el?.category === 'slab' ? 'deska' : 'stěna';
-  return `${d.ref.edge === 'top' ? 'horní' : 'spodní'} hrana – ${what}`;
+  return `${ref.edge === 'top' ? 'horní' : 'spodní'} hrana – ${what}`;
 }
 
 function One({ s, d }: { s: Session; d: LevelDimension }) {
@@ -54,7 +114,7 @@ function One({ s, d }: { s: Session; d: LevelDimension }) {
       </div>
       <div class="ib-row">
         <span class="muted">Kótuje</span>
-        <span>{refLabel(s, d)}</span>
+        <span>{refLabel(s, d.ref)}</span>
       </div>
       <Check
         label="Absolutní (m n. m. Bpv)"
@@ -75,14 +135,14 @@ function One({ s, d }: { s: Session; d: LevelDimension }) {
 
 /** Vybrané výškové kóty: jedna = úpravy, vždy smazání. */
 export function SelectedLevelDimsInfo({ s }: { s: Session }) {
-  const dims = s.selection.levelDims
-    .map((id) => s.model.levelDims[id])
-    .filter((x): x is LevelDimension => !!x);
-  if (!dims.length) return null;
-  const only = dims.length === 1 ? dims[0] : undefined;
+  const ids = s.selection.levelDims.filter((id) => s.model.levelDims[id] || s.model.planLevelDims[id]);
+  if (!ids.length) return null;
+  const section = ids.length === 1 ? s.model.levelDims[ids[0] as string] : undefined;
+  const plan = ids.length === 1 ? s.model.planLevelDims[ids[0] as string] : undefined;
   return (
     <>
-      {only && <One key={only.id} s={s} d={only} />}
+      {section && <One key={section.id} s={s} d={section} />}
+      {plan && <PlanOne key={plan.id} s={s} d={plan} />}
       <section>
         <button
           data-testid="level-delete"

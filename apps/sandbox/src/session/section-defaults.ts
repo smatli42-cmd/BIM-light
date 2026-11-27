@@ -60,11 +60,16 @@ export function sectionCreateParams(s: Session) {
   };
 }
 
-/** Výchozí nastavení nové výškové kóty (nástroj Výšková kóta): relativní / absolutní. */
-const levelStore = new WeakMap<Session, { absolute: boolean }>();
+/** Výchozí nastavení nové výškové kóty: relativní / absolutní, značka v půdorysu (rámeček / kroužek). */
+export interface LevelDimDefaults {
+  absolute: boolean;
+  marker: 'box' | 'circle';
+}
 
-export function levelDimDefaults(s: Session): { absolute: boolean } {
+const levelStore = new WeakMap<Session, LevelDimDefaults>();
+
+export function levelDimDefaults(s: Session): LevelDimDefaults {
   let d = levelStore.get(s);
-  if (!d) levelStore.set(s, (d = { absolute: false }));
+  if (!d) levelStore.set(s, (d = { absolute: false, marker: 'box' }));
   return d;
 }

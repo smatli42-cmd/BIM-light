@@ -20,7 +20,7 @@ import { drawLock, drawTempDim } from './overlay-dims.ts';
 
 function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly string[]) {
   const drawing = drawView(model, s.viewId, drawOptionsOf(s.screen));
-  const sel = new Set(s.selection.dims);
+  const sel = new Set([...s.selection.dims, ...s.selection.levelDims]);
   const flash = new Set(s.flashDims);
   const plain: Primitive[] = [];
   const marked: [Primitive, string][] = [];

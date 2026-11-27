@@ -1,12 +1,26 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Výšková kóta v půdorysu, 2026-11-27 (pokyn uživatele; v půdorysu 1.NP `?ukazka=rezy` / `dum`)
+
+- Jádro (`level-dim/plan.ts`, migrace 33 → 34): anotace podlaží se skupinou anotací (aktivní skupina
+  pohledu) a zámkem, asociativní – v bodě bere horní líc nejvyšší desky / podlahy pod ním, jinak úroveň
+  podlaží; zápis ±0,000 / +0,150 / -0,450 (absolutní „m n. m.“). Značka **rámeček** (hodnota v obdélníku
+  tenkou čarou, hlavní, jako Ardit) nebo **kroužek** (horní polovina plná, odkazová čára k poličce, nad ní
+  výška k ±0,000, pod ní výška nad úrovní podlaží). Velikost písma a kroužku z `display.paperSizes`, pero
+  a barva z grafiky kategorie kót. Smazaná deska vezme své kóty.
+- Příkazy `planLevelDim.create / move / update`, mazání `levelDim.delete` / `selection.delete`; dotaz
+  `planLevelDim.list`; AI krok v `scenario-sections`.
+- Sandbox: nástroj **Výšková kóta** funguje v půdorysu (klik na bod, druhý klik = poloha hodnoty) i v okně
+  řezu. Výběr klikem, tažení (u kroužku tažení hodnoty posune jen hodnotu), Del. Info box: hodnota,
+  co kótuje, značka (rámeček / kroužek), absolutní, zámek. E2E `vyskove-koty-pudorys.spec.ts`.
 
 ### Výškové kóty v řezech a pohledech (ČSN 01 3420), 2026-11-27 (scéna `?ukazka=rezy`, Řez A i v `?ukazka=dum`)
 
@@ -194,8 +208,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
-- **Výškové kóty:** výplň podle ČSN 01 3420 (relativní nevyplněná), ne podle Arditu (plná) – přepínač ve
-  stylu `style.setLevelMarkFill` (zatím bez tlačítka v rozhraní). Kóta patří řezu (ne podlaží jako kóty
+- **Výšková kóta v půdorysu:** kroužek z Arditu chápu jako kótu bodu (Archicad Level Dimension v půdorysu)
+  s poličkou: nahoře výška k ±0,000, dole výška nad úrovní podlaží; hlavní značka je rámeček. Kóta odkazuje
+  na desku, která byla pod bodem při vložení – posun kóty desku nemění. Rámeček má velikost podle odhadu
+  šířky textu (jádro písmo nezná). Bez nové položky velikostí: text = výška popisu, kroužek = `levelMark`.
+- **Výškové kóty v řezu:** relativní kóta má prázdný trojúhelník (rozhodl uživatel 2026-11-27, ČSN 01 3420);
+  přepínač stylu `style.setLevelMarkFill` (vždy plné jako Ardit) zůstal jen jako volba přes příkaz. Kóta patří řezu (ne podlaží jako kóty
   v půdorysu) – v jiném řezu by měla jinou polohu. Kótovat jde úroveň podlaží a horní / spodní hranu stěny
   nebo desky (hrany vrstev desky, parapety a terén zatím ne). Hrana prvku má při přichycení přednost před
   úrovní podlaží ve stejné výšce. Text praporku je nad trojúhelníkem uprostřed (screenshot Arditu), raménko
@@ -374,6 +392,8 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 
 ## Otevřené
 
+- **STAV.md má 41 KB (limit ~40 KB):** návrh rozdělení – hotové kroky řezů a výškových kót přesunout
+  do nového `docs/STAV-rezy.md` (jako `STAV-steny.md`), v STAV.md nechat odkaz. Čeká na souhlas.
 - **Řezy – zbývá:** výběr prvků v okně řezu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
   řezu, úchyty hloubky pohledu v půdorysu, popis skladeb (odkaz se skladbou vrstev), materiály a terén
   ve fasádě, okolní zástavba, šikmé střechy a schodiště (až budou prvky), hrany prvků za
