@@ -27,7 +27,8 @@ import { OffsetMode } from './wall-modes.ts';
 import { OutlineVertexMode, outlineUnder, pickOutline, PressOutlineMode } from './slab-modes.ts';
 import { faceOverlay, flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
 import { pressTileOrigin, withTileOrigin } from './tile-origin-mode.ts';
-import { pressSection, withSectionMarks } from './section-modes.ts';
+import { openSectionAt, pressSection, withSectionMarks } from './section-modes.ts';
+import { cycleUnder } from './tab-cycle.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
@@ -195,6 +196,11 @@ export class SelectTool implements Tool {
   }
 
   /** Prvek pod kurzorem pro kartu prvku (jen když neběží žádný režim). */
+  /** Dvojklik na značku řezu otevře řez v okně (jako dvojklik na značku v Revitu). */
+  dblclick(p: PointerInfo) {
+    openSectionAt(this.s, p);
+  }
+
   hoverId(): Id | null {
     return this.mode?.active ? null : this.hover;
   }
@@ -203,18 +209,7 @@ export class SelectTool implements Tool {
     if (this.mode?.active && this.mode.key?.(k)) return true;
     const s = this.s;
     if (k.key === 'Tab') {
-      const p = {
-        screen: s.cursor.screen,
-        world: s.cursor.world,
-        button: 0,
-        shift: false,
-        ctrl: false,
-        alt: false,
-      };
-      const list = this.wallsUnder(p);
-      if (!list.length) return true;
-      this.tab = (this.tab + 1) % list.length;
-      s.selection.set([list[this.tab] as Id]);
+      this.tab = cycleUnder(s, (p) => this.wallsUnder(p), this.tab);
       return true;
     }
     if (k.key === ' ' && s.selection.walls.length) {

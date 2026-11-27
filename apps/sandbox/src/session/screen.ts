@@ -7,6 +7,8 @@ import type { Viewport } from '../canvas/viewport.ts';
 export interface WindowState {
   viewId: Id;
   readonly viewport: Viewport;
+  /** Okno ukazuje řez / pohled (fasádu) místo půdorysu; null / chybí = půdorys `viewId`. */
+  sectionId?: Id | null;
 }
 
 export type TraceRef = 'below' | 'above' | Id;

@@ -2,7 +2,8 @@
 // vrstva, geometrická metoda, hloubka, vzdálená oblast); vybraný řez = totéž nad řezem + název, směr,
 // měřítko, otevření okna řezu a smazání. Vše se mění příkazy (section.update, sectionPreset.*).
 import type { Section as SectionData } from '@bim-light/core';
-import { openSection, sectionDefaults, setSectionDefaults } from '../../session/section-defaults.ts';
+import { sectionDefaults, setSectionDefaults } from '../../session/section-defaults.ts';
+import { openSection } from '../../session/section-windows.ts';
 import type { Session } from '../../session/session.ts';
 import { Section } from './Section.tsx';
 import {

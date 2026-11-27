@@ -1,6 +1,5 @@
 // Výchozí nastavení nového řezu (nástroj Řez; info box podle Arditu „Řez – výchozí nastavení nových prvků“):
-// styl řezu, vrstva značky, geometrická metoda (rovný / zalomený), hloubka a vzdálená oblast. A okno řezu,
-// které je otevřené (otevírá se z Obsahu, z info boxu i dvojklikem na značku). Jen stav rozhraní.
+// styl řezu, vrstva značky, geometrická metoda (rovný / zalomený), hloubka a vzdálená oblast. Jen stav rozhraní.
 import type { Id } from '@bim-light/core';
 import type { Session } from './session.ts';
 
@@ -21,8 +20,6 @@ export interface SectionDefaults {
 
 interface SectionUi {
   defaults: SectionDefaults;
-  /** Otevřené okno řezu; null = žádné. */
-  open: Id | null;
 }
 
 const store = new WeakMap<Session, SectionUi>();
@@ -39,7 +36,6 @@ function ui(s: Session): SectionUi {
         depth: null,
         farClip: null,
       },
-      open: null,
     };
     store.set(s, u);
   }
@@ -62,14 +58,4 @@ export function sectionCreateParams(s: Session) {
     ...(preset ? { presetId: preset } : { depth: d.depth, farClip: d.farClip }),
     ...(d.layerId && s.model.display.layers[d.layerId] ? { annotationLayerId: d.layerId } : {}),
   };
-}
-
-export const openSectionId = (s: Session): Id | null => {
-  const id = ui(s).open;
-  return id && s.model.sections[id] ? id : null;
-};
-
-export function openSection(s: Session, id: Id | null) {
-  ui(s).open = id;
-  s.changed();
 }

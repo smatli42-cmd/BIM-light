@@ -2,7 +2,7 @@
 // ubere), tažení čáry posune celý řez, úchyty na koncích vybraného řezu prodlouží / přesunou konec,
 // dvojklik otevře okno řezu. Vše jde příkazy section.move / section.update (stejně jako AI).
 import { layerState, roundTo, sectionOnStorey, sub, type Id, type Section, type Vec2 } from '@bim-light/core';
-import { openSection } from '../../../session/section-defaults.ts';
+import { openSection } from '../../../session/section-windows.ts';
 import type { Session } from '../../../session/session.ts';
 import { DRAG_PX, type Mode } from '../../mode.ts';
 import { segDist } from '../../screen.ts';
@@ -10,7 +10,6 @@ import type { Overlay, PointerInfo } from '../../types.ts';
 
 const PICK_PX = 5;
 const GRIP_PX = 8;
-const DOUBLE_MS = 400;
 
 /** Řezy, jejichž značka je v půdorysu aktivního okna vidět. */
 function shownSections(s: Session): Section[] {
@@ -115,8 +114,6 @@ const DONE: Mode = {
   overlay: () => ({}),
 };
 
-let lastPress = { id: '', at: 0 };
-
 /** Stisk na řezu nebo jeho úchytu; null = pod kurzorem žádný řez. */
 export function pressSection(s: Session, p: PointerInfo): Mode | null {
   if (s.screen.isolate) return null;
@@ -128,14 +125,7 @@ export function pressSection(s: Session, p: PointerInfo): Mode | null {
     s.selection.toggleSection(id);
     return DONE;
   }
-  const now = Date.now();
-  const double = lastPress.id === id && now - lastPress.at < DOUBLE_MS;
-  lastPress = { id, at: now };
   if (!s.selection.sections.includes(id)) s.selection.set([], [], [], [], [], [], [id]);
-  if (double) {
-    openSection(s, id);
-    return DONE;
-  }
   return new SectionDragMode(s, id, p, null);
 }
 
@@ -148,4 +138,10 @@ export function withSectionMarks(s: Session, o: Overlay): Overlay {
   );
   const ends = secs.flatMap((x) => [x.points[0] as Vec2, x.points[x.points.length - 1] as Vec2]);
   return { ...o, lines: [...(o.lines ?? []), ...lines], markers: [...(o.markers ?? []), ...ends] };
+}
+
+/** Dvojklik na čáru řezu: řez se otevře v okně místo půdorysu. */
+export function openSectionAt(s: Session, p: PointerInfo) {
+  const id = s.screen.isolate ? null : sectionUnder(s, p);
+  if (id) openSection(s, id);
 }

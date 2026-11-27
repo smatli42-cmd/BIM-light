@@ -1,4 +1,4 @@
-// Plátno okna řezu / pohledu: kresba z jádra (drawSection) přes stejné vykreslení primitiv jako půdorys
+// Plátno řezu / pohledu v pracovním okně: kresba z jádra (drawSection) přes stejné vykreslení primitiv jako půdorys
 // (pera podle měřítka řezu, podklad podle motivu). Kolečko přiblíží, tažení posune; při otevření se kresba
 // vejde do okna. Překreslí se při každé změně modelu (řez se počítá z modelu, nic se neukládá).
 import { drawSection, type Drawing, type Vec2 } from '@bim-light/core';
@@ -7,6 +7,7 @@ import { Viewport } from '../../canvas/viewport.ts';
 import { PAPER_BG } from '../../render/paper.ts';
 import { drawDrawing, type RenderContext } from '../../render/primitives.ts';
 import type { Session } from '../../session/session.ts';
+import { activate } from '../../session/windows.ts';
 
 function pointsOf(d: Drawing): Vec2[] {
   return d.primitives.flatMap((p) =>
@@ -114,8 +115,18 @@ function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string): () =>
   };
 }
 
-export function SectionCanvas({ s, sectionId }: { s: Session; sectionId: string }) {
+/** Plátno řezu v pracovním okně `index`; klik nebo kolečko udělá okno aktivním. */
+export function SectionCanvas({ s, sectionId, index }: { s: Session; sectionId: string; index: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => (ref.current ? attach(ref.current, s, sectionId) : undefined), [s, sectionId]);
-  return <canvas ref={ref} class="section-canvas" data-testid="section-canvas" />;
+  return (
+    <canvas
+      ref={ref}
+      class="drawing section-canvas"
+      data-testid={index === s.active ? 'section-canvas' : 'section-canvas-passive'}
+      onMouseDown={() => activate(s, index)}
+      onWheel={() => activate(s, index)}
+      onContextMenu={(e) => e.preventDefault()}
+    />
+  );
 }

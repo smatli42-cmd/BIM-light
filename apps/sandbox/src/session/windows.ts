@@ -34,16 +34,22 @@ export function activate(s: Session, i: number) {
  * ho okno půdorysu na stejném místě (vpravo, levé se nemění; samotné 3D se vrátí na jedno okno).
  */
 export function openInActive(s: Session, viewId: string) {
-  if (is3DFocused(s)) {
-    const solo = view3d(s).solo;
-    close3D(s);
-    if (s.windows.length === 1 && !solo) {
-      s.windows.push({ viewId, viewport: Object.assign(new Viewport(), s.viewport) });
-    }
-    activate(s, s.windows.length - 1);
-  }
+  leave3D(s, viewId);
+  const w = s.windows[s.active];
+  if (w) w.sectionId = null;
   s.setView(viewId);
   s.changed();
+}
+
+/** Pracuje-li se ve 3D okně, nahradí ho okno půdorysu na stejném místě (Obsah otevírá do něj). */
+export function leave3D(s: Session, viewId: string) {
+  if (!is3DFocused(s)) return;
+  const solo = view3d(s).solo;
+  close3D(s);
+  if (s.windows.length === 1 && !solo) {
+    s.windows.push({ viewId, viewport: Object.assign(new Viewport(), s.viewport) });
+  }
+  activate(s, s.windows.length - 1);
 }
 
 /** Přepne pohled v daném okně (aktivní okno přes setView, jinak jen změní jeho pohled). */
@@ -52,5 +58,6 @@ export function setWindowView(s: Session, i: number, viewId: string) {
   const w = s.windows[i];
   if (!w || !s.model.views[viewId]) return;
   w.viewId = viewId;
+  w.sectionId = null;
   s.changed();
 }

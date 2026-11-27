@@ -8,6 +8,7 @@ import { Icon } from '../icons/Icon.tsx';
 import { StoreysPanel } from '../StoreysPanel.tsx';
 import { Schedules } from './Schedules.tsx';
 import { Sections } from './Sections.tsx';
+import { activeSectionId } from '../../session/section-windows.ts';
 import { active3d, is3DFocused, open3DView, view3d } from '../../view3d/state.ts';
 
 const sign = (e: number) => (e > 0 ? `+${e}` : e < 0 ? `−${Math.abs(e)}` : '±0');
@@ -25,7 +26,9 @@ export function ProjectTab({ s }: { s: Session }) {
           <li key={st.id}>
             <button
               data-testid={`open-storey-${st.name}`}
-              class={!s.view.saved && s.storeyId === st.id && !focused3d ? 'active' : ''}
+              class={
+                !s.view.saved && s.storeyId === st.id && !focused3d && !activeSectionId(s) ? 'active' : ''
+              }
               onClick={() => openStorey(s, st.id)}
             >
               <Icon name="plan" size={16} />

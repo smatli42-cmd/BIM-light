@@ -1,5 +1,5 @@
 // E – okno pohledu (koncepce rozhraní, část 2): hlavička se záložkou pohledu, novým pohledem
-// a měřítkem, pod ní výkres. Oken může být víc vedle sebe; aktivní má modrý rámeček (UI4).
+// a měřítkem, pod ní výkres; nebo řez / pohled (fasáda) otevřený do okna (section-windows.ts). Oken může být víc vedle sebe; aktivní má modrý rámeček (UI4).
 import { useState } from 'preact/hooks';
 import { DrawingCanvas } from '../../canvas/DrawingCanvas.tsx';
 import type { Controller } from '../../interaction/controller.ts';
@@ -10,6 +10,8 @@ import { activate, setWindowView } from '../../session/windows.ts';
 import { is3DFocused } from '../../view3d/state.ts';
 import { useSession } from '../use-session.ts';
 import { NewView, ScaleSelect } from '../ViewControls.tsx';
+import { windowSection } from '../../session/section-windows.ts';
+import { SectionWindowView } from '../section/SectionWindowView.tsx';
 
 function storeyLabel(s: Session, storeyId: string): string {
   const st = s.model.storeys[storeyId];
@@ -18,11 +20,20 @@ function storeyLabel(s: Session, storeyId: string): string {
   return `Půdorys · ${st.name} (${e > 0 ? '+' : e < 0 ? '−' : '±'}${Math.abs(e)})`;
 }
 
-export function ViewWindow({ s, controller, index }: { s: Session; controller: Controller; index: number }) {
-  useSession(s);
+/** Okno: řez / pohled, je-li do něj otevřený, jinak půdorys. */
+export function ViewWindow(p: { s: Session; controller: Controller; index: number }) {
+  useSession(p.s);
+  const active = p.index === p.s.active;
+  const cls = active && !is3DFocused(p.s) ? 'window active' : 'window';
+  const sec = windowSection(p.s, p.index);
+  if (sec) return <SectionWindowView s={p.s} index={p.index} sec={sec} cls={cls} />;
+  return <PlanWindow {...p} cls={cls} />;
+}
+
+function PlanWindow(p: { s: Session; controller: Controller; index: number; cls: string }) {
+  const { s, controller, index, cls } = p;
   const [adding, setAdding] = useState(false);
   const active = index === s.active;
-  const cls = active && !is3DFocused(s) ? 'window active' : 'window';
   const v = s.model.views[s.windows[index]?.viewId ?? ''] ?? s.view;
   return (
     <section class={cls} data-testid={active ? 'window' : 'window-passive'}>

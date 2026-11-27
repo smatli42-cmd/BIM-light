@@ -1,9 +1,9 @@
 // Obsah → Projekt → Řezy a Pohledy (koncepce rozhraní, část 4): seznam řezů a pohledů projektu, klik otevře
-// okno s kresbou z modelu. Okno řezu je jedno pro celou aplikaci (section-defaults.ts).
+// řez v okně, ve kterém se pracuje, místo půdorysu (section-windows.ts); zvýrazněný = v aktivním okně.
 import type { Section } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { Icon } from '../icons/Icon.tsx';
-import { openSection } from '../../session/section-defaults.ts';
+import { activeSectionId, openSection } from '../../session/section-windows.ts';
 
 function Group(p: { title: string; kind: Section['kind']; s: Session; open: (id: string) => void }) {
   const items = Object.values(p.s.model.sections).filter((x) => x.kind === p.kind);
@@ -13,7 +13,11 @@ function Group(p: { title: string; kind: Section['kind']; s: Session; open: (id:
       <ul class="content-list" data-testid={`content-${p.kind}s`}>
         {items.map((x) => (
           <li key={x.id}>
-            <button data-testid={`open-section-${x.name}`} onClick={() => p.open(x.id)}>
+            <button
+              data-testid={`open-section-${x.name}`}
+              class={activeSectionId(p.s) === x.id ? 'active' : ''}
+              onClick={() => p.open(x.id)}
+            >
               <Icon name={p.kind === 'section' ? 'section' : 'elevation'} size={16} />
               <span>{x.name}</span>
             </button>

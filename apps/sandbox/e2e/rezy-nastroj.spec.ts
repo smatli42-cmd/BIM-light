@@ -1,5 +1,5 @@
 // Prohlížečové testy nástroje Řez (info box podle Arditu): rovný řez třemi kliky (začátek, konec, strana),
-// hloubka a styl řezu z info boxu, zalomený řez, výběr značky, úchyt konce, dvojklik a Del.
+// hloubka a styl řezu z info boxu, zalomený řez, výběr značky, úchyt konce, dvojklik (řez v okně) a Del.
 import { expect, test, type Page } from '@playwright/test';
 import { clickAt, dragPx, model, open, px, run } from './helpers.ts';
 
@@ -64,7 +64,9 @@ test('nástroj Řez: zalomený řez – úseky kolmo a rovnoběžně, Enter ukon
   expect(sec?.points[2]).toEqual({ x: 3000, y: 2000 });
 });
 
-test('výběr řezu: klik na čáru, úchyt konce prodlouží, dvojklik otevře okno, Del smaže', async ({ page }) => {
+test('výběr řezu: klik na čáru, úchyt konce prodlouží, dvojklik otevře řez v okně, Del smaže', async ({
+  page,
+}) => {
   await run(page, 'section.create', { start: { x: 0, y: 0 }, end: { x: 5000, y: 0 } });
   await clickAt(page, 2500, 0);
   await expect(page.getByTestId('infobox-title')).toHaveText('Řez');
@@ -74,9 +76,13 @@ test('výběr řezu: klik na čáru, úchyt konce prodlouží, dvojklik otevře 
   await page.getByTestId('section-flip').click();
   await expect.poll(async () => (await sections(page))[0]?.direction).toBe('right');
   await page.mouse.dblclick((await px(page, 2500, 0)).x, (await px(page, 2500, 0)).y);
-  await expect(page.getByTestId('section-dialog')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('section-dialog')).toHaveCount(0);
+  // Dvojklik na značku otevře řez v okně místo půdorysu; podlaží z Obsahu vrátí půdorys.
+  await expect(page.getByTestId('section-label')).toHaveText('Řez · Řez A · 1:100');
+  await page.getByTestId('ct-project').click();
+  await page.getByTestId('open-storey-1.NP').click();
+  // Nové plátno půdorysu se usadí (velikost, první snímek), než se do něj klikne.
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await expect(page.getByTestId('drawing-canvas')).toBeVisible();
   await clickAt(page, 2500, 0);
   await page.keyboard.press('Delete');
   await expect.poll(async () => (await sections(page)).length).toBe(0);

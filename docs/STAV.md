@@ -1,12 +1,23 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Řez a pohled v pracovním okně, 2026-11-27 (pokyn uživatele; scéna `?ukazka=rezy`)
+
+- Řez i pohled (fasáda) se otevírají jako pohled v okně, ve kterém se pracuje, místo půdorysu (jako 3D
+  pohled): z Obsahu → Projekt (Řezy, Pohledy), dvojklikem na značku řezu a tlačítkem „Otevřít řez“ v info
+  boxu. Podlaží z Obsahu vrátí do okna půdorys. Aktivní okno má rámeček, v Obsahu je zvýrazněný řez.
+  Ve dvou oknech: řez v aktivním okně, druhé okno zůstane půdorysem (a naopak).
+- Záhlaví okna řezu: výběr řezu / pohledu, styl a měřítko (příkaz `section.update`); štítek „Řez · Řez A ·
+  1:100“. Kolečko přiblíží, tažení posune. Dialog okna řezu je zrušený. Okno si drží jen odkaz na řez
+  (`WindowState.sectionId`, `session/section-windows.ts`). E2E `rezy.spec.ts` (Obsah, dvě okna, styl
+  a měřítko), `rezy-nastroj.spec.ts` (dvojklik).
 
 ### Nástroj Řez a info box řezu (podle Arditu), 2026-11-27 (scéna `?ukazka=rezy`, zalomený Řez C i v `?ukazka=dum`)
 
@@ -164,6 +175,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Řez v okně:** styl a měřítko řezu jsou v záhlaví okna řezu (spodní lišta dál patří půdorysu, protože
+  nástroje kreslí do půdorysu). Výběr prvků v řezu zatím není – klik do řezu jen aktivuje okno; nástroje
+  a klávesy dál pracují s půdorysem okna (Revit dovoluje kreslit i v řezu – přijde s 2D kresbou).
+  Řez otevřený přes 3D okno nahradí 3D okno půdorysem s řezem na stejném místě (stejně jako podlaží).
+
 - **Nástroj Řez (podle Arditu):** výchozí hloubka nového řezu je teď **neomezená** (prázdné pole jako
   v Arditu; dřív 15 m) a výchozí vrstva značky je nová skupina anotací „Řezy a pohledy“ (dřív „Kresba 2D“).
   Strana pohledu třetím klikem (Archicad; Revit dává směr hned a otáčí se šipkami – to umí „Otočit směr“).
@@ -320,7 +336,7 @@ Stav k 2026-11-27 večer (přechod na jiný počítač): vše je v `main`, CI ze
 Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou
 v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
 
-1. **Řezy – dál:** okno řezu vedle půdorysu (dnes dialog), „Řez A / Řez B“ v rozbalovači 3D okna (data:
+1. **Řezy – dál:** výběr prvků v okně řezu, „Řez A / Řez B“ v rozbalovači 3D okna (data:
    `section.list` → `cutPlane3d`), popis skladeb u řezu, okna a dveře v řezu (etapa 4), terén.
 2. **Spáry ve 3D** (3D okno) z dotazu `covering.joints` (tvar ve `docs/STAV-3d.md` / popis dotazu v registru).
 3. **Podlahy a stropy** (poslední část povrchů místností) a rozvinutý pohled stěny se spárořezem (Otevřené).
@@ -332,7 +348,7 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 
 ## Otevřené
 
-- **Řezy – zbývá:** okno řezu vedle půdorysu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
+- **Řezy – zbývá:** výběr prvků v okně řezu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
   řezu, úchyty hloubky pohledu v půdorysu, popis skladeb (odkaz se skladbou vrstev), materiály a terén
   ve fasádě, okolní zástavba, šikmé střechy a schodiště (až budou prvky), hrany prvků za
   rovinou podrobněji (rohy šikmo viděných stěn, ostění u fasády), místnosti a kóty v řezu, výškové kóty
@@ -406,8 +422,8 @@ Výstup `npm run check:size`: bez varování (STAV.md 35 KB).
 
 | Řádky | Soubor |
 |---|---|
-| 250 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 248 | apps/sandbox/src/session/session.ts |
+| 245 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
 | 241 | apps/sandbox/src/view3d/viewer.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |
