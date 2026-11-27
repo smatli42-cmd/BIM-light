@@ -171,7 +171,28 @@ function attachPartitions(c: SampleContext) {
 
 /** Řezy a pohledy (rozhodnutí 19): Řez A přes okna, Řez B napříč, zalomený Řez C, 4 pohledy kolem domu. */
 export function houseSections(c: SampleContext) {
-  c.run('section.create', { start: vec(2250, -2500), end: vec(2250, H + 2500), styleId: projectStyle(c) });
+  const [a] = c.run('section.create', {
+    start: vec(2250, -2500),
+    end: vec(2250, H + 2500),
+    styleId: projectStyle(c),
+  });
+  // Výškové kóty v Řezu A (ČSN 01 3420): úroveň 2.NP uvnitř domu a spodní líc stropu pod ní (praporek dole).
+  const upper = Object.values(c.model.storeys).find((st) => st.elevation > 0);
+  const ceiling = Object.values(c.model.elements).find(
+    (e) =>
+      e.category === 'slab' &&
+      e.storeyId === upper?.id &&
+      c.model.slabTypes[e.typeId]?.slabFunction === 'structure',
+  );
+  if (a && upper)
+    c.run('levelDim.create', { sectionId: a, ref: { kind: 'storey', storeyId: upper.id }, at: 6000 });
+  if (a && ceiling)
+    c.run('levelDim.create', {
+      sectionId: a,
+      ref: { kind: 'edge', elementId: ceiling.id, edge: 'bottom' },
+      at: 6000,
+      below: true,
+    });
   c.run('section.create', { start: vec(-2500, 3000), end: vec(W + 2500, 3000), styleId: projectStyle(c) });
   // Zalomený řez se stylem řezu (hloubka 6 m, vzdálená oblast od 3 m): přes obývák a koupelnu.
   const preset = Object.values(c.model.sectionPresets).find((p) => p.depth === 6000)?.id ?? null;
