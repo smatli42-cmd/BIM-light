@@ -67,12 +67,14 @@ export interface LevelDimDefaults {
   /** Kóta terénu: rostlý a upravený terén (mm k ±0,000), null = neznámý. */
   rt: number | null;
   ut: number | null;
+  /** S odkazovou čarou (Revit „Leader“): druhý klik dá hodnotu jinam než bod; výchozí vypnuto = jeden klik. */
+  leader: boolean;
 }
 
 const levelStore = new WeakMap<Session, LevelDimDefaults>();
 
 export function levelDimDefaults(s: Session): LevelDimDefaults {
   let d = levelStore.get(s);
-  if (!d) levelStore.set(s, (d = { absolute: false, marker: 'box', rt: null, ut: null }));
+  if (!d) levelStore.set(s, (d = { absolute: false, marker: 'box', rt: null, ut: null, leader: false }));
   return d;
 }

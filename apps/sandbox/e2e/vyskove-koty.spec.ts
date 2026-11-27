@@ -1,5 +1,6 @@
 // Prohlížečové testy výškových kót v řezu (ČSN 01 3420; Revit Spot Elevation): nástroj Výšková kóta v okně
-// řezu – klik na úroveň, druhý klik umístí praporek; výběr klikem, info box s hodnotou, tažení, Del.
+// řezu – jeden klik na úroveň / hranu / do plochy prvku vloží praporek; výběr klikem, info box s hodnotou,
+// tažení, Del. Dřívější test klikal přesně na hranu a dvakrát – klik do plochy stropu (jak kliká uživatel) neověřil.
 import { expect, test, type Page } from '@playwright/test';
 
 /** Bod výkresu řezu (u, z v mm) → px stránky. */
@@ -36,13 +37,12 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByTestId('section-canvas')).toHaveAttribute('data-view', /"s"/);
 });
 
-test('ČSN 01 3420: nástroj Výšková kóta – klik na úroveň 2.NP, druhý klik praporek, hodnota +3,000', async ({
+test('ČSN 01 3420 / jeden klik: nástroj Výšková kóta – klik na úroveň 2.NP vloží praporek +3,000', async ({
   page,
 }) => {
   await page.getByTestId('tool-levelDim').click();
   await expect(page.getByTestId('infobox-title')).toHaveText('Výšková kóta');
   await click(page, 2000, 3000);
-  await click(page, 2000, 3500);
   await expect.poll(async () => (await dims(page)).length).toBe(1);
   expect((await dims(page))[0]?.below).toBe(false);
   await page.keyboard.press('Escape');
@@ -56,7 +56,6 @@ test('ČSN 01 3420: výšková kóta jde táhnout, přepnout na absolutní a sma
 }) => {
   await page.getByTestId('tool-levelDim').click();
   await click(page, 2000, 3000);
-  await click(page, 2000, 3500);
   await page.keyboard.press('Escape');
   const a = await at(page, 2000, 3150);
   const b = await at(page, 4000, 3150);
@@ -72,4 +71,15 @@ test('ČSN 01 3420: výšková kóta jde táhnout, přepnout na absolutní a sma
   await click(page, x, 3150);
   await page.keyboard.press('Delete');
   await expect.poll(async () => (await dims(page)).length).toBe(0);
+});
+
+test('hlášení uživatele / řez: jeden klik do plochy stropu (ne přesně na hranu) vloží kótu jeho horního líce', async ({
+  page,
+}) => {
+  await page.getByTestId('tool-levelDim').click();
+  // Klik doprostřed stropu nad 1.NP (ne na hranu): kóta se přichytí k jeho bližší hraně.
+  await click(page, 4000, 2880);
+  await expect.poll(async () => (await dims(page)).length).toBe(1);
+  const ref = await page.evaluate(() => Object.values(window.__bim!.model().levelDims)[0]?.ref.kind);
+  expect(ref).toBe('edge');
 });

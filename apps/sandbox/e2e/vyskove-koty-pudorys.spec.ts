@@ -22,12 +22,11 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('Ardit / půdorys: výšková kóta podlahy +0,150 v rámečku, výběr, kroužek, tažení a Del', async ({
+test('Ardit / půdorys, jeden klik: výšková kóta podlahy +0,150 v rámečku, výběr, kroužek, tažení a Del', async ({
   page,
 }) => {
   await page.getByTestId('tool-levelDim').click();
   await expect(page.getByTestId('level-marker-default')).toHaveValue('box');
-  await clickAt(page, 2000, 1500);
   await clickAt(page, 2000, 1500);
   await expect.poll(async () => (await plan(page)).length).toBe(1);
   await page.keyboard.press('Escape');
@@ -43,14 +42,15 @@ test('Ardit / půdorys: výšková kóta podlahy +0,150 v rámečku, výběr, kr
   await expect.poll(async () => (await plan(page)).length).toBe(0);
 });
 
-test('DSP / kóta terénu u nároží: kroužek na rohu stěny s RT a UT z info boxu', async ({ page }) => {
+test('DSP / kóta terénu u nároží: jeden klik na roh stěny, RT a UT z info boxu, text šikmo ven', async ({
+  page,
+}) => {
   await page.getByTestId('tool-levelDim').click();
   await page.getByTestId('level-marker-default').selectOption('circle');
   await page.getByTestId('level-default-rt').fill('-200');
   await page.getByTestId('level-default-ut').fill('-150');
   await page.getByTestId('level-default-ut').press('Tab');
   await clickAt(page, 0, 0);
-  await clickAt(page, -1500, -800);
   await expect.poll(async () => (await plan(page)).length).toBe(1);
   const d = await page.evaluate(() => Object.values(window.__bim!.model().planLevelDims)[0]);
   expect([d?.marker, d?.rt, d?.ut]).toEqual(['circle', -200, -150]);

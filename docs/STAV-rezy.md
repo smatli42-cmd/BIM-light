@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Výšková kóta jedním klikem, 2026-11-27 (hlášení uživatele: výšková kóta v řezu nejde vložit)
+
+- Co v řezu nefungovalo: kóta šla vložit jen dvěma kliky a první klik se musel trefit do 8 px od hrany nebo
+  úrovně. Klik do plochy stropu / stěny (jak uživatel kliká) neudělal nic a nic nehlásil; po kliku na hranu
+  se jen čekalo na druhý klik. E2E `vyskove-koty` klikal přesně na souřadnici hrany spočítanou z modelu
+  a dvakrát podle návrhu, proto to nezachytil – nově je v něm klik doprostřed stropu.
+- Nově **jeden klik** (pokyn uživatele): v řezu klik na hranu / úroveň (do 12 px) nebo do plochy prvku (jeho
+  bližší hrana, `levelTargetPick` v jádře) hned vloží praporek hrotem na hranu v místě kliku; mimo prvky
+  hláška. V půdorysu klik na podlahu / desku hned vloží rámeček s hodnotou na místo kliku; kóta terénu
+  klik na roh – text šikmo ven od budovy (výchozí odsazení 12 mm na papíře), pak jde táhnout.
+- Volba nástroje **S odkazovou čarou** (vypnutá, Revit „Leader“): v půdorysu druhý klik určí polohu
+  hodnoty, rámeček mimo bod má odkazovou čáru od bodu. Tažení hodnoty s odkazovou čarou nechá bod na místě.
+
 ### Kóta v okně řezu, 2026-11-27 (hlášení uživatele: „Nejde mi nijak vložit kóta do výkresu.“)
 
 - Co nefungovalo: od chvíle, kdy se řez otevírá v pracovním okně, šlo v okně řezu vložit jen výškovou kótu;
@@ -131,6 +144,11 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Výšková kóta jedním klikem:** volba „S odkazovou čarou“ platí v půdorysu (rámeček); v řezu je praporek
+  vždy hrotem na hraně (poloha a „pod hranou“ se mění tažením). Klik do plochy prvku bere bližší z jeho
+  horní a spodní hrany; úroveň podlaží jen do 12 px. Výchozí text kóty terénu je šikmo ven podle středu
+  obálky modelu (u L-půdorysu může mířit dovnitř – pak ho stačí táhnout).
 
 - **Kóta v řezu:** jen svislé a vodorovné kóty (ne šikmé); vodorovná kótuje okraje prvku tak, jak je řez
   vidí (řezaný prvek má přednost před prvkem v pohledu); řetězová kóta a kóta otvoru v řezu zatím ne.

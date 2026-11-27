@@ -1,6 +1,6 @@
 // Nástroj Výšková kóta (ČSN 01 3420, Ardit): v půdorysu klik na bod podlahy / desky (přichytávání jako
-// u kót), druhý klik umístí hodnotu: rámeček = horní líc desky pod bodem, kroužek = kóta terénu RT / UT
-// u nároží (naváže se na roh stěny). V okně řezu kreslí nástroj ui/section/section-input.ts. Esc vrátí krok.
+// u kót) hned vloží kótu: rámeček = horní líc desky pod bodem, kroužek = kóta terénu RT / UT u nároží
+// (naváže se na roh stěny, text šikmo ven). Volba „S odkazovou čarou“: druhý klik = poloha hodnoty. V okně řezu kreslí nástroj ui/section/section-input.ts. Esc vrátí krok.
 import type { SnapResult, Vec2 } from '@bim-light/core';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
 import type { Session } from '../../session/session.ts';
@@ -16,8 +16,8 @@ export class LevelDimTool implements Tool {
   constructor(private readonly s: Session) {}
 
   hint(): string {
-    if (this.point) return 'Klikni, kam dát hodnotu výškové kóty. Esc vrátí krok.';
-    return 'Klikni na bod podlahy nebo desky (výška horního líce); v okně řezu na hranu nebo úroveň podlaží.';
+    if (this.point) return 'Klikni, kam dát hodnotu výškové kóty (odkazová čára). Esc vrátí krok.';
+    return 'Klikni na podlahu nebo desku – kóta se vloží hned; kóta terénu na roh stavby. V řezu klik na hranu.';
   }
 
   move(p: PointerInfo) {
@@ -30,16 +30,15 @@ export class LevelDimTool implements Tool {
     this.move(p);
     const e = this.end;
     if (!e) return;
-    if (!this.point) {
-      this.point = e;
-      // Rámeček stačí jedním klikem, když se myš nepohne (hodnota přímo v bodě) – druhý klik ho dá jinam.
-      return;
-    }
     const d = levelDimDefaults(this.s);
+    // Jeden klik (pokyn uživatele); s odkazovou čarou druhý klik určí polohu hodnoty (Revit „Leader“).
+    if (!this.point && d.leader) return void (this.point = e);
+    const point = this.point ?? e;
+    const textAt = this.point ? e : d.marker === 'box' ? e : undefined;
     const r = this.s.run('planLevelDim.create', {
       storeyId: this.s.storeyId,
-      point: this.point,
-      textAt: e,
+      point,
+      ...(textAt ? { textAt } : {}),
       marker: d.marker,
       absolute: d.absolute,
       ...(d.marker === 'circle' ? { rt: d.rt, ut: d.ut } : {}),

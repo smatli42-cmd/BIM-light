@@ -32,7 +32,9 @@ export function NewLevelDimInfo({ s }: { s: Session }) {
   const d = levelDimDefaults(s);
   return (
     <Section title="Výšková kóta" info="ČSN 01 3420: relativní k ±0,000 nevyplněná, absolutní (Bpv) plná.">
-      <p class="muted">V okně řezu klikni na hranu nebo úroveň podlaží, druhým klikem umísti praporek.</p>
+      <p class="muted">
+        Jeden klik vloží kótu: v půdorysu na podlahu nebo roh stavby, v okně řezu na hranu nebo úroveň.
+      </p>
       <Check
         label="Absolutní kóta (m n. m. Bpv)"
         testid="level-absolute-default"
@@ -43,6 +45,12 @@ export function NewLevelDimInfo({ s }: { s: Session }) {
         value={d.marker}
         testid="level-marker-default"
         onPick={(m) => ((d.marker = m), s.changed())}
+      />
+      <Check
+        label="S odkazovou čarou (druhý klik = poloha hodnoty)"
+        testid="level-leader-default"
+        checked={d.leader}
+        onSet={(v) => ((d.leader = v), s.changed())}
       />
       {d.marker === 'circle' && (
         <TerrainFields

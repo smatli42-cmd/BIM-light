@@ -1,12 +1,12 @@
-// Myš a klávesy v okně řezu (Revit Spot Elevation, Archicad Level Dimension): nástroj Výšková kóta = klik na
-// hranu prvku nebo úroveň podlaží (přichytí se do 8 px), druhý klik určí polohu praporku (pod hranou, když je
-// myš pod ní). Jinak výběr výškové kóty klikem (Shift přidá), tažení ji posune, Del smaže, tažení prázdného
-// místa posune výkres. Model se mění jen příkazy levelDim.* (stejně jako AI).
+// Myš a klávesy v okně řezu (Revit Spot Elevation, Archicad Level Dimension): nástroj Výšková kóta = jeden klik
+// na hranu prvku nebo úroveň podlaží (do 12 px), nebo do plochy prvku (jeho bližší hrana) vloží praporek hrotem
+// na hranu v místě kliku; jinak hláška. Jinak výběr výškové kóty klikem (Shift přidá), tažení ji posune (i pod
+// hranu), Del smaže, tažení prázdného místa posune výkres. Model se mění jen příkazy levelDim.* (stejně jako AI).
 import {
   drawLevelSymbol,
   levelDimSymbol,
   levelMarkSize,
-  levelTargetAt,
+  levelTargetPick,
   levelTargets,
   LEVEL_ARM,
   type Id,
@@ -22,7 +22,8 @@ import { levelDimDefaults } from '../../session/section-defaults.ts';
 import { SectionDimInput } from './section-dim-input.ts';
 import type { Session } from '../../session/session.ts';
 
-const SNAP_PX = 8;
+/** Přichycení k hraně / úrovni (px); klik do plochy prvku vezme jeho bližší hranu. */
+const SNAP_PX = 12;
 
 interface Drag {
   readonly id: Id;
@@ -33,7 +34,6 @@ interface Drag {
 }
 
 export class SectionInput {
-  private pick: LevelTarget | null = null;
   private hover: LevelTarget | null = null;
   private mouse: Vec2 | null = null;
   private drag: Drag | null = null;
@@ -109,20 +109,20 @@ export class SectionInput {
     this.s.changed();
   }
 
+  /** Jeden klik (pokyn uživatele): praporek hrotem na hranu / úroveň pod kurzorem, vodorovně v místě kliku. */
   private toolClick(p: Vec2) {
-    if (!this.pick) {
-      this.pick = levelTargetAt(this.targets(), p.x, p.y, this.v.px(SNAP_PX));
-      this.hover = null;
-      return;
-    }
-    const r = this.s.run('levelDim.create', {
+    const t = levelTargetPick(this.targets(), p.x, p.y, this.v.px(SNAP_PX));
+    if (!t)
+      return this.s.toast(
+        'Klikni na hranu stěny nebo desky, do jejich plochy, nebo na úroveň podlaží.',
+        'bad',
+      );
+    this.s.run('levelDim.create', {
       sectionId: this.sectionId,
-      ref: this.pick.ref,
+      ref: t.ref,
       at: p.x,
-      below: p.y < this.pick.z,
       absolute: levelDimDefaults(this.s).absolute,
     });
-    if (r.ok) this.pick = null;
   }
 
   /** true = je potřeba překreslit. */
@@ -142,7 +142,7 @@ export class SectionInput {
       this.dims.move(p);
       return true;
     }
-    if (this.tool && !this.pick) this.hover = levelTargetAt(this.targets(), p.x, p.y, this.v.px(SNAP_PX));
+    if (this.tool) this.hover = levelTargetPick(this.targets(), p.x, p.y, this.v.px(SNAP_PX));
     return this.tool;
   }
 
@@ -177,8 +177,7 @@ export class SectionInput {
   /** Esc a Del v aktivním okně řezu; true = zpracováno. */
   key(key: string): boolean {
     if (key === 'Escape') {
-      if (this.pick) this.pick = null;
-      else if (this.dims.active && this.dims.escape()) return true;
+      if (this.dims.active && this.dims.escape()) return true;
       else if (this.tool || this.dims.active) this.s.setTool('select');
       else if (this.s.selection.levelDims.length) this.s.selection.set([]);
       else return false;
@@ -209,7 +208,7 @@ export class SectionInput {
         },
       );
     let prims: Primitive[] = [];
-    const t = this.tool ? (this.pick ?? this.hover) : null;
+    const t = this.tool ? this.hover : null;
     if (t) {
       const u0 = Number.isFinite(t.u0) ? t.u0 : m.x - this.v.px(200);
       const u1 = Number.isFinite(t.u1) ? t.u1 : m.x + this.v.px(200);
@@ -223,7 +222,7 @@ export class SectionInput {
         stroke: { pen: 1, color: AUX, lineType: 'dashed' },
         source: { role: 'náhled' },
       };
-      prims = [line, ...(this.pick ? ghost(m.x, t.z, m.y < t.z) : [])];
+      prims = [line, ...ghost(m.x, t.z, false)];
     }
     if (this.drag?.moved)
       prims = ghost(this.drag.at0 + m.x - this.drag.start.x, this.drag.z, m.y < this.drag.z);

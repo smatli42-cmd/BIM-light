@@ -88,5 +88,7 @@ export function pressPlanLevel(s: Session, p: PointerInfo): Mode | null {
   }
   if (!s.selection.levelDims.includes(hit.id)) s.selection.set([], [], [], [], [], [], [], [hit.id]);
   const d = s.model.planLevelDims[hit.id];
-  return new PlanLevelDragMode(s, hit.id, p, hit.text && d?.marker === 'circle');
+  // Hodnota s odkazovou čarou (kroužek terénu, rámeček mimo bod) se táhne sama, bod zůstane.
+  const leader = !!d && (d.marker === 'circle' || d.point.x !== d.textAt.x || d.point.y !== d.textAt.y);
+  return new PlanLevelDragMode(s, hit.id, p, hit.text && leader);
 }
