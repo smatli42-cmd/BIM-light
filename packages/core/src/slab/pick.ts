@@ -18,13 +18,17 @@ export const selectableSlabs = (model: Model, view: View): Slab[] =>
 export const slabEdges = (s: Slab): [Vec2, Vec2][] =>
   s.outline.map((p, i) => [p, s.outline[(i + 1) % s.outline.length] as Vec2]);
 
+/** Leží bod v ploše desky (uvnitř obrysu, mimo ostrovy)? */
+export const pointInSlab = (s: Slab, p: Vec2): boolean =>
+  pointInPolygon(p, s.outline) && !(s.holes ?? []).some((h) => pointInPolygon(p, h));
+
 const nearEdge = (s: Slab, p: Vec2, tol: number) =>
   slabEdges(s).some(([a, b]) => nearestOnPath({ kind: 'line', start: a, end: b }, p).distance <= tol);
 
 /** Desky pod bodem; nejvýš položená (horní líc) první – podlaha před stropem pod ní. Tab je střídá. */
 export function slabsAt(model: Model, view: View, p: Vec2, tol: number): Id[] {
   return selectableSlabs(model, view)
-    .filter((s) => pointInPolygon(p, s.outline) || nearEdge(s, p, tol))
+    .filter((s) => pointInSlab(s, p) || nearEdge(s, p, tol))
     .sort((a, b) => slabLevels(model, b).top - slabLevels(model, a).top)
     .map((s) => s.id);
 }

@@ -14,6 +14,7 @@ import { OpeningTool } from './opening-tool.ts';
 import { PickLineTool } from './pick-line-tool.ts';
 import { RoomTool } from './room-tool.ts';
 import { SlabTool } from './slab-tool.ts';
+import { SlabRoomTool } from './slab-room-tool.ts';
 import { SlabWallsTool } from './slab-walls-tool.ts';
 import { SelectTool } from './select/select-tool.ts';
 import { WallTool } from './wall-tool.ts';
@@ -40,7 +41,12 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   pickline: (s) => new PickLineTool(s),
   opening: (s) => (s.openingDefaults.host === 'slab' ? new SlabTool(s, 'opening') : new OpeningTool(s)),
   // Metoda „podle stěn“ má vlastní nástroj interakce (info box přepne metodu a nástroj znovu vytvoří).
-  slab: (s) => (s.slab.method === 'walls' ? new SlabWallsTool(s) : new SlabTool(s)),
+  slab: (s) =>
+    s.slab.method === 'walls'
+      ? new SlabWallsTool(s)
+      : s.slab.method === 'room'
+        ? new SlabRoomTool(s)
+        : new SlabTool(s),
   room: (s) => new RoomTool(s),
 };
 

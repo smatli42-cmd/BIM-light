@@ -5,6 +5,48 @@ import type { Sample } from './types.ts';
 
 export const SLAB_SCENES: readonly Sample[] = [
   {
+    key: 'desky-vazba',
+    title: 'Vazba desky – podlaha podle místnosti, strop podle stěn',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Byt 8 × 5 m s příčkou: nosná deska podle stěn (vazba na stěny), v každé místnosti podlaha vázaná ' +
+      'na místnost, vlevo sloup (podlaha ho obchází); ve 2.NP ruční podlaha přes obě místnosti. Zkus: ' +
+      'posuň příčku nebo pravou stěnu (M) – podlahy i deska se přepočítají; ruční podlaha ne. Klik na ' +
+      'podlahu → info box Vazba obrysu; táhni její roh → „ručně upraveno, zamčeno“ → Obnovit vazbu. ' +
+      'S → metoda Podle místnosti a klik do místnosti. Výkazy → Výkaz desek (ruční podlaha bez příčky).',
+    build(c) {
+      const sid = c.storeyId;
+      const walls = rect(c, 'Zdivo 300', 8000, 5000);
+      c.line(vec(5000, 0), vec(5000, 5000), { typeId: c.type('Příčka 125') });
+      c.run('wall.rectangle', {
+        storeyId: sid,
+        typeId: c.type('Příčka 100'),
+        a: vec(1800, 2200),
+        b: vec(2200, 2600),
+      });
+      c.run('slab.create', {
+        storeyId: sid,
+        typeId: c.slabType('ŽB strop 250'),
+        walls: { wallIds: walls, boundary: 'face' },
+      });
+      const floor = c.slabType('Podlaha anhydrit 150');
+      for (const [x, name] of [
+        [1000, 'Pokoj'],
+        [6500, 'Kuchyně'],
+      ] as const) {
+        const [roomId] = c.run('room.create', { storeyId: sid, point: vec(x, 1000), name });
+        c.run('slab.create', { storeyId: sid, typeId: floor, roomId });
+      }
+      const [s2] = c.run('storey.create', { name: '2.NP', elevation: 3000, height: 3000 });
+      const box = { a: vec(0, 0), b: vec(8000, 5000) };
+      c.run('wall.rectangle', { storeyId: s2, typeId: c.type('Zdivo 300'), ...box });
+      const across = { kind: 'line', start: vec(5000, 0), end: vec(5000, 5000) };
+      c.run('wall.create', { storeyId: s2, typeId: c.type('Příčka 125'), path: across, autoConnect: true });
+      c.run('slab.create', { storeyId: s2, typeId: floor, rect: box });
+    },
+  },
+  {
     key: 'desky-presny-otvor',
     title: 'Přesný otvor v desce – pomocné čáry, kóty, tracker',
     kind: 'scena',

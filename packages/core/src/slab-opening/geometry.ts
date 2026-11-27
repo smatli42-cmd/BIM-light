@@ -3,7 +3,7 @@ import { cross, sub, type Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { pointInPolygon } from '../selection/pick.ts';
-import { polygonArea } from '../slab/geometry.ts';
+import { polygonArea, slabArea } from '../slab/geometry.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { Slab } from '../slab/types.ts';
 import type { SlabOpening } from './types.ts';
@@ -43,5 +43,5 @@ export const slabOpeningsOf = (model: Model, slabId: Id): SlabOpening[] =>
  */
 export function slabNetArea(model: Model, s: Slab): number {
   const holes = slabOpeningsOf(model, s.id).reduce((a, o) => a + polygonArea(o.outline), 0);
-  return Math.max(0, polygonArea(s.outline) - holes);
+  return Math.max(0, slabArea(s) - holes);
 }

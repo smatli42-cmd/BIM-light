@@ -1,13 +1,22 @@
 // Dotazy na desky pro AI (D1): obrys, výšky líců, tloušťka, plocha a obvod; typy desek se skladbou.
 import { S } from '../commands/schema.ts';
 import type { Model } from '../model/types.ts';
-import { polygonArea, polygonPerimeter, slabLevels } from '../slab/geometry.ts';
+import { polygonArea, slabArea, slabLevels, slabPerimeter } from '../slab/geometry.ts';
 import { allSlabs, slabTypeUsage } from '../slab/queries.ts';
 import { allSlabOpenings, slabNetArea, slabOpeningsOf } from '../slab-opening/geometry.ts';
 import type { Slab } from '../slab/types.ts';
 import { defineQuery } from './types.ts';
 
 const r1 = (v: number) => Math.round(v * 10) / 10;
+
+function linkSummary(m: Model, s: Slab) {
+  const l = s.link;
+  if (!l) return null;
+  const locked = !!l.locked;
+  if (l.kind === 'room')
+    return { kind: 'room', roomId: l.roomId, roomNumber: m.rooms[l.roomId]?.number ?? '', locked };
+  return { kind: 'walls', wallIds: l.wallIds, boundary: l.boundary, locked };
+}
 
 function summary(m: Model, s: Slab) {
   const lv = slabLevels(m, s);
@@ -25,11 +34,14 @@ function summary(m: Model, s: Slab) {
     bottom: r1(lv.bottom),
     thickness: r1(lv.thickness),
     /** Plocha v m² (na 2 desetinná místa) a obvod v mm. */
-    area: Math.round(polygonArea(s.outline) / 1e4) / 100,
+    area: Math.round(slabArea(s) / 1e4) / 100,
+    /** Ostrovy (sloup v místnosti) a vazba obrysu: room / walls / null (ruční); locked = ručně upraveno. */
+    holes: (s.holes ?? []).map((h) => h.map((p) => ({ x: r1(p.x), y: r1(p.y) }))),
+    link: linkSummary(m, s),
     /** Plocha bez otvorů (m²) a počet otvorů v desce (D3). */
     netArea: Math.round(slabNetArea(m, s) / 1e4) / 100,
     openings: slabOpeningsOf(m, s.id).length,
-    perimeter: r1(polygonPerimeter(s.outline)),
+    perimeter: r1(slabPerimeter(s)),
   };
 }
 
@@ -58,8 +70,9 @@ export const slabList = defineQuery<{ storeyId?: string }, unknown>({
   label: 'Seznam desek',
   description:
     'Desky (stropy a skladby podlah): obrys (mm), horní a spodní líc nad ±0,000 (mm), tloušťka podle ' +
-    'skladby, plocha (m²), plocha bez otvorů netArea (m²), počet otvorů a obvod (mm). Volitelně jen jedno ' +
-    'podlaží.',
+    'skladby, plocha (m²), plocha bez otvorů netArea (m²), počet otvorů a obvod (mm), ostrovy holes a vazbu ' +
+    'obrysu link (room = podlaha podle místnosti, walls = podle stěn, null = ruční; locked = ručně upraveno, ' +
+    'nepřepočítává se). Volitelně jen jedno podlaží.',
   group: 'Deska',
   params: S.object({ storeyId: S.id }, []),
   run: (m, p) =>

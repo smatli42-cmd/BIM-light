@@ -9,12 +9,30 @@ import type { ElementBase, LibraryRef } from '../model/types.ts';
 export type SlabFunction = 'structure' | 'floor';
 export const SLAB_FUNCTIONS: readonly SlabFunction[] = ['structure', 'floor'];
 
+/**
+ * Vazba obrysu desky na model (základy 14, 16, 24): podlaha patří místnosti (obrys = obrys místnosti
+ * od líce k líci i s ostrovy), deska „podle stěn“ nese stěny smyčky a hranici (líc / líc jádra).
+ * Obrys se po každém příkazu přepočítá z modelu; ruční úprava obrysu vazbu zamkne (`locked`).
+ */
+export type SlabLink =
+  | { readonly kind: 'room'; readonly roomId: Id; readonly locked?: boolean }
+  | {
+      readonly kind: 'walls';
+      readonly wallIds: readonly Id[];
+      readonly boundary: 'face' | 'core';
+      readonly locked?: boolean;
+    };
+
 /** Instance desky. */
 export interface Slab extends ElementBase {
   readonly category: 'slab';
   readonly slabFunction: SlabFunction;
   /** Obrys: body mnohoúhelníku proti směru hodinových ručiček, bez opakování prvního bodu. */
   readonly outline: readonly Vec2[];
+  /** Ostrovy uvnitř obrysu (sloup, komín v místnosti) – deska v nich není; jen u vazby na místnost. */
+  readonly holes?: readonly (readonly Vec2[])[];
+  /** Vazba obrysu (bez ní = ruční obrys). */
+  readonly link?: SlabLink;
   /** Horní líc desky nad úrovní podlaží (mm, záporně = pod). Úroveň podlaží = čistá podlaha. */
   readonly topOffset: number;
 }

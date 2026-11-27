@@ -9,7 +9,7 @@ import { layerForCategory } from '../view/effective.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { getWall, wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
-import { polygonArea, polygonPerimeter, slabLevels } from '../slab/geometry.ts';
+import { slabArea, slabLevels, slabPerimeter } from '../slab/geometry.ts';
 import { findSlab } from '../slab/queries.ts';
 import type { Slab, SlabFunction } from '../slab/types.ts';
 import { wallHeight } from '../wall-height/resolve.ts';
@@ -117,8 +117,8 @@ function slabInfo(m: Model, s: Slab): SlabInfo {
     top: r1(lv.top),
     bottom: r1(lv.bottom),
     thickness: r1(lv.thickness),
-    area: m2(polygonArea(s.outline)),
-    perimeter: Math.round(polygonPerimeter(s.outline) / 10) / 100,
+    area: m2(slabArea(s)),
+    perimeter: Math.round(slabPerimeter(s) / 10) / 100,
     layerName: layerForCategory(m.display, 'slab')?.name ?? '',
   };
 }

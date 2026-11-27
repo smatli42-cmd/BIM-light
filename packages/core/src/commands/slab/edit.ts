@@ -50,7 +50,9 @@ export const slabUpdate = defineCommand<SlabUpdateParams>({
 export const slabSetOutline = defineCommand<{ slabId: Id; outline: Vec2[] }>({
   name: 'slab.setOutline',
   label: 'Obrys desky',
-  description: 'Nahradí obrys desky novým mnohoúhelníkem (body v mm). Hrany se nesmí křížit.',
+  description:
+    'Nahradí obrys desky novým mnohoúhelníkem (body v mm). Hrany se nesmí křížit. U vázané desky ' +
+    '(místnost / stěny) vazbu zamkne – obrys se pak nepřepočítává, dokud ji neobnoví slab.restoreLink.',
   group: 'Deska',
   params: S.object({ slabId: S.id, outline: OUTLINE_SCHEMA }, ['slabId', 'outline']),
   run(model, p) {
@@ -64,7 +66,9 @@ export const slabSetOutline = defineCommand<{ slabId: Id; outline: Vec2[] }>({
 export const slabMoveVertex = defineCommand<{ slabId: Id; index: number; point: Vec2 }>({
   name: 'slab.moveVertex',
   label: 'Posunout bod obrysu',
-  description: 'Přesune jeden bod obrysu desky (index od 0) do nového bodu; ostatní body stojí.',
+  description:
+    'Přesune jeden bod obrysu desky (index od 0) do nového bodu; ostatní body stojí. U vázané desky ' +
+    'vazbu zamkne (ruční úprava).',
   group: 'Deska',
   params: S.object({ slabId: S.id, index: { type: 'integer', minimum: 0 }, point: S.point }, [
     'slabId',
@@ -84,14 +88,19 @@ export const slabMove = defineCommand<{ slabIds: Id[]; vector: Vec2; copy?: bool
   label: 'Posunout desku',
   description:
     'Posune desky o vektor v půdorysu (mm), i s otvory, které jsou jen v nich. copy = ponechat původní ' +
-    'a vytvořit posunuté kopie (bez otvorů).',
+    'a vytvořit posunuté kopie (bez otvorů, bez vazby). Posun vázané desky vazbu zamkne (ruční úprava).',
   group: 'Deska',
   params: S.object({ slabIds: SLAB_IDS, vector: S.point, copy: { type: 'boolean' } }, ['slabIds', 'vector']),
   run(model, p, ctx) {
     const out = p.slabIds.map((id) => {
       const s = slabOf(model, id);
-      const moved = { ...s, outline: s.outline.map((q) => add(q, p.vector)) };
-      return p.copy ? { ...moved, id: ctx.newId() } : moved;
+      const shift = (pts: readonly Vec2[]) => pts.map((q) => add(q, p.vector));
+      const holes = s.holes?.map(shift);
+      const moved = { ...s, outline: shift(s.outline), ...(holes && { holes }) };
+      if (!p.copy) return moved;
+      // Kopie je ruční deska (vazba by ji vrátila na původní místo).
+      const { link: _l, ...copy } = moved;
+      return { ...copy, id: ctx.newId() };
     });
     // Otvor, jehož všechny desky se posouvají, jde s nimi (patří jim); šachta přes jiné desky stojí.
     const ids = new Set(p.slabIds);

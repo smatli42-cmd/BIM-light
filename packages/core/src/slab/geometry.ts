@@ -79,3 +79,11 @@ export function slabLevels(model: Model, s: Slab): SlabLevels {
   const thickness = slabThickness(model, s.typeId);
   return { top, bottom: top - thickness, thickness };
 }
+
+/** Plocha desky (mm²): obrys minus ostrovy (otvory v deskách odečítá `slabNetArea`). */
+export const slabArea = (s: Slab): number =>
+  polygonArea(s.outline) - (s.holes ?? []).reduce((a, h) => a + polygonArea(h), 0);
+
+/** Obvod desky (mm): obrys i ostrovy. */
+export const slabPerimeter = (s: Slab): number =>
+  polygonPerimeter(s.outline) + (s.holes ?? []).reduce((a, h) => a + polygonPerimeter(h), 0);

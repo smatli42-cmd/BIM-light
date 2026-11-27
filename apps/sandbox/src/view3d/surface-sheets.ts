@@ -1,19 +1,16 @@
 // Povrchy místností ve 3D (prvky stavby 9): spočítané plochy z jádra (`allSurfaces`, stejný zdroj jako
 // výkaz a rozvinutý pohled) jako tenké plochy 1 mm před lícem, v barvě a průhlednosti z funkce grafiky
 // (`surfaceLook`, kategorie covering). Plocha bez úpravy se nekreslí (zůstane materiál stěny / desky).
-// Rovinná plocha se rozloží na trojúhelníky přímo, válcová (líc oblouku) po pruzích mřížky úhlů jádra.
-// Plochy se kreslí s polygon offsetem dopředu, aby na dálku vyhrály nad lícem (1 mm na to nestačí). Jen čtení jádra, mm.
+// Rovinná plocha se rozloží na trojúhelníky přímo, válcová (líc oblouku) po pruzích. Jen čtení jádra, mm.
 import { ShapeUtils, Vector2 } from 'three';
 import {
   allSurfaces,
   categoryState,
   clipRect,
-  gridCount,
   surfaceLook,
   surfaceNormal,
   surfacePoint,
   type CoveringSurface,
-  type CylinderFrame,
   type GraphicView,
   type Id,
   type Model,
@@ -23,6 +20,8 @@ import {
 
 /** Odsazení plochy před líc (mm), aby neblikala se stěnou. */
 export const SHEET_OFFSET = 1;
+/** Šířka pruhu válcové plochy (mm) – oblouk se nahradí rovnými pruhy. */
+const STRIP = 200;
 
 export interface Sheet {
   readonly id: string;
@@ -42,35 +41,19 @@ export interface SheetFilter {
   readonly only: ReadonlySet<Id> | null;
 }
 
-/**
- * Hranice pruhů válcové plochy (u, mm): úhly společné mřížky jádra (`gridCount`, jako tělesa stěn), takže
- * tětivy povrchu leží rovnoběžně s tětivami líce stěny a nestřídají se před ním a za ním.
- */
-export function stripCuts(f: CylinderFrame, u0: number, u1: number): number[] {
-  const n = gridCount(f.radius);
-  const k = (u: number) => ((f.angle0 + (f.dir * u) / f.radius) / (2 * Math.PI)) * n;
-  const [ka, kb] = [k(u0), k(u1)].sort((x, y) => x - y) as [number, number];
-  const cuts: number[] = [];
-  for (let i = Math.floor(ka) + 1; i < kb; i++)
-    cuts.push((((2 * Math.PI * i) / n - f.angle0) * f.radius) / f.dir);
-  return [u0, ...cuts.filter((u) => u > u0 + 0.01 && u < u1 - 0.01).sort((x, y) => x - y), u1];
-}
-
-/** Válcová plocha po pruzích mezi úhly mřížky (rovinná beze změny). */
+/** Válcová plocha po pruzích širokých nejvýš STRIP (rovinná beze změny). */
 function strips(s: CoveringSurface): PlanePolygon[] {
   if (s.frame.kind === 'plane') return [...s.polygons];
   const us = s.polygons.flatMap((p) => p.outer.map((q) => q.x));
   const vs = s.polygons.flatMap((p) => p.outer.map((q) => q.y));
   const [u0, u1, v0, v1] = [Math.min(...us), Math.max(...us), Math.min(...vs) - 1, Math.max(...vs) + 1];
-  const cuts = stripCuts(s.frame, u0, u1);
   const out: PlanePolygon[] = [];
-  for (let i = 0; i + 1 < cuts.length; i++) {
-    const [a, b] = [cuts[i] as number, cuts[i + 1] as number];
+  for (let u = u0; u < u1; u += STRIP) {
     const r = [
-      { x: a, y: v0 },
-      { x: b, y: v0 },
-      { x: b, y: v1 },
-      { x: a, y: v1 },
+      { x: u, y: v0 },
+      { x: Math.min(u + STRIP, u1), y: v0 },
+      { x: Math.min(u + STRIP, u1), y: v1 },
+      { x: u, y: v1 },
     ];
     out.push(...clipRect(s.polygons, r));
   }

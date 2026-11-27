@@ -117,10 +117,16 @@ function writePset(c: IfcContext, m: Model, s: Slab, entity: Raw, reference: str
 }
 
 function body(c: IfcContext, s: Slab, thickness: number): Raw {
-  const pts = s.outline.map((p) => point2(c.w, p.x, p.y));
-  const first = pts[0];
-  const curve = c.w.add('IfcPolyline', [first ? [...pts, first] : pts]);
-  const profile = c.w.add('IfcArbitraryClosedProfileDef', [en('AREA'), null, curve]);
+  const loop = (ring: readonly { x: number; y: number }[]) => {
+    const pts = ring.map((p) => point2(c.w, p.x, p.y));
+    const first = pts[0];
+    return c.w.add('IfcPolyline', [first ? [...pts, first] : pts]);
+  };
+  const curve = loop(s.outline);
+  // Ostrovy podlahy (sloup v místnosti) = vnitřní křivky profilu.
+  const profile = s.holes?.length
+    ? c.w.add('IfcArbitraryProfileDefWithVoids', [en('AREA'), null, curve, s.holes.map(loop)])
+    : c.w.add('IfcArbitraryClosedProfileDef', [en('AREA'), null, curve]);
   const up = c.w.add('IfcDirection', [[0, 0, 1]]);
   const solid = c.w.add('IfcExtrudedAreaSolid', [profile, c.origin, up, thickness]);
   const rep = c.w.add('IfcShapeRepresentation', [c.body, str('Body'), str('SweptSolid'), [solid]]);

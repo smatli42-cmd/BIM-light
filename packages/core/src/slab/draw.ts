@@ -38,16 +38,18 @@ export function drawSlab(model: Model, s: Slab, cutPlane: number, g: ResolvedEff
       source: { elementId: s.id, role: 'výplň desky' },
     });
   }
-  out.push({
-    kind: 'line',
-    points: s.outline,
-    closed: true,
-    stroke: {
-      pen: rel === 'cut' ? g.cutPen : g.projectionPen,
-      color: g.lineColor,
-      lineType: rel === 'above' ? 'dashed' : g.lineType,
-    },
-    source: { elementId: s.id, role: ROLE[rel] },
-  });
+  // Ostrovy (sloup v místnosti) jsou konstrukce – kreslí se přes výplň; tady jen jejich obrys.
+  for (const loop of [s.outline, ...(s.holes ?? [])])
+    out.push({
+      kind: 'line',
+      points: loop,
+      closed: true,
+      stroke: {
+        pen: rel === 'cut' ? g.cutPen : g.projectionPen,
+        color: g.lineColor,
+        lineType: rel === 'above' ? 'dashed' : g.lineType,
+      },
+      source: { elementId: s.id, role: ROLE[rel] },
+    });
   return out;
 }

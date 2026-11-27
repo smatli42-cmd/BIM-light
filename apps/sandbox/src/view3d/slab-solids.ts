@@ -18,7 +18,12 @@ export function slabSolids(
   const comp = type ? model.compositions[type.compositionId] : undefined;
   if (!comp) return [];
   const lv = slabLevels(model, slab);
-  const cutters: Cutter[] = holes.map((footprint) => ({ footprint, bottom: lv.bottom - 1, top: lv.top + 1 }));
+  // Ostrovy podlahy (sloup v místnosti) prořízne stejně jako otvor v desce.
+  const cutters: Cutter[] = [...holes, ...(slab.holes ?? [])].map((footprint) => ({
+    footprint,
+    bottom: lv.bottom - 1,
+    top: lv.top + 1,
+  }));
   let z = lv.bottom;
   return comp.layers.flatMap((layer) => {
     const z0 = z;

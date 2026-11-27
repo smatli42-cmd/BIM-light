@@ -9,8 +9,11 @@ import {
   type WallBoundary,
 } from '@bim-light/core';
 
-/** Geometrická metoda: mnohoúhelník, obdélník, natočený obdélník, podle stěn (Revit „Vybrat stěny“). */
-export type SlabMethod = 'polygon' | 'rect' | 'rotated' | 'walls';
+/**
+ * Geometrická metoda: mnohoúhelník, obdélník, natočený obdélník, podle stěn (Revit „Vybrat stěny“),
+ * podle místnosti (podlaha klikem do místnosti; obrys se s místností přepočítává).
+ */
+export type SlabMethod = 'polygon' | 'rect' | 'rotated' | 'walls' | 'room';
 
 export interface SlabDefaults {
   typeId: Id;

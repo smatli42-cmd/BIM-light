@@ -1,8 +1,10 @@
 // Zdroj výkazu „desky“ (desky D4, základ 8): jeden řádek = jedna deska; plocha, plocha bez otvorů,
 // obvod, tloušťka podle skladby typu a objem (plocha bez všech otvorů × tloušťka). Plocha bez otvorů
-// bere mez odečtu otvorů výkazu (jako u stěn: otvory do meze se neodečítají, z objemu vždy).
+// bere mez odečtu otvorů výkazu (jako u stěn: otvory do meze se neodečítají, z objemu vždy). Ruční
+// podlaha odečte půdorys stěn (`slabScheduleArea`).
 import type { Model } from '../model/types.ts';
-import { polygonArea, polygonPerimeter, slabThickness } from '../slab/geometry.ts';
+import { polygonArea, slabArea, slabPerimeter, slabThickness } from '../slab/geometry.ts';
+import { slabScheduleArea } from '../slab/floor-area.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { Slab } from '../slab/types.ts';
 import { slabNetArea, slabOpeningsOf } from '../slab-opening/geometry.ts';
@@ -47,11 +49,13 @@ export const SLABS_SOURCE: ScheduleSourceDef = {
     filteredSlabs(m, def).map((s) => {
       const t = m.slabTypes[s.typeId];
       const thickness = slabThickness(m, s.typeId);
-      const area = polygonArea(s.outline);
+      // Ruční podlaha přes více místností: bez půdorysu stěn (Revit, k potvrzení).
+      const area = slabScheduleArea(m, s);
+      const walls = slabArea(s) - area;
       const holes = slabOpeningsOf(m, s.id).map((o) => polygonArea(o.outline));
       const minHole = def.minOpeningArea * 1e6;
       const net = Math.max(0, area - holes.filter((h) => h > minHole).reduce((a, h) => a + h, 0));
-      const solid = slabNetArea(m, s);
+      const solid = Math.max(0, slabNetArea(m, s) - walls);
       return {
         mark: t?.mark ?? '',
         type: t?.name ?? '',
@@ -62,7 +66,7 @@ export const SLABS_SOURCE: ScheduleSourceDef = {
         thickness,
         area: area / 1e6,
         netArea: net / 1e6,
-        perimeter: polygonPerimeter(s.outline) / 1000,
+        perimeter: slabPerimeter(s) / 1000,
         volume: (solid * thickness) / 1e9,
         openings: holes.length,
         count: 1,

@@ -71,7 +71,10 @@ function rooms(c: SampleContext, storeyId: Id, list: readonly (readonly [number,
   for (const [x, y, name] of list) {
     const [id] = c.run('room.create', { storeyId, point: vec(x, y), name });
     c.run('room.update', { roomId: id, categoryId: cat(category[name] ?? 'Obytné') });
-    if (id) coverings(c, id, name);
+    if (!id) continue;
+    coverings(c, id, name);
+    // Podlaha patří místnosti: obrys od líce k líci, přepočítá se s posunem stěn (vazba desky).
+    c.run('slab.create', { storeyId, typeId: c.slabType('Podlaha anhydrit 150'), roomId: id });
   }
 }
 
@@ -98,11 +101,10 @@ function coverings(c: SampleContext, roomId: Id, name: string) {
   if (name === 'Kuchyně') c.run('covering.setOrigin', { roomId, place: 'floor', offset: { x: 300, y: 0 } });
 }
 
-/** Desky podlaží (D1): nosná deska pod obvodovými stěnami (`under` = přesah pod stěny) a podlaha v místnostech. */
+/** Nosná deska podlaží (D1) pod obvodovými stěnami (`under` = přesah); podlahy jsou po místnostech (`rooms`). */
 function slabs(c: SampleContext, storeyId: Id, structure: string, under: number) {
   const r = (d: number) => ({ a: vec(-d, -d), b: vec(W + d, H + d) });
   c.run('slab.create', { storeyId, typeId: c.slabType(structure), rect: r(under) });
-  c.run('slab.create', { storeyId, typeId: c.slabType('Podlaha anhydrit 150'), rect: r(0) });
 }
 
 /** 2.NP: nová nástavba (obvodové stěny, příčky, okna). */
@@ -169,7 +171,7 @@ export const HOUSE: Sample = {
   date: '2026-11-26',
   description:
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
-    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy; ' +
+    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy vázané na místnosti; ' +
     'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
     'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301, Výpis místností, povrchy (obklad, ' +
     'dlažba, sokl, malba) a Výkaz povrchů; filtr rekonstrukce ' +

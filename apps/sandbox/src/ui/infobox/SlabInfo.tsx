@@ -4,9 +4,9 @@
 import {
   defaultTopOffset,
   formatLength,
-  polygonArea,
-  polygonPerimeter,
+  slabArea,
   slabLevels,
+  slabPerimeter,
   SLAB_FUNCTIONS,
   type Slab,
   type SlabFunction,
@@ -17,6 +17,7 @@ import type { IconName } from '../icons/paths.ts';
 import { NumberInput } from '../NumberInput.tsx';
 import { NewStatusField } from './NewStatus.tsx';
 import { Section } from './Section.tsx';
+import { SlabLinkSection } from './SlabLinkSection.tsx';
 import type { SlabMethod } from '../../session/slab-defaults.ts';
 
 const METHODS: readonly [SlabMethod, IconName, string][] = [
@@ -24,6 +25,7 @@ const METHODS: readonly [SlabMethod, IconName, string][] = [
   ['rect', 'slab-rect', 'Obdélník'],
   ['rotated', 'slab-rotated', 'Natočený obdélník'],
   ['walls', 'slab-walls', 'Podle stěn (klik na stěny)'],
+  ['room', 'slab-room', 'Podle místnosti (podlaha klikem do místnosti)'],
 ];
 const FN_LABEL: Record<SlabFunction, string> = { structure: 'Nosná deska (strop)', floor: 'Skladba podlahy' };
 const m2 = (mm2: number) => `${(mm2 / 1e6).toFixed(2).replace('.', ',')} m²`;
@@ -140,6 +142,20 @@ export function NewSlabInfo({ s }: { s: Session }) {
   );
 }
 
+/** Údaje jedné desky spočítané z modelu: výšky líců, tloušťka, plocha (bez ostrovů), obvod. */
+function FromModel({ s, slab }: { s: Session; slab: Slab }) {
+  const lv = slabLevels(s.model, slab);
+  return (
+    <Section title="Z modelu">
+      <Row label="Horní líc" value={level(lv.top)} testid="slab-top-level" />
+      <Row label="Spodní líc" value={level(lv.bottom)} />
+      <Row label="Tloušťka" value={formatLength(lv.thickness)} />
+      <Row label="Plocha" value={m2(slabArea(slab))} testid="slab-area" />
+      <Row label="Obvod" value={m(slabPerimeter(slab))} />
+    </Section>
+  );
+}
+
 /** Vybrané desky: vlastnosti instance a údaje z modelu. */
 export function SelectedSlabsInfo({ s, slabs }: { s: Session; slabs: readonly Slab[] }) {
   const ids = slabs.map((x) => x.id);
@@ -147,7 +163,6 @@ export function SelectedSlabsInfo({ s, slabs }: { s: Session; slabs: readonly Sl
     slabs.every((x) => f(x) === f(slabs[0] as Slab)) ? f(slabs[0] as Slab) : undefined;
   const update = (p: Record<string, unknown>) => s.run('slab.update', { slabIds: ids, ...p });
   const one = slabs.length === 1 ? slabs[0] : undefined;
-  const lv = one && slabLevels(s.model, one);
   const typeId = same((x) => x.typeId) ?? '';
   return (
     <>
@@ -175,15 +190,8 @@ export function SelectedSlabsInfo({ s, slabs }: { s: Session; slabs: readonly Sl
           ))}
         </select>
       </label>
-      {one && lv && (
-        <Section title="Z modelu">
-          <Row label="Horní líc" value={level(lv.top)} testid="slab-top-level" />
-          <Row label="Spodní líc" value={level(lv.bottom)} />
-          <Row label="Tloušťka" value={formatLength(lv.thickness)} />
-          <Row label="Plocha" value={m2(polygonArea(one.outline))} testid="slab-area" />
-          <Row label="Obvod" value={m(polygonPerimeter(one.outline))} />
-        </Section>
-      )}
+      {one && <FromModel s={s} slab={one} />}
+      {one && <SlabLinkSection s={s} slab={one} />}
       {typeId && <Construction s={s} typeId={typeId} />}
       <button data-testid="slab-delete" onClick={() => s.run('selection.delete', { slabIds: ids })}>
         Smazat <kbd>Del</kbd>

@@ -3,6 +3,7 @@
 import { describeViolation, lockViolations } from '../constraints/locks.ts';
 import type { IdGenerator } from '../ids/index.ts';
 import { followOpenings } from '../opening/follow.ts';
+import { followSlabs } from '../slab/link.ts';
 import { describeOpeningViolation, openingViolations } from '../opening/validate.ts';
 import { wallShapeViolation } from '../wall/shape.ts';
 import { MAIN_MODEL, type Model, type VariantRef } from '../model/types.ts';
@@ -88,7 +89,7 @@ export class Editor {
       if (e instanceof CommandFailure) return { ok: false, error: { code: e.code, message: e.message } };
       throw e;
     }
-    const model = followOpenings(this.current, result.model);
+    const model = followSlabs(this.current, followOpenings(this.current, result.model));
     const violations = lockViolations(model);
     const first = violations[0];
     if (first) {
@@ -115,7 +116,7 @@ export class Editor {
     if (!def || validate(def.params, params).length) return null;
     try {
       const run = def.run(this.current, params, { newId: this.options.newId, variant: this.variant }).model;
-      const m = followOpenings(this.current, run);
+      const m = followSlabs(this.current, followOpenings(this.current, run));
       const bad = lockViolations(m).length || openingViolations(this.current, m).length;
       return bad || wallShapeViolation(this.current, m) ? null : m;
     } catch (e) {

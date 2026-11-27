@@ -17,6 +17,7 @@ export const ICONS = {
   'slab-rect': ['M4 6h16v12H4z'],
   'slab-rotated': ['M9 3l12 6-6 12L3 15z'],
   'slab-walls': ['M3 3h18v18H3z', 'M6 6h12v12H6z', 'M8.5 8.5h7v7h-7z'],
+  'slab-room': ['M3 3h18v18H3z', 'M12 3v8', 'M6 15l3 3 6-6'],
   opening: ['M3 8h6v8H3z', 'M15 8h6v8h-6z', 'M9 8a6 6 0 0 1 6 0', 'c:12,12,1'],
   dimension: ['M4 7v10', 'M20 7v10', 'M4 12h16', 'M6 14l-2-2 2-2', 'M18 10l2 2-2 2'],
   angle: ['M4 20L20 20', 'M4 20L16 6', 'M10 20a6 6 0 0 0-1.6-4.1'],

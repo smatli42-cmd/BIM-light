@@ -1,12 +1,32 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Vazba desky na místnost a stěny, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-vazba`, podlahy po místnostech i v `?ukazka=dum`)
+
+- Jádro: deska nese `link` = `{ kind: 'room', roomId }` (podlaha patří místnosti: obrys od líce k líci,
+  ostrovy jako `holes`) nebo `{ kind: 'walls', wallIds, boundary }` (deska podle stěn). Editor po každém
+  příkazu obrys přepočítá (`slab/link.ts`, `followSlabs` – jako otvor jde se stěnou); posun stěny, příčka,
+  tloušťka i výklenek ho změní. Smazaná místnost / méně než 2 stěny vazbu zruší, deska zůstane.
+- Zámek (základ 16): obrys změněný příkazem při nezměněné vazbě (bod, nový obrys, posun, kóta k hraně,
+  odstup) = ruční úprava → `locked`; přepočet ji nechá být. Kopie desky je ruční.
+- Příkazy `slab.create` s `roomId` (nebo `walls` – vazba se uloží), `slab.linkRoom`, `slab.linkWalls`,
+  `slab.unlink`, `slab.restoreLink`; `slab.list` vrací `link` (room / walls / null, locked) a `holes`;
+  migrace 28 → 29. AI `scenario-slab-link.test.ts`, testy `slab/link*.test.ts`.
+- Ostrovy podlahy: plocha, obvod, výběr (klik do ostrova desku nevybere), půdorys (obrys ostrova), 3D
+  (prořízne jako otvor), IFC (IfcArbitraryProfileDefWithVoids).
+- Výkaz desek: ruční podlaha (bez vazby na místnost) odečte z plochy a objemu půdorys stěn, které ohraničují
+  místnosti podlaží (`slab/floor-area.ts`).
+- Přepočet, který změní počet bodů obrysu, smaže kóty k hranám té desky (indexy hran by ukazovaly jinam).
+- Sandbox: Deska (S) → metoda **Podle místnosti** (klik do místnosti, náhled obrysu, číslo v trackeru);
+  Podle stěn ukládá vazbu. Info box vybrané desky: Vazba obrysu (vázáno na místnost / stěny / ručně, zamčeno),
+  Obnovit vazbu, Zrušit vazbu. E2E `desky-vazba.spec.ts`. Dům: podlahy po místnostech vázané na místnost.
 
 ### Spárořez (povrchy místností, část 3), 2026-11-27 (scéna `?ukazka=sparorez`, dlažba i v `?ukazka=dum`)
 
@@ -187,6 +207,15 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Vazba desky:** obrys vázané desky se ukládá jako poslední spočítaný (přepočítá ho editor po každém
+  příkazu), aby kresba, 3D, IFC, výkazy, otvory i kóty četly jedno `outline` – zdroj pravdy je vazba.
+  Revit: podlaha z hranice místnosti je po místnostech; příčka ji rozdělí (podlaha zůstane v místnosti
+  s bodem). Ruční podlaha přes více místností se v půdorysu ani 3D neořezává, jen výkaz odečte stěny
+  (stěny ohraničující místnosti, výška 1200 nad podlažím); nosná deska se neodečítá. Na místnost jde navázat
+  jen podlaha (nosná deska → podle stěn). Posun i kopie vázané desky = ruční (kopie bez vazby). Ruční nový
+  obrys u podlahy s ostrovy ostrovy ponechá. Neuzavřená místnost / chybná smyčka stěn: deska drží poslední
+  obrys (vazba trvá a po opravě se obnoví). Kóty k ostrovům a přichytávání k nim zatím nejsou.
+
 - **Spárořez:** úzký řez = rozměr odřezu pod třetinou formátu, aspoň 50 mm, nejvýš polovina formátu
   (mozaika); 600 → 200 mm, sokl 80 → 40 mm. Každý odřez = jedna dlaždice (zbytky se znovu nepočítají),
   prořez se přičte nahoru na celé kusy za místnost a typ. Počátek je jeden pro celý líc stěny (všechny zóny
@@ -296,6 +325,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
+- **Uživatel vyzkouší vazbu desky:** `?ukazka=desky-vazba` – M a posun příčky / pravé stěny (podlahy
+  i strop se přepočítají, ve 2.NP ruční podlaha ne); klik na podlahu u hrany → Vazba obrysu; tažení rohu →
+  „zamčeno“ → Obnovit vazbu; S → Podle místnosti a klik do místnosti; Výkazy → Výkaz desek.
+- **Editor typů desek** (čekající session) může pokračovat.
 - **Uživatel vyzkouší spárořez:** `?ukazka=sparorez` – klik do koupelny → Povrchy → Spárořez (úzké řezy),
   táhni křížek počátku dlažby, nebo X 0 / Y 200; posuň příčku; Výkazy → Výkaz dlaždic (prořez 10 %).
 - **3D proud:** spáry ve 3D z dotazu `covering.joints` (tvar v poznámkách koordinátora).
@@ -364,6 +397,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
+- **STAV.md má 41 KB (limit ~40 KB) – návrh rozdělení (k potvrzení):** hotové kroky desek D1–D4, přesný otvor
+  a vazbu desky přesunout do `docs/STAV-desky.md`, místnosti a povrchy (části 1–3) do `docs/STAV-mistnosti.md`;
+  v STAV.md nechat odkazy, Rozhodl Code, Další krok a Otevřené.
+
 - **Povrchy – zbývá:** okno typů úprav (dnes jen příkazy / AI a výběr v info boxu), rozvinutý pohled
   stěny se spárořezem (dotaz `covering.joints` ho umí), spárořez stropu (podhledu) v pohledu nahoru, vazba
   spárořezu stěn přes roh (dnes každý líc od svého rohu), vazba (na střih / půl / třetinu) a natočení dlažby, IfcCovering v exportu IFC, ostění u otvoru s obecným obrysem, plochy nad započítaným výklenkem,
@@ -426,9 +463,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po spárořezu)
+## Největší soubory (po vazbě desek)
 
-Výstup `npm run check:size`: bez varování.
+Výstup `npm run check:size`: zdrojové soubory bez varování; varování jen STAV.md (41 KB, návrh v Otevřené).
 
 | Řádky | Soubor |
 |---|---|

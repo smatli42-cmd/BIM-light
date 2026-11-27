@@ -5,3 +5,4 @@ export * from './queries.ts';
 export * from './draw.ts';
 export * from './from-walls.ts';
 export * from './pick.ts';
+export * from './link.ts';

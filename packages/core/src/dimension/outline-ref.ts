@@ -96,5 +96,6 @@ export function translateOutlineOwner(model: Model, ref: OutlineRef, v: Vec2): M
     model,
     own.map((o) => ({ ...o, outline: shift(o.outline) })),
   );
-  return putElements(m, [{ ...el, outline: shift(el.outline) }]);
+  const holes = el.holes?.map(shift);
+  return putElements(m, [{ ...el, outline: shift(el.outline), ...(holes && { holes }) }]);
 }
