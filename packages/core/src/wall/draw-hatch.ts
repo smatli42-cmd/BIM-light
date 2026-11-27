@@ -32,16 +32,26 @@ export function hatchBandCurves(hatch: Hatch, frame: BandFrame): Vec2[][] {
 }
 
 /** Šrafa (s výplní) jednoho mnohoúhelníku vrstvy, nebo nic. */
-export function layerHatch(
+export const layerHatch = (
   layer: LayerGeometry,
   polygon: readonly Vec2[],
   g: ResolvedEffect,
   look: DrawLookup,
   wallId: Id,
   frame?: BandFrame,
+): Primitive[] => materialHatch(layer.span.layer.materialId, polygon, g, look, wallId, frame);
+
+/** Šrafa (s výplní) mnohoúhelníku z materiálu, nebo z přepisu grafiky (stěny v půdorysu, řez). */
+export function materialHatch(
+  materialId: Id,
+  polygon: readonly Vec2[],
+  g: ResolvedEffect,
+  look: DrawLookup,
+  elementId: Id,
+  frame?: BandFrame,
 ): Primitive[] {
   if (g.hatch === 'none') return [];
-  const m = look.material(layer.span.layer.materialId);
+  const m = look.material(materialId);
   const own = g.hatch === 'material' ? null : g.hatch;
   const hatchId = own?.hatchId ?? m?.hatchId ?? NO_HATCH;
   const hatch = look.hatch(hatchId) ?? look.hatch(NO_HATCH);
@@ -59,7 +69,7 @@ export function layerHatch(
       fillColor,
       origin: HATCH_ORIGIN,
       ...(curves.length ? { curves } : {}),
-      source: { elementId: wallId, role: 'šrafa' },
+      source: { elementId, role: 'šrafa' },
     },
   ];
 }

@@ -3,23 +3,20 @@
 // vrstev) a s vyříznutými otvory a nikami. Půdorys vrstvy po napojení dává jádro (wallGeometry), tady se jen
 // přidá výška. Jádro se jen čte (pravidla 3D proudu).
 import {
-  openingAcross,
+  openingFootprint,
   openingLevels,
   openingsOf,
-  openingSpan,
-  pointAtStation,
   wallGeometry,
   wallHeight,
   type Id,
   type Model,
-  type Opening,
-  type Vec2,
   type Wall,
 } from '@bim-light/core';
 import { sliceLayer, type Cutter, type Slab } from './slice.ts';
 
-/** Přesah půdorysu otvoru přes líc, aby výřez nenechal tenkou blánu (jako v IFC). */
-const OVER = 1;
+/** Půdorys otvoru je v jádře (společný s řezem). */
+export { openingFootprint };
+
 const FALLBACK_COLOR = '#c8c8c8';
 /** Krytí průhledného materiálu (sklo) ve 3D. */
 export const GLASS_OPACITY = 0.35;
@@ -34,25 +31,6 @@ export interface Solid {
   /** Krytí 0–1 (1 = plné); průhledný materiál (sklo) 0,35, pravidlo grafiky může přepsat. */
   readonly opacity: number;
   readonly slabs: readonly Slab[];
-}
-
-/**
- * Půdorys otvoru: obdélník (u oblouku výseč po 16 dílcích) přes tloušťku, u niky jen do hloubky;
- * `over` = přesah přes líc (výřez), 0 = přesně v lících (záplata rekonstrukce).
- */
-export function openingFootprint(model: Model, o: Opening, host: Wall, over = OVER): Vec2[] {
-  const { s0, s1 } = openingSpan(o);
-  const [a, b] = openingAcross(model, o);
-  const overA = Math.sign(a - b) * over;
-  const overB = o.kind === 'niche' ? 0 : Math.sign(b - a) * over;
-  const lo = Math.min(a + overA, b + overB);
-  const hi = Math.max(a + overA, b + overB);
-  const n = host.path.kind === 'arc' && Math.abs(host.path.bulge) > 1e-9 ? 16 : 1;
-  const st = Array.from({ length: n + 1 }, (_, i) => s0 + ((s1 - s0) * i) / n);
-  return [
-    ...st.map((s) => pointAtStation(host.path, s, lo)),
-    ...[...st].reverse().map((s) => pointAtStation(host.path, s, hi)),
-  ];
 }
 
 function cuttersOf(model: Model, wall: Wall): Cutter[] {

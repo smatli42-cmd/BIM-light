@@ -13,3 +13,4 @@ export * from './limits.ts';
 export * from './temporary.ts';
 export * from './warnings.ts';
 export * from './pick.ts';
+export * from './footprint.ts';
