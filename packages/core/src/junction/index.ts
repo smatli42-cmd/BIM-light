@@ -8,3 +8,4 @@ export * from './solve.ts';
 export * from './wall.ts';
 export * from './trim.ts';
 export * from './migrate-v3.ts';
+export * from './slab-wall.ts';

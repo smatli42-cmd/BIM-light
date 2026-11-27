@@ -19,6 +19,14 @@ export interface CutRow {
   readonly top: number;
   /** Materiály vrstev v řezu (bez opakování, v pořadí vrstev). */
   readonly materialIds: readonly Id[];
+  /** Řezané kusy po vrstvách: materiál a rozsah (u0–u1, bottom–top) – uložení stropu, otvory. */
+  readonly pieces: readonly {
+    readonly materialId: Id;
+    readonly u0: number;
+    readonly u1: number;
+    readonly bottom: number;
+    readonly top: number;
+  }[];
 }
 
 export interface SeenRow {
@@ -46,7 +54,19 @@ function bounds(rings: readonly (readonly { x: number; y: number }[])[]) {
 function cutRow(id: Id, category: string, pieces: readonly CutPiece[]): CutRow[] {
   if (!pieces.length) return [];
   const b = bounds(pieces.flatMap((p) => ringsOf(p.shapes)));
-  return [{ elementId: id, category, ...b, materialIds: [...new Set(pieces.map((p) => p.materialId))] }];
+  // Každá plocha zvlášť (vrstva přerušená stropem = kus pod deskou a kus nad ní).
+  const parts = pieces.flatMap((p) =>
+    p.shapes.map((sh) => ({ materialId: p.materialId, ...bounds(ringsOf([sh])) })),
+  );
+  return [
+    {
+      elementId: id,
+      category,
+      ...b,
+      materialIds: [...new Set(pieces.map((p) => p.materialId))],
+      pieces: parts,
+    },
+  ];
 }
 
 function seenRow(category: string, p: Projected | null): SeenRow[] {

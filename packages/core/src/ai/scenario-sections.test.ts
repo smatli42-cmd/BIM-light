@@ -192,4 +192,36 @@ describe('AI scénář: řezy a pohledy', () => {
     expect(must(rows.find((r) => r.id === w)).value).toBe(300);
     expect(must(rows.find((r) => r.id === h)).value).toBeGreaterThan(2000);
   });
+
+  it('uložení stropu (priorita materiálů): strop v řezu, zateplení obvodové stěny jde přes čelo desky', () => {
+    const c = start();
+    const types = c.ai.call<{ id: string; name: string }[]>('wallType.list');
+    const typeId = must(types.find((t) => t.name === 'Obvodová zateplená 465')).id;
+    const [wall] = c.ai.call<string[]>('wall.create', {
+      storeyId: c.storeyId,
+      typeId,
+      path: { kind: 'line', start: { x: 0, y: 0 }, end: { x: 6000, y: 0 } },
+    });
+    const rc = must(
+      c.ai.call<{ id: string; name: string }[]>('slabType.list').find((t) => t.name === 'ŽB strop 250'),
+    );
+    const rect = { a: { x: -1000, y: -2000 }, b: { x: 7000, y: 2000 } };
+    const [slab] = c.ai.call<string[]>('slab.create', {
+      storeyId: c.storeyId,
+      typeId: rc.id,
+      rect,
+      topOffset: 3000,
+    });
+    const [sec] = c.ai.call<string[]>('section.create', {
+      start: { x: 3000, y: -3000 },
+      end: { x: 3000, y: 3000 },
+    });
+    type Row = { elementId: string; u0: number; u1: number; bottom: number; top: number };
+    const cut = c.ai.call<{ cut: Row[] }>('section.elements', { sectionId: sec }).cut;
+    const w = must(cut.find((r) => r.elementId === wall));
+    const s = must(cut.find((r) => r.elementId === slab));
+    // Zeď (zateplení) jde přes čelo desky až nad ni; deska je v řezu celá ve své výšce.
+    expect(w.top).toBeGreaterThanOrEqual(s.top);
+    expect(s.top).toBe(3000);
+  });
 });

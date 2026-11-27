@@ -1,6 +1,7 @@
 // Výměry stěny pro výkazy (plán stěn Z8): délka osy, výška, plochy boku a objemy po vrstvách.
 // Vše z geometrie po napojení (základ 4): objem vrstvy = plocha jejího obrysu v půdorysu × výška − otvory.
-import { pathLength } from '../geometry/index.ts';
+import { pathLength, type Vec2 } from '../geometry/index.ts';
+import { overlapArea, wallLayerSlabCuts } from '../junction/slab-wall.ts';
 import { signedArea } from '../junction/half-plane.ts';
 import type { Model } from '../model/types.ts';
 import type { Opening } from '../opening/types.ts';
@@ -45,6 +46,15 @@ function nicheDepthIn(o: Opening, span: LayerSpan, faces: { ref: number; opp: nu
   return Math.max(0, Math.min(b, d) - Math.max(a, c));
 }
 
+/** Objem vrstvy, který zabraly uložené stropy (junction/slab-wall.ts) – beton se nezapočítá dvakrát. */
+function slabVolume(m: Model, w: Wall, layer: number, polys: readonly (readonly Vec2[])[]): number {
+  const h = wallHeight(m, w);
+  return wallLayerSlabCuts(m, w.id, layer).reduce((s, c) => {
+    const dz = Math.min(c.top, h.top) - Math.max(c.bottom, h.bottom);
+    return dz > 0 ? s + overlapArea(polys, c.footprint) * dz : s;
+  }, 0);
+}
+
 /** Výměry stěny; `minOpeningArea` (m²) = otvory do této plochy se z ploch neodečítají. */
 export function wallQuantities(m: Model, w: Wall, minOpeningArea: number): WallQuantities {
   const geom = wallGeometry(m, w, Number.NEGATIVE_INFINITY);
@@ -55,7 +65,7 @@ export function wallQuantities(m: Model, w: Wall, minOpeningArea: number): WallQ
   const deductMm2 = deducted.reduce((s, o) => s + o.width * o.height, 0);
   const lengthMm = pathLength(geom.faces.axis);
   const faces = { ref: geom.section.faces.ref, opp: geom.section.faces.opp };
-  const layers = geom.layers.map((l) => {
+  const layers = geom.layers.map((l, i) => {
     const t = Math.abs(l.span.to - l.span.from);
     const plan = l.polygons.reduce((s, p) => s + Math.abs(signedArea(p)), 0);
     const holes = through.reduce((s, o) => s + o.width * o.height * t, 0);
@@ -66,7 +76,7 @@ export function wallQuantities(m: Model, w: Wall, minOpeningArea: number): WallQ
     return {
       span: l.span,
       area: Math.max(0, faceMm2 - deductMm2) / M2,
-      volume: Math.max(0, plan * h - holes - niches) / M3,
+      volume: Math.max(0, plan * h - holes - niches - slabVolume(m, w, i, l.polygons)) / M3,
     };
   });
   const grossArea = (lengthMm * h) / M2;

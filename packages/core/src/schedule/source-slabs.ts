@@ -8,6 +8,7 @@ import { slabScheduleArea } from '../slab/floor-area.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { Slab } from '../slab/types.ts';
 import { slabNetArea, slabOpeningsOf } from '../slab-opening/geometry.ts';
+import { overlapArea, slabCutsByWalls } from '../junction/slab-wall.ts';
 import { num, text, type ScheduleSourceDef } from './fields.ts';
 import { STATUS_LABELS, variantLabel } from './source-walls.ts';
 import type { ScheduleDef } from './types.ts';
@@ -55,7 +56,9 @@ export const SLABS_SOURCE: ScheduleSourceDef = {
       const holes = slabOpeningsOf(m, s.id).map((o) => polygonArea(o.outline));
       const minHole = def.minOpeningArea * 1e6;
       const net = Math.max(0, area - holes.filter((h) => h > minHole).reduce((a, h) => a + h, 0));
-      const solid = Math.max(0, slabNetArea(m, s) - walls);
+      // Uložení stropu: vrstvy stěn s předností (zateplení přes čelo) desku ořízly (junction/slab-wall.ts).
+      const byWalls = slabCutsByWalls(m, s.id).reduce((a, c) => a + overlapArea([s.outline], c.footprint), 0);
+      const solid = Math.max(0, slabNetArea(m, s) - walls - (s.slabFunction === 'structure' ? byWalls : 0));
       return {
         mark: t?.mark ?? '',
         type: t?.name ?? '',

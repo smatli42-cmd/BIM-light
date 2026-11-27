@@ -51,7 +51,8 @@ export const sectionElementsQuery = defineQuery<{ sectionId: string }, unknown>(
   description:
     'Co řez ukazuje (stejný výpočet jako kresba): cut = prvky proříznuté rovinou řezu (elementId, ' +
     'category, rozsah na výkrese u0–u1 v mm od levého okraje, bottom–top v mm nad ±0,000, materialIds ' +
-    'vrstev), seen = prvky za rovinou do hloubky pohledu (depth = nejbližší vzdálenost za rovinou v mm, ' +
+    'vrstev, pieces = řezané kusy po vrstvách s materiálem a rozsahem – uložení stropu: zdivo končí pod ' +
+    'deskou, zateplení jde přes čelo), seen = prvky za rovinou do hloubky pohledu (depth = nejbližší vzdálenost za rovinou v mm, ' +
     'u0–u1). Pohled (fasáda) nemá cut. Prvky skryté filtrem rekonstrukce nebo vrstvou chybí.',
   group: 'Řezy a pohledy',
   params: S.object({ sectionId: S.id }, ['sectionId']),

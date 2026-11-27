@@ -76,7 +76,14 @@ export function wallCut(model: Model, wall: Wall, f: SectionFrame, range: Sectio
   return g.layers.flatMap((layer, i) => {
     const { bottom, top } = levels[i] as { bottom: number; top: number };
     return lineIntervals(f, layer.polygons).flatMap(([u0, u1]) => {
-      const shapes = cropToRange(difference(planePolygon(rect(u0, bottom, u1, top)), holes), range);
+      // Uložení stropu (junction/slab-wall.ts): deska vyřízne jádro a vrstvy na své straně ve své výšce.
+      const slabs = wallLayerSlabCuts(model, wall.id, i).flatMap((c) =>
+        lineIntervals(f, [c.footprint]).map(([a, b]) => rect(a, c.bottom, b, c.top)),
+      );
+      const shapes = cropToRange(
+        difference(planePolygon(rect(u0, bottom, u1, top)), [...holes, ...slabs]),
+        range,
+      );
       if (!shapes.length) return [];
       return [
         {
@@ -91,20 +98,21 @@ export function wallCut(model: Model, wall: Wall, f: SectionFrame, range: Sectio
   });
 }
 
-/** Půdorys desky: obrys minus ostrovy a otvory v desce, které ji prořízne. */
-export function slabPlan(model: Model, slab: Slab): PlanePolygon[] {
-  const cuts = Object.values(model.slabOpenings)
-    .filter((o) => o.hostIds.includes(slab.id))
-    .map((o) => o.outline);
-  return difference(planePolygon(slab.outline), [...(slab.holes ?? []), ...cuts]);
-}
+import { slabPlan } from '../slab/plan.ts';
+import { slabCutsByWalls, wallLayerSlabCuts } from '../junction/slab-wall.ts';
+
+export { slabPlan };
 
 /** Řezané vrstvy desky (skladba odspodu, horní líc = úroveň podlaží + odsazení). */
 export function slabCut(model: Model, slab: Slab, f: SectionFrame, range: SectionRange | null): CutPiece[] {
   const type = model.slabTypes[slab.typeId];
   const comp = type ? model.compositions[type.compositionId] : undefined;
   if (!comp) return [];
-  const plan = slabPlan(model, slab);
+  // Stěny, které mají přednost (zateplení přes čelo desky, nosná ŽB stěna u dřevěné desky), desku ořízly.
+  const plan = difference(
+    slabPlan(model, slab),
+    slabCutsByWalls(model, slab.id).map((c) => c.footprint),
+  );
   const intervals = lineIntervals(
     f,
     plan.flatMap((p) => [p.outer, ...p.holes]),
