@@ -8,7 +8,7 @@ import { storeyOf, styleOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 
-const POINT3 = S.object({ x: { type: 'number' }, y: { type: 'number' }, z: { type: 'number' } }, [
+export const POINT3 = S.object({ x: { type: 'number' }, y: { type: 'number' }, z: { type: 'number' } }, [
   'x',
   'y',
   'z',

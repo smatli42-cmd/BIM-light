@@ -31,4 +31,32 @@ describe('AI scénář: 3D pohled', () => {
     expect(row.sectionBox).toBeNull();
     expect(c.ai.call<View3dRow[]>('view3d.list')).toHaveLength(2);
   });
+
+  it('AI přepne 3D pohled na axonometrii ve skice, zapne stíny 21. 6. v 15:00, řez a mřížku', () => {
+    const c = start();
+    room(c);
+    const [id] = c.ai.call<string[]>('view3d.create', { name: 'Studie' });
+    c.ai.call('view3d.setProjection', { viewId: id, projection: 'axonometric' });
+    c.ai.call('view3d.setRenderMode', { viewId: id, mode: 'sketch' });
+    c.ai.call('view3d.setSun', {
+      viewId: id,
+      sun: { shadows: true, mode: 'time', date: '2026-06-21', time: '15:00' },
+    });
+    const plane = { origin: { x: 3000, y: 2000, z: 0 }, normal: { x: 0, y: 1, z: 0 } };
+    c.ai.call('view3d.setCutPlane', { viewId: id, plane });
+    c.ai.call('view3d.setGrid', { viewId: id, grid: true });
+    const row = must(
+      c.ai.call<(View3dRow & Record<string, unknown>)[]>('view3d.list').find((v) => v.id === id),
+    );
+    expect(row).toMatchObject({
+      projection: 'axonometric',
+      renderMode: 'sketch',
+      cutPlane: plane,
+      grid: true,
+    });
+    // Odpoledne je slunce na jihozápadě, vysoko nad obzorem.
+    expect(row['sunAzimuth']).toBeGreaterThan(220);
+    expect(row['sunAzimuth']).toBeLessThan(260);
+    expect(row['sunAltitude']).toBeGreaterThan(40);
+  });
 });

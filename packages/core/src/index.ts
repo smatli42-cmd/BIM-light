@@ -16,6 +16,8 @@ export * from './slab/index.ts';
 export * from './slab-opening/index.ts';
 export * from './room/index.ts';
 export * from './view-3d/types.ts';
+export * from './sun/position.ts';
+export * from './sun/krovak.ts';
 export * from './relation/index.ts';
 export * from './dimension/index.ts';
 export * from './constraints/index.ts';

@@ -86,14 +86,7 @@ import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edi
 import { slabOpeningCreate } from './slab-opening/create.ts';
 import { ROOM_COMMANDS } from './room/all.ts';
 import { outlineSetDistance } from './slab/distance.ts';
-import {
-  view3dCreate,
-  view3dDelete,
-  view3dRename,
-  view3dSetSectionBox,
-  view3dSetStoreys,
-} from './view-3d/view-3d.ts';
-import { view3dSetLayerState, view3dSetPhaseFilter, view3dSetStyle } from './view-3d/display.ts';
+import { VIEW3D_COMMANDS } from './view-3d/all.ts';
 import { slabOpeningMove, slabOpeningMoveVertex, slabOpeningSetOutline } from './slab-opening/edit.ts';
 import { slabTypeDelete, slabTypeDuplicate, slabTypeUpdate } from './slab/type.ts';
 
@@ -147,14 +140,7 @@ export const CORE_COMMANDS = [
   slabOpeningMove,
   ...ROOM_COMMANDS,
   outlineSetDistance,
-  view3dCreate,
-  view3dRename,
-  view3dDelete,
-  view3dSetStoreys,
-  view3dSetSectionBox,
-  view3dSetStyle,
-  view3dSetPhaseFilter,
-  view3dSetLayerState,
+  ...VIEW3D_COMMANDS,
   slabTypeDuplicate,
   slabTypeUpdate,
   slabTypeDelete,

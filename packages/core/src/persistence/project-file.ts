@@ -24,6 +24,7 @@ import { projectV19toV20 } from '../style/migrate-v6.ts';
 import { projectV20toV21 } from '../view-3d/migrate-v20.ts';
 import { projectV21toV22 } from '../schedule/migrate-v21.ts';
 import { projectV22toV23, projectV23toV24 } from '../room/migrate-v22.ts';
+import { projectV25toV26 } from '../view-3d/migrate-v25.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -41,7 +42,7 @@ export const PROJECT_EXTENSION = '.bim';
  * 18 → 19: otvory v deskách (D3); 19 → 20: sytá žlutá povrchu bouraných ve 3D;
  * 20 → 21: průhlednost povrchu ve 3D a 3D pohledy; 21 → 22: výkaz desek;
  * 22 → 23: místnosti; 23 → 24: kategorie místností;
- * 24 → 25: velikosti razítka místnosti.
+ * 24 → 25: velikosti razítka místnosti; 25 → 26: vzhled 3D pohledu (projekce, režim, slunce, řez, mřížka).
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -68,6 +69,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   22: projectV22toV23,
   23: projectV23toV24,
   24: projectV24toV25,
+  25: projectV25toV26,
 };
 
 export function serializeProject(model: Model): string {
