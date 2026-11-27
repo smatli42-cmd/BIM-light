@@ -37,6 +37,12 @@ export const FAR_AREA_GRAPHICS: GraphicEffect = { projectionPen: 1, lineColor: '
 /** Skupina anotací pro značky řezů a pohledů (stálé id, viditelná ve všech stylech). */
 export const SECTION_LAYER = { id: 'ann-sections', name: 'Řezy a pohledy' } as const;
 
+/**
+ * Skupina anotací výškových kót (řez i půdorys): stálé id, viditelná ve všech stylech – výška je údaj
+ * modelu, styl (Studie / Projekt) ji nesmí skrýt (katalog pohledů 26). Délkové kóty mají skupiny po stylech.
+ */
+export const LEVEL_LAYER = { id: 'ann-levels', name: 'Výškové kóty' } as const;
+
 /** Razítko místnosti (ČSN 01 3420, výkresy 1:50 / 1:100): číslo 2,5 mm tučně, ostatní 1,8 mm, řádkování 1,3. */
 export const ROOM_PAPER_SIZES = { roomNumberText: 2.5, roomText: 1.8, roomLineSpacing: 1.3 } as const;
 
@@ -49,5 +55,6 @@ export const PAPER_SIZES: PaperSizes = {
   extensionGap: 1,
   extensionOvershoot: 1.5,
   levelMark: 2.5,
+  levelText: 1.8,
   ...ROOM_PAPER_SIZES,
 };

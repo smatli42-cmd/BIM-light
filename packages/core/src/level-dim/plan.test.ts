@@ -89,7 +89,7 @@ describe('výšková kóta v půdorysu (české zvyklosti, Ardit)', () => {
     expect(texts(prims(f, id as string))).toEqual(['UT=-0,150']);
   });
 
-  it('základ 28: kóta je v aktivní skupině anotací pohledu; zamčená se neposune, posun jen textu u kroužku', () => {
+  it('základ 28: kóta je ve skupině anotací Výškové kóty; zamčená se neposune, posun jen textu u kroužku', () => {
     const f = fixture();
     const [id] = f.run('planLevelDim.create', {
       storeyId: f.storeyId,
@@ -97,10 +97,8 @@ describe('výšková kóta v půdorysu (české zvyklosti, Ardit)', () => {
       marker: 'circle',
       viewId: f.viewId,
     });
-    const d = f.model.planLevelDims[id as string];
-    expect(d?.annotationLayerId).toBe(
-      f.model.display.styles[f.model.views[f.viewId]!.styleId]?.defaultAnnotationLayerId,
-    );
+    // Hlášení uživatele: skupina „Výškové kóty“ je ve všech stylech (Studie i Projekt).
+    expect(f.model.planLevelDims[id as string]?.annotationLayerId).toBe('ann-levels');
     f.run('planLevelDim.move', { levelDimId: id, delta: v(500, 0), textOnly: true });
     expect(f.model.planLevelDims[id as string]).toMatchObject({ point: v(0, 0), textAt: v(500, 0) });
     f.run('planLevelDim.update', { levelDimId: id, locked: true });

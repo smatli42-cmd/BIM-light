@@ -33,6 +33,7 @@ import { projectV30toV31 } from '../section/migrate-v30.ts';
 import { projectV31toV32 } from '../section/migrate-v31.ts';
 import { projectV32toV33 } from '../level-dim/migrate-v32.ts';
 import { projectV33toV34 } from '../level-dim/migrate-v33.ts';
+import { projectV34toV35 } from '../level-dim/migrate-v34.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -56,7 +57,7 @@ export const PROJECT_EXTENSION = '.bim';
  * 30 → 31: řezy a pohledy (fasády), šrafa materiálu desek v řezu;
  * 31 → 32: zalomený řez (body čáry), vzdálená oblast, styly řezu, skupina anotací Řezy a pohledy;
  * 32 → 33: výškové kóty v řezech (ČSN 01 3420), velikost praporku na papíře;
- * 33 → 34: výškové kóty v půdorysu.
+ * 33 → 34: výškové kóty v půdorysu; 34 → 35: skupina anotací Výškové kóty (ve všech stylech), text kóty.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -92,6 +93,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   31: projectV31toV32,
   32: projectV32toV33,
   33: projectV33toV34,
+  34: projectV34toV35,
 };
 
 export function serializeProject(model: Model): string {

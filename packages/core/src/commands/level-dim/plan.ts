@@ -13,6 +13,7 @@ import type { LevelRef } from '../../level-dim/types.ts';
 import { levelZ } from '../../level-dim/value.ts';
 import type { Model } from '../../model/types.ts';
 import { activeAnnotationLayer } from '../../view/effective.ts';
+import { LEVEL_LAYER } from '../../style/presets/defaults.ts';
 import { storeyOf, viewOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -58,6 +59,7 @@ const ANCHOR_TOL = 100;
 /** Skupina anotací: zadaná, aktivní skupina pohledu, nebo výchozí stylu prvního pohledu podlaží. */
 function layerFor(m: Model, storeyId: Id, viewId?: Id, given?: Id): Id {
   if (given) return given;
+  if (m.display.layers[LEVEL_LAYER.id]) return LEVEL_LAYER.id;
   const view = viewId ? viewOf(m, viewId) : Object.values(m.views).find((v) => v.storeyId === storeyId);
   return view ? activeAnnotationLayer(m, view) : '';
 }

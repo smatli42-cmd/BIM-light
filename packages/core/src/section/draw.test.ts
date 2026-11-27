@@ -121,18 +121,22 @@ describe('rozhodnutí 19: kresba řezu z modelu', () => {
     expect(byRole(ps, 'pohledová hrana').length).toBeGreaterThan(0);
   });
 
-  it('rozhodnutí 19: úroveň podlaží čerchovaně a výšková kóta ±0,000 (metry, 3 desetinná místa)', () => {
+  it('rozhodnutí 19 / Ardit: úroveň podlaží tence čárkovaně, vlevo mimo budovu „1.NP ±0,000“ nad praporkem', () => {
     const f = fixture();
     const { id } = across(f);
     const ps = prims(f, id);
     expect(byRole(ps, 'úroveň podlaží')[0]?.kind === 'line' && byRole(ps, 'úroveň podlaží')[0]).toMatchObject(
       {
-        stroke: { lineType: 'dash-dot', pen: 1 },
+        stroke: { lineType: 'dashed', pen: 1 },
       },
     );
     const texts = ps.flatMap((p) => (p.kind === 'text' ? [p.text] : []));
-    expect(texts).toContain('±0,000');
-    expect(texts).toContain('1.NP');
+    expect(texts).toContain('1.NP ±0,000');
+    // Praporek a text jsou vlevo mimo budovu (stěna v řezu začíná v u > 0), text drobný (paperSizes.levelText).
+    const label = ps.find((p) => p.kind === 'text' && p.text === '1.NP ±0,000');
+    const wallLeft = Math.min(...ps.flatMap((p) => (p.kind === 'hatch' ? p.polygon.map((q) => q.x) : [])));
+    expect(label?.kind === 'text' && label.at.x).toBeLessThan(wallLeft);
+    expect(label?.kind === 'text' && label.heightMm).toBe(f.model.display.paperSizes.levelText);
     expect(elevationText(-150)).toBe('-0,150');
     expect(elevationText(3000)).toBe('+3,000');
   });

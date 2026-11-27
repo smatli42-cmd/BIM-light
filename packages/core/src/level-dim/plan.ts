@@ -10,7 +10,7 @@ import { slabLevels } from '../slab/geometry.ts';
 import { pointInSlab } from '../slab/pick.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { PaperSizes, ResolvedEffect, Style } from '../style/types.ts';
-import { levelMarkSize } from './symbol.ts';
+import { levelMarkSize, levelTextSize } from './symbol.ts';
 import { annotationFacts } from '../section/facts.ts';
 import { resolveGraphics } from '../style/graphics.ts';
 import { layerState, styleOfView } from '../view/effective.ts';
@@ -92,8 +92,8 @@ export function drawPlanLevel(
   scale: number,
   g: ResolvedEffect,
 ): Primitive[] {
-  const th = sizes.labelText * scale;
-  const p = painter(d.id, g, sizes.labelText);
+  const th = levelTextSize(sizes) * scale;
+  const p = painter(d.id, g, levelTextSize(sizes));
   const shift = { x: point.x - d.point.x, y: point.y - d.point.y };
   const textAt = { x: d.textAt.x + shift.x, y: d.textAt.y + shift.y };
   if (d.marker === 'box') return boxMark(textAt, lines[0] ?? '', th, p);

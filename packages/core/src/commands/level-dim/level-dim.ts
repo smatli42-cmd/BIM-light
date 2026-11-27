@@ -5,7 +5,7 @@ import type { LevelDimension, LevelRef } from '../../level-dim/types.ts';
 import { levelZ } from '../../level-dim/value.ts';
 import type { Model } from '../../model/types.ts';
 import { omitIds } from '../../model/update.ts';
-import { SECTION_LAYER } from '../../style/presets/defaults.ts';
+import { LEVEL_LAYER, SECTION_LAYER } from '../../style/presets/defaults.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 import { sectionOf } from '../section/section.ts';
@@ -80,7 +80,8 @@ export const levelDimCreate = defineCommand<Fields & { sectionId: Id; ref: Level
       at: p.at,
       below: p.below ?? false,
       absolute: p.absolute ?? false,
-      annotationLayerId: p.annotationLayerId ?? SECTION_LAYER.id,
+      annotationLayerId:
+        p.annotationLayerId ?? (model.display.layers[LEVEL_LAYER.id] ? LEVEL_LAYER.id : SECTION_LAYER.id),
       locked: false,
     });
     return { model: put(model, d), created: [d.id] };

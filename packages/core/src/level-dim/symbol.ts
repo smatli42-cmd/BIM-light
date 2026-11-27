@@ -20,6 +20,9 @@ export interface LevelSymbol {
 /** Výška trojúhelníku na papíře (mm); starší balíček zobrazení bez ní = výška popisu. */
 export const levelMarkSize = (sizes: PaperSizes): number => sizes.levelMark ?? sizes.labelText;
 
+/** Výška textu výškové kóty na papíře (drobný, vzor Arditu); starší balíček = výška popisu. */
+export const levelTextSize = (sizes: PaperSizes): number => sizes.levelText ?? sizes.labelText;
+
 export function drawLevelSymbol(
   m: LevelSymbol,
   sizes: PaperSizes,
@@ -37,7 +40,7 @@ export function drawLevelSymbol(
     { x: m.x + h, y: base },
   ];
   const stroke: Stroke = { pen: g.projectionPen, color: g.lineColor, lineType: 'solid' };
-  const text = sizes.labelText;
+  const text = levelTextSize(sizes);
   const out: Primitive[] = [
     { kind: 'line', points: tri, closed: true, stroke, source },
     {

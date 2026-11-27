@@ -163,7 +163,7 @@ describe('ČSN 01 3420: výškové kóty v řezu', () => {
     const f = fixture();
     const { sec } = scene(f);
     const ps = drawSection(f.model, sec).primitives.filter((p) => p.source.role === 'výšková kóta');
-    expect(ps.some((p) => p.kind === 'text' && p.text === '±0,000')).toBe(true);
+    expect(ps.some((p) => p.kind === 'text' && p.text === '1.NP ±0,000')).toBe(true);
     expect(ps.some((p) => p.kind === 'fill')).toBe(false);
   });
 

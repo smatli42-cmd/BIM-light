@@ -121,6 +121,8 @@ export interface PaperSizes {
   readonly roomLineSpacing: number;
   /** Výška trojúhelníku výškové kóty (ČSN 01 3420: 2,5–3,5 mm, 1:50 obvykle 2,5); chybí = výška popisu. */
   readonly levelMark?: number;
+  /** Výška textu výškové kóty (drobný, jako popis místnosti, vzor Arditu); chybí = výška popisu. */
+  readonly levelText?: number;
 }
 
 export type CategoryGraphics = Partial<Readonly<Record<Category, GraphicEffect>>>;

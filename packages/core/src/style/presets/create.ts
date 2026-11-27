@@ -8,6 +8,7 @@ import {
   FAR_AREA_GRAPHICS,
   PAPER_SIZES,
   SECTION_LAYER,
+  LEVEL_LAYER,
 } from './defaults.ts';
 import { LAYER_PRESETS } from './layers.ts';
 import { COMBO_PRESETS, RULE_PRESETS } from './rules.ts';
@@ -91,29 +92,36 @@ export function createDefaultDisplay(newId: IdGenerator): DisplaySettings {
     ...(c.phase ? { phase: true } : {}),
   }));
   const { styles, layerCombos } = buildStyles(layers, layerId, comboId, newId);
-  return withSectionLayer({
-    schemaVersion: DISPLAY_SCHEMA_VERSION,
-    layers: byId(layers),
-    layerCombinations: byId(layerCombos),
-    rules: byId(rules),
-    overrideCombinations: byId(combos),
-    styles: byId(styles),
-    penTable: defaultPenTable(),
-    baseGraphics: BASE_GRAPHICS,
-    categoryGraphics: CATEGORY_GRAPHICS,
-    paperSizes: PAPER_SIZES,
-    farArea: FAR_AREA_GRAPHICS,
-    hatches: {},
-  });
+  return withLevelLayer(
+    withSectionLayer({
+      schemaVersion: DISPLAY_SCHEMA_VERSION,
+      layers: byId(layers),
+      layerCombinations: byId(layerCombos),
+      rules: byId(rules),
+      overrideCombinations: byId(combos),
+      styles: byId(styles),
+      penTable: defaultPenTable(),
+      baseGraphics: BASE_GRAPHICS,
+      categoryGraphics: CATEGORY_GRAPHICS,
+      paperSizes: PAPER_SIZES,
+      farArea: FAR_AREA_GRAPHICS,
+      hatches: {},
+    }),
+  );
 }
 
 /**
  * Doplní skupinu anotací „Řezy a pohledy“ (stálé id, aby se nové id ostatních položek neposunula),
  * viditelnou ve všech stylech; i pro migraci starších projektů.
  */
-export function withSectionLayer(d: DisplaySettings): DisplaySettings {
-  if (d.layers[SECTION_LAYER.id]) return d;
-  const layer: Layer = { ...SECTION_LAYER, kind: 'annotation', categories: [] };
+export const withSectionLayer = (d: DisplaySettings): DisplaySettings => withSharedLayer(d, SECTION_LAYER);
+
+/** Doplní skupinu anotací „Výškové kóty“ viditelnou ve všech stylech (i pro migraci). */
+export const withLevelLayer = (d: DisplaySettings): DisplaySettings => withSharedLayer(d, LEVEL_LAYER);
+
+function withSharedLayer(d: DisplaySettings, preset: { id: string; name: string }): DisplaySettings {
+  if (d.layers[preset.id]) return d;
+  const layer: Layer = { ...preset, kind: 'annotation', categories: [] };
   const combos = Object.fromEntries(
     Object.values(d.layerCombinations).map((c) => [
       c.id,
