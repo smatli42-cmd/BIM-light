@@ -3,6 +3,7 @@
 import { resolveHeight, type ResolvedHeight } from '../model/height.ts';
 import type { Model } from '../model/types.ts';
 import type { Wall, WallLayer } from '../wall/types.ts';
+import { wallBase } from './base-slab.ts';
 
 export interface LayerHeight {
   readonly layer: WallLayer;
@@ -50,5 +51,16 @@ export function wallHeight(model: Model, wall: Wall): WallHeight {
     bands.push({ bottom: from, top: to, layers });
     from = to;
   }
-  return { ...h, height: h.top - h.bottom, bands };
+  // Stěna na skladbě podlahy sahá k nosné desce (base-slab.ts): prodlouží se jen spodní pás, hranice pásů
+  // zůstanou ve stejné výšce.
+  const base = wallBase(model, wall);
+  const first = bands[0];
+  if (base < h.bottom && first)
+    bands[0] = {
+      ...first,
+      bottom: base,
+      layers: first.layers.map((l) => ({ ...l, bottom: l.bottom - (h.bottom - base) })),
+    };
+  const bottom = bands.length ? Math.min(h.bottom, base) : h.bottom;
+  return { ...h, bottom, height: h.top - bottom, bands };
 }

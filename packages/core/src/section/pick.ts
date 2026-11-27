@@ -32,14 +32,18 @@ const rect = (u0: number, z0: number, u1: number, z1: number): Vec2[] => [
 ];
 
 /** Otvory stěny na výkrese: v rovině řezu (úseky půdorysu otvoru) i za ní (rozsah v pásmu pohledu). */
-function openingShapes(m: Model, wall: Wall, f: SectionFrame, depth: number): SectionShape[] {
+// Hloubka otvoru: řezaný otvor těsně před rovinou (−1,5), otvor za rovinou ve své vlastní hloubce o kousek
+// před líc stěny – ne hloubka řezané stěny (hlášení uživatele: okno za rovinou překrylo řezanou stěnu).
+function openingShapes(m: Model, wall: Wall, f: SectionFrame): SectionShape[] {
   return openingsOf(m, wall.id).flatMap((o) => {
     const { bottom, top } = openingLevels(m, o, wall);
     const foot = openingFootprint(m, o, wall);
     const cut = lineIntervals(f, [foot]).map(([a, b]) => ({ outer: rect(a, bottom, b, top), holes: [] }));
-    const e = cut.length ? null : extentInZone(f, planePolygon(foot));
-    const shapes = e ? [{ outer: rect(e.u0, bottom, e.u1, top), holes: [] }] : cut;
-    return shapes.length ? [{ id: o.id, category: 'opening' as const, depth: depth - 0.5, shapes }] : [];
+    if (cut.length) return [{ id: o.id, category: 'opening' as const, depth: -1.5, shapes: cut }];
+    const e = extentInZone(f, planePolygon(foot));
+    if (!e) return [];
+    const shapes = [{ outer: rect(e.u0, bottom, e.u1, top), holes: [] }];
+    return [{ id: o.id, category: 'opening' as const, depth: e.depth - 0.5, shapes }];
   });
 }
 
@@ -60,7 +64,7 @@ export function sectionShapes(model: Model, s: Section): SectionShape[] {
     const proj = wallProjection(m, wall, f, s.range);
     if (cut.length) out.push({ id: wall.id, category: 'wall', depth: -1, shapes: cut });
     if (proj) out.push({ id: wall.id, category: 'wall', depth: proj.depth, shapes: proj.shapes });
-    if (cut.length || proj) out.push(...openingShapes(m, wall, f, cut.length ? -1 : (proj?.depth ?? 0)));
+    if (cut.length || proj) out.push(...openingShapes(m, wall, f));
   }
   for (const { slab } of els.slabs) {
     const cut = s.kind === 'section' ? slabCut(m, slab, f, s.range).flatMap((p) => p.shapes) : [];

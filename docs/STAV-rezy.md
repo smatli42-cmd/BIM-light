@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Opravy: stěna stojí na nosné desce, výběr stěny po celé ploše, 2026-11-27 (hlášení uživatele; `?ukazka=rezy`)
+
+- **Příčky nešly spodkem k nosné desce:** spodek stěny vázaný na podlaží ležel na čisté podlaze (±0) a pod
+  ním byla podlaha vyříznutá (podlahy jsou po místnostech) → mezera 150 mm. Nově `wall-height/base-slab.ts`:
+  stěna, pod kterou je jen skladba podlahy (do 300 mm), sahá spodkem k hornímu líci nosné desky; podlaha se
+  přisazuje z obou stran. Platí pro příčky i obvodové stěny, v řezu, 3D i výkazech (vše bere `wallHeight`).
+  Stěna 2.NP nad stěnou 1.NP (obvodová přes čelo stropu) sjede jen k jejímu vršku (bez překryvu).
+  Testy `base-slab.test.ts`, AI `scenario-wall-base.test.ts`.
+- **Stěna šla vybrat jen někde:** okno za rovinou řezu (ne na čáře řezu) dostalo hloubku řezané stěny
+  a překrylo její plochu – klik vybral neviditelné okno. Nově má otvor za rovinou svou hloubku. Test: klik
+  do horní, střední i dolní třetiny každé řezané stěny všech řezů ukázkového domu ji vybere (`pick.test.ts`);
+  e2e `rezy-vyber` kliká i nad oknem a do pásku pod ±0.
+
 ### Výběr prvků v okně řezu, 2026-11-27 (pokyn uživatele; scéna `?ukazka=rezy`, Řez A)
 
 - Jádro `section/pick.ts`: plochy prvků na výkrese řezu (řezané kusy, pohledové plochy, otvory) z téhož
@@ -184,6 +197,13 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Rozhodl Code (k potvrzení)
 
+- **Stěna na nosné desce (k potvrzení):** spodek stěny se počítá, neukládá – stěna na skladbě podlahy
+  (nosná deska do 300 mm pod vázaným spodkem, osa stěny nad deskou) sahá k hornímu líci nosné desky
+  (česká praxe; Revit „Připojit spodek“ / základní odsazení −skladba, Archicad spodek k desce). Zvolil jsem
+  pravidlo v jádře místo uložené vazby (obdoba D4), aby to platilo hned pro všechny stěny bez úprav dat;
+  vypínač u stěny (stěna na podlaze, např. lehká SDK příčka na anhydritu) přijde, až bude potřeba. Hranice
+  výškových pásů zůstanou ve stejné výšce, prodlouží se jen spodní pás; parapet se dál měří od čisté
+  podlahy. Stěna nad jinou stěnou (2.NP obvodová) sjede jen k jejímu vršku.
 - **Uložení stropu:** vnější strana stěny = strana s vrstvou funkce „izolace“; bez izolace rozhodne, nad
   kterými vrstvami deska z větší části neleží (obě strany zakryté = vnitřní stěna, žádná vnější strana).
   Při stejné prioritě vyhrává deska. Vazba vršku stěny na spodní líc desky (D4) zůstává beze změny – celá

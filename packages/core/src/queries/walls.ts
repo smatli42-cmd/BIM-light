@@ -61,7 +61,7 @@ export const wallList = defineQuery<{ storeyId?: string }, unknown>({
     'Vrátí stěny (volitelně jen jednoho podlaží): id, typ, tloušťka (mm), referenční čára (path, mm), ' +
     'u oblouku arc (střed, poloměr, středový úhel), ' +
     'strana tloušťky, stav, vazba výšky (height: spodek = podlaží + odsazení, vršek = pevná výška nebo ' +
-    'podlaží + N + odsazení), spočítaný spodek, vršek a výška nad ±0 (bottom, top, wallHeight), horní profil, délka referenčního líce po oříznutí v rozích (mm), druh konců ' +
+    'podlaží + N + odsazení), spočítaný spodek, vršek a výška nad ±0 (bottom, top, wallHeight; stěna na skladbě podlahy do 300 mm sahá spodkem k hornímu líci nosné desky pod sebou), horní profil, délka referenčního líce po oříznutí v rozích (mm), druh konců ' +
     '(free = volný, corner = roh, tee = T, straight = v přímce, multiple = tři a více) a napojení na jiné ' +
     'stěny (ATSTART / ATEND / ATPATH; obě ATPATH = kříž; noJoin = nespojovat).',
   group: 'Stěna',

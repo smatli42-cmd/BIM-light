@@ -29,7 +29,7 @@ const targets = (page: Page) =>
     const sec = Object.values(m.sections).find((s) => s.name === 'Řez A')!;
     const cut = (b.query('section.elements', { sectionId: sec.id }) as { cut: Row[] }).cut;
     const upper = Object.values(m.storeys).find((s) => s.elevation > 0)!.id;
-    const wall = cut.find((r) => m.elements[r.elementId]?.category === 'wall' && r.bottom === 0)!;
+    const wall = cut.find((r) => m.elements[r.elementId]?.category === 'wall' && r.bottom <= 0)!;
     const slab = cut.find(
       (r) =>
         m.elements[r.elementId]?.storeyId === upper &&
@@ -58,6 +58,14 @@ for (const style of ['Studie', 'Projekt'])
       .poll(async () => (await page.evaluate(() => window.__bim!.selection())).walls)
       .toEqual([wall.elementId]);
     await expect(page.getByTestId('infobox-title')).toHaveText('Stěna');
+    // Hlášení uživatele: stěna jde vybrat po celé výšce (nad oknem i v pásku skladby podlahy pod ±0).
+    for (const z of [2500, -100]) {
+      await page.keyboard.press('Escape');
+      await click(page, (wall.u0 + wall.u1) / 2, z);
+      await expect
+        .poll(async () => (await page.evaluate(() => window.__bim!.selection())).walls)
+        .toEqual([wall.elementId]);
+    }
     await click(page, (slab.u0 + slab.u1) / 2, (slab.bottom + slab.top) / 2, true);
     const sel = await page.evaluate(() => window.__bim!.selection());
     expect([sel.walls, sel.slabs]).toEqual([[wall.elementId], [slab.elementId]]);
