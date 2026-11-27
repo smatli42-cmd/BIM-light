@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Oprava: výškové kóty po přepnutí Studie → Projekt, úrovně podlaží podle Arditu, 2026-11-27 (hlášení uživatele)
+
+- Co se měnilo: v **půdorysu** výškové kóty po přepnutí stylu **zmizely** – nová kóta šla do aktivní skupiny
+  anotací pohledu („Kóty a popisky – studie“), kterou styl Projekt skrývá. V řezu se neměnilo nic (skupina
+  „Řezy a pohledy“ je ve všech stylech). Velikost, poloha, hodnota ani pero se neměnily.
+- Oprava: nová skupina anotací **Výškové kóty** (stálé id `ann-levels`) viditelná ve všech stylech; nové
+  výškové kóty v řezu i v půdorysu jdou do ní, migrace 34 → 35 do ní přesune i stávající. Test
+  `level-dim/style-switch.test.ts` („katalog-pohledy 26/29: …“).
+- Úrovně podlaží v řezu podle Arditu: tenká čárkovaná čára přes celý řez, vlevo mimo budovu malý prázdný
+  praporek hrotem na čáře a nad ním drobný text „2.NP +3,000“ (název a výška na jednom řádku); kóta
+  nejvyššího bodu také vlevo. Text výškových kót je drobný – `paperSizes.levelText` 1,8 mm (jako popis
+  místnosti), i u kót v půdorysu.
+
 ### Záložky pohledů v záhlaví okna, 2026-11-27 (pokyn uživatele, princip Arditu)
 
 - Každé otevření pohledu (podlaží, uložený pohled, řez, fasáda, výkaz / výpis, 3D) z Obsahu, dvojklikem na
@@ -103,6 +116,12 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Výškové kóty a styly:** výškové kóty mají vlastní skupinu anotací viditelnou ve Studii i v Projektu
+  (výška je údaj modelu); délkové kóty dál patří skupině stylu, ve kterém vznikly (Studie / DSP). Skupinu
+  jde u kóty změnit. Trojúhelník praporku zůstal 2,5 mm (spodní mez ČSN 01 3420), text 1,8 mm; Ardit má
+  praporek možná menší – lze změnit v `paperSizes.levelMark`. Kóta terénu u úrovní podlaží v řezu se
+  automaticky nekreslí (terén není v modelu); jde vložit ručně (`ref: terrain`).
 
 - **Záložky pohledů:** zavření aktivní záložky přepne na sousední vpravo, jinak vlevo (jako prohlížeče
   a Revit); poslední záložka okna se zavřít nedá (okno nesmí být prázdné). Pracovní okno podlaží má
