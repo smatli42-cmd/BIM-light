@@ -8,6 +8,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
+### Barva povrchu ve 3D v grafice, 2026-11-27 (požadavek 3 z 3D proudu, `docs/STAV-3d.md`)
+
+- Efekt grafiky má `surfaceColor` (null = barva materiálu; Archicad Override Surface), odděleně od výplně
+  řezu. Výchozí null, pravidlo „Bourání žlutě čárkovaně“ ho nastaví žlutě; „proč“ v `resolveGraphics`,
+  schéma balíčku. Migrace projektu 17 → 18 a balíčku zobrazení 5 → 6.
+
 ### Desky D2: nástroj Deska, 2026-11-27 (hlavní proud; scéna `?ukazka=desky-kresleni`; screenshot Arditu)
 
 - Jádro: `slab.create` umí obrys i ze stěn (`walls: { wallIds, boundary: face | core }`) – stěny se seřadí do
@@ -329,6 +335,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - **Desky D3 (hlavní proud):** otvory v desce (základ 19 – stejný mechanismus jako ve stěně), pak D4
   (vazba vršku stěny na desku, výkazy desek, kóty k hranám desky), záložka Typ desky v editoru typů.
   Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
+- **Povrchy místností (návrh 3D proudu, zařadit po deskách; k potvrzení):** základ 14, rozhodnutí
+  prvky-stavby sekce 9. Jedna spočítaná plocha povrchu v jádře = zdroj pro 3D, rozvinutý pohled i výkaz.
+  Pořadí: místnosti z líců stěn (ČSN 73 4301) → plochy povrchů (líc v místnosti rozvinutý do roviny, minus
+  otvory, plus ostění, s transformací do 3D) + typy úprav (IfcCovering: materiál, formát, spára,
+  zarovnání) + výškové zóny + výkaz m² → spárořez (mřížka oříznutá na obrys, odřezy) → podlahy a stropy.
+  Příkazy `covering.assign`, `covering.setOrigin`; dotaz pro 3D vrátí plochy (obrys, transformace,
+  surfaceColor, spáry jako úsečky).
 - **Uživatel vyzkouší D2:** `?ukazka=desky-kresleni` – S → metoda Podle stěn: klik na stěny L a Enter (líc /
   líc jádra); Mnohoúhelník, Obdélník, Natočený obdélník; pak Esc, klik do desky, tažení, čtverečky v rozích,
   info box (horní hrana, typ), Del.

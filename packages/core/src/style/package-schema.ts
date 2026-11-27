@@ -17,6 +17,7 @@ const effect: JsonSchema = {
     lineColor: str,
     lineType: S.enumOf(['solid', 'dashed', 'dotted', 'dash-dot'], 'typ čáry'),
     fillColor: { oneOf: [str, { type: 'null' }] },
+    surfaceColor: { oneOf: [str, { type: 'null' }] },
     hatch: {
       oneOf: [
         S.enumOf(['material', 'none'], 'šrafa'),
