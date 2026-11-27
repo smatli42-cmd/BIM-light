@@ -4,6 +4,21 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Kóta v okně řezu, 2026-11-27 (hlášení uživatele: „Nejde mi nijak vložit kóta do výkresu.“)
+
+- Co nefungovalo: od chvíle, kdy se řez otevírá v pracovním okně, šlo v okně řezu vložit jen výškovou kótu;
+  **nástroj Kóta tam nedělal nic** (klik jen posunul výkres). V půdorysu kóty fungovaly (ověřeno lokálně
+  i na webu b10bb33, Studie i Projekt, prázdný výkres i ukázky). E2E kótovaly jen v půdorysu.
+- Nově: **délková kóta v řezu** (`section-dim/`, migrace 35 → 36) – svislá mezi úrovněmi (podlaží, horní /
+  spodní hrana stěny nebo desky, terén), vodorovná mezi boky prvků na výkrese; asociativní (po změně modelu
+  se přepočítá), kresba jako kóta ČSN (čára, šikmé čárky, odkazové čáry, číslo v mm, svislá natočená),
+  pero z grafiky kategorie kót, skupina anotací Řezy a pohledy, zámek. Příkazy `sectionDim.create / update`,
+  mazání `levelDim.delete` / `selection.delete`, dotazy `sectionDim.list`, `sectionDim.sides`; AI krok.
+- Sandbox: nástroj **Kóta** v okně řezu – klik na úroveň nebo bok prvku, druhý klik na další (stejného
+  směru), třetí klik umístí kótovací čáru; přichytí se do 8 px. Výběr klikem na čáru, tažení posune, Del
+  smaže, Esc ukončí nástroj. Opraven i úklid výběru (kóty v řezu se po příkazu ztrácely z výběru).
+  E2E `koty-rez.spec.ts` (Studie i Projekt).
+
 ### Oprava: výškové kóty po přepnutí Studie → Projekt, úrovně podlaží podle Arditu, 2026-11-27 (hlášení uživatele)
 
 - Co se měnilo: v **půdorysu** výškové kóty po přepnutí stylu **zmizely** – nová kóta šla do aktivní skupiny
@@ -116,6 +131,10 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Kóta v řezu:** jen svislé a vodorovné kóty (ne šikmé); vodorovná kótuje okraje prvku tak, jak je řez
+  vidí (řezaný prvek má přednost před prvkem v pohledu); řetězová kóta a kóta otvoru v řezu zatím ne.
+  Skupina anotací Řezy a pohledy (vidět ve všech stylech). Hodnota v mm bez jednotky jako v půdorysu.
 
 - **Výškové kóty a styly:** výškové kóty mají vlastní skupinu anotací viditelnou ve Studii i v Projektu
   (výška je údaj modelu); délkové kóty dál patří skupině stylu, ve kterém vznikly (Studie / DSP). Skupinu

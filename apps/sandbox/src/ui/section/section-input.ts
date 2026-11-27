@@ -19,6 +19,7 @@ import type { Viewport } from '../../canvas/viewport.ts';
 import { AUX } from '../../render/overlay.ts';
 import { drawPrimitive, type RenderContext } from '../../render/primitives.ts';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
+import { SectionDimInput } from './section-dim-input.ts';
 import type { Session } from '../../session/session.ts';
 
 const SNAP_PX = 8;
@@ -39,12 +40,17 @@ export class SectionInput {
   private pan: Vec2 | null = null;
   private panStart: Vec2 | null = null;
   private cache: { model: Model; targets: LevelTarget[] } | null = null;
+  /** Nástroj Kóta v řezu a tažení vybrané kóty (section-dim-input.ts). */
+  private readonly dims: SectionDimInput;
+  private dimDrag: { id: Id; vertical: boolean; offset0: number; start: Vec2 } | null = null;
 
   constructor(
     private readonly s: Session,
     private readonly sectionId: Id,
     private readonly v: Viewport,
-  ) {}
+  ) {
+    this.dims = new SectionDimInput(s, sectionId, v);
+  }
 
   private get tool() {
     return this.s.tool.id === 'levelDim';
@@ -78,15 +84,28 @@ export class SectionInput {
     if (button === 1) return void (this.pan = screen);
     if (button !== 0) return;
     if (this.tool) return this.toolClick(p);
+    if (this.dims.active) return this.dims.click(p);
     const hit = this.dimAt(p);
+    if (!hit) return this.pressSectionDim(p, screen, shift);
+    this.select(hit.id, shift);
+    this.drag = { id: hit.id, start: p, at0: hit.at, z: hit.z, moved: false };
+    this.s.changed();
+  }
+
+  private select(id: Id, shift: boolean) {
+    if (shift) this.s.selection.toggleLevelDim(id);
+    else if (!this.s.selection.levelDims.includes(id)) this.s.selection.set([], [], [], [], [], [], [], [id]);
+  }
+
+  /** Stisk na délkové kótě v řezu: výběr a tažení kótovací čáry; jinde posun výkresu. */
+  private pressSectionDim(p: Vec2, screen: Vec2, shift: boolean) {
+    const hit = this.dims.hit(p);
     if (!hit) {
       this.pan = this.panStart = screen;
       return;
     }
-    if (shift) this.s.selection.toggleLevelDim(hit.id);
-    else if (!this.s.selection.levelDims.includes(hit.id))
-      this.s.selection.set([], [], [], [], [], [], [], [hit.id]);
-    this.drag = { id: hit.id, start: p, at0: hit.at, z: hit.z, moved: false };
+    this.select(hit.id, shift);
+    this.dimDrag = { id: hit.id, vertical: hit.vertical, offset0: hit.offset, start: p };
     this.s.changed();
   }
 
@@ -119,6 +138,10 @@ export class SectionInput {
       this.drag.moved ||= Math.abs(p.x - this.drag.start.x) > this.v.px(3);
       return true;
     }
+    if (this.dims.active) {
+      this.dims.move(p);
+      return true;
+    }
     if (this.tool && !this.pick) this.hover = levelTargetAt(this.targets(), p.x, p.y, this.v.px(SNAP_PX));
     return this.tool;
   }
@@ -127,6 +150,7 @@ export class SectionInput {
     const d = this.drag;
     const start = this.panStart;
     this.drag = this.pan = this.panStart = null;
+    this.dropSectionDim();
     if (d?.moved && this.mouse) {
       const at = d.at0 + this.mouse.x - d.start.x;
       this.s.run('levelDim.move', { levelDimId: d.id, at, below: this.mouse.y < d.z });
@@ -139,11 +163,23 @@ export class SectionInput {
     }
   }
 
+  /** Konec tažení kóty v řezu: posun kótovací čáry (svislá kóta po u, vodorovná po z). */
+  private dropSectionDim() {
+    const d = this.dimDrag;
+    this.dimDrag = null;
+    const m = this.mouse;
+    if (!d || !m) return;
+    const delta = d.vertical ? m.x - d.start.x : m.y - d.start.y;
+    if (Math.abs(delta) > this.v.px(3))
+      this.s.run('sectionDim.update', { dimId: d.id, offset: d.offset0 + delta });
+  }
+
   /** Esc a Del v aktivním okně řezu; true = zpracováno. */
   key(key: string): boolean {
     if (key === 'Escape') {
       if (this.pick) this.pick = null;
-      else if (this.tool) this.s.setTool('select');
+      else if (this.dims.active && this.dims.escape()) return true;
+      else if (this.tool || this.dims.active) this.s.setTool('select');
       else if (this.s.selection.levelDims.length) this.s.selection.set([]);
       else return false;
       this.s.changed();
@@ -192,5 +228,6 @@ export class SectionInput {
     if (this.drag?.moved)
       prims = ghost(this.drag.at0 + m.x - this.drag.start.x, this.drag.z, m.y < this.drag.z);
     for (const p of prims) drawPrimitive(r, p, AUX);
+    if (this.dims.active) this.dims.overlay(r);
   }
 }
