@@ -42,7 +42,7 @@ export const ELECTRO_SCENES: readonly Sample[] = [
     date: '2026-11-27',
     description:
       'Pohled je ve stylu Elektro (přepínač nahoře): stavba šedě, značky barevně po skupinách (zásuvky ' +
-      'červeně, spínače a svítidla oranžově, data modře, TV fialově, zabezpečení zeleně). Dole tabulka všech ' +
+      'červeně, spínače a svítidla oranžově, data modře, TV fialově, zabezpečení tyrkysově). Dole tabulka všech ' +
       '44 typů z knihovny (ČSN EN 60617) s názvy. V místnosti: dvojzásuvky nad linkou (výška se nepíše – je ' +
       'výchozí), obyčejná dvojzásuvka zvednutá na +1150 (popisek výšky), rámeček Z2, D1, T1 se 4 sloty, ' +
       'spínače, svítidla, rozvaděč RH ve skutečné velikosti, termostat odsazený s odkazovou čarou. Zkus: ' +

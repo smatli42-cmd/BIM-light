@@ -48,7 +48,7 @@ export const LIGHT_ITEMS: readonly ElectroLibraryItem[] = [
     'lamp-outdoor',
     'Svítidlo venkovní',
     'Svítidlo venkovní nástěnné IP44',
-    light('lamp-outdoor', 2200),
+    light('lamp-outdoor', 2300),
   ),
   glyphItem('lamp-sensor', 'Svítidlo s čidlem', 'Svítidlo s pohybovým čidlem', light('lamp-sensor', null)),
 ];

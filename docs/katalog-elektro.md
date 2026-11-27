@@ -31,16 +31,18 @@ dokud uživatel nerozhodne jinak.
   stropu“). Výška stropních prvků = bez čísla („na stropě“); zadaná výška (závěsné svítidlo) se popíše.
 - Vložení na stěnu jde i bodem (AI, později myš): bod se promítne na nejbližší líc a určí stranu.
 
-## 3. Skupiny legendy a barvy (koncepce 3, 4)
+## 3. Skupiny legendy a barvy (koncepce 3, 4; legenda Arditu, screenshot 2026-11-27)
+
+Názvy, pořadí a barvy podle legendy značek z Arditu (tabulka Značka | Popis | Výška | Ks po skupinách).
 
 | Skupina | Barva (výchozí) | Co do ní patří |
 |---|---|---|
 | Silnoproud | červená `#d32f2f` | zásuvky, vývody, wallbox, rozvaděče |
 | Osvětlení a ovládání | oranžová `#ef8a00` | spínače, přepínače, stmívač, svítidla |
 | Data | modrá `#0288d1` | datová zásuvka, Wi-Fi AP, datový rozvaděč |
-| AV (TV, rozhlas) | fialová `#6a3fbf` | anténní zásuvka, videotelefon, zvonek |
-| Zabezpečení | zelená `#2e7d32` | hlásiče, kamery, PIR, MK, siréna, klávesnice, ústředna EZS |
-| Řízení | hnědá `#795548` | termostat, ovladač stínění, ventilátor |
+| AV a anténa | fialová `#6a3fbf` | anténní zásuvka, videotelefon |
+| Zabezpečení a požár | tyrkysová `#00a3b4` | hlásiče, kamery, PIR, MK, siréna, klávesnice, ústředna EZS |
+| Řízení a signalizace | tmavě červená `#b0193e` | zvonek, termostat, ovladač stínění, ventilátor |
 
 - Barva skupiny je **výchozí grafika prvku (patro 1)**, jako barva kategorie místnosti; pravidla, styl
   a přepisy ji přebijí (základ 11). Panel „proč“ ukáže „skupina Silnoproud“. Pravidla se mohou ptát na
@@ -49,20 +51,22 @@ dokud uživatel nerozhodne jinak.
 
 ## 4. Knihovna (44 typů, ČSN EN 60617, vlastní kresba)
 
-Výška = osa nad čistou podlahou v mm; „strop“ = bez výšky.
+Výška = osa nad čistou podlahou v mm; „strop“ = bez výšky, vazba na strop místnosti. Výšky, které ukazuje
+legenda Arditu, platí podle ní: přepínače a spínače **1050**, videotelefon 1400, zvonek 1400, termostat 1500,
+wallbox 1200, rozvaděče 1400, venkovní svítidlo 2300, datová a anténní zásuvka 300.
 
-**Přístroje (21):** Zásuvka 300, Dvojzásuvka 300, Trojzásuvka 300, Spínač č. 1 1200, Přepínač č. 6 1200,
-Přepínač č. 5 1200, Přepínač č. 6 + zásuvka 1200, Přepínač č. 6 + č. 5 + zásuvka 1200, Datová zásuvka 300,
-Zásuvka + datová 300, Anténní zásuvka 300, Ovladač stínění 1200, Zásuvka nad linkou 1150, Dvojzásuvka nad
-linkou 1150, Stmívač 1200, Vývod 1f 1200, Vývod 3f 600, Videotelefon 1500, Termostat 1500, Wallbox 1200,
+**Přístroje (21):** Zásuvka 300, Dvojzásuvka 300, Trojzásuvka 300, Spínač č. 1 1050, Přepínač č. 6 1050,
+Přepínač č. 5 1050, Přepínač č. 6 + zásuvka 1050, Přepínač č. 6 + č. 5 + zásuvka 1050, Datová zásuvka 300,
+Zásuvka + datová 300, Anténní zásuvka 300, Ovladač stínění 1050, Zásuvka nad linkou 1150, Dvojzásuvka nad
+linkou 1150, Stmívač 1050, Vývod 1f 1200, Vývod 3f 600, Videotelefon 1400, Termostat 1500, Wallbox 1200,
 Ventilátor 2200.
 
 **Zařízení (11):** Hlásič kouře strop, Detektor CO strop, Wi-Fi AP strop, Kamera stropní strop, Kamera
 nástěnná 2500, PIR čidlo 2200, Magnetický kontakt 2000, Siréna 2500, Klávesnice 1500, Ústředna EZS 1500,
-Zvonek 2200.
+Zvonek 1400 (skupina Řízení a signalizace).
 
 **Svítidla (8):** stropní, přisazené, závěsné (strop), nástěnné 2000, liniové 1200 mm (strop), LED pásek
-2000 mm (strop), venkovní 2200, s čidlem (strop).
+2000 mm (strop), venkovní 2300, s čidlem (strop).
 
 **Rozvaděče (4):** hlavní (RH), podružný, elektroměrový, datový – 600 × 800 × 150 mm, střed 1400,
 zapuštění 0 (vzor Arditu).
@@ -104,7 +108,17 @@ Wi-Fi `IfcCommunicationsAppliance`, kamery a videotelefon `IfcAudioVisualApplian
   `labels.electroHeights`).
 - Vše jsou data v nastavení zobrazení (styl, pravidlo, kombinace, vrstvy) – jdou upravit a kopírovat.
 
-## 7. Rozdíly oproti Arditu a vlastní rozhodnutí (já)
+## 7. Legenda (další krok, základ 8)
+
+- Vzor: legenda Arditu „Legenda značek elektro – 1.NP“ – sloupce Značka | Popis | Výška [mm] | Ks, řádky po
+  skupinách (pořadí a nadpis skupiny), značka v barvě skupiny; výšky všech výskytů typu sloučené lomítkem
+  („300 / 1050 / 1150“), stropní prvky „strop“; legenda po podlažích.
+- Datový model je na to připravený: skupina (název, pořadí, barva), typ (popis, značka, výchozí výška),
+  instance (výška, podlaží). Legenda bude jen **nový zdroj výkazu** (`schedule/source-electro.ts`, stejný
+  mechanismus jako výpis místností): seskupit po skupině a typu, sloučit odlišné výšky, sečíst kusy,
+  filtr podlaží; značka do buňky z téže kresby jako půdorys.
+
+## 8. Rozdíly oproti Arditu a vlastní rozhodnutí (já)
 
 - Značky kreslené vlastní stavebnicí tvarů (princip ČSN EN 60617), ne kopie ikon Arditu.
 - „Rozložení slotů pod sebou“ se ukládá, v půdorysu se ale sloty vždy kreslí po líci (pod sebou je rozdíl

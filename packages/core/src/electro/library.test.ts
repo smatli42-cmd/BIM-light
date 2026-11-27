@@ -86,11 +86,15 @@ describe('koncepce 3 Elektro: knihovna typů podle ČSN EN 60617', () => {
     expect(byName('Wi-Fi AP')?.ifcClass).toBe('IfcCommunicationsAppliance');
   });
 
-  it('výchozí výšky (česká praxe): zásuvky a data 300, spínače 1200, nad linkou 1150, hlásiče na stropě', () => {
+  it('výchozí výšky (česká praxe): zásuvky a data 300, spínače 1050 (legenda Arditu), nad linkou 1150, hlásiče na stropě', () => {
     expect(byName('Zásuvka')?.defaultHeight).toBe(300);
     expect(byName('Datová zásuvka')?.defaultHeight).toBe(300);
-    expect(byName('Spínač č. 1')?.defaultHeight).toBe(1200);
-    expect(byName('Přepínač č. 6 + zásuvka')?.defaultHeight).toBe(1200);
+    expect(byName('Spínač č. 1')?.defaultHeight).toBe(1050);
+    expect(byName('Přepínač č. 6 + zásuvka')?.defaultHeight).toBe(1050);
+    expect(byName('Svítidlo venkovní')?.defaultHeight).toBe(2300);
+    expect(byName('Videotelefon')?.defaultHeight).toBe(1400);
+    expect(byName('Zvonek')?.defaultHeight).toBe(1400);
+    expect(byName('Termostat')?.defaultHeight).toBe(1500);
     expect(byName('Dvojzásuvka nad linkou 1150')?.defaultHeight).toBe(1150);
     expect(byName('Hlásič kouře')?.defaultHeight).toBeNull();
     expect(byName('Svítidlo stropní')?.defaultHeight).toBeNull();
@@ -104,6 +108,24 @@ describe('koncepce 3 Elektro: knihovna typů podle ČSN EN 60617', () => {
       kind: 'glyphs',
       glyphs: ['switch6', 'switch5', 'socket'],
     });
+  });
+
+  it('legenda Arditu: skupiny v pořadí Silnoproud, Osvětlení a ovládání, Data, AV a anténa, Zabezpečení a požár, Řízení a signalizace', () => {
+    const names = [...DEFAULT_ELECTRO_GROUPS].sort((a, b) => a.order - b.order).map((g) => g.name);
+    expect(names).toEqual([
+      'Silnoproud',
+      'Osvětlení a ovládání',
+      'Data',
+      'AV a anténa',
+      'Zabezpečení a požár',
+      'Řízení a signalizace',
+    ]);
+    const group = (n: string) => DEFAULT_ELECTRO_GROUPS.find((g) => g.id === byName(n)?.groupId)?.name;
+    expect(group('Zvonek')).toBe('Řízení a signalizace');
+    expect(group('Termostat')).toBe('Řízení a signalizace');
+    expect(group('Wallbox')).toBe('Silnoproud');
+    expect(group('Videotelefon')).toBe('AV a anténa');
+    expect(group('Hlásič kouře')).toBe('Zabezpečení a požár');
   });
 
   it('základ 21: projekt má kopii celé knihovny se stálými id a odkazem na původ', () => {

@@ -50,7 +50,7 @@ describe('AI scénář: elektro značky', () => {
     expect(list().every((r) => r.roomNumber === '1.01')).toBe(true);
     expect(row(z1)).toMatchObject({ height: 1150, heightLabel: '+1150', position: { x: 0, y: 1000 } });
     expect(list().find((r) => r.typeName === 'Spínač č. 1')).toMatchObject({
-      height: 1200,
+      height: 1050,
       heightLabel: null,
     });
     expect(list().find((r) => r.typeName === 'Svítidlo stropní')).toMatchObject({

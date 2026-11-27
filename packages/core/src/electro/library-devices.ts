@@ -1,5 +1,5 @@
 // Knihovna: přístroje (zásuvky, spínače, vývody, krabičky na stěně). Výšky osy nad čistou podlahou
-// podle české praxe (katalog-elektro.md): zásuvky a data 300, spínače 1200, nad linkou 1150.
+// podle české praxe (katalog-elektro.md): zásuvky a data 300, spínače 1050 (legenda Arditu), nad linkou 1150.
 import { ELECTRO_GROUP_IDS as G } from './groups.ts';
 import { glyphItem, type ElectroLibraryItem } from './library-item.ts';
 
@@ -16,7 +16,7 @@ const sw = (predefinedType: string, glyphs: string[], groupId: string = G.lighti
   groupId,
   ifcClass: 'IfcSwitchingDevice',
   predefinedType,
-  height: 1200,
+  height: 1050,
   glyphs,
 });
 const P = 'POWEROUTLET';
@@ -98,7 +98,7 @@ export const DEVICE_ITEMS: readonly ElectroLibraryItem[] = [
     groupId: G.av,
     ifcClass: 'IfcAudioVisualAppliance',
     predefinedType: 'COMMUNICATIONTERMINAL',
-    height: 1500,
+    height: 1400,
     glyphs: ['videophone'],
   }),
   glyphItem('thermostat', 'Termostat', 'Prostorový termostat', {

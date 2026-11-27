@@ -27,11 +27,13 @@ Popis prvků, značek, skupin a výšek je v `docs/katalog-elektro.md`. Zadání
 
 1. **Kategorie `electrical` a jedna vrstva Elektro** pro všechny elektro prvky (skupiny se rozliší
    barvou a pravidly s vlastností `electroGroup`, ne vrstvami).
-2. **Barvy skupin** (tabulka v katalogu, část 3) podle vzoru Arditu; hnědá pro „Řízení“ a zelená pro
-   „Zabezpečení“ jsou vlastní volba.
-3. **Výchozí výšky** typů, které norma ani Ardit neurčují: vývod 1f 1200, vývod 3f 600, videotelefon
-   1500, termostat 1500, wallbox 1200, ventilátor 2200, kamera nástěnná 2500, PIR 2200, MK 2000, siréna
-   2500, klávesnice 1500, ústředna 1500, zvonek 2200, nástěnné svítidlo 2000, venkovní 2200.
+2. **Skupiny, pořadí a barvy podle legendy Arditu** (screenshot od uživatele): „Řízení a signalizace“ je
+   v Arditu také červená – zvolen tmavší odstín `#b0193e`, aby se nepletla se silnoproudem; zvonek patří do
+   Řízení a signalizace (jako Ardit).
+3. **Výchozí výšky** podle legendy Arditu (přepínače a spínače 1050, stmívač a ovladač stínění také 1050,
+   videotelefon a zvonek 1400, termostat 1500, wallbox 1200, venkovní svítidlo 2300); typy, které legenda
+   neukazuje: vývod 1f 1200, vývod 3f 600, ventilátor 2200, kamera nástěnná 2500, PIR 2200, MK 2000,
+   siréna 2500, klávesnice 1500, ústředna 1500, nástěnné svítidlo 2000.
 4. **Hlásiče, Wi-Fi AP, stropní kamera a stropní svítidla bez výšky** („na stropě“); popisek výšky
    se u nich ukáže jen při zadané výšce (závěsné svítidlo).
 5. **Smazání stěny smaže elektro prvky na ní** (Revit u hostovaných prvků); rozdělení / sloučení je
@@ -48,8 +50,10 @@ Popis prvků, značek, skupin a výšek je v `docs/katalog-elektro.md`. Zadání
    Del, kopírování.
 2. **Vazby vypínač → svítidla** (čárkovaný oblouk, svítidla převezmou označení) a **okruhy** (sloty →
    okruh, lomená čára k rozvaděči, „Nástroj Okruh“), rozvaděč jako nástroj.
-3. **Legenda a tabulka elektro** (výkazy: symbol, popis, výška, počet po skupinách) a kontroly (svítidlo
-   bez vypínače, prvek bez obvodu).
+3. **Legenda značek elektro** podle screenshotu Arditu (katalog, část 7): tabulka Značka | Popis | Výška |
+   Ks po skupinách v barvě skupiny, výšky výskytů typu sloučené lomítkem („300 / 1050 / 1150“), stropní
+   „strop“, po podlažích – jako nový zdroj výkazu (základ 8). Pak kontroly (svítidlo bez vypínače, prvek
+   bez obvodu).
 4. Elektro ve 3D a v řezu (krabičky v líci stěny), export IFC (třídy už jsou v typech).
 
 ## Otevřené

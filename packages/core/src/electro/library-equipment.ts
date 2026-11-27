@@ -75,7 +75,7 @@ export const EQUIPMENT_ITEMS: readonly ElectroLibraryItem[] = [
     'Ústředna elektrické zabezpečovací signalizace',
     dev(G.security, 'IfcUnitaryControlElement', 'ALARMPANEL', 1500, 'alarm-panel'),
   ),
-  glyphItem('bell', 'Zvonek', 'Domovní zvonek / gong', dev(G.av, 'IfcAlarm', 'BELL', 2200, 'bell')),
+  glyphItem('bell', 'Zvonek', 'Domovní zvonek / gong', dev(G.control, 'IfcAlarm', 'BELL', 1400, 'bell')),
 ];
 
 const board = (

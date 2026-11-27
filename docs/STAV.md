@@ -269,7 +269,7 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 3. **Podlahy a stropy** (poslední část povrchů místností) a rozvinutý pohled stěny se spárořezem (Otevřené).
 4. Body „Rozhodl Code (k potvrzení)“ projít s uživatelem (i nové v `docs/STAV-elektro.md`).
 5. **Elektro, krok 2** (po probrání se screenshoty Arditu): nástroj pro vkládání a výběr elektro prvků,
-   vazby vypínač → svítidla, okruhy a rozvaděč, legenda – podrobně „Další krok“ v `docs/STAV-elektro.md`.
+   vazby vypínač → svítidla, okruhy a rozvaděč, legenda značek (vzor legendy Arditu, nový zdroj výkazu) – podrobně „Další krok“ v `docs/STAV-elektro.md`.
 
 **Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `elektro`, `rezy`, `podlaha-dvere`, `typy-desek`, `desky-vazba`,
 `sparorez`, `povrchy`, `mistnosti`, `desky-d4`, `desky-presny-otvor`, `desky-otvory`, `desky-kresleni`,
