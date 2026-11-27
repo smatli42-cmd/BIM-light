@@ -41,8 +41,8 @@ test('základ 26: výběr stylu v záhlaví okna řezu – Studie bez šraf, Pro
   page,
 }) => {
   await page.getByTestId('section-style').selectOption({ label: 'Studie' });
-  await expect.poll(() => hatches(page)).toBe(0);
-  expect(await prims(page)).toBeGreaterThan(20);
+  // Obě hodnoty z téhož překreslení (dřív se četly šrafy z prázdného okna před vykreslením).
+  await expect.poll(async () => (await prims(page)) > 20 && (await hatches(page)) === 0).toBe(true);
   await expect(page.getByTestId('style-Studie')).toHaveClass(/active/);
   await page.getByTestId('section-style').selectOption({ label: 'Projekt' });
   await expect.poll(() => hatches(page)).toBeGreaterThan(10);

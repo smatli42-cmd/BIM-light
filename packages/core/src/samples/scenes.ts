@@ -8,8 +8,10 @@ import { SLAB_SCENES } from './scenes-desky.ts';
 import { ROOM_SCENES } from './scenes-mistnosti.ts';
 import { VIEW3D_SCENES } from './scenes-3d.ts';
 import { HOUSE } from './house.ts';
+import { ELECTRO_SCENES } from './scenes-elektro.ts';
 
 export const SCENES: readonly Sample[] = [
+  ...ELECTRO_SCENES,
   {
     key: 'rezy',
     title: 'Řezy a pohledy z modelu, nástroj Řez',

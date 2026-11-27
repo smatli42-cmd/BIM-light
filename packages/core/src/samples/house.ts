@@ -5,6 +5,7 @@ import { vec } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Sample, SampleContext } from './types.ts';
 import { tiledFloor } from './scene-helpers.ts';
+import { houseElectro } from './house-electro.ts';
 
 const W = 12000;
 const H = 9000;
@@ -229,11 +230,12 @@ export const HOUSE: Sample = {
     'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
     'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301, Výpis místností, povrchy (obklad, ' +
     'dlažba, sokl, malba) a Výkaz povrchů; řezy A, B a 4 pohledy (Obsah → Projekt); filtr rekonstrukce ' +
-    've spodní liště.',
+    've spodní liště; elektro v 1.NP (přepínač Elektro nahoře).',
   build(c) {
     ground(c);
     upper(c);
     attachPartitions(c);
     houseSections(c);
+    houseElectro(c);
   },
 };
