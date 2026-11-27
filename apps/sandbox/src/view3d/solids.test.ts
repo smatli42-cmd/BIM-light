@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildSample,
-  findSample,
-  sequentialIds,
-  vec,
-  wallHeight,
-  type Model,
-  type View,
-} from '@bim-light/core';
+import { buildSample, findSample, getWall, sequentialIds, vec, wallHeight, type View } from '@bim-light/core';
 import { fixture, type Fixture } from '../../../../packages/core/src/testing/fixture.ts';
 import { modelSolids, selectionElements } from './scene-model.ts';
 import { sliceLayer, shapeArea } from './slice.ts';
@@ -17,7 +9,6 @@ const volume = (solids: readonly Solid[]) =>
   solids.reduce((v, s) => v + s.slabs.reduce((a, b) => a + shapeArea(b.shape) * (b.z1 - b.z0), 0), 0);
 
 const view = (f: Fixture): View => f.model.views[f.viewId] as View;
-const wallOf = (m: Model, id: string) => m.elements[id] as Parameters<typeof wallSolids>[1];
 const phase = (f: Fixture, name: string) =>
   Object.values(f.model.display.overrideCombinations).find((c) => c.phase && c.name === name)!.id;
 
@@ -113,7 +104,7 @@ describe('3D náhled / co je vidět: filtr rekonstrukce a vrstvy aktivního pohl
     const all = modelSolids(f.model, view(f));
     expect(new Set(all.map((s) => s.elementId))).toEqual(new Set([a, b]));
     const zb = all.find((s) => s.elementId === b)!.slabs[0]!.z0;
-    expect(zb).toBe(wallHeight(f.model, wallOf(f.model, b!)).bottom);
+    expect(zb).toBe(wallHeight(f.model, getWall(f.model, b!)).bottom);
     const only = modelSolids(f.model, view(f), new Set([b!]));
     expect(new Set(only.map((s) => s.elementId))).toEqual(new Set([b]));
   });
@@ -131,7 +122,7 @@ describe('3D náhled / ukázkový dům', () => {
     const m = buildSample(findSample('dum')!, sequentialIds());
     const v = Object.values(m.views)[0]!;
     const solids = modelSolids(m, v);
-    const storeys = new Set(solids.map((s) => (m.elements[s.elementId] as { storeyId: string }).storeyId));
+    const storeys = new Set(solids.map((s) => getWall(m, s.elementId).storeyId));
     expect(storeys.size).toBe(Object.keys(m.storeys).length);
     const hosts = new Set(Object.values(m.openings).map((o) => o.hostId));
     const cut = solids.filter((s) => hosts.has(s.elementId) && s.slabs.length > 1);

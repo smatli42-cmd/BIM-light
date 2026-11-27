@@ -2,6 +2,7 @@
 // pod ní 3D model. Ukazuje stěny podle stylu a filtru rekonstrukce aktivního pohledu; klik vybere prvek
 // (výběr je společný s půdorysem), Shift+klik přidá / odebere.
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { getWall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { openStorey } from '../session/sets.ts';
 import { Icon, IconButton } from '../ui/icons/Icon.tsx';
@@ -23,7 +24,7 @@ function clickPick(s: Session, v: Viewer) {
     down = null;
     const id = v.pick(e.offsetX, e.offsetY);
     // Prvek jiného podlaží: aktivní okno přejde na jeho podlaží (výběr pak v půdorysu vidět, jako Archicad).
-    const storey = id ? s.model.elements[id]?.storeyId : undefined;
+    const storey = id ? getWall(s.model, id).storeyId : undefined;
     if (storey && storey !== s.storeyId) openStorey(s, storey);
     const cur = s.selection.walls;
     if (e.shiftKey && id) {
