@@ -1,4 +1,4 @@
-// Výběr stěn, otvorů, desek a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
+// Výběr stěn, otvorů (ve stěnách i deskách), desek a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
 import type { Id, Model } from '@bim-light/core';
 
 export class Selection {
@@ -8,13 +8,16 @@ export class Selection {
   openings: Id[] = [];
   /** Vybrané desky (D2). */
   slabs: Id[] = [];
+  /** Vybrané otvory v deskách (D3). */
+  slabOpenings: Id[] = [];
 
   get empty(): boolean {
     return this.count === 0;
   }
 
   private get count(): number {
-    return this.walls.length + this.dims.length + this.openings.length + this.slabs.length;
+    const n = this.walls.length + this.dims.length + this.openings.length;
+    return n + this.slabs.length + this.slabOpenings.length;
   }
 
   /** Právě jedna vybraná stěna (ukazují se dočasné kóty a uzly). */
@@ -27,6 +30,11 @@ export class Selection {
     return this.openings.length === 1 && this.count === 1 ? (this.openings[0] as Id) : null;
   }
 
+  /** Právě jeden vybraný otvor v desce (uzly obrysu). */
+  get singleSlabOpening(): Id | null {
+    return this.slabOpenings.length === 1 && this.count === 1 ? (this.slabOpenings[0] as Id) : null;
+  }
+
   /** Právě jedna vybraná deska (uzly obrysu). */
   get singleSlab(): Id | null {
     return this.slabs.length === 1 && this.count === 1 ? (this.slabs[0] as Id) : null;
@@ -37,11 +45,13 @@ export class Selection {
     dims: readonly Id[] = [],
     openings: readonly Id[] = [],
     slabs: readonly Id[] = [],
+    slabOpenings: readonly Id[] = [],
   ) {
     this.walls = [...new Set(walls)];
     this.dims = [...new Set(dims)];
     this.openings = [...new Set(openings)];
     this.slabs = [...new Set(slabs)];
+    this.slabOpenings = [...new Set(slabOpenings)];
   }
 
   clear() {
@@ -69,13 +79,24 @@ export class Selection {
     this.slabs = Selection.toggle(this.slabs, id);
   }
 
+  toggleSlabOpening(id: Id) {
+    this.slabOpenings = Selection.toggle(this.slabOpenings, id);
+  }
+
   has(id: Id): boolean {
-    return [this.walls, this.dims, this.openings, this.slabs].some((l) => l.includes(id));
+    const lists = [this.walls, this.dims, this.openings, this.slabs, this.slabOpenings];
+    return lists.some((l) => l.includes(id));
   }
 
   /** Parametry příkazu selection.delete pro celý výběr. */
   deleteParams() {
-    return { wallIds: this.walls, dimensionIds: this.dims, openingIds: this.openings, slabIds: this.slabs };
+    return {
+      wallIds: this.walls,
+      dimensionIds: this.dims,
+      openingIds: this.openings,
+      slabIds: this.slabs,
+      slabOpeningIds: this.slabOpenings,
+    };
   }
 
   /** Po Undo / smazání odstraní id, která už v modelu nejsou. */
@@ -84,5 +105,6 @@ export class Selection {
     this.dims = this.dims.filter((id) => model.dimensions[id]);
     this.openings = this.openings.filter((id) => model.openings[id]);
     this.slabs = this.slabs.filter((id) => model.elements[id]?.category === 'slab');
+    this.slabOpenings = this.slabOpenings.filter((id) => model.slabOpenings[id]);
   }
 }

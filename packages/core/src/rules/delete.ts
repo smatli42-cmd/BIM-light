@@ -2,7 +2,14 @@
 import { dimensionOpeningIds, dimensionWallIds } from '../dimension/measure.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
-import { removeDimensions, removeElements, removeOpenings, removeRelations } from '../model/update.ts';
+import {
+  putSlabOpenings,
+  removeDimensions,
+  removeElements,
+  removeOpenings,
+  removeRelations,
+  removeSlabOpenings,
+} from '../model/update.ts';
 import { rulesFor } from './cross-rules.ts';
 
 /** Smaže otvory a s nimi kóty k jejich hranám (stěna se zacelí, protože se počítá z modelu). */
@@ -14,6 +21,20 @@ export function deleteOpenings(model: Model, ids: readonly Id[]): Model {
   return removeDimensions(
     m,
     dims.map((d) => d.id),
+  );
+}
+
+/** Otvory v deskách: smazaná deska zmizí z hostitelů; otvor bez hostitele zanikne. */
+function unhostSlabOpenings(model: Model, gone: ReadonlySet<Id>): Model {
+  const hit = Object.values(model.slabOpenings).filter((o) => o.hostIds.some((h) => gone.has(h)));
+  const kept = hit.map((o) => ({ ...o, hostIds: o.hostIds.filter((h) => !gone.has(h)) }));
+  const m = putSlabOpenings(
+    model,
+    kept.filter((o) => o.hostIds.length),
+  );
+  return removeSlabOpenings(
+    m,
+    kept.filter((o) => !o.hostIds.length).map((o) => o.id),
   );
 }
 
@@ -34,6 +55,7 @@ export function deleteElements(model: Model, ids: readonly Id[]): Model {
       ops.map((o) => o.id),
     );
   }
+  if (cascade.has('openings')) m = unhostSlabOpenings(m, gone);
   if (cascade.has('connections')) {
     const rels = Object.values(m.relations).filter(
       (r) => gone.has(r.relating.wallId) || gone.has(r.related.wallId),

@@ -1,12 +1,23 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D2 (nástroj Deska v sandboxu, výběr, info box, obrys ze stěn); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D3 (otvory v deskách); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Desky D3: otvory v deskách, 2026-11-27 (scéna `?ukazka=desky-otvory`; otvor pro schodiště v `?ukazka=dum`)
+
+- Jádro: `slabOpenings` (migrace 18 → 19) – svislý otvor, obrys v půdorysu, hostitelé `hostIds` = desky
+  podlaží pod obrysem (strop i podlaha najednou). Příkazy `slabOpening.create / setOutline / moveVertex /
+  move`, mazání `selection.delete` (`slabOpeningIds`); smazaná deska zmizí z hostitelů, otvor bez desky
+  zanikne; posun desky vezme otvory, které jsou jen v ní. Dotaz `slabOpening.list`, `slab.list` má
+  `netArea` a počet otvorů. Půdorys: obrys + úhlopříčky, v deskách nad řezem čárkovaně (grafika „opening“).
+  IFC: IfcOpeningElement + IfcRelVoidsElement ke každé desce (ověřeno web-ifc).
+- Sandbox: nástroj Otvor → „V desce“ (mnohoúhelník / obdélník / natočený), výběr klikem i rámečkem,
+  tažení, body obrysu, Del; info box s plochou a deskami.
 
 ### Barva povrchu ve 3D v grafice, 2026-11-27 (požadavek 3 z 3D proudu, `docs/STAV-3d.md`)
 
@@ -268,6 +279,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Desky D3:** otvory v deskách mají vlastní seznam (`slabOpenings`), ne společný s otvory ve stěně –
+  poloha je obrys v půdorysu, ne staničení po stěně; společné je IFC (IfcOpeningElement), kategorie
+  „opening“ (vrstva, grafika, filtr) a mazání. V IFC jeden otvor modelu = jeden IfcOpeningElement na každou
+  desku (IFC dovoluje jednoho hostitele). Čistá plocha odečte celý otvor (přesah přes okraj se neořezává).
+  Kříž kreslím i u otvoru nad řezem (čárkovaně). Šachta přes více podlaží a otvor ze schodiště až později.
+
 - **Desky D2:** metoda „podle stěn“ jako Revit „Vybrat stěny“ (klik na stěny), ne klik do místnosti
   (kouzelná hůlka až s místnostmi); obrys vede po vnitřním líci, volba „líc nosného jádra“ (Revit „k jádru“).
   Stěny se řadí podle nejbližších konců, smysl oběhu z os. Ref. rovina zatím jen horní líc (Ardit nabízí
@@ -332,8 +349,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Desky D3 (hlavní proud):** otvory v desce (základ 19 – stejný mechanismus jako ve stěně), pak D4
-  (vazba vršku stěny na desku, výkazy desek, kóty k hranám desky), záložka Typ desky v editoru typů.
+- **Desky D4 (hlavní proud):** vazba vršku stěny na desku, výkazy desek, kóty k hranám desky, záložka
+  Typ desky v editoru typů. Pak povrchy místností.
+- **Uživatel vyzkouší D3:** `?ukazka=desky-otvory` – O → V desce, obdélník do desky; klik do otvoru,
+  tažení, body, Del; posun desky s otvorem; IFC v BIMvision.
   Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
 - **Povrchy místností (návrh 3D proudu; uživatel 2026-11-27 potvrdil: hned po deskách D3–D4):** základ 14, rozhodnutí
   prvky-stavby sekce 9. Jedna spočítaná plocha povrchu v jádře = zdroj pro 3D, rozvinutý pohled i výkaz.

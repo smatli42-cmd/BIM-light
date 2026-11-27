@@ -1,9 +1,49 @@
-// Testovací scény k deskám (D1, D2; 2026-11-27). Nová scéna k deskám = nová položka nahoře.
+// Testovací scény k deskám (D1–D3; 2026-11-27). Nová scéna k deskám = nová položka nahoře.
 import { vec } from '../geometry/index.ts';
 import { rect } from './scene-helpers.ts';
 import type { Sample } from './types.ts';
 
 export const SLAB_SCENES: readonly Sample[] = [
+  {
+    key: 'desky-otvory',
+    title: 'D3 – otvory v deskách',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Místnost 6 × 4 m se stropem a podlahou: otvor pro schodiště (prořízne obě desky, v půdorysu křížem), ' +
+      'prostup tvaru L a vpravo deska nad rovinou řezu s otvorem (čárkovaně). Zkus: O (Otvor) → V desce, ' +
+      'obdélník dvěma kliky do desky; Esc, klik do otvoru, tažení, čtverečky v rozích, Del. Posun desky ' +
+      'vezme její otvory s sebou. Exportovat IFC: IfcOpeningElement u stropu i podlahy.',
+    build(c) {
+      rect(c, 'Zdivo 300', 6000, 4000);
+      const sid = c.storeyId;
+      for (const t of ['ŽB strop 250', 'Podlaha anhydrit 150'])
+        c.run('slab.create', {
+          storeyId: sid,
+          typeId: c.slabType(t),
+          rect: { a: vec(0, 0), b: vec(6000, 4000) },
+        });
+      c.run('slabOpening.create', { storeyId: sid, rect: { a: vec(500, 500), b: vec(3300, 1700) } });
+      c.run('slabOpening.create', {
+        storeyId: sid,
+        outline: [
+          vec(4500, 2500),
+          vec(5500, 2500),
+          vec(5500, 3500),
+          vec(5000, 3500),
+          vec(5000, 3000),
+          vec(4500, 3000),
+        ],
+      });
+      c.run('slab.create', {
+        storeyId: sid,
+        typeId: c.slabType('ŽB strop 250'),
+        rect: { a: vec(8000, 0), b: vec(11000, 3000) },
+        topOffset: 2900,
+      });
+      c.run('slabOpening.create', { storeyId: sid, rect: { a: vec(9000, 1000), b: vec(10000, 2000) } });
+    },
+  },
   {
     key: 'desky-kresleni',
     title: 'D2 – nástroj Deska: kreslení a výběr',

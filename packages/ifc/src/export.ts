@@ -9,6 +9,7 @@ import { writeSpatial } from './spatial.ts';
 import { StepWriter, str, type Raw } from './step.ts';
 import { writeWall } from './wall.ts';
 import { writeSlabs } from './slab.ts';
+import { writeSlabOpenings } from './slab-opening.ts';
 
 export const IFC_SCHEMA = 'IFC4';
 
@@ -77,6 +78,7 @@ export function exportIfc(m: Model, opts: IfcExportOptions = {}): string {
   const walls = writeWalls(c, m, spatial);
   const main = allSlabs(m).filter((s) => s.variant.kind === 'main');
   const slabs = writeSlabs(c, m, main, spatial.storeys);
+  writeSlabOpenings(c, m, slabs.byId);
   writeRelations(c, spatial, [walls, slabs]);
   return w.toText({
     name: opts.fileName ?? `${m.project.name}.ifc`,

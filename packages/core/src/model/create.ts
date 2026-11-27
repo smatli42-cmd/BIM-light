@@ -71,6 +71,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     compositions: byId(slabs.map((s) => s.composition)),
     elements: {},
     openings: {},
+    slabOpenings: {},
     relations: {},
     dimensions: {},
     variantSets: {},

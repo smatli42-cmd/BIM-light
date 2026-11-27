@@ -37,7 +37,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   zoomwin: (s) => new ZoomWindowTool(s),
   paste: (s) => new PasteTool(s),
   pickline: (s) => new PickLineTool(s),
-  opening: (s) => new OpeningTool(s),
+  opening: (s) => (s.openingDefaults.host === 'slab' ? new SlabTool(s, 'opening') : new OpeningTool(s)),
   // Metoda „podle stěn“ má vlastní nástroj interakce (info box přepne metodu a nástroj znovu vytvoří).
   slab: (s) => (s.slab.method === 'walls' ? new SlabWallsTool(s) : new SlabTool(s)),
 };

@@ -1,6 +1,7 @@
 // Příkaz: smazat výběr najednou (pravidla-interakce, kóty 12): vybrané stěny, otvory i kóty jedním krokem.
 import type { Id } from '../../ids/index.ts';
-import { removeDimensions } from '../../model/update.ts';
+import { removeDimensions, removeSlabOpenings } from '../../model/update.ts';
+import { slabOpeningOf } from '../slab-opening/edit.ts';
 import { deleteElements, deleteOpenings } from '../../rules/delete.ts';
 import { openingOf } from '../opening/shared.ts';
 import { slabOf } from '../slab/shared.ts';
@@ -15,26 +16,34 @@ export const selectionDelete = defineCommand<{
   dimensionIds?: Id[];
   openingIds?: Id[];
   slabIds?: Id[];
+  slabOpeningIds?: Id[];
 }>({
   name: 'selection.delete',
   label: 'Smazat vybrané',
   description:
-    'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky, vybrané otvory a kóty jedním krokem.',
+    'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), ' +
+    'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds) a kóty jedním krokem.',
   group: 'Úpravy',
   shortcut: 'Delete',
-  params: S.object({ wallIds: IDS, dimensionIds: IDS, openingIds: IDS, slabIds: IDS }, []),
+  params: S.object(
+    { wallIds: IDS, dimensionIds: IDS, openingIds: IDS, slabIds: IDS, slabOpeningIds: IDS },
+    [],
+  ),
   run(model, p) {
     const walls = p.wallIds ?? [];
     const dims = p.dimensionIds ?? [];
     const ops = p.openingIds ?? [];
     const slabs = p.slabIds ?? [];
-    if (!walls.length && !dims.length && !ops.length && !slabs.length) fail('invalid', 'Nic není vybráno');
+    const holes = p.slabOpeningIds ?? [];
+    if (!walls.length && !dims.length && !ops.length && !slabs.length && !holes.length)
+      fail('invalid', 'Nic není vybráno');
+    holes.forEach((id) => slabOpeningOf(model, id));
     walls.forEach((id) => wallOf(model, id));
     dims.forEach((id) => dimensionOf(model, id));
     ops.forEach((id) => openingOf(model, id));
     slabs.forEach((id) => slabOf(model, id));
     const m = deleteOpenings(
-      removeDimensions(model, dims),
+      removeSlabOpenings(removeDimensions(model, dims), holes),
       ops.filter((id) => model.openings[id]),
     );
     return { model: deleteElements(m, [...walls, ...slabs]) };

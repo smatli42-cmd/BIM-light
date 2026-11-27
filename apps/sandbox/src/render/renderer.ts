@@ -64,7 +64,14 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   drawModel(r, s, model, hidden);
   if (s.screen.trace.over) drawTrace(r, s, model);
   const sel = s.selection;
-  drawWallOutlines(ctx, s, [...sel.walls, ...sel.openings, ...sel.slabs], SELECT, 2, model);
+  drawWallOutlines(
+    ctx,
+    s,
+    [...sel.walls, ...sel.openings, ...sel.slabs, ...sel.slabOpenings],
+    SELECT,
+    2,
+    model,
+  );
   for (const d of o.draftDims ?? []) {
     const g = resolveGraphics(s.model.display, s.view, dimensionFacts(d)).effect;
     for (const p of drawDimension(s.model, d, s.view.scale, s.model.display.paperSizes, g))

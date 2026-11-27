@@ -43,9 +43,10 @@ export interface GripView {
   readonly dir?: Vec2;
 }
 
-/** Uzel obrysu jediné vybrané desky (D2). */
+/** Uzel obrysu jediné vybrané desky (D2) nebo otvoru v desce (D3). */
 export interface SlabGripView {
-  readonly slabId: Id;
+  readonly kind: 'slab' | 'hole';
+  readonly id: Id;
   readonly index: number;
   readonly end: 'vertex';
   readonly at: Vec2;
@@ -131,11 +132,21 @@ export function gripViews(s: Session): GripView[] {
   return [...ends, ...sideGrips(s, w)];
 }
 
-/** Uzly obrysu jediné vybrané desky. */
+/** Uzly obrysu jediné vybrané desky nebo otvoru v desce. */
 export function slabGripViews(s: Session): SlabGripView[] {
+  if (s.tool.id !== 'select') return [];
   const sl = findSlab(s.model, s.selection.singleSlab);
-  if (!sl || s.tool.id !== 'select') return [];
-  return sl.outline.map((p, index) => ({ slabId: sl.id, index, end: 'vertex', at: s.viewport.toScreen(p) }));
+  const hid = s.selection.singleSlabOpening;
+  const hole = hid ? s.model.slabOpenings[hid] : undefined;
+  const target = sl ? { kind: 'slab' as const, it: sl } : hole ? { kind: 'hole' as const, it: hole } : null;
+  if (!target) return [];
+  return target.it.outline.map((p, index) => ({
+    kind: target.kind,
+    id: target.it.id,
+    index,
+    end: 'vertex',
+    at: s.viewport.toScreen(p),
+  }));
 }
 
 /** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */

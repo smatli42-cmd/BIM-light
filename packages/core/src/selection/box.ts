@@ -8,6 +8,7 @@ import { layoutDimension } from '../dimension/layout.ts';
 import { isDimensionVisible, isSelectable } from '../view/draw-view.ts';
 import type { View } from '../view/types.ts';
 import { selectableSlabs } from '../slab/pick.ts';
+import { selectableSlabOpenings } from '../slab-opening/pick.ts';
 import { pointInPolygon, selectableWallGeometry } from './pick.ts';
 
 export interface Rect {
@@ -79,6 +80,8 @@ export interface BoxSelection {
   readonly openingIds: Id[];
   /** Desky (D2). */
   readonly slabIds: Id[];
+  /** Otvory v deskách (D3); řídí se filtrem desek. */
+  readonly slabOpeningIds: Id[];
 }
 
 export function boxSelect(
@@ -114,5 +117,10 @@ export function boxSelect(
         .filter((sl) => take(sl.outline))
         .map((sl) => sl.id)
     : [];
-  return { wallIds, dimensionIds, openingIds, slabIds };
+  const slabOpeningIds = filter.slabs
+    ? selectableSlabOpenings(model, view)
+        .filter((o) => take(o.outline))
+        .map((o) => o.id)
+    : [];
+  return { wallIds, dimensionIds, openingIds, slabIds, slabOpeningIds };
 }

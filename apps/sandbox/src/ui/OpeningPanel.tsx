@@ -5,6 +5,7 @@ import type { Session } from '../session/session.ts';
 import type { OpeningDefaults } from '../session/opening-defaults.ts';
 import { SchemaForm } from './SchemaForm.tsx';
 import { NewStatusField } from './infobox/NewStatus.tsx';
+import { OpeningHost, SlabHoleMethod } from './infobox/SlabOpeningInfo.tsx';
 
 const SIZE = ['width', 'height', 'sill', 'kind', 'depth', 'side'] as const;
 const LABELS: Record<string, string> = {
@@ -48,16 +49,21 @@ function NewOpening({ s }: { s: Session }) {
   return (
     <section data-testid="new-opening">
       <h2>Nový otvor</h2>
-      <SchemaForm
-        fields={fieldsOf(s, 'opening.create', SIZE, d.kind === 'niche')}
-        labels={LABELS}
-        options={OPTIONS}
-        value={d as unknown as Record<string, unknown>}
-        onChange={(k, v) => {
-          s.openingDefaults = { ...d, [k]: v } as OpeningDefaults;
-          s.changed();
-        }}
-      />
+      <OpeningHost s={s} />
+      {d.host === 'slab' ? (
+        <SlabHoleMethod s={s} />
+      ) : (
+        <SchemaForm
+          fields={fieldsOf(s, 'opening.create', SIZE, d.kind === 'niche')}
+          labels={LABELS}
+          options={OPTIONS}
+          value={d as unknown as Record<string, unknown>}
+          onChange={(k, v) => {
+            s.openingDefaults = { ...d, [k]: v } as OpeningDefaults;
+            s.changed();
+          }}
+        />
+      )}
       <NewStatusField s={s} />
     </section>
   );

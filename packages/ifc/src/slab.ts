@@ -17,6 +17,13 @@ import { bool, en, str, typed, type Raw } from './step.ts';
 
 const STATUS: Record<Status, string> = { existing: 'EXISTING', demolished: 'DEMOLISH', new: 'NEW' };
 
+/** Zapsaná deska: entita, její umístění (spodní líc) a tloušťka – pro otvory v desce (D3). */
+export interface SlabEntity {
+  readonly entity: Raw;
+  readonly placement: Raw;
+  readonly thickness: number;
+}
+
 interface SlabTypeRefs {
   readonly layerSet: Raw;
   readonly type: Raw;
@@ -126,7 +133,7 @@ function writeSlab(
   s: Slab,
   storey: { placement: Raw; elevation: number },
   t: SlabTypeRefs,
-): Raw {
+): SlabEntity {
   const lv = slabLevels(m, s);
   const name = m.slabTypes[s.typeId]?.name ?? 'Deska';
   const place = placement(c, storey.placement, { x: 0, y: 0, z: lv.bottom - storey.elevation });
@@ -144,7 +151,7 @@ function writeSlab(
   const usage = c.w.add('IfcMaterialLayerSetUsage', [t.layerSet, en('AXIS3'), en('POSITIVE'), 0, null]);
   relMaterial(c, s.id, [entity], usage);
   writePset(c, m, s, entity, name);
-  return entity;
+  return { entity, placement: place, thickness: lv.thickness };
 }
 
 /** Zapíše desky; vrací entity po podlažích a po typech (pro vztahy). */
@@ -153,11 +160,16 @@ export function writeSlabs(
   m: Model,
   slabs: readonly Slab[],
   storeys: ReadonlyMap<Id, { placement: Raw; elevation: number }>,
-): { byStorey: Map<Id, Raw[]>; byType: Map<string, { type: Raw; els: Raw[] }> } {
+): {
+  byStorey: Map<Id, Raw[]>;
+  byType: Map<string, { type: Raw; els: Raw[] }>;
+  byId: Map<Id, SlabEntity>;
+} {
   const mats = new Map<Id, Raw>();
   const types = new Map<Id, SlabTypeRefs>();
   const byStorey = new Map<Id, Raw[]>();
   const byType = new Map<string, { type: Raw; els: Raw[] }>();
+  const byId = new Map<Id, SlabEntity>();
   for (const s of slabs) {
     const st = storeys.get(s.storeyId);
     const tt = m.slabTypes[s.typeId];
@@ -166,9 +178,11 @@ export function writeSlabs(
     if (!types.has(key)) types.set(key, writeSlabType(c, m, tt, s.slabFunction, mats));
     const refs = types.get(key);
     if (!refs) continue;
-    const e = writeSlab(c, m, s, st, refs);
+    const written = writeSlab(c, m, s, st, refs);
+    const e = written.entity;
+    byId.set(s.id, written);
     byStorey.set(s.storeyId, [...(byStorey.get(s.storeyId) ?? []), e]);
     byType.set(key, { type: refs.type, els: [...(byType.get(key)?.els ?? []), e] });
   }
-  return { byStorey, byType };
+  return { byStorey, byType, byId };
 }

@@ -1,16 +1,71 @@
-// Výběr a úpravy desky nástrojem Výběr (D2; základ 25 – pohne se jen vybraná deska, stěny stojí):
-// klik vybere, tažení posune vybrané desky, uzel obrysu se táhne nebo klikne na nové místo.
-import { add, findSlab, roundTo, slabsAt, sub, type Id, type Model, type Vec2 } from '@bim-light/core';
+// Výběr a úpravy desky a otvoru v desce nástrojem Výběr (D2, D3; základ 25 – pohne se jen vybraný
+// prvek, stěny stojí): klik vybere, tažení posune výběr, uzel obrysu se táhne nebo klikne na nové místo.
+import {
+  add,
+  findSlab,
+  roundTo,
+  slabOpeningsAt,
+  slabsAt,
+  sub,
+  type Id,
+  type Model,
+  type Vec2,
+} from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import { DRAG_PX, type Mode } from '../../mode.ts';
 import { deltaFields, trackerMm } from '../../tracker-fields.ts';
 import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
 import { ClickOrDrag } from './click-or-drag.ts';
 
-/** Deska pod kurzorem (desky leží pod stěnami – zkouší se až po nich); izolované popisy = žádná. */
-export function slabUnder(s: Session, p: PointerInfo): Id | null {
+/** Deska, nebo otvor v desce (obrys v půdorysu). */
+export type OutlineKind = 'slab' | 'hole';
+
+/** Co se s deskou a otvorem dělá jinak: výběr, příkazy posunu a bodu obrysu, obrys. */
+const OPS = {
+  slab: {
+    ids: (s: Session) => s.selection.slabs,
+    select: (s: Session, id: Id) => s.selection.set([], [], [], [id]),
+    toggle: (s: Session, id: Id) => s.selection.toggleSlab(id),
+    move: (s: Session, ids: Id[], vector: Vec2, preview: boolean) =>
+      preview
+        ? s.editor.preview('slab.move', { slabIds: ids, vector })
+        : (s.run('slab.move', { slabIds: ids, vector }), null),
+    vertex: (s: Session, id: Id, index: number, point: Vec2, preview: boolean) =>
+      preview
+        ? s.editor.preview('slab.moveVertex', { slabId: id, index, point })
+        : (s.run('slab.moveVertex', { slabId: id, index, point }), null),
+    outline: (m: Model, id: Id) => findSlab(m, id)?.outline ?? [],
+  },
+  hole: {
+    ids: (s: Session) => s.selection.slabOpenings,
+    select: (s: Session, id: Id) => s.selection.set([], [], [], [], [id]),
+    toggle: (s: Session, id: Id) => s.selection.toggleSlabOpening(id),
+    move: (s: Session, ids: Id[], vector: Vec2, preview: boolean) =>
+      preview
+        ? s.editor.preview('slabOpening.move', { openingIds: ids, vector })
+        : (s.run('slabOpening.move', { openingIds: ids, vector }), null),
+    vertex: (s: Session, id: Id, index: number, point: Vec2, preview: boolean) =>
+      preview
+        ? s.editor.preview('slabOpening.moveVertex', { openingId: id, index, point })
+        : (s.run('slabOpening.moveVertex', { openingId: id, index, point }), null),
+    outline: (m: Model, id: Id) => m.slabOpenings[id]?.outline ?? [],
+  },
+} as const;
+
+/** Otvor v desce, jinak deska pod kurzorem (desky leží pod stěnami – zkouší se až po nich). */
+export function outlineUnder(s: Session, p: PointerInfo): { kind: OutlineKind; id: Id } | null {
   if (s.screen.isolate || !s.filter.slabs) return null;
-  return slabsAt(s.model, s.view, p.world, s.viewport.px(2))[0] ?? null;
+  const tol = s.viewport.px(2);
+  const hole = slabOpeningsAt(s.model, s.view, p.world, tol)[0];
+  if (hole) return { kind: 'hole', id: hole };
+  const slab = slabsAt(s.model, s.view, p.world, tol)[0];
+  return slab ? { kind: 'slab', id: slab } : null;
+}
+
+/** Shift = přidat / ubrat, jinak vybrat (když už vybraný není). */
+export function pickOutline(s: Session, kind: OutlineKind, id: Id, shift: boolean) {
+  if (shift) OPS[kind].toggle(s, id);
+  else if (!OPS[kind].ids(s).includes(id)) OPS[kind].select(s, id);
 }
 
 const moveTracker = (v: Vec2): TrackerField[] => [
@@ -18,15 +73,16 @@ const moveTracker = (v: Vec2): TrackerField[] => [
   ...deltaFields({ x: 0, y: 0 }, v),
 ];
 
-/** Stisk na desce: klik vybere, tažení posune všechny vybrané desky. */
-export class PressSlabMode implements Mode {
+/** Stisk na desce / otvoru: klik vybere, tažení posune všechny vybrané stejného druhu. */
+export class PressOutlineMode implements Mode {
   active = true;
   private dragging = false;
   private vector: Vec2 = { x: 0, y: 0 };
 
   constructor(
     private readonly s: Session,
-    private readonly slabId: Id,
+    private readonly kind: OutlineKind,
+    private readonly id: Id,
     private readonly start: PointerInfo,
   ) {}
 
@@ -38,17 +94,14 @@ export class PressSlabMode implements Mode {
     this.vector = p.alt ? v : { x: roundTo(v.x), y: roundTo(v.y) };
   }
 
-  private params() {
-    return { slabIds: this.s.selection.slabs, vector: this.vector };
-  }
-
   up(p: PointerInfo) {
     this.active = false;
+    const ops = OPS[this.kind];
     if (!this.dragging) {
-      if (!p.shift) this.s.selection.set([], [], [], [this.slabId]);
+      if (!p.shift) ops.select(this.s, this.id);
       return;
     }
-    if (Math.hypot(this.vector.x, this.vector.y) > 0.5) this.s.run('slab.move', this.params());
+    if (Math.hypot(this.vector.x, this.vector.y) > 0.5) ops.move(this.s, ops.ids(this.s), this.vector, false);
   }
 
   down() {
@@ -61,8 +114,9 @@ export class PressSlabMode implements Mode {
 
   overlay(): Overlay {
     if (!this.dragging) return {};
+    const ops = OPS[this.kind];
     return {
-      previewModel: this.s.editor.preview('slab.move', this.params()),
+      previewModel: ops.move(this.s, ops.ids(this.s), this.vector, true),
       lines: [[this.start.world, add(this.start.world, this.vector)]],
     };
   }
@@ -72,8 +126,8 @@ export class PressSlabMode implements Mode {
   }
 }
 
-/** Posun bodu obrysu vybrané desky: přichytává se (Alt vypne), od sousedního bodu platí úhlové kroky. */
-export class SlabVertexMode extends ClickOrDrag {
+/** Posun bodu obrysu: přichytává se (Alt vypne), od sousedního bodu platí úhlové kroky. */
+export class OutlineVertexMode extends ClickOrDrag {
   readonly hint = 'Klikni nebo pusť bod obrysu na nové místo (přichytává se; Alt vypne).';
   private point: Vec2;
   private readonly origin: Vec2;
@@ -81,33 +135,32 @@ export class SlabVertexMode extends ClickOrDrag {
 
   constructor(
     s: Session,
-    private readonly slabId: Id,
+    private readonly kind: OutlineKind,
+    private readonly id: Id,
     private readonly index: number,
     start: PointerInfo,
     drag: boolean,
   ) {
     super(s, start, drag);
-    this.point = findSlab(s.model, slabId)?.outline[index] ?? start.world;
+    this.point = OPS[kind].outline(s.model, id)[index] ?? start.world;
     this.origin = this.point;
-  }
-
-  private params() {
-    return { slabId: this.slabId, index: this.index, point: this.point };
   }
 
   protected update(p: PointerInfo) {
     this.last = p;
-    const o = findSlab(this.s.model, this.slabId)?.outline ?? [];
+    const o = OPS[this.kind].outline(this.s.model, this.id);
     const from = o[(this.index - 1 + o.length) % o.length] ?? null;
     this.point = this.s.snap(p.world, { alt: p.alt, orthoOnly: p.shift, from }).point;
     this.preview =
-      this.moved || !this.dragging ? this.s.editor.preview('slab.moveVertex', this.params()) : null;
+      this.moved || !this.dragging
+        ? OPS[this.kind].vertex(this.s, this.id, this.index, this.point, true)
+        : null;
   }
 
   protected finish() {
     this.done();
     this.preview = null;
-    this.s.run('slab.moveVertex', this.params());
+    OPS[this.kind].vertex(this.s, this.id, this.index, this.point, false);
   }
 
   tracker(): TrackerField[] {

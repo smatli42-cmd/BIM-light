@@ -33,12 +33,9 @@ export class OpeningTool implements Tool {
   }
 
   private params(p: Place) {
-    return {
-      wallId: p.wallId,
-      offset: p.offset,
-      ...this.s.openingDefaults,
-      status: this.s.options.newStatus,
-    };
+    // Volby otvoru v desce (hostitel, metoda obrysu) do příkazu otvoru ve stěně nepatří.
+    const { host: _h, slabMethod: _m, ...size } = this.s.openingDefaults;
+    return { wallId: p.wallId, offset: p.offset, ...size, status: this.s.options.newStatus };
   }
 
   private place(p: PointerInfo): Place | null {

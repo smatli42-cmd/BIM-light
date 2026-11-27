@@ -47,7 +47,7 @@ function ctrlKey(s: Session, key: string): boolean {
       return true;
     case 'a': {
       const all = boxSelect(s.model, s.view, { x0: -1e12, y0: -1e12, x1: 1e12, y1: 1e12 }, false, s.filter);
-      s.selection.set(all.wallIds, all.dimensionIds, all.openingIds, all.slabIds);
+      s.selection.set(all.wallIds, all.dimensionIds, all.openingIds, all.slabIds, all.slabOpeningIds);
       return true;
     }
     case 'c':
