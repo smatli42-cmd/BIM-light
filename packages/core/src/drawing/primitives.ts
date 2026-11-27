@@ -58,6 +58,8 @@ export type Primitive =
       readonly heightMm: number;
       /** Natočení v radiánech (vždy čitelné zdola nebo zprava). */
       readonly angle: number;
+      /** Tučně (číslo místnosti). */
+      readonly bold?: boolean;
       readonly color: string;
       readonly source: PrimitiveSource;
     };

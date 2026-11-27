@@ -1,6 +1,7 @@
 // Balíček zobrazení = přenositelný JSON (základ 31): styly, vrstvy, pravidla, kombinace, pera.
 // Neplatný soubor program nerozbije: vrátí chyby a nic nezmění. Neznámá vlastnost v pravidle
 // pravidlo vypne s upozorněním. Model prvků import nikdy nemění.
+import { displayV8toV9 } from './migrate-v8.ts';
 import { validate, type JsonSchema } from '../commands/schema.ts';
 import { CATEGORIES } from '../model/categories.ts';
 import { migrate, type Migrations } from '../persistence/migrate.ts';
@@ -29,7 +30,7 @@ export const DISPLAY_PACKAGE_FORMAT = 'bim-light-display';
 /**
  * Migrace balíčku zobrazení. 1 → 2: kopie šraf a id šrafy v efektech (základ 34);
  * 2 → 3: měřítko šraf ve stylu a příznak základní / odvozená u šraf; 5 → 6: barva povrchu ve 3D;
- * 6 → 7: sytá žlutá povrchu bouraných; 7 → 8: průhlednost povrchu ve 3D.
+ * 6 → 7: sytá žlutá povrchu bouraných; 7 → 8: průhlednost povrchu ve 3D; 8 → 9: velikosti razítka místnosti.
  */
 export const DISPLAY_MIGRATIONS: Migrations = {
   1: displayV1toV2,
@@ -39,6 +40,7 @@ export const DISPLAY_MIGRATIONS: Migrations = {
   5: displayV5toV6,
   6: displayV6toV7,
   7: displayV7toV8,
+  8: displayV8toV9,
 };
 
 export function exportDisplayPackage(display: DisplaySettings): string {

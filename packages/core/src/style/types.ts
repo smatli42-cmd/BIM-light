@@ -115,6 +115,10 @@ export interface PaperSizes {
   readonly extensionGap: number;
   /** Přesah odkazové čáry za kótovací čáru. */
   readonly extensionOvershoot: number;
+  /** Razítko místnosti: výška čísla, výška ostatních řádků (ČSN 01 3420) a řádkování (× výška textu). */
+  readonly roomNumberText: number;
+  readonly roomText: number;
+  readonly roomLineSpacing: number;
 }
 
 export type CategoryGraphics = Partial<Readonly<Record<Category, GraphicEffect>>>;

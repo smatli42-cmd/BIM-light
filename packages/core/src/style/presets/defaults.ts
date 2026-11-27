@@ -31,6 +31,9 @@ export const CATEGORY_GRAPHICS: CategoryGraphics = {
   'drawing-2d': { projectionPen: 1 },
 };
 
+/** Razítko místnosti (ČSN 01 3420, výkresy 1:50 / 1:100): číslo 2,5 mm tučně, ostatní 1,8 mm, řádkování 1,3. */
+export const ROOM_PAPER_SIZES = { roomNumberText: 2.5, roomText: 1.8, roomLineSpacing: 1.3 } as const;
+
 /** Výchozí velikosti textů a značek na papíře v mm (čísla kót 2,5 mm). */
 export const PAPER_SIZES: PaperSizes = {
   dimensionText: 2.5,
@@ -39,4 +42,5 @@ export const PAPER_SIZES: PaperSizes = {
   dimensionTextGap: 0.8,
   extensionGap: 1,
   extensionOvershoot: 1.5,
+  ...ROOM_PAPER_SIZES,
 };

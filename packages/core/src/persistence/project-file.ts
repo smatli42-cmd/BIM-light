@@ -1,5 +1,6 @@
 // Uložení a načtení projektu jako JSON (základy 9, 13; rozhodnutí 17).
 // Načtení projde migracemi podle SCHEMA_VERSION. Ruční uložení navíc vytvoří datovanou verzi.
+import { projectV24toV25 } from '../style/migrate-v8.ts';
 import { projectV15toV16 } from '../composition/migrate-v15.ts';
 import { SCHEMA_VERSION, type Model } from '../model/types.ts';
 import { projectV1toV2 } from '../hatch/migrate-v1.ts';
@@ -39,7 +40,8 @@ export const PROJECT_EXTENSION = '.bim';
  * 15 → 16: skladby; 16 → 17: typy desek (D1); 17 → 18: barva povrchu ve 3D v grafice;
  * 18 → 19: otvory v deskách (D3); 19 → 20: sytá žlutá povrchu bouraných ve 3D;
  * 20 → 21: průhlednost povrchu ve 3D a 3D pohledy; 21 → 22: výkaz desek;
- * 22 → 23: místnosti; 23 → 24: kategorie místností.
+ * 22 → 23: místnosti; 23 → 24: kategorie místností;
+ * 24 → 25: velikosti razítka místnosti.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -65,6 +67,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   21: projectV21toV22,
   22: projectV22toV23,
   23: projectV23toV24,
+  24: projectV24toV25,
 };
 
 export function serializeProject(model: Model): string {

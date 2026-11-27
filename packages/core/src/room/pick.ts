@@ -7,7 +7,7 @@ import { pointInPolygon } from '../selection/pick.ts';
 import { isSelectable } from '../view/draw-view.ts';
 import { styleOfView } from '../view/effective.ts';
 import type { View } from '../view/types.ts';
-import { stampBox, stampCenter, stampLines } from './draw.ts';
+import { stampCenter, stampLayout, stampLines } from './draw.ts';
 import { allRoomGeometry } from './queries.ts';
 import { stampFields } from './stamp.ts';
 
@@ -28,7 +28,7 @@ export function roomStampsAt(model: Model, view: View, p: Vec2, tol: number): Id
     .filter((r) => {
       const g = geo.get(r.id);
       if (!g) return false;
-      const b = stampBox(stampLines(model, r, g, fields), view.scale, model.display.paperSizes);
+      const b = stampLayout(stampLines(model, r, g, fields), view.scale, model.display.paperSizes);
       const c = stampCenter(r);
       return Math.abs(p.x - c.x) <= b.halfW + tol && Math.abs(p.y - c.y) <= b.halfH + tol;
     })

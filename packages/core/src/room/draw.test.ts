@@ -3,6 +3,7 @@ import type { Primitive } from '../drawing/primitives.ts';
 import { vec } from '../geometry/index.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { drawView } from '../view/draw-view.ts';
+import { stampLayout } from './draw.ts';
 import { roomStampsAt, roomsAt } from './pick.ts';
 
 const setup = () => {
@@ -25,7 +26,15 @@ describe('prvky stavby 9 / katalog pohledů: razítko místnosti v půdorysu', (
     const { f, id } = setup();
     const t = texts(roomPrims(f, id));
     expect(t.map((p) => p.text)).toEqual(['1.01', 'Pokoj', '12,00 m²']);
-    expect(t.every((p) => p.heightMm === f.model.display.paperSizes.labelText)).toBe(true);
+    const paper = f.model.display.paperSizes;
+    expect(t.map((p) => [p.heightMm, !!p.bold])).toEqual([
+      [paper.roomNumberText, true],
+      [paper.roomText, false],
+      [paper.roomText, false],
+    ]);
+    // ČSN 01 3420: číslo 2,5 mm, ostatní 1,8 mm; nikdy větší než text kót.
+    expect([paper.roomNumberText, paper.roomText]).toEqual([2.5, 1.8]);
+    expect(t.every((p) => p.heightMm <= paper.dimensionText)).toBe(true);
     // Řádky nad sebou kolem bodu uvnitř, první nahoře.
     expect(t[0]!.at.y).toBeGreaterThan(t[2]!.at.y);
   });
@@ -59,5 +68,26 @@ describe('prvky stavby 9 / katalog pohledů: razítko místnosti v půdorysu', (
     f.run('room.update', { roomId: id, stampAt: vec(1000, 800) });
     expect(roomStampsAt(f.model, f.model.views[f.viewId]!, vec(1000, 800), 10)).toEqual([id]);
     expect(texts(roomPrims(f, id))[2]!.text).toBe('12,00 m²');
+  });
+
+  it('ČSN 01 3420: razítko se šesti řádky se vejde do místnosti 3 × 3 m v 1:100 i 1:50', () => {
+    const { f, id } = setup();
+    const lines = [
+      { text: '1.01', number: true },
+      { text: 'Obývací pokoj', number: false },
+      { text: '19,90 m²', number: false },
+      { text: 'Obytné', number: false },
+      { text: 'podlaha: dubové parkety', number: false },
+      { text: '20 °C', number: false },
+    ];
+    for (const scale of [100, 50]) {
+      const b = stampLayout(lines, scale, f.model.display.paperSizes);
+      expect(2 * b.halfW).toBeLessThan(3000);
+      expect(2 * b.halfH).toBeLessThan(3000);
+    }
+    // Řádkování 1,3 × výška textu: řádky na sebe navazují bez velkých mezer.
+    const two = stampLayout(lines.slice(0, 2), 100, f.model.display.paperSizes);
+    expect(two.halfH * 2).toBeCloseTo((2.5 + 1.8) * 100 * 1.3, 6);
+    expect(id).toBeTruthy();
   });
 });

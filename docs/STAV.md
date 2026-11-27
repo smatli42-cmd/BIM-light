@@ -28,6 +28,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   přenáší se s nastavením zobrazení), příkaz `style.setRoomStamp`, sekce Razítko v info boxu. Zadávané údaje
   (povrchy textem, poznámka, osoby, teplota, výška podlahy) v `room.update`, info boxu i Výpisu místností.
   Příkazy `roomCategory.*`, dotaz `roomCategory.list`. Testy přepočtu: délka, tloušťka, smazání, výklenek.
+- Oprava (hlášení uživatele: popisky moc velké): razítko podle ČSN 01 3420 – číslo 2,5 mm tučně, ostatní
+  řádky 1,8 mm, řádkování 1,3 × výška; velikosti v `display.paperSizes` (`roomNumberText`, `roomText`,
+  `roomLineSpacing`; migrace zobrazení 8 → 9, projektu 24 → 25). Ověřeno v 1:100 i 1:50 (`?ukazka=mistnosti`).
 
 ### Přesný otvor v desce: vodítka, dočasné kóty, tracker, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-presny-otvor`)
 

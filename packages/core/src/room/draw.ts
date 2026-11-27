@@ -12,9 +12,6 @@ import type { Model } from '../model/types.ts';
 import { stampValue, type RoomStampField } from './stamp.ts';
 import type { Room } from './types.ts';
 
-/** Řádkování razítka vůči výšce písma. */
-const LINE = 1.6;
-
 /** Fakta o místnosti pro funkci grafiky; barva kategorie je výchozí výplň (patro 1). */
 export function roomFacts(model: Model, r: Room): ElementFacts {
   const cat = model.roomCategories[r.categoryId ?? ''];
@@ -42,29 +39,45 @@ const STATE_TEXT: Readonly<Record<RoomGeometry['state'], string | null>> = {
 /** Údaje spočítané z obrysu – u neuzavřené místnosti je nahradí varování. */
 const MEASURED: readonly RoomStampField[] = ['area', 'livingArea', 'utilityArea', 'perimeter', 'volume'];
 
+/** Řádek razítka: text a zda je to číslo místnosti (větší písmo, tučně). */
+export interface StampLine {
+  readonly text: string;
+  readonly number: boolean;
+}
+
 /** Řádky razítka podle údajů razítka stylu (v pořadí, prázdné vynechá). */
 export function stampLines(
   model: Model,
   r: Room,
   g: RoomGeometry,
   fields: readonly RoomStampField[],
-): string[] {
+): StampLine[] {
   const warn = STATE_TEXT[g.state];
   const lines = fields
     .filter((f) => !warn || !MEASURED.includes(f))
-    .map((f) => stampValue(model, r, g, f))
-    .filter((t): t is string => !!t);
-  return warn ? [...lines, warn] : lines;
+    .map((f) => ({ text: stampValue(model, r, g, f) ?? '', number: f === 'number' }))
+    .filter((l) => !!l.text);
+  return warn ? [...lines, { text: warn, number: false }] : lines;
 }
 
 /** Střed razítka (mm modelu). */
 export const stampCenter = (r: Room): Vec2 => r.stampAt ?? r.seed;
 
-/** Obdélník razítka v modelu (pro výběr a tažení): střed, poloviční šířka a výška (mm). */
-export function stampBox(lines: readonly string[], scale: number, paper: PaperSizes) {
-  const h = paper.labelText * scale;
-  const longest = Math.max(1, ...lines.map((l) => l.length));
-  return { halfW: (longest * h * 0.6) / 2, halfH: (lines.length * h * LINE) / 2 };
+/** Výška písma řádku na papíře (mm): číslo, ostatní řádky (paperSizes, základ 29). */
+const textMm = (l: StampLine, paper: PaperSizes) => (l.number ? paper.roomNumberText : paper.roomText);
+
+/** Rozložení razítka v modelu: posun každého řádku od středu (mm) a poloviční šířka a výška. */
+export function stampLayout(lines: readonly StampLine[], scale: number, paper: PaperSizes) {
+  const rows = lines.map((l) => textMm(l, paper) * scale * paper.roomLineSpacing);
+  const total = rows.reduce((a, h) => a + h, 0);
+  let top = total / 2;
+  const dy = rows.map((h) => {
+    const y = top - h / 2;
+    top -= h;
+    return y;
+  });
+  const widths = lines.map((l) => l.text.length * textMm(l, paper) * scale * 0.6);
+  return { dy, halfW: Math.max(0, ...widths) / 2, halfH: total / 2 };
 }
 
 export function drawRoom(
@@ -90,18 +103,18 @@ export function drawRoom(
     });
   }
   const lines = stampLines(model, r, g, fields);
-  const step = paper.labelText * scale * LINE;
+  const lay = stampLayout(lines, scale, paper);
   const c = stampCenter(r);
-  lines.forEach((text, i) => {
-    const dy = ((lines.length - 1) / 2 - i) * step;
+  lines.forEach((l, i) => {
     out.push({
       kind: 'text',
-      at: add(c, { x: 0, y: dy }),
-      text,
-      heightMm: paper.labelText,
+      at: add(c, { x: 0, y: lay.dy[i] ?? 0 }),
+      text: l.text,
+      heightMm: textMm(l, paper),
       angle: 0,
+      ...(l.number && { bold: true }),
       color: eff.lineColor,
-      source: source(i === 0 ? 'číslo místnosti' : 'razítko místnosti'),
+      source: source(l.number ? 'číslo místnosti' : 'razítko místnosti'),
     });
   });
   return out;
