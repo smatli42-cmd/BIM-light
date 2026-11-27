@@ -7,6 +7,7 @@ import { activate } from '../../session/windows.ts';
 import { Icon } from '../icons/Icon.tsx';
 import { ScaleSelect } from '../ViewControls.tsx';
 import { SectionCanvas } from './SectionCanvas.tsx';
+import { PlanWindowTabs } from '../layout/WindowTabs.tsx';
 
 export function SectionWindowView(p: { s: Session; index: number; sec: Section; cls: string }) {
   const { s, index, sec } = p;
@@ -15,6 +16,7 @@ export function SectionWindowView(p: { s: Session; index: number; sec: Section; 
   const upd = (patch: Record<string, unknown>) => s.run('section.update', { sectionId: sec.id, ...patch });
   return (
     <section class={p.cls} data-testid={active ? 'window' : 'window-passive'}>
+      <PlanWindowTabs s={s} index={index} />
       <div class="window-head" onMouseDown={() => activate(s, index)}>
         <span class="window-tab">
           <Icon name={sec.kind === 'section' ? 'section' : 'elevation'} size={16} />

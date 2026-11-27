@@ -53,7 +53,7 @@ function addStorey(s: Session, stack: Storey[]) {
     elevation,
     height: last?.height ?? 3000,
   });
-  if (r.ok && r.created[1]) s.setView(r.created[1]);
+  if (r.ok && r.created[1]) openInActive(s, r.created[1]);
 }
 
 export function StoreysPanel({ s }: { s: Session }) {

@@ -5,6 +5,7 @@ import { activeAnnotationLayer, DEFAULT_SCALES, isViewModified, styleOfView } fr
 import { useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
 import { currentSet, switchSet } from '../session/sets.ts';
+import { openInActive } from '../session/windows.ts';
 
 export function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
   const storeys = Object.values(s.model.storeys);
@@ -14,7 +15,7 @@ export function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
   const [scale, setScale] = useState(s.model.display.styles[s.view.styleId]?.defaultScale ?? 100);
   const create = () => {
     const r = s.run('view.create', { storeyId, styleId, scale });
-    if (r.ok && r.created[0]) s.setView(r.created[0]);
+    if (r.ok && r.created[0]) openInActive(s, r.created[0]);
     onDone();
   };
   return (

@@ -5,6 +5,7 @@
 import type { Id, View3d } from '@bim-light/core';
 import type { Box3D } from './clip.ts';
 import type { Session } from '../session/session.ts';
+import { tabExists, windowTabs, withTab, type ViewTab } from '../session/tabs.ts';
 import { selectionElements } from './scene-model.ts';
 
 export interface View3DState {
@@ -19,6 +20,8 @@ export interface View3DState {
   focused: boolean;
   /** 3D nahradilo jediné okno půdorysu (otevřeno z Obsahu): ukazuje se jen 3D okno. */
   solo: boolean;
+  /** Záložky 3D okna: historie okna, které 3D nahradilo, a 3D pohledy (session/tabs.ts). */
+  tabs: ViewTab[];
 }
 
 const states = new WeakMap<Session, View3DState>();
@@ -29,7 +32,7 @@ const openFromUrl = () => typeof location !== 'undefined' && new URLSearchParams
 export function view3d(s: Session): View3DState {
   let st = states.get(s);
   if (!st) {
-    st = { open: openFromUrl(), only: null, fit: 0, viewId: null, focused: false, solo: false };
+    st = { open: openFromUrl(), only: null, fit: 0, viewId: null, focused: false, solo: false, tabs: [] };
     states.set(s, st);
   }
   return st;
@@ -93,11 +96,14 @@ export function open3DView(s: Session, viewId: Id) {
   const st = view3d(s);
   st.viewId = viewId;
   if (!st.open) {
+    // Záložky okna, které 3D nahradí, přejdou do 3D okna (a po návratu zpět).
+    st.tabs = windowTabs(s, s.active);
     if (s.windows.length > 1) {
       s.windows.splice(s.active, 1);
       s.active = 0;
     } else st.solo = true;
   }
+  st.tabs = withTab(st.tabs, { kind: '3d', id: viewId });
   st.focused = true;
   show3D(s, false);
 }
@@ -112,6 +118,7 @@ export function active3d(s: Session): View3d {
 
 export function pick3d(s: Session, viewId: Id) {
   view3d(s).viewId = viewId;
+  view3d(s).tabs = withTab(view3d(s).tabs, { kind: '3d', id: viewId });
   view3d(s).fit++;
   s.changed();
 }
@@ -127,3 +134,10 @@ export function setStoreys3D(s: Session, ids: readonly Id[] | null) {
 export function setBox3D(s: Session, box: Box3D | null) {
   s.run('view3d.setSectionBox', { viewId: active3d(s).id, sectionBox: box });
 }
+
+/** Záložky 3D okna: uložené platné + zobrazený 3D pohled. */
+export const tabs3D = (s: Session): ViewTab[] =>
+  withTab(
+    view3d(s).tabs.filter((t) => tabExists(s, t)),
+    { kind: '3d', id: active3d(s).id },
+  );

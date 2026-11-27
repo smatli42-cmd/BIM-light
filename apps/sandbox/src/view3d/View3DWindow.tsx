@@ -21,6 +21,7 @@ import { Toolbar3D, type CameraUi } from './Toolbar3D.tsx';
 import { useHover3D } from './use-hover-3d.ts';
 import { cssVar, useViewer } from './use-viewer.ts';
 import type { Viewer } from './viewer.ts';
+import { Tabs3D } from './Tabs3D.tsx';
 import './view3d.css';
 
 /** Hlavička 3D okna: název a tlačítka zobrazení. */
@@ -174,6 +175,7 @@ export function View3DWindow({ s }: { s: Session }) {
       data-testid="window-3d"
       onMouseDown={() => focus3D(s)}
     >
+      <Tabs3D s={s} />
       <Head3D s={s} title={title} />
       <Bar3D s={s} raw={raw} viewer={viewer} cam={cam} />
       <main class="workspace">

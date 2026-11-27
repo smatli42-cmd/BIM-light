@@ -4,11 +4,17 @@ import type { Id, Structure } from '@bim-light/core';
 import type { Viewport } from '../canvas/viewport.ts';
 
 /** Okno pohledu: který pohled ukazuje a jeho výřez. */
+import type { ViewTab } from './tabs.ts';
+
 export interface WindowState {
   viewId: Id;
   readonly viewport: Viewport;
   /** Okno ukazuje řez / pohled (fasádu) místo půdorysu; null / chybí = půdorys `viewId`. */
   sectionId?: Id | null;
+  /** Okno ukazuje výkaz / výpis (tabulku) místo půdorysu; přednost před řezem. */
+  scheduleId?: Id | null;
+  /** Záložky pohledů okna (session/tabs.ts); chybí = jen to, co okno ukazuje. */
+  tabs?: ViewTab[];
 }
 
 export type TraceRef = 'below' | 'above' | Id;

@@ -1,12 +1,26 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, záložky pohledů v záhlaví okna, výkazy v okně; výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Záložky pohledů v záhlaví okna, 2026-11-27 (pokyn uživatele, princip Arditu)
+
+- Každé otevření pohledu (podlaží, uložený pohled, řez, fasáda, výkaz / výpis, 3D) z Obsahu, dvojklikem na
+  značku řezu, z info boxu nebo výběrem v záhlaví přidá do okna záložku a přepne se na ni; už otevřený
+  pohled se jen přepne (bez duplicit). Klik na záložku přepne okno, × zavře (aktivní → sousední vpravo,
+  jinak vlevo; poslední záložka × nemá). Ikona podle druhu (půdorys, řez, pohled, výkaz, 3D), název
+  („1.NP“, „Řez A“, „Výkaz stěn“). Záložky se zúží (název „…“), pak lišta posouvá.
+- Ve dvou oknech má každé okno své záložky. 3D okno převezme záložky okna, které nahradilo; záložka
+  půdorysu / řezu / výkazu v 3D okně vrátí na jeho místo pracovní okno se stejnými záložkami.
+- **Výkazy se otevírají do okna** (záložka), ne jako dialog: záhlaví s názvem, Export CSV, Smazat výkaz,
+  pod ním tabulka a nastavení. Smazaný výkaz / řez záložku zavře.
+- Stav obrazovky (`WindowState.tabs`, `session/tabs.ts`), bez příkazu jádra a migrace, po obnovení stránky
+  se nepamatuje. E2E `zalozky.spec.ts`.
 
 ### Výšková kóta v půdorysu, 2026-11-27 (pokyn uživatele; v půdorysu 1.NP `?ukazka=rezy` / `dum`)
 
@@ -210,6 +224,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Záložky pohledů:** zavření aktivní záložky přepne na sousední vpravo, jinak vlevo (jako prohlížeče
+  a Revit); poslední záložka okna se zavřít nedá (okno nesmí být prázdné). Pracovní okno podlaží má
+  v záložce název podlaží („1.NP“), uložený pohled svůj název. Lišta záložek je samostatný řádek nad
+  záhlavím okna (výběr pohledu, styl, měřítko zůstaly v záhlaví). Výkaz v okně nemá posun a přiblížení.
+
 - **Výšková kóta v půdorysu:** kroužek = kóta terénu u nároží RT / UT (upřesnil uživatel). Na roh stěny se
   naváže, když je bod do 100 mm od rohu líce stěny; smazaná stěna = kóta zůstane na posledním bodě. Kóta
   rámečku odkazuje
@@ -397,8 +416,6 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 
 - **Terén:** zatím není v modelu – RT / UT u kóty terénu a výška terénu v řezu jsou čísla zadaná u značky;
   až bude terén (situace, etapa), vezmou se z něj.
-- **Záložky pohledů (pro informaci, bez pokynu nedělat):** Ardit má otevřené pohledy jako záložky
-  v záhlaví okna („1.NP“, „Výpis oken a dveří“, „Řez A“) – možné rozšíření otevírání pohledů.
 - **STAV.md má 41 KB (limit ~40 KB):** návrh rozdělení – hotové kroky řezů a výškových kót přesunout
   do nového `docs/STAV-rezy.md` (jako `STAV-steny.md`), v STAV.md nechat odkaz. Čeká na souhlas.
 - **Řezy – zbývá:** výběr prvků v okně řezu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
@@ -426,7 +443,7 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
   římsa, drážka) jako Obklad stěny / Drážka v Revitu; profil jako položka knihovny, součást typu nebo
   instance, vybrání přes společný mechanismus otvorů (základ 19). Zařadit po oknech a dveřích.
 - Z8: výběr a tažení značky typu myší (dnes jen info box a příkaz); legenda skladeb jako kresba (řez
-  skladbou se šrafami) na výkrese – s etapou 7 (listy); výkaz ve vlastní záložce okna; export XLSX
+  skladbou se šrafami) na výkrese – s etapou 7 (listy); export XLSX
   (dnes CSV); výkazy po variantách vedle sebe (porovnání A / B).
 - Z7: hledání a výběr podle vlastností (nosná, funkce) v Najít a vybrat a pravidla grafiky podle
   vlastností (např. nosné stěny tučněji) – patří k Z9 a k přepisům vzhledu. Součinitel prostupu tepla

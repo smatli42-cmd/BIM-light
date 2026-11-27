@@ -10,7 +10,9 @@ import { activate, setWindowView } from '../../session/windows.ts';
 import { is3DFocused } from '../../view3d/state.ts';
 import { useSession } from '../use-session.ts';
 import { NewView, ScaleSelect } from '../ViewControls.tsx';
-import { windowSection } from '../../session/section-windows.ts';
+import { windowSchedule, windowSection } from '../../session/section-windows.ts';
+import { ScheduleWindowView } from '../schedule/ScheduleWindowView.tsx';
+import { PlanWindowTabs } from './WindowTabs.tsx';
 import { SectionWindowView } from '../section/SectionWindowView.tsx';
 
 function storeyLabel(s: Session, storeyId: string): string {
@@ -25,6 +27,8 @@ export function ViewWindow(p: { s: Session; controller: Controller; index: numbe
   useSession(p.s);
   const active = p.index === p.s.active;
   const cls = active && !is3DFocused(p.s) ? 'window active' : 'window';
+  const schedule = windowSchedule(p.s, p.index);
+  if (schedule) return <ScheduleWindowView s={p.s} index={p.index} scheduleId={schedule} cls={cls} />;
   const sec = windowSection(p.s, p.index);
   if (sec) return <SectionWindowView s={p.s} index={p.index} sec={sec} cls={cls} />;
   return <PlanWindow {...p} cls={cls} />;
@@ -37,6 +41,7 @@ function PlanWindow(p: { s: Session; controller: Controller; index: number; cls:
   const v = s.model.views[s.windows[index]?.viewId ?? ''] ?? s.view;
   return (
     <section class={cls} data-testid={active ? 'window' : 'window-passive'}>
+      <PlanWindowTabs s={s} index={index} />
       <div class="window-head" onMouseDown={() => activate(s, index)}>
         <span class="window-tab">
           <Icon name="plan" size={16} />

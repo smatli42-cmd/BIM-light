@@ -4,12 +4,13 @@ import { Viewport } from '../canvas/viewport.ts';
 import type { WindowState } from './screen.ts';
 import type { Session } from './session.ts';
 import { blur3D, close3D, is3DFocused, view3d } from '../view3d/state.ts';
+import { showPlanTab } from './tabs.ts';
 
 /** Jedno okno, nebo dvě vedle sebe (druhé začne se stejným pohledem a výřezem). */
 export function setLayout(s: Session, n: 1 | 2) {
   if (n === 2 && s.windows.length === 1) {
     const vp = Object.assign(new Viewport(), s.viewport);
-    s.windows.push({ viewId: s.viewId, viewport: vp });
+    s.windows.push({ viewId: s.viewId, viewport: vp, tabs: [{ kind: 'plan', id: s.viewId }] });
   }
   if (n === 1 && s.windows.length > 1) {
     s.windows.splice(0, s.windows.length, s.windows[s.active] as WindowState);
@@ -35,29 +36,24 @@ export function activate(s: Session, i: number) {
  */
 export function openInActive(s: Session, viewId: string) {
   leave3D(s, viewId);
-  const w = s.windows[s.active];
-  if (w) w.sectionId = null;
-  s.setView(viewId);
-  s.changed();
+  showPlanTab(s, s.active, { kind: 'plan', id: viewId });
 }
 
 /** Pracuje-li se ve 3D okně, nahradí ho okno půdorysu na stejném místě (Obsah otevírá do něj). */
 export function leave3D(s: Session, viewId: string) {
   if (!is3DFocused(s)) return;
-  const solo = view3d(s).solo;
+  const { solo, tabs } = view3d(s);
   close3D(s);
   if (s.windows.length === 1 && !solo) {
     s.windows.push({ viewId, viewport: Object.assign(new Viewport(), s.viewport) });
   }
   activate(s, s.windows.length - 1);
+  // Záložky 3D okna se vrátí oknu, které se na jeho místě znovu otevřelo.
+  const w = s.windows[s.active];
+  if (w) w.tabs = tabs;
 }
 
 /** Přepne pohled v daném okně (aktivní okno přes setView, jinak jen změní jeho pohled). */
 export function setWindowView(s: Session, i: number, viewId: string) {
-  if (i === s.active) return s.setView(viewId);
-  const w = s.windows[i];
-  if (!w || !s.model.views[viewId]) return;
-  w.viewId = viewId;
-  w.sectionId = null;
-  s.changed();
+  showPlanTab(s, i, { kind: 'plan', id: viewId });
 }
