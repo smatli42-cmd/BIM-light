@@ -71,12 +71,12 @@ describe('katalog-pohledy / základ 31: nastavení zobrazení je přenositelný 
   it('náhled importu a režim „ponechat obě“ (nové id, název „(2)“)', () => {
     const f = fixture();
     const d = f.model.display;
-    expect(previewImport(d, d).styles).toEqual({ add: 0, replace: 2 });
+    expect(previewImport(d, d).styles).toEqual({ add: 0, replace: 3 });
     const merged = mergeDisplay(d, d, 'keep-both', sequentialIds(7));
     const names = Object.values(merged.styles)
       .map((s) => s.name)
       .sort();
-    expect(names).toEqual(['Projekt', 'Projekt (2)', 'Studie', 'Studie (2)']);
+    expect(names).toEqual(['Elektro', 'Elektro (2)', 'Projekt', 'Projekt (2)', 'Studie', 'Studie (2)']);
     const copy = Object.values(merged.styles).find((s) => s.name === 'Studie (2)');
     expect(copy && merged.layerCombinations[copy.layerCombinationId]).toBeTruthy();
     expect(copy && merged.layers[copy.defaultAnnotationLayerId]?.kind).toBe('annotation');

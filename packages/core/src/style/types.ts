@@ -123,6 +123,9 @@ export interface PaperSizes {
   readonly levelMark?: number;
   /** Výška textu výškové kóty (drobný, jako popis místnosti, vzor Arditu); chybí = výška popisu. */
   readonly levelText?: number;
+  /** Velikost elektro značky (Ardit 4 mm) a výška popisků označení a výšky; chybí = 4 a 2 mm. */
+  readonly electroSymbol?: number;
+  readonly electroText?: number;
 }
 
 export type CategoryGraphics = Partial<Readonly<Record<Category, GraphicEffect>>>;

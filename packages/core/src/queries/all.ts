@@ -37,9 +37,12 @@ import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 import { coveringSurfaces, coveringTypeList } from './coverings.ts';
 import { coveringRoom } from './covering-room.ts';
 import { coveringJoints, coveringTiles } from './covering-tiles.ts';
+import { electroList, electroTypeList } from './electro.ts';
 
 export const CORE_QUERIES = [
   projectInfo,
+  electroList,
+  electroTypeList,
   wallList,
   wallFindSame,
   modelCheck,

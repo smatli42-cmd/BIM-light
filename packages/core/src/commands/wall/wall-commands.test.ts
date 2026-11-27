@@ -74,7 +74,7 @@ describe('katalog-kresleni / část 5: rozdělení, napojení a mazání', () =>
       viewId: f.viewId,
     });
     f.run('dimension.create', { kind: 'length', ref: { wallId: top, face: 'ref' }, viewId: f.viewId });
-    expect(rulesFor('wall').onDelete).toEqual(['dimensions', 'connections', 'openings', 'tags']);
+    expect(rulesFor('wall').onDelete).toEqual(['dimensions', 'connections', 'openings', 'tags', 'electro']);
     f.run('wall.delete', { wallIds: [left] });
     expect(Object.values(f.model.dimensions)).toHaveLength(1);
     expect(allConnections(f.model).some((c) => c.relating.wallId === left || c.related.wallId === left)).toBe(

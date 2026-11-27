@@ -16,6 +16,8 @@ export const RULE_PROPERTIES = [
   'materialId',
   /** Kategorie (funkce) místnosti – id z `model.roomCategories`. */
   'roomCategory',
+  /** Skupina legendy elektro – id z `model.electroGroups` (koncepce 3). */
+  'electroGroup',
 ] as const;
 export type RuleProperty = (typeof RULE_PROPERTIES)[number];
 
@@ -32,8 +34,12 @@ export interface ElementFacts {
   readonly graphicOverride?: GraphicEffect;
   /** Kategorie místnosti (jen místnosti). */
   readonly roomCategory?: Id;
+  /** Skupina legendy (jen elektro prvky). */
+  readonly electroGroup?: Id;
   /** Vlastní výchozí grafika prvku (barva kategorie místnosti), patro 1 nad grafikou kategorie. */
   readonly ownDefault?: GraphicEffect;
+  /** Odkud je vlastní výchozí grafika (pro „proč“); chybí = kategorie místnosti. */
+  readonly ownDefaultSource?: string;
   /** Grafika oblasti pohledu (vzdálená oblast řezu), patro 4 před úpravou pohledu podle kategorie. */
   readonly zoneEffect?: GraphicEffect;
 }

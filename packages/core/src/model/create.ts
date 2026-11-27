@@ -10,6 +10,7 @@ import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
 import type { Material } from '../material/types.ts';
 import { withHatchesFor } from '../hatch/project.ts';
 import { createDefaultDisplay } from '../style/presets/create.ts';
+import { withElectroDisplay } from '../electro/display.ts';
 import type { View } from '../view/types.ts';
 import type { WallType } from '../wall/types.ts';
 import { WALL_TYPE_LIBRARY, wallTypeFromLibrary } from '../wall-type/library.ts';
@@ -17,6 +18,7 @@ import { DEFAULT_CUT_HEIGHT } from '../wall/layers.ts';
 import { SCHEMA_VERSION, type Model } from './types.ts';
 import { defaultSchedules } from '../schedule/defaults.ts';
 import { slabLibraryForProject } from '../slab/library.ts';
+import { emptyElectroData } from '../electro/project.ts';
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
   Object.fromEntries(items.map((i) => [i.id, i]));
@@ -39,10 +41,14 @@ function wallTypes(mats: Material[], newId: IdGenerator): WallType[] {
 }
 
 /** Model bez 3D pohledu a dat řezů (ta se doplní na konci, aby se id ostatních položek neposunula). */
-type BaseModel = Omit<Model, 'views3d' | keyof ReturnType<typeof emptySectionData>>;
+type BaseModel = Omit<
+  Model,
+  'views3d' | keyof ReturnType<typeof emptySectionData> | keyof ReturnType<typeof emptyElectroData>
+>;
 
 export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): Model {
-  return ensureCompositions(emptyProject(newId, name));
+  const m = emptyProject(newId, name);
+  return ensureCompositions({ ...m, display: withElectroDisplay(m.display) });
 }
 
 function emptyProject(newId: IdGenerator, name: string): Model {
@@ -93,5 +99,5 @@ function emptyProject(newId: IdGenerator, name: string): Model {
   };
   // Výchozí 3D pohled (jako {3D} v Revitu); id se bere až na konci, ostatní id se neposunou.
   const view3d = newView3d(newId(), '3D', study.id);
-  return { ...model, ...emptySectionData(), views3d: { [view3d.id]: view3d } };
+  return { ...model, ...emptySectionData(), ...emptyElectroData(), views3d: { [view3d.id]: view3d } };
 }

@@ -22,9 +22,10 @@ import type { Section, SectionPreset } from '../section/types.ts';
 import type { LevelDimension } from '../level-dim/types.ts';
 import type { PlanLevelDimension } from '../level-dim/plan.ts';
 import type { SectionDimension } from '../section-dim/types.ts';
+import type { ElectroElement, ElectroGroup, ElectroType } from '../electro/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 36;
+export const SCHEMA_VERSION = 37;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -151,4 +152,8 @@ export interface Model {
   readonly schedules: Readonly<Record<Id, ScheduleDef>>;
   /** Značky typu stěn v půdorysu (plán stěn Z8): popisky podlaží se skupinou anotací (základ 28). */
   readonly wallTags: Readonly<Record<Id, WallTag>>;
+  /** Elektro (koncepce 3): skupiny legendy, typy značek (knihovna ČSN EN 60617) a prvky (instance). */
+  readonly electroGroups: Readonly<Record<Id, ElectroGroup>>;
+  readonly electroTypes: Readonly<Record<Id, ElectroType>>;
+  readonly electroElements: Readonly<Record<Id, ElectroElement>>;
 }

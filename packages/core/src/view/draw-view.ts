@@ -29,6 +29,7 @@ import { drawRooms } from '../room/draw-view.ts';
 import { drawTileJoints } from '../covering/draw-joints.ts';
 import { drawSectionMarks } from '../section/mark.ts';
 import { drawPlanLevels } from '../level-dim/plan.ts';
+import { drawElectro } from '../electro/draw-view.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -132,6 +133,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
     ...walls,
     ...patches,
     ...drawOpenings(model, view, structure),
+    ...drawElectro(model, view),
   ];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;

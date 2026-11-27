@@ -87,6 +87,7 @@ import { ROOM_COMMANDS } from './room/all.ts';
 import { COVERING_COMMANDS } from './covering/all.ts';
 import { VIEW3D_COMMANDS } from './view-3d/all.ts';
 import { SECTION_COMMANDS } from './section/all.ts';
+import { ELECTRO_COMMANDS } from './electro/all.ts';
 
 export const CORE_COMMANDS = [
   storeyCreate,
@@ -132,6 +133,7 @@ export const CORE_COMMANDS = [
   ...COVERING_COMMANDS,
   ...VIEW3D_COMMANDS,
   ...SECTION_COMMANDS,
+  ...ELECTRO_COMMANDS,
   openingCreate,
   openingMove,
   openingUpdate,

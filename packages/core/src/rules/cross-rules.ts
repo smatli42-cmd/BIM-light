@@ -3,13 +3,13 @@
 // Nový typ prvku = nový řádek tabulky.
 import type { WallEdge } from '../wall/edges.ts';
 
-export type ElementKind = 'wall' | 'slab' | 'opening' | 'room' | 'dimension' | 'tag';
+export type ElementKind = 'wall' | 'slab' | 'opening' | 'room' | 'dimension' | 'tag' | 'electro';
 
 /** Druhy bodů a čar pro přichytávání (katalog kreslení, část 2, pořadí priorit). */
 export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'center' | 'quadrant' | 'face' | 'axis';
 
 /** Co se při smazání prvku smaže s ním. */
-export type DeleteCascade = 'dimensions' | 'connections' | 'openings' | 'tags';
+export type DeleteCascade = 'dimensions' | 'connections' | 'openings' | 'tags' | 'electro';
 
 export interface CrossRules {
   /** Na co jde navázat kóta (líce, osa, čela volných konců). */
@@ -44,8 +44,8 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     movable: true,
     offsettable: true,
     deletable: true,
-    onDelete: ['dimensions', 'connections', 'openings', 'tags'],
-    hosts: ['wall', 'opening'],
+    onDelete: ['dimensions', 'connections', 'openings', 'tags', 'electro'],
+    hosts: ['wall', 'opening', 'electro'],
     selectable: true,
   },
   /** Deska (D1, D3): s deskou zaniknou její otvory (otvor bez hostitele); kóty k hranám přijdou s D4. */
@@ -110,6 +110,23 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     lockable: false,
     snaps: [],
     movable: false,
+    offsettable: false,
+    deletable: true,
+    onDelete: [],
+    hosts: [],
+    selectable: false,
+  },
+  /**
+   * Elektro prvek (koncepce 3): na líci stěny jde se stěnou a zaniká s ní (follow.ts), na stropě stojí
+   * v bodě; posun a smazání příkazem. Výběr ve výkresu přijde s nástroji elektra.
+   */
+  electro: {
+    dimensionFaces: [],
+    lengthDimension: false,
+    angularDimension: false,
+    lockable: false,
+    snaps: ['center'],
+    movable: true,
     offsettable: false,
     deletable: true,
     onDelete: [],
