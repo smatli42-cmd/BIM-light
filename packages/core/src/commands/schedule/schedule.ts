@@ -42,6 +42,7 @@ const EDITABLE = {
     JAMB_RULES,
     'výkaz povrchů – ostění: deducted = jen u odečtených otvorů, all = vždy, none = nikdy',
   ),
+  wastePercent: S.number('výkaz dlaždic – prořez v % pro „Celkem s prořezem“ (výchozí 10)', { minimum: 0 }),
 } as const satisfies Record<string, JsonSchema>;
 
 type Editable = Partial<Omit<ScheduleDef, 'id' | 'source' | 'filter'>> & { filter?: Partial<ScheduleFilter> };
@@ -65,7 +66,8 @@ export const scheduleCreate = defineCommand<Editable & { source: ScheduleSource;
   label: 'Nový výkaz',
   description:
     'Vytvoří výkaz (tabulku z modelu): zdroj walls (stěny) / wall-layers (vrstvy = materiály) / ' +
-    'wall-types (legenda skladeb) / slabs / rooms / coverings (povrchy místností), sloupce, seskupení, řazení, filtr a pravidlo odečtu otvorů. ' +
+    'wall-types (legenda skladeb) / slabs / rooms / coverings (povrchy místností) / tiles (dlaždice ' +
+    'ze spárořezu), sloupce, seskupení, řazení, filtr a pravidlo odečtu otvorů. ' +
     'Bez sloupců dostane všechna pole zdroje.',
   group: GROUP,
   params: S.object({ source: S.enumOf(SCHEDULE_SOURCES, 'zdroj řádků'), ...EDITABLE }, ['source', 'name']),
@@ -81,6 +83,7 @@ export const scheduleCreate = defineCommand<Editable & { source: ScheduleSource;
       filter: { ...DEFAULT_FILTER, ...p.filter },
       minOpeningArea: p.minOpeningArea ?? 0,
       ...(p.jambRule && { jambRule: p.jambRule }),
+      ...(p.wastePercent !== undefined && { wastePercent: p.wastePercent }),
     };
     return { model: checked(model, def), created: [def.id] };
   },
@@ -91,7 +94,7 @@ export const scheduleUpdate = defineCommand<Editable & { scheduleId: Id }>({
   label: 'Upravit výkaz',
   description:
     'Změní definici výkazu (jen zadané): název, sloupce, seskupení, po prvcích / součty skupin, řazení, ' +
-    'filtr (podlaží, stavy, varianty, jen použité typy), mez odečtu otvorů (m²) a přičtení ostění.',
+    'filtr (podlaží, stavy, varianty, jen použité typy), mez odečtu otvorů (m²), přičtení ostění a prořez dlaždic (%).',
   group: GROUP,
   params: S.object({ scheduleId: S.id, ...EDITABLE }, ['scheduleId']),
   run(model, { scheduleId, filter, ...rest }) {

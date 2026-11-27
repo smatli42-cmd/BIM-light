@@ -93,6 +93,7 @@ export const STYLE_SCHEMA: JsonSchema = {
     categoryGraphics: { type: 'object' },
     labels: { type: 'object' },
     roomStamp: { type: 'array', items: str },
+    tileJoints: { type: 'boolean' },
     defaultScale: { type: 'number', exclusiveMinimum: 0 },
     hatchScale: { type: 'number', minimum: 0.5, maximum: 3, description: 'měřítko šraf' },
     defaultAnnotationLayerId: str,

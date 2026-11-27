@@ -9,3 +9,7 @@ export * from './zones.ts';
 export * from './color.ts';
 export * from './finish.ts';
 export * from './pick.ts';
+export * from './clip-line.ts';
+export * from './tiling.ts';
+export * from './tiles.ts';
+export * from './draw-joints.ts';

@@ -44,7 +44,7 @@ export const TILED_KINDS: readonly CoveringKind[] = ['tiling', 'floor-tiles', 's
 export const TILE_ALIGNS = ['corner', 'center', 'axis'] as const;
 export type TileAlign = (typeof TILE_ALIGNS)[number];
 
-/** Formát obkladu / dlažby (zatím jen uložený; spárořez je další krok). */
+/** Formát obkladu / dlažby; spárořez se z něj počítá (`tiling.ts`). */
 export interface TileFormat {
   /** Šířka a výška dlaždice (mm). */
   readonly width: number;
@@ -85,6 +85,11 @@ export interface RoomCoverings {
   readonly wallOverrides?: Readonly<Record<string, readonly CoveringZone[]>>;
   readonly floor?: Id | null;
   readonly ceiling?: Id | null;
+  /**
+   * Posun počátku spárořezu vůči bodu zarovnání (mm v rovině plochy u, v); klíč `floor`, `ceiling`,
+   * nebo `wallId:strana` (základ 14 – logicky, ne souřadnicí).
+   */
+  readonly tileOrigins?: Readonly<Record<string, { readonly x: number; readonly y: number }>>;
 }
 
 export const faceKey = (wallId: Id, side: FaceSide): string => `${wallId}:${side}`;

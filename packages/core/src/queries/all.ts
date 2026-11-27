@@ -22,6 +22,7 @@ import { roomCategoryList, roomList } from './rooms.ts';
 import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 import { coveringSurfaces, coveringTypeList } from './coverings.ts';
 import { coveringRoom } from './covering-room.ts';
+import { coveringJoints, coveringTiles } from './covering-tiles.ts';
 
 export const CORE_QUERIES = [
   projectInfo,
@@ -39,6 +40,8 @@ export const CORE_QUERIES = [
   coveringTypeList,
   coveringRoom,
   coveringSurfaces,
+  coveringJoints,
+  coveringTiles,
   outlineTempDimensionList,
   view3dList,
   slabTypeList,

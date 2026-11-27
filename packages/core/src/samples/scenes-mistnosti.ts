@@ -5,6 +5,50 @@ import type { Sample } from './types.ts';
 
 export const ROOM_SCENES: readonly Sample[] = [
   {
+    key: 'sparorez',
+    title: 'Spárořez – dlažba a obklad, odřezy, úzké řezy, počátek',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Koupelna 2,3 × 2,1 m s oknem a dveřmi: dlažba 600×600 na střed s počátkem posunutým o 100 mm, takže ' +
+      'u stěn vzniknou úzké řezy (posun X 0, Y 200 je odstraní), obklad 300×600 od rohu do 2,10 m; WC: dlažba 300×300 na osu spáry. Styl Projekt ' +
+      'kreslí spárořez dlažby v půdorysu. Zkus: klik do koupelny → info box, sekce Povrchy → Spárořez (celé, ' +
+      'řezané, úzké řezy); táhni křížek počátku dlažby v půdorysu, nebo zadej posun X / Y číslem – řezy se ' +
+      'hned přepočítají; posuň příčku – spárořez se přepočítá. Obsah → Výkazy → Výkaz dlaždic (prořez 10 %).',
+    build(c) {
+      const sid = c.storeyId;
+      const [top, , , left] = rect(c, 'Obvodová zateplená 465', 4000, 2100);
+      const partition = c.line(vec(2400, 0), vec(2400, 2100), {
+        typeId: c.type('Příčka 125'),
+        referenceLine: 'axis',
+      });
+      c.run('opening.create', { wallId: partition, offset: 500, width: 700, height: 1970, sill: 0 });
+      c.run('opening.create', { wallId: top, offset: 800, width: 900, height: 600, sill: 1500 });
+      c.run('opening.create', { wallId: left, offset: 600, width: 800, height: 1970, sill: 0 });
+      const [bath] = c.run('room.create', { storeyId: sid, point: vec(1200, 1000), name: 'Koupelna' });
+      const [wc] = c.run('room.create', { storeyId: sid, point: vec(3200, 1000), name: 'WC' });
+      c.run('covering.setZones', {
+        roomId: bath,
+        zones: [
+          { typeId: 'cov-tiling-300x600', top: 2100 },
+          { typeId: 'cov-paint-white', top: null },
+        ],
+      });
+      c.run('covering.assign', { roomId: bath, place: 'floor', typeId: 'cov-floor-tiles-600' });
+      c.run('covering.setOrigin', { roomId: bath, place: 'floor', offset: { x: 100, y: 0 } });
+      const [small] = c.run('coveringType.create', {
+        name: 'Dlažba 300×300 béžová',
+        kind: 'floor-tiles',
+        materialId: 'mat-cov-paint-beige',
+        tile: { width: 300, height: 300, joint: 3, jointColor: '#8a7a60', align: 'axis' },
+      });
+      c.run('covering.assign', { roomId: wc, place: 'floor', typeId: small });
+      const view = c.model.views[c.viewId];
+      const project = Object.values(c.model.display.styles).find((s) => s.name === 'Projekt');
+      if (view && project) c.run('view.setStyle', { viewId: c.viewId, styleId: project.id });
+    },
+  },
+  {
     key: 'povrchy',
     title: 'Povrchy místností – zóny, obklad, dlažba, ostění, výkaz',
     kind: 'scena',

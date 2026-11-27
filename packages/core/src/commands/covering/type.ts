@@ -1,5 +1,5 @@
 // Příkazy typů úprav povrchů (prvky stavby 9, IfcCovering): nový, úprava, kopie, smazání. Formát,
-// spára a zarovnání se zatím jen ukládají (spárořez je další krok).
+// spára a zarovnání; spárořez se z nich počítá (`covering/tiling.ts`).
 import {
   COVERING_KINDS,
   TILE_ALIGNS,

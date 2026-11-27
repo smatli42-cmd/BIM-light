@@ -10,6 +10,7 @@ import {
   type Room,
 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
+import { CoveringTiles } from './CoveringTiles.tsx';
 import { CEILING_KINDS, FLOOR_KINDS, TypeSelect, ZoneEditor } from './CoveringZones.tsx';
 import { Section } from './Section.tsx';
 
@@ -123,6 +124,7 @@ export function CoveringSection({ s, r }: { s: Session; r: Room }) {
         />
       </label>
       <Totals m={s.model} list={list} />
+      <CoveringTiles s={s} r={r} />
     </Section>
   );
 }

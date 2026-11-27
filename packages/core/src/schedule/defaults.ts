@@ -46,6 +46,20 @@ export const COVERINGS_SCHEDULE: ScheduleDef = {
   jambRule: 'deducted',
 };
 
+/** Výkaz dlaždic (prvky stavby 9, spárořez): po místnostech a typech celé, řezané a celkem s prořezem 10 %. */
+export const TILES_SCHEDULE: ScheduleDef = {
+  id: 'schedule-tiles',
+  name: 'Výkaz dlaždic',
+  source: 'tiles',
+  fields: ['room', 'type', 'format', 'area', 'whole', 'cut', 'total', 'totalWithWaste'],
+  groupBy: ['room', 'type'],
+  itemize: false,
+  sortBy: null,
+  filter: DEFAULT_FILTER,
+  minOpeningArea: 0,
+  wastePercent: 10,
+};
+
 export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
   {
     id: 'schedule-walls',
@@ -83,6 +97,7 @@ export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
   SLABS_SCHEDULE,
   ROOMS_SCHEDULE,
   COVERINGS_SCHEDULE,
+  TILES_SCHEDULE,
 ];
 
 export const defaultSchedules = (): Record<string, ScheduleDef> =>

@@ -26,6 +26,7 @@ import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
 import { OutlineVertexMode, outlineUnder, pickOutline, PressOutlineMode } from './slab-modes.ts';
 import { faceOverlay, flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
+import { pressTileOrigin, withTileOrigin } from './tile-origin-mode.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
@@ -80,6 +81,7 @@ export class SelectTool implements Tool {
     const hit = hitAt(this.s, p.screen);
     const onLine = hit?.kind === 'temp-line' || hit?.kind === 'dim-line';
     if (hit && !onLine) return this.onHit(hit, p);
+    if ((this.mode = pressTileOrigin(this.s, p))) return;
     // Líc vybrané stěny má přednost před čárou kóty, která na něm začíná.
     const onFace = (face: 'ref' | 'opp', id: Id) => {
       this.mode = new OffsetMode(this.s, id, face, p, true);
@@ -237,7 +239,7 @@ export class SelectTool implements Tool {
 
   overlay(): Overlay {
     if (this.mode?.active) return this.mode.overlay();
-    return { ...faceOverlay(this.s), ...(this.hover && { hover: [this.hover] }) };
+    return withTileOrigin(this.s, { ...faceOverlay(this.s), ...(this.hover && { hover: [this.hover] }) });
   }
 
   tracker(): readonly TrackerField[] | null {

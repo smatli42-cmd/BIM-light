@@ -25,6 +25,7 @@ describe('základ 9 / plan-steny Z8: migrace projektu 13 → 14', () => {
       'Výkaz desek',
       'Výpis místností', // přidá migrace 21 → 22 (desky D4)
       'Výkaz povrchů', // přidá migrace 25 → 26 (povrchy místností)
+      'Výkaz dlaždic', // přidá migrace 27 → 28 (spárořez)
     ]);
   });
 });

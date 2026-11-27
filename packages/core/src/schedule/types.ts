@@ -3,8 +3,9 @@
 import type { Id } from '../ids/index.ts';
 import type { Status } from '../model/types.ts';
 
-/** Zdroj řádků: stěny, vrstvy stěn (výkaz materiálů), typy stěn (legenda skladeb), desky, místnosti. */
-export type ScheduleSource = 'walls' | 'wall-layers' | 'wall-types' | 'slabs' | 'rooms' | 'coverings';
+/** Zdroj řádků: stěny, vrstvy stěn, typy stěn (legenda skladeb), desky, místnosti, povrchy, dlaždice. */
+export type ScheduleSource =
+  'walls' | 'wall-layers' | 'wall-types' | 'slabs' | 'rooms' | 'coverings' | 'tiles';
 export const SCHEDULE_SOURCES: readonly ScheduleSource[] = [
   'walls',
   'wall-layers',
@@ -12,6 +13,7 @@ export const SCHEDULE_SOURCES: readonly ScheduleSource[] = [
   'slabs',
   'rooms',
   'coverings',
+  'tiles',
 ];
 
 /** Ostění ve výkazu povrchů: přičíst jen u odečtených otvorů (rozpočtová praxe), u všech, u žádných. */
@@ -49,6 +51,8 @@ export interface ScheduleDef {
   readonly minOpeningArea: number;
   /** Výkaz povrchů: kdy se přičte ostění; chybí = „deducted“. */
   readonly jambRule?: JambRule;
+  /** Výkaz dlaždic: prořez v % (celkem s prořezem); chybí = 10 %. */
+  readonly wastePercent?: number;
 }
 
 /** Hodnota buňky: text, číslo (v jednotce pole), nebo ano / ne. */

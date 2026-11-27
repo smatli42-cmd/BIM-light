@@ -1,12 +1,30 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, povrchy místností (část 2: typy úprav, zóny, plochy, výkaz); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Spárořez (povrchy místností, část 3), 2026-11-27 (scéna `?ukazka=sparorez`, dlažba i v `?ukazka=dum`)
+
+- Jádro `covering/tiling.ts`: mřížka formátu a spáry v rovině plochy (u, v) od bodu zarovnání (od rohu =
+  levý dolní roh obálky, na střed = střed dlaždice ve středu, na osu = osa spáry ve středu) + uložený posun,
+  ořezaná na obrys minus otvory; celé kusy, odřezy s rozměry, úzké řezy, spáry jako osy (úsečky).
+  `tiles.ts`: spárořez všech ploch s formátem v místnosti (podlaha, strop, zóny stěn, ostění), pamatuje se
+  pro model – změna stěn a otvorů vše přepočítá.
+- Počátek je v místnosti logicky (`coverings.tileOrigins`: `floor` / `ceiling` / `wallId:strana` → posun),
+  příkaz `covering.setOrigin`. Dotazy `covering.joints` (spáry + rámec do 3D, pro 3D okno) a `covering.tiles`
+  (počty, úzké řezy, počátek). AI `scenario-tiling.test.ts`.
+- Výkaz dlaždic (zdroj `tiles`, migrace 27 → 28): po místnostech a typech celé, řezané, celkem a celkem
+  s prořezem (`wastePercent` výkazu, výchozí 10 %; `schedule.update`).
+- Půdorys: spáry dlažby podlahy jako tenké čáry přes funkci grafiky (kategorie úprav, pero `layerPen`,
+  barva spáry typu jako vlastní výchozí grafika); ve stylu `tileJoints`, příkaz `style.setTileJoints`.
+- Sandbox: info box místnosti → Povrchy → Spárořez (celé + řezané = celkem, upozornění na úzké řezy, posun
+  počátku X / Y podlahy a vybrané stěny); ve vybrané místnosti křížek počátku dlažby, tažením se posune.
+  E2E `sparorez.spec.ts`.
 
 ### Povrchy místností, část 2, 2026-11-27 (scéna `?ukazka=povrchy`, povrchy i v `?ukazka=dum`)
 
@@ -169,6 +187,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Spárořez:** úzký řez = rozměr odřezu pod třetinou formátu, aspoň 50 mm, nejvýš polovina formátu
+  (mozaika); 600 → 200 mm, sokl 80 → 40 mm. Každý odřez = jedna dlaždice (zbytky se znovu nepočítají),
+  prořez se přičte nahoru na celé kusy za místnost a typ. Počátek je jeden pro celý líc stěny (všechny zóny
+  a úseky), ostění má vlastní od rohu bez posunu. Půdorys kreslí jen podlahu; výchozí podle podrobnosti
+  (hrubá = Studie ne, střední / jemná = Projekt ano), ve stylu jde zapnout / vypnout. Spáry jsou osy spár
+  (jedna čára), šířka spáry je v dotazu pro 3D. Tažení křížku jen u podlahy, stěny číslem v info boxu.
+
 - **Povrchy:** ve výkazu výchozí pravidlo podle rozpočtové praxe – otvory do 4 m² se neodečítají a jejich
   ostění se nepřičítá, větší se odečtou a ostění přičte (nastavitelné u výkazu). Ostění průchozího otvoru
   do poloviny tloušťky stěny (okna zatím nejsou), nika celá + dno. Strop ve výšce vršku místnosti, stěny do
@@ -271,6 +296,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
+- **Uživatel vyzkouší spárořez:** `?ukazka=sparorez` – klik do koupelny → Povrchy → Spárořez (úzké řezy),
+  táhni křížek počátku dlažby, nebo X 0 / Y 200; posuň příčku; Výkazy → Výkaz dlaždic (prořez 10 %).
+- **3D proud:** spáry ve 3D z dotazu `covering.joints` (tvar v poznámkách koordinátora).
+- **Hlavní proud dál:** podlahy a stropy (pořadí povrchů).
+
 - **Uživatel vyzkouší povrchy:** `?ukazka=povrchy` – klik do koupelny → Povrchy (zóny, podlaha, strop,
   plochy); klik kousek od líce stěny → Vlastní zóny; posuň okno / příčku; Výkazy → Výkaz povrchů.
 - **3D proud:** povrchy ve 3D z dotazu `covering.surfaces` (tvar v poznámkách koordinátora).
@@ -335,7 +365,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 ## Otevřené
 
 - **Povrchy – zbývá:** okno typů úprav (dnes jen příkazy / AI a výběr v info boxu), rozvinutý pohled
-  stěny, IfcCovering v exportu IFC, ostění u otvoru s obecným obrysem, plochy nad započítaným výklenkem,
+  stěny se spárořezem (dotaz `covering.joints` ho umí), spárořez stropu (podhledu) v pohledu nahoru, vazba
+  spárořezu stěn přes roh (dnes každý líc od svého rohu), vazba (na střih / půl / třetinu) a natočení dlažby, IfcCovering v exportu IFC, ostění u otvoru s obecným obrysem, plochy nad započítaným výklenkem,
   povrchy ve 3D (3D proud).
 
 - **Místnosti – zbývá:** šikmé stropy (< 1,30 m, ČSN 73 4301) po střechách; volba 1 desetinného místa v nastavení
@@ -395,14 +426,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po povrchách)
+## Největší soubory (po spárořezu)
 
-Výstup `npm run check:size`: bez varování (`commands/all.ts` po rozdělení registru 209).
+Výstup `npm run check:size`: bez varování.
 
 | Řádky | Soubor |
 |---|---|
+| 248 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 248 | apps/sandbox/src/session/session.ts |
-| 248 | apps/sandbox/src/view3d/viewer.ts |
-| 246 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 241 | apps/sandbox/src/view3d/viewer.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |

@@ -26,6 +26,7 @@ import { drawWallTag, tagFacts } from '../tag/draw.ts';
 import { drawSlabs } from '../slab/draw-view.ts';
 import { drawSlabOpenings } from '../slab-opening/draw-view.ts';
 import { drawRooms } from '../room/draw-view.ts';
+import { drawTileJoints } from '../covering/draw-joints.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -125,6 +126,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
     ...drawSlabs(model, view),
     ...drawSlabOpenings(model, view),
     ...drawRooms(model, view),
+    ...drawTileJoints(model, view),
     ...walls,
     ...patches,
     ...drawOpenings(model, view, structure),

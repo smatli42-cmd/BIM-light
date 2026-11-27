@@ -136,6 +136,8 @@ export interface Style {
   readonly labels: Readonly<Record<string, boolean>>;
   /** Údaje razítka místnosti v pořadí (room/stamp.ts); chybí = číslo, název, plocha. */
   readonly roomStamp?: readonly string[];
+  /** Spárořez dlažby v půdorysu (prvky stavby 9); chybí = jen při střední a jemné podrobnosti (Projekt). */
+  readonly tileJoints?: boolean;
   readonly defaultScale: number;
   /** Měřítko šraf: násobí všechny rozměry šraf (0,5–3, výchozí 1). Mění velikost, ne tvar. */
   readonly hatchScale: number;

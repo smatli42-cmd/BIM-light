@@ -75,7 +75,10 @@ function rooms(c: SampleContext, storeyId: Id, list: readonly (readonly [number,
   }
 }
 
-/** Povrchy místnosti (prvky stavby 9): koupelna obklad do 1,50 m, kuchyně dlažba, pokoje sokl a vinyl. */
+/**
+ * Povrchy místnosti (prvky stavby 9): koupelna obklad do 1,50 m a dlažba na střed, kuchyně dlažba
+ * s počátkem spárořezu posunutým o půl dlaždice (bez úzkých řezů u stěn), pokoje sokl a vinyl.
+ */
 function coverings(c: SampleContext, roomId: Id, name: string) {
   const wet = name === 'Koupelna';
   const tiled = wet || name === 'Kuchyně';
@@ -92,6 +95,7 @@ function coverings(c: SampleContext, roomId: Id, name: string) {
   const floor = tiled ? 'cov-floor-tiles-600' : 'cov-vinyl-oak';
   c.run('covering.assign', { roomId, place: 'floor', typeId: floor });
   c.run('covering.assign', { roomId, place: 'ceiling', typeId: wet ? 'cov-ceiling-sdk' : 'cov-paint-white' });
+  if (name === 'Kuchyně') c.run('covering.setOrigin', { roomId, place: 'floor', offset: { x: 300, y: 0 } });
 }
 
 /** Desky podlaží (D1): nosná deska pod obvodovými stěnami (`under` = přesah pod stěny) a podlaha v místnostech. */
