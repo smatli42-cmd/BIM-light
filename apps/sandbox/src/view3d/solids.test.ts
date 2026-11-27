@@ -84,6 +84,25 @@ describe('3D náhled / co je vidět: filtr rekonstrukce a vrstvy aktivního pohl
     expect(ids()).toEqual(new Set([keep]));
   });
 
+  it('základ 11 / 3D náhled: pravidlo s barvou povrchu (bourání žlutě) přebarví stěnu i ve 3D', () => {
+    const f = fixture();
+    const keep = f.line(vec(0, 0), vec(5000, 0));
+    const old = f.line(vec(0, 3000), vec(5000, 3000), { status: 'demolished' });
+    const colors = (id: string) =>
+      new Set(
+        modelSolids(f.model, view(f))
+          .filter((s) => s.elementId === id)
+          .map((s) => s.color),
+      );
+    expect(colors(old)).toEqual(new Set(wallSolids(f.model, f.wall(old)).map((s) => s.color)));
+    const combo = Object.values(f.model.display.overrideCombinations).find(
+      (c) => c.name === 'Fáze – bourací práce',
+    )!.id;
+    f.run('view.setOverrideCombination', { viewId: f.viewId, combinationId: combo });
+    expect(colors(old)).toEqual(new Set(['#fff3b0']));
+    expect(colors(keep)).not.toContain('#fff3b0');
+  });
+
   it('3D náhled / vrstvy: skryté vrstvy pohledu skryjí stěny i ve 3D', () => {
     const f = fixture();
     f.line(vec(0, 0), vec(5000, 0));

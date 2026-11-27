@@ -34,7 +34,13 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 - Klik na desku ve 3D ji vybere v půdorysu (Shift přidá / ubere), F4 ukáže vybrané desky.
 - Testy: `view3d/slab-solids.test.ts`, e2e „deska je ve 3D…“; ukázka `dum` má ve 3D stěny i desky.
 
+- **Barva povrchu přes funkci grafiky** (požadavek 3 splněn v `main`, fffa6dd): barva ve 3D =
+  `resolveGraphics(...).effect.surfaceColor ?? barva materiálu` pro stěny i desky; přebarví všechny vrstvy prvku.
+
 ## Co zkusit
+
+- `?ukazka=dum&3d` → spodní lišta **Přepisy** (kombinace) → *Fáze – bourací práce*: bouraná příčka zežloutne
+  v půdorysu i ve 3D.
 
 - Uživatel vyzkoušel 2026-11-27: „3D náhled funguje“ (lokálně, `?ukazka=dum&3d`).
 - `…/BIM-light/?ukazka=desky&3d` a `?ukazka=desky-kresleni&3d` – stropy a podlahy ve 3D; klik na desku ji
@@ -57,8 +63,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 - 3D okno je volba obrazovky (jako rozvržení oken), ne data modelu – nejde přes příkaz; stav drží
   `view3d/state.ts` vedle Session.
 - 3D ukazuje všechna podlaží, styl, vrstvy a filtr rekonstrukce **aktivního okna**; F4 bez výběru = vše.
-- Barva ve 3D = barva materiálu; přepis barvy (pravidla grafiky) až po požadavku 3 níže – vlastní položka
-  „barva povrchu“, ne výplň řezu (2026-11-27, uživatel souhlasí).
+- Barva ve 3D = barva materiálu, přepíše ji jen pravidlo / styl s „barvou povrchu“ (ne výplň řezu);
+  uživatel souhlasí 2026-11-27.
 - Výběr ve 3D zvýrazní prvek barvou výběru (akcent rozhraní), ne obrysem.
 - Typ s více výškovými pásy: vrstvy ve 3D zatím podle pásu v rovině řezu přes celou výšku (viz níže).
 
@@ -69,7 +75,7 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 2. **Geometrie vrstev po výškových pásech:** `wallGeometry` vrací vrstvy jen pro pás v rovině řezu. Pro 3D
    by se hodila varianta pro zadaný pás (`wallGeometry(model, wall, cutPlane, bandIndex)` nebo
    `wallBandGeometry`), aby sokl / parapetní pás měl ve 3D svou skladbu.
-3. **Barva povrchu ve 3D přes funkci grafiky** (základy 11, 30; jako „Override Surface“ v Archicadu /
+3. ~~**Barva povrchu ve 3D přes funkci grafiky**~~ – hotovo (main fffa6dd) (základy 11, 30; jako „Override Surface“ v Archicadu /
    filtry pohledu v Revitu): do efektu pravidla a grafiky kategorie přidat položku `surfaceColor`
    (barva povrchu 3D, `null` = barva materiálu) s „proč“ a ve schématu balíčku stylů (`package-schema.ts`).
    Oddělit od `fillColor` (výplň řezu je ve Studii šedá – 3D by zešedlo). Pak 3D vezme barvu z

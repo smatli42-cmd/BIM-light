@@ -49,6 +49,16 @@ export function shownModel(model: Model, view: View): { model: Model; walls: Wal
 }
 
 /**
+ * Barva povrchu ve 3D přes funkci grafiky (základy 11, 30): pravidlo nebo styl s `surfaceColor` přebarví
+ * všechny vrstvy prvku (např. bourání žlutě), jinak zůstane barva materiálu.
+ */
+function withSurface(model: Model, view: View, el: Element, solids: Solid[]): Solid[] {
+  const v = onStorey(view, el.storeyId);
+  const color = resolveGraphics(model.display, v, elementFacts(model, el)).effect.surfaceColor;
+  return color ? solids.map((x) => ({ ...x, color })) : solids;
+}
+
+/**
  * Tělesa modelu pro 3D okno; `only` = jen tyto prvky (Zobrazit výběr ve 3D), null = vše.
  * Napojení se počítá jen mezi zobrazenými stěnami (jako v půdorysu).
  */
@@ -57,8 +67,10 @@ export function modelSolids(model: Model, view: View, only: ReadonlySet<Id> | nu
   const want = (id: Id) => !only || only.has(id);
   const slabs = allSlabs(model).filter((d) => want(d.id) && isShown(model, view, d));
   return [
-    ...shown.walls.filter((w) => want(w.id)).flatMap((w) => wallSolids(shown.model, w)),
-    ...slabs.flatMap((d) => slabSolids(model, d)),
+    ...shown.walls
+      .filter((w) => want(w.id))
+      .flatMap((w) => withSurface(model, view, w, wallSolids(shown.model, w))),
+    ...slabs.flatMap((d) => withSurface(model, view, d, slabSolids(model, d))),
   ];
 }
 
