@@ -7,8 +7,23 @@ import { DIMENSION_SCENES } from './scenes-koty.ts';
 import { SLAB_SCENES } from './scenes-desky.ts';
 import { ROOM_SCENES } from './scenes-mistnosti.ts';
 import { VIEW3D_SCENES } from './scenes-3d.ts';
+import { HOUSE } from './house.ts';
 
 export const SCENES: readonly Sample[] = [
+  {
+    key: 'rezy',
+    title: 'Řezy a pohledy z modelu',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Ukázkový dům s řezy A, B a čtyřmi pohledy. V půdorysu je značka řezu (tlusté konce, šipky, písmeno). ' +
+      'Zkus: Obsah → Projekt → Řezy → Řez A: stěny a desky proříznuté po vrstvách se šrafami, za rovinou ' +
+      'tenké pohledové hrany, úrovně podlaží s výškovými kótami. Kolečko přibližuje, tažení posouvá. ' +
+      'Pohledy → Pohled jižní (fasáda). Uprav v půdorysu stěnu nebo otvor – řez se přepočítá.',
+    build(c) {
+      HOUSE.build(c);
+    },
+  },
   {
     key: 'typy-desek',
     title: 'Editor typů – typy desek (nosné desky a podlahy)',

@@ -169,6 +169,16 @@ function attachPartitions(c: SampleContext) {
   c.run('wall.attachTop', { wallIds: ids });
 }
 
+/** Řezy a pohledy (rozhodnutí 19): Řez A přes okna obou podlaží, Řez B napříč, 4 pohledy kolem domu. */
+export function houseSections(c: SampleContext) {
+  c.run('section.create', { start: vec(2250, -2500), end: vec(2250, H + 2500), styleId: projectStyle(c) });
+  c.run('section.create', { start: vec(-2500, 3000), end: vec(W + 2500, 3000), styleId: projectStyle(c) });
+  c.run('elevation.create', {});
+}
+
+const projectStyle = (c: SampleContext) =>
+  Object.values(c.model.display.styles).find((s) => s.name === 'Projekt')?.id ?? '';
+
 export const HOUSE: Sample = {
   key: 'dum',
   title: 'Rodinný dům – ukázka',
@@ -179,11 +189,12 @@ export const HOUSE: Sample = {
     'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy vázané na místnosti; ' +
     'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
     'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301, Výpis místností, povrchy (obklad, ' +
-    'dlažba, sokl, malba) a Výkaz povrchů; filtr rekonstrukce ' +
+    'dlažba, sokl, malba) a Výkaz povrchů; řezy A, B a 4 pohledy (Obsah → Projekt); filtr rekonstrukce ' +
     've spodní liště.',
   build(c) {
     ground(c);
     upper(c);
     attachPartitions(c);
+    houseSections(c);
   },
 };

@@ -1,5 +1,5 @@
 // Obsah → Projekt (koncepce rozhraní, část 4): místa v modelu. Klik na podlaží otevře jeho pracovní okno
-// (nastavení se mění volně, výkresy se nemění), klik na 3D pohled otevře 3D okno. Zvýrazněná položka =
+// (nastavení se mění volně, výkresy se nemění), klik na 3D pohled otevře 3D okno, klik na řez okno řezu. Zvýrazněná položka =
 // okno, ve kterém se pracuje. Dole nastavení podlaží.
 import { storeysOf } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
@@ -7,6 +7,7 @@ import { openStorey } from '../../session/sets.ts';
 import { Icon } from '../icons/Icon.tsx';
 import { StoreysPanel } from '../StoreysPanel.tsx';
 import { Schedules } from './Schedules.tsx';
+import { Sections } from './Sections.tsx';
 import { active3d, is3DFocused, open3DView, view3d } from '../../view3d/state.ts';
 
 const sign = (e: number) => (e > 0 ? `+${e}` : e < 0 ? `−${Math.abs(e)}` : '±0');
@@ -49,8 +50,8 @@ export function ProjectTab({ s }: { s: Session }) {
           </li>
         ))}
       </ul>
+      <Sections s={s} />
       <Schedules s={s} />
-      <p class="muted">Řezy a pohledy přibudou s dalšími etapami.</p>
       <StoreysPanel s={s} />
     </>
   );
