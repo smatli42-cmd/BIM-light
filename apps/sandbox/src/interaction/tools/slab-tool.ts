@@ -1,4 +1,4 @@
-// Nástroj Deska (D2; Ardit „Deska“, Revit „Podlaha – hranice“): geometrická metoda mnohoúhelník,
+// Nástroj Deska (D2; Ardit „Deska“, Revit „Podlaha – hranice“) a obrys otvoru v desce (D3): mnohoúhelník,
 // obdélník a natočený obdélník. Body se přichytávají jako u stěny; u mnohoúhelníku tracker délky a úhlu
 // (Tab, Enter), klik na první bod / dvojklik / pravé tlačítko obrys uzavře, Backspace vrátí bod.
 import {
@@ -30,7 +30,7 @@ export function rotatedRect(a: Vec2, b: Vec2, c: Vec2): Vec2[] {
 const axisRect = (a: Vec2, b: Vec2): Vec2[] => [a, { x: b.x, y: a.y }, b, { x: a.x, y: b.y }];
 
 export class SlabTool implements Tool {
-  readonly id = 'slab';
+  readonly id: 'slab' | 'opening';
   private pts: Vec2[] = [];
   private end: Vec2 | null = null;
   private snapRes: SnapResult | null = null;
@@ -38,13 +38,24 @@ export class SlabTool implements Tool {
   private length = 0;
   private angle = 0;
 
-  constructor(private readonly s: Session) {}
+  /** `opening` = stejné kreslení obrysu pro otvor v desce (nástroj Otvor, volba „v desce“, D3). */
+  constructor(
+    private readonly s: Session,
+    private readonly target: 'slab' | 'opening' = 'slab',
+  ) {
+    this.id = target;
+  }
 
   private get method() {
-    return this.s.slab.method;
+    return this.target === 'slab' ? this.s.slab.method : this.s.openingDefaults.slabMethod;
   }
 
   hint(): string {
+    const h = this.rawHint();
+    return this.target === 'slab' ? h : h.replaceAll('desky', 'otvoru v desce');
+  }
+
+  private rawHint(): string {
     const n = this.pts.length;
     if (this.method === 'rect')
       return n ? 'Klikni protější roh obdélníku. Esc zruší.' : 'Klikni první roh desky (přichytává se).';
@@ -117,7 +128,11 @@ export class SlabTool implements Tool {
   }
 
   private create(outline: readonly Vec2[]) {
-    const r = this.s.run('slab.create', { ...slabCreateParams(this.s), outline });
+    const s = this.s;
+    const r =
+      this.target === 'slab'
+        ? s.run('slab.create', { ...slabCreateParams(s), outline })
+        : s.run('slabOpening.create', { storeyId: s.storeyId, outline, status: s.options.newStatus });
     if (r.ok) this.reset();
   }
 

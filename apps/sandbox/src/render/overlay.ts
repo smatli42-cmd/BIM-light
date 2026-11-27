@@ -59,7 +59,7 @@ export function drawWallOutlines(
       ctx.stroke();
       continue;
     }
-    const slab = findSlab(model, id);
+    const slab = findSlab(model, id) ?? model.slabOpenings[id];
     if (slab) {
       poly(ctx, s, slab.outline);
       ctx.stroke();

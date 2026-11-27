@@ -24,7 +24,13 @@ export interface TestHook {
   lenEnd(): string;
   scale(): number;
   run(name: string, params: unknown): readonly string[];
-  selection(): { walls: string[]; dims: string[]; openings: string[]; slabs: string[] };
+  selection(): {
+    walls: string[];
+    dims: string[];
+    openings: string[];
+    slabs: string[];
+    slabOpenings: string[];
+  };
   tool(): string;
   storeyId(): string;
   viewId(): string;
@@ -92,6 +98,7 @@ export function installTestHook(s: Session) {
       dims: [...s.selection.dims],
       openings: [...s.selection.openings],
       slabs: [...s.selection.slabs],
+      slabOpenings: [...s.selection.slabOpenings],
     }),
     tool: () => s.tool.id,
     storeyId: () => s.storeyId,

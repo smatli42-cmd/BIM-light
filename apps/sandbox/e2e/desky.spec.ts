@@ -98,4 +98,32 @@ test.describe('D2: nástroj Deska v sandboxu', () => {
     await dragPx(page, await px(page, 2500, 5000), await px(page, 500, -500));
     expect((await selection(page)).slabs).toHaveLength(1);
   });
+
+  test('D3: nástroj Otvor → V desce: obdélník prořízne strop i podlahu; klik vybere, Del smaže', async ({
+    page,
+  }) => {
+    const rc = await rcSlab(page);
+    const floor = await page.evaluate(() => {
+      const h = window.__bim!;
+      const typeId = Object.values(h.model().slabTypes).find((t) => t.name === 'Podlaha anhydrit 150')!.id;
+      const rect = { a: { x: 0, y: 0 }, b: { x: 4000, y: 3000 } };
+      return h.run('slab.create', { storeyId: h.storeyId(), typeId, rect })[0]!;
+    });
+    await page.keyboard.press('o');
+    await page.getByTestId('opening-host-slab').click();
+    await clickAt(page, 1000, 1000);
+    await clickAt(page, 2000, 2000);
+    const holes = Object.values((await model(page)).slabOpenings);
+    expect(holes).toHaveLength(1);
+    expect([...holes[0]!.hostIds].sort()).toEqual([rc, floor].sort());
+    await page.keyboard.press('Escape');
+    await clickAt(page, 1500, 1500);
+    expect((await selection(page)).slabOpenings).toHaveLength(1);
+    await expect(page.getByTestId('hole-area')).toHaveText(/^(0,9\d|1,0\d) m²$/);
+    await dragPx(page, await px(page, 2000, 2000), await px(page, 2500, 2000));
+    expect(areaM2(Object.values((await model(page)).slabOpenings)[0]!.outline)).toBeCloseTo(1.25, 1);
+    await page.keyboard.press('Delete');
+    expect(Object.keys((await model(page)).slabOpenings)).toHaveLength(0);
+    expect(await slabs(page)).toHaveLength(2);
+  });
 });

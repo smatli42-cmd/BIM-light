@@ -7,6 +7,10 @@ export interface OpeningDefaults {
   kind: 'through' | 'niche';
   depth: number;
   side: 'ref' | 'opp';
+  /** Hostitel nového otvoru: stěna (klik na stěnu), nebo deska (obrys v půdorysu, D3). */
+  host: 'wall' | 'slab';
+  /** Geometrická metoda obrysu otvoru v desce. */
+  slabMethod: 'polygon' | 'rect' | 'rotated';
 }
 
 /** Výchozí nový otvor: okno 1200 × 1500, parapet 900, průchozí (nika hloubky 150 z referenční strany). */
@@ -17,6 +21,8 @@ export const OPENING_DEFAULTS: Readonly<OpeningDefaults> = {
   kind: 'through',
   depth: 150,
   side: 'ref',
+  host: 'wall',
+  slabMethod: 'rect',
 };
 
 /** Volby příkazů nad výběrem (info box / okno příkazu): kopie, pole, mřížka, Změnit velikost. */
