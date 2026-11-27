@@ -28,6 +28,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 
 ## Co zkusit
 
+- Uživatel vyzkoušel 2026-11-27: „3D náhled funguje“ (lokálně, `?ukazka=dum&3d`).
+
 - `…/BIM-light/?ukazka=dum&3d` – dům ve 3D: obě podlaží, zateplení (barvy vrstev v ostění), okna a nika,
   oblouková příčka. Otáčet levým tlačítkem, posouvat pravým, kolečko.
 - Ve spodní liště **Fáze** → Plánovaný stav: bouraná příčka zmizí i ve 3D; Stávající stav: nové příčky zmizí.
