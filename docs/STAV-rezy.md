@@ -4,6 +4,16 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Oprava: přepnutí stylu u otevřeného řezu, 2026-11-27 (hlášení uživatele)
+
+- Co se dělo: přepínač sady nahoře (Studie / Projekt) vždy otevřel pracovní okno podlaží – u otevřeného řezu
+  tak okno přeskočilo na půdorys („výkres zmizel“). Řez měl a má vlastní styl (ukázka ho zakládá ve stylu
+  Projekt); přepínač nahoře ale ukazoval a měnil styl pracovního okna podlaží, ne řezu – proto „pořád Projekt“.
+- Oprava: když okno ukazuje řez, přepínač sady změní styl řezu (`section.update`) a okno zůstane na řezu;
+  u výkazu se okno také nepřepne. Stav přepínače ukazuje styl řezu („řez: Řez A · styl: Studie“). Výběr
+  stylu v záhlaví okna řezu dělá totéž. E2E `rezy-styl.spec.ts` (oba přepínače, Studie bez šraf, Projekt
+  se šrafami, okno zůstane na řezu).
+
 ### Výšková kóta jedním klikem, 2026-11-27 (hlášení uživatele: výšková kóta v řezu nejde vložit)
 
 - Co v řezu nefungovalo: kóta šla vložit jen dvěma kliky a první klik se musel trefit do 8 px od hrany nebo

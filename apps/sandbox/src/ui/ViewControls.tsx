@@ -6,6 +6,7 @@ import { useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
 import { currentSet, switchSet } from '../session/sets.ts';
 import { openInActive } from '../session/windows.ts';
+import { windowSection } from '../session/section-windows.ts';
 
 export function NewView({ s, onDone }: { s: Session; onDone: () => void }) {
   const storeys = Object.values(s.model.storeys);
@@ -75,8 +76,9 @@ export function ScaleSelect(props: { value: number; onPick: (v: number) => void;
  */
 export function StyleSwitch({ s }: { s: Session }) {
   const v = s.view;
-  const style = styleOfView(s.model.display, v);
-  const modified = isViewModified(v);
+  const sec = windowSection(s, s.active);
+  const style = sec ? styleOfView(s.model.display, sec) : styleOfView(s.model.display, v);
+  const modified = !sec && isViewModified(v);
   const set = currentSet(s);
   return (
     <span class="style-switch">
@@ -93,7 +95,7 @@ export function StyleSwitch({ s }: { s: Session }) {
         ))}
       </span>
       <span class="muted" data-testid="style-state">
-        {v.saved ? `pohled: ${v.name} · ` : ''}styl: {style.name}
+        {sec ? `řez: ${sec.name} · ` : v.saved ? `pohled: ${v.name} · ` : ''}styl: {style.name}
         {modified ? ' (upraveno)' : ''}
       </span>
       {modified && (
