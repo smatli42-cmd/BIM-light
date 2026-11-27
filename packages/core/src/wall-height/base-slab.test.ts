@@ -60,6 +60,17 @@ describe('hlášení uživatele / stěna stojí na nosné desce (Revit „Připo
         m.wallTypes[w.typeId]?.name,
         ground,
       ]);
+    // Příčky 1.NP končí v nosném stropu (nezasahují do skladby podlahy 2.NP); obvodové a nosná zeď nesou
+    // stěny 2.NP, proto jdou až pod ně.
+    const ceiling = Math.max(
+      ...allSlabs(m)
+        .filter((s) => s.slabFunction === 'structure')
+        .map((s) => slabLevels(m, s).top),
+    );
+    for (const w of allWalls(m).filter(
+      (w) => w.storeyId === lower!.id && m.wallTypes[w.typeId]?.name.includes('říčka'),
+    ))
+      expect(wallHeight(m, w).top).toBeLessThanOrEqual(ceiling);
     const lowerTop = Math.max(
       ...allWalls(m)
         .filter((w) => w.storeyId === lower!.id)

@@ -1,16 +1,19 @@
-// Stěna stojí na nosné desce (hlášení uživatele 2026-11-27; česká praxe, Revit „Připojit spodek“ k desce,
-// Archicad spodek stěny k desce). Spodek stěny vázaný na podlaží leží na čisté podlaze (±0); když je pod ním
-// jen skladba podlahy (do MAX_BUILDUP), stěna sahá dolů k hornímu líci nosné desky pod sebou a podlaha se
-// k ní přisazuje z obou stran (stěna ji ořízne, junction/slab-wall.ts). Stěna, pod kterou v té výšce už stojí
-// jiná stěna (obvodová stěna 1.NP přes čelo stropu), sjede jen k jejímu vršku. Počítá se, neukládá (základ 4);
-// platí stejně pro řez, 3D i výkazy (všechny berou wallHeight).
-import { offsetPath, pointAt } from '../geometry/index.ts';
+// Stěna stojí na nosné desce (hlášení uživatele 2026-11-27; česká praxe, Revit „Připojit spodek / vršek“
+// k desce, Archicad spodek a vršek stěny k desce). Počítá se, neukládá (základ 4); platí stejně pro řez,
+// 3D i výkazy (všechny berou wallHeight):
+// - Spodek: když je pod vázaným spodkem (čistá podlaha) jen skladba podlahy (do MAX_BUILDUP), stěna sahá
+//   k hornímu líci nosné desky pod sebou; podlaha se k ní přisadí z obou stran (junction/slab-wall.ts).
+//   Stěna, pod kterou v té výšce stojí jiná stěna (obvodová 1.NP přes čelo stropu), sjede jen k jejímu vršku.
+// - Vršek: stěna „do podlaží + 1“, jejíž vršek leží ve skladbě podlahy nad nosnou deskou, končí na horním
+//   líci desky (deska ji ve své výšce prořízne) – kromě míst, kde na ní stojí stěna z patra.
+import { offsetPath, pointAt, type Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
-import { resolveHeight } from '../model/height.ts';
+import { resolveHeight, type ResolvedHeight } from '../model/height.ts';
 import type { Model } from '../model/types.ts';
 import { pointInPolygon } from '../selection/pick.ts';
 import { slabLevels } from '../slab/geometry.ts';
 import { allSlabs } from '../slab/queries.ts';
+import type { Slab } from '../slab/types.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { allWalls, wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
@@ -18,57 +21,110 @@ import type { Wall } from '../wall/types.ts';
 /** Nejvyšší skladba podlahy, přes kterou stěna sjede k nosné desce (mm). */
 export const MAX_BUILDUP = 300;
 const SAMPLES = [0.5, 0.25, 0.75, 0.05, 0.95];
+const EPS = 1e-6;
 
-const buildingOf = (m: Model, storeyId: Id) => m.storeys[storeyId]?.buildingId;
-
-/** Horní líc nosné desky pod stěnou ve skladbě podlahy (nejvyšší), nebo null. */
-function structureTop(m: Model, w: Wall, bottom: number, pts: readonly { x: number; y: number }[]) {
-  let best: number | null = null;
-  for (const s of allSlabs(m)) {
-    if (s.slabFunction !== 'structure' || s.variant.kind !== w.variant.kind) continue;
-    if (buildingOf(m, s.storeyId) !== buildingOf(m, w.storeyId)) continue;
-    const top = slabLevels(m, s).top;
-    if (!(top < bottom - 1e-6 && top >= bottom - MAX_BUILDUP)) continue;
-    if (!pts.some((p) => pointInPolygon(p, s.outline))) continue;
-    if (best === null || top > best) best = top;
-  }
-  return best;
+interface Ctx {
+  readonly m: Model;
+  readonly slabs: readonly { slab: Slab; top: number; bottom: number }[];
+  readonly walls: readonly Wall[];
+  readonly h: Map<Id, ResolvedHeight>;
+  readonly pts: Map<Id, Vec2[]>;
+  readonly outlines: Map<Id, Vec2[][]>;
+  readonly base: Map<Id, number>;
+  readonly top: Map<Id, number>;
 }
 
-/** Vršek stěn pod stěnou, které zasahují do výšky (target, bottom) – nesmí se překrýt. */
-function lowerWallsTop(
-  m: Model,
-  w: Wall,
-  target: number,
-  bottom: number,
-  pts: readonly { x: number; y: number }[],
-) {
-  let top = target;
-  for (const o of allWalls(m)) {
-    if (o.id === w.id || o.variant.kind !== w.variant.kind) continue;
-    const h = resolveHeight(m, o.height);
-    if (!(h.top > top + 1e-6 && h.bottom < bottom - 1e-6)) continue;
-    const outlines = wallGeometry(m, o).outlines;
-    if (pts.some((p) => outlines.some((ol) => ol.length >= 3 && pointInPolygon(p, ol))))
-      top = Math.min(bottom, h.top);
-  }
-  return top;
+const ctxs = new WeakMap<Model, Ctx>();
+
+function ctxOf(m: Model): Ctx {
+  const hit = ctxs.get(m);
+  if (hit) return hit;
+  const slabs = allSlabs(m)
+    .filter((s) => s.slabFunction === 'structure')
+    .map((slab) => ({ slab, ...slabLevels(m, slab) }));
+  const c: Ctx = {
+    m,
+    slabs,
+    walls: allWalls(m),
+    h: new Map(),
+    pts: new Map(),
+    outlines: new Map(),
+    base: new Map(),
+    top: new Map(),
+  };
+  ctxs.set(m, c);
+  return c;
 }
 
-const cache = new WeakMap<Model, Map<Id, number>>();
+const memo = <T>(map: Map<Id, T>, id: Id, f: () => T): T => {
+  const v = map.get(id);
+  if (v !== undefined) return v;
+  const r = f();
+  map.set(id, r);
+  return r;
+};
 
-/** Skutečný spodek stěny (mm nad ±0,000): vázaný spodek, nebo horní líc nosné desky pod skladbou podlahy. */
+const height = (c: Ctx, w: Wall) => memo(c.h, w.id, () => resolveHeight(c.m, w.height));
+
+/** Body na ose stěny (referenční čára může ležet na líci = na hraně obrysu sousední stěny). */
+const axisPoints = (c: Ctx, w: Wall) =>
+  memo(c.pts, w.id, () => {
+    const axis = offsetPath(w.path, wallSection(c.m, w).faces.axis);
+    return SAMPLES.map((t) => pointAt(axis, t));
+  });
+
+/** Leží osa stěny `w` v půdorysu stěny `o`? */
+const onWall = (c: Ctx, w: Wall, o: Wall) => {
+  const outlines = memo(c.outlines, o.id, () => wallGeometry(c.m, o).outlines.filter((ol) => ol.length >= 3));
+  return axisPoints(c, w).some((p) => outlines.some((ol) => pointInPolygon(p, ol)));
+};
+
+const building = (m: Model, storeyId: Id) => m.storeys[storeyId]?.buildingId;
+
+/** Nosné desky pod osou stěny (stejná budova a varianta). */
+const slabsUnder = (c: Ctx, w: Wall) =>
+  c.slabs.filter(
+    ({ slab }) =>
+      slab.variant.kind === w.variant.kind &&
+      building(c.m, slab.storeyId) === building(c.m, w.storeyId) &&
+      axisPoints(c, w).some((p) => pointInPolygon(p, slab.outline)),
+  );
+
+const others = (c: Ctx, w: Wall) => c.walls.filter((o) => o.id !== w.id && o.variant.kind === w.variant.kind);
+
+/** Skutečný vršek stěny (mm nad ±0,000). */
+export function wallTop(m: Model, w: Wall): number {
+  const c = ctxOf(m);
+  return memo(c.top, w.id, () => {
+    const h = height(c, w);
+    const tops = slabsUnder(c, w)
+      .filter((s) => s.top < h.top - EPS && s.top >= h.top - MAX_BUILDUP && s.bottom > h.bottom + EPS)
+      .map((s) => s.top);
+    if (!tops.length) return h.top;
+    const slabTop = Math.max(...tops);
+    const carried = others(c, w).some((o) => {
+      const b = height(c, o).bottom;
+      return b >= slabTop - EPS && b <= h.top + EPS && onWall(c, w, o);
+    });
+    return carried ? h.top : slabTop;
+  });
+}
+
+/** Skutečný spodek stěny (mm nad ±0,000). */
 export function wallBase(m: Model, w: Wall): number {
-  const byId = cache.get(m) ?? new Map<Id, number>();
-  cache.set(m, byId);
-  const hit = byId.get(w.id);
-  if (hit !== undefined) return hit;
-  const bottom = resolveHeight(m, w.height).bottom;
-  // Body na ose stěny (referenční čára může ležet na líci = na hraně obrysu stěny pod ní).
-  const axis = offsetPath(w.path, wallSection(m, w).faces.axis);
-  const pts = SAMPLES.map((t) => pointAt(axis, t));
-  const target = structureTop(m, w, bottom, pts);
-  const res = target === null ? bottom : lowerWallsTop(m, w, target, bottom, pts);
-  byId.set(w.id, res);
-  return res;
+  const c = ctxOf(m);
+  return memo(c.base, w.id, () => {
+    const bottom = height(c, w).bottom;
+    const tops = slabsUnder(c, w)
+      .map((s) => s.top)
+      .filter((top) => top < bottom - EPS && top >= bottom - MAX_BUILDUP);
+    if (!tops.length) return bottom;
+    let res = Math.max(...tops);
+    for (const o of others(c, w)) {
+      const oTop = wallTop(m, o);
+      if (oTop > res + EPS && height(c, o).bottom < bottom - EPS && onWall(c, w, o))
+        res = Math.min(bottom, oTop);
+    }
+    return res;
+  });
 }

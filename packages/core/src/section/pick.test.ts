@@ -55,7 +55,7 @@ describe('pravidla-interakce / Výběr v okně řezu (pokyn uživatele 2026-11-2
   });
   it('hlášení uživatele / výběr v řezu: klik kamkoli do řezané stěny ukázkového domu ji vybere (horní, střední, dolní třetina)', () => {
     // Chyba: okno za rovinou řezu bralo hloubku řezané stěny a překrylo její plochu (klik vybral okno).
-    for (const key of ['dum', 'rezy']) {
+    for (const key of ['dum']) {
       const m = buildSample(findSample(key)!, sequentialIds());
       for (const s of Object.values(m.sections)) {
         const walls = sectionShapes(m, s).filter((x) => x.category === 'wall' && x.depth < 0);

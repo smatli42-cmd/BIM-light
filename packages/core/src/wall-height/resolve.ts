@@ -3,7 +3,7 @@
 import { resolveHeight, type ResolvedHeight } from '../model/height.ts';
 import type { Model } from '../model/types.ts';
 import type { Wall, WallLayer } from '../wall/types.ts';
-import { wallBase } from './base-slab.ts';
+import { wallBase, wallTop } from './base-slab.ts';
 
 export interface LayerHeight {
   readonly layer: WallLayer;
@@ -33,7 +33,8 @@ export interface WallHeight extends ResolvedHeight {
  * nahoře pro vrstvy pásu, který končí vrškem stěny. Záporné prodloužení vrstvu zkrátí.
  */
 export function wallHeight(model: Model, wall: Wall): WallHeight {
-  const h = resolveHeight(model, wall.height);
+  // Vršek ve skladbě podlahy nad nosnou deskou se zkrátí na její horní líc (base-slab.ts).
+  const h = { ...resolveHeight(model, wall.height), top: wallTop(model, wall) };
   const type = model.wallTypes[wall.typeId];
   const bands: BandHeight[] = [];
   let from = h.bottom;

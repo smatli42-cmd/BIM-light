@@ -11,6 +11,10 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   stěna, pod kterou je jen skladba podlahy (do 300 mm), sahá spodkem k hornímu líci nosné desky; podlaha se
   přisazuje z obou stran. Platí pro příčky i obvodové stěny, v řezu, 3D i výkazech (vše bere `wallHeight`).
   Stěna 2.NP nad stěnou 1.NP (obvodová přes čelo stropu) sjede jen k jejímu vršku (bez překryvu).
+  Doplnění (screenshot řezu): i vršek – příčka 1.NP „do podlaží + 1“ trčela nad nosný strop do skladby
+  podlahy 2.NP; nově končí na horním líci desky (deska ji ve své výšce prořízne), kromě stěn, na kterých stojí
+  stěna z patra (obvodová a nosná zeď). Test `section/floor-gap.test.ts`: ve všech řezech domu je skladba
+  podlahy pod i nad každou stěnou vyplněná, bez překryvu stěny s podlahou.
   Testy `base-slab.test.ts`, AI `scenario-wall-base.test.ts`.
 - **Stěna šla vybrat jen někde:** okno za rovinou řezu (ne na čáře řezu) dostalo hloubku řezané stěny
   a překrylo její plochu – klik vybral neviditelné okno. Nově má otvor za rovinou svou hloubku. Test: klik
@@ -204,6 +208,8 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   vypínač u stěny (stěna na podlaze, např. lehká SDK příčka na anhydritu) přijde, až bude potřeba. Hranice
   výškových pásů zůstanou ve stejné výšce, prodlouží se jen spodní pás; parapet se dál měří od čisté
   podlahy. Stěna nad jinou stěnou (2.NP obvodová) sjede jen k jejímu vršku.
+  Vršek stěny ve skladbě podlahy nad nosnou deskou (do 300 mm) se zkrátí na horní líc desky, pokud na stěně
+  nestojí stěna z patra (pozná se podle uloženého spodku stěny nad ní a půdorysu).
 - **Uložení stropu:** vnější strana stěny = strana s vrstvou funkce „izolace“; bez izolace rozhodne, nad
   kterými vrstvami deska z větší části neleží (obě strany zakryté = vnitřní stěna, žádná vnější strana).
   Při stejné prioritě vyhrává deska. Vazba vršku stěny na spodní líc desky (D4) zůstává beze změny – celá
