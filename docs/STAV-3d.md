@@ -85,7 +85,10 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
    (barva povrchu 3D, `null` = barva materiálu) s „proč“ a ve schématu balíčku stylů (`package-schema.ts`).
    Oddělit od `fillColor` (výplň řezu je ve Studii šedá – 3D by zešedlo). Pak 3D vezme barvu z
    `resolveGraphics(...).effect.surfaceColor ?? barva materiálu` a pravidlo „bourané žlutě“ platí i ve 3D.
-4. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
+4. **Sytější žlutá bourání ve 3D:** `surfaceColor` pravidla „Bourání žlutě čárkovaně“ `#fff3b0` splývá
+   s omítkou `#d8cfc0` – probourání ani bouraná příčka ve 3D nejsou vidět (uživatel 2026-11-27). Návrh
+   `#f2c200`, výplň řezu v půdorysu nechat světlou. Posláno hlavní session.
+5. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
    (zatím není potřeba: 3D okno nic v modelu nemění).
 
 ## Otevřené / další kroky
