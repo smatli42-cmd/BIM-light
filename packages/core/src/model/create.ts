@@ -1,5 +1,6 @@
 // Nový prázdný projekt: budova, podlaží 1.NP, knihovní materiály, výchozí typy stěn,
 // nastavení zobrazení (Studie, Projekt) s kopiemi použitých šraf a pohled. Ukázková data jsou vymyšlená.
+import { newView3d } from '../view-3d/types.ts';
 import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
 import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
@@ -60,7 +61,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     saved: false,
     phaseFilterId: null,
   };
-  return {
+  const model: Omit<Model, 'views3d'> = {
     schemaVersion: SCHEMA_VERSION,
     project: { id: newId(), name, georef: { sjtskY: 0, sjtskX: 0, rotationDeg: 0, elevationBpv: 0 } },
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },
@@ -80,4 +81,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     schedules: defaultSchedules(),
     wallTags: {},
   };
+  // Výchozí 3D pohled (jako {3D} v Revitu); id se bere až na konci, ostatní id se neposunou.
+  const view3d = newView3d(newId(), '3D', study.id);
+  return { ...model, views3d: { [view3d.id]: view3d } };
 }

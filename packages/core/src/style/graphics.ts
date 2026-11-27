@@ -1,7 +1,7 @@
 // Funkce grafiky (základ 11): jedno místo, pevné pořadí 6 pater přepisů, vyšší patro vyhrává.
 // Vrací výslednou grafiku i „proč“ (které patro a které pravidlo rozhodlo o každé vlastnosti).
 // Generátory nikdy nevolí barvu, čáru ani šrafu samy.
-import type { View } from '../view/types.ts';
+import type { GraphicView } from '../view/types.ts';
 import { matches, type ElementFacts } from './conditions.ts';
 import type { DisplaySettings, GraphicEffect, ResolvedEffect } from './types.ts';
 
@@ -49,7 +49,7 @@ function ruleLayers(display: DisplaySettings, comboId: string, facts: ElementFac
 }
 
 /** Všechna patra od nejnižšího po nejvyšší. */
-function layersFor(display: DisplaySettings, view: View, facts: ElementFacts): Layer[] {
+function layersFor(display: DisplaySettings, view: GraphicView, facts: ElementFacts): Layer[] {
   const style = display.styles[view.styleId];
   const cat = facts.category;
   const comboId = view.local.overrideCombinationId ?? style?.overrideCombinationId ?? '';
@@ -66,7 +66,11 @@ function layersFor(display: DisplaySettings, view: View, facts: ElementFacts): L
 }
 
 /** Výsledná grafika prvku v pohledu a důvod pro každou vlastnost. */
-export function resolveGraphics(display: DisplaySettings, view: View, facts: ElementFacts): GraphicsResult {
+export function resolveGraphics(
+  display: DisplaySettings,
+  view: GraphicView,
+  facts: ElementFacts,
+): GraphicsResult {
   const effect: Record<string, unknown> = { ...display.baseGraphics };
   const base: Reason = { level: 1, levelName: LEVEL_NAMES[1], source: 'výchozí grafika projektu' };
   const why: Record<string, Reason> = Object.fromEntries(Object.keys(effect).map((k) => [k, base]));

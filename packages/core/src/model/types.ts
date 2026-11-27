@@ -10,13 +10,14 @@ import type { DisplaySettings, GraphicEffect } from '../style/types.ts';
 import type { View } from '../view/types.ts';
 import type { Opening } from '../opening/types.ts';
 import type { SlabOpening } from '../slab-opening/types.ts';
+import type { View3d } from '../view-3d/types.ts';
 import type { Category } from './categories.ts';
 import type { ScheduleDef } from '../schedule/types.ts';
 import type { WallTag } from '../tag/types.ts';
 import type { Slab, SlabType } from '../slab/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -121,6 +122,8 @@ export interface Model {
   /** Nastavení zobrazení (základ 31): vrstvy, styly, pravidla, pera. */
   readonly display: DisplaySettings;
   readonly views: Readonly<Record<Id, View>>;
+  /** 3D pohledy (Revit 3D pohled se Section Boxem): grafika jako u půdorysu + podlaží a ořezový kvádr. */
+  readonly views3d: Readonly<Record<Id, View3d>>;
   /** Výkazy a legendy (základ 8, plán stěn Z8): definice tabulek z modelu. */
   readonly schedules: Readonly<Record<Id, ScheduleDef>>;
   /** Značky typu stěn v půdorysu (plán stěn Z8): popisky podlaží se skupinou anotací (základ 28). */

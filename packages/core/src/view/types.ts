@@ -12,6 +12,9 @@ export interface ViewLocalOverrides {
   readonly categoryGraphics?: CategoryGraphics;
 }
 
+/** Co z pohledu potřebuje funkce grafiky (půdorys i 3D pohled): styl, místní úpravy, fáze, přepisy. */
+export type GraphicView = Pick<View, 'name' | 'styleId' | 'local' | 'elementOverrides' | 'phaseFilterId'>;
+
 export interface View {
   readonly id: Id;
   readonly name: string;

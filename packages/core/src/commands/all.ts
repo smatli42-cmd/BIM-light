@@ -83,6 +83,14 @@ import { wallTypeLoad } from './wall-type/load.ts';
 import { slabCreate } from './slab/create.ts';
 import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edit.ts';
 import { slabOpeningCreate } from './slab-opening/create.ts';
+import {
+  view3dCreate,
+  view3dDelete,
+  view3dRename,
+  view3dSetSectionBox,
+  view3dSetStoreys,
+} from './view-3d/view-3d.ts';
+import { view3dSetLayerState, view3dSetPhaseFilter, view3dSetStyle } from './view-3d/display.ts';
 import { slabOpeningMove, slabOpeningMoveVertex, slabOpeningSetOutline } from './slab-opening/edit.ts';
 import { slabTypeDelete, slabTypeDuplicate, slabTypeUpdate } from './slab/type.ts';
 
@@ -132,6 +140,14 @@ export const CORE_COMMANDS = [
   slabOpeningSetOutline,
   slabOpeningMoveVertex,
   slabOpeningMove,
+  view3dCreate,
+  view3dRename,
+  view3dDelete,
+  view3dSetStoreys,
+  view3dSetSectionBox,
+  view3dSetStyle,
+  view3dSetPhaseFilter,
+  view3dSetLayerState,
   slabTypeDuplicate,
   slabTypeUpdate,
   slabTypeDelete,

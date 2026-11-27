@@ -12,6 +12,7 @@ export const BASE_GRAPHICS: ResolvedEffect = {
   lineType: 'solid',
   fillColor: null,
   surfaceColor: null,
+  surfaceTransparency: null,
   hatch: 'none',
   transparency: 0,
   endLines: true,
