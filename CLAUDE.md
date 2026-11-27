@@ -33,6 +33,7 @@ piš česky, stručně, odborný pojem vysvětli jednou větou. Na začátku ka�
 - `docs/pravidla-interakce-bim-light.md` – základ 25, kóty, výběr, příkazy.
 - `docs/katalog-pohledy-styly-zobrazeni.md` – základy 26–32.
 - `docs/katalog-kresleni-sten-kotovani.md` – kreslení stěn, přichytávání, kóty (části 1–7).
+- `docs/katalog-elektro.md` – elektro značky, typy, skupiny legendy, výšky (stav v `docs/STAV-elektro.md`).
 - `docs/postup-etapy-bim-light.md` – etapy; `docs/checklist-dps-bim-light.md` – cíl DPS.
 - `docs/koncepce-rozhrani.md` – rozložení a vzhled rozhraní (podle principu Arditu; u nové funkce si vyžádat
   screenshot z Arditu a probrat).
