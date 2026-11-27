@@ -6,6 +6,7 @@ import { LAYERS_SOURCE } from './source-layers.ts';
 import { TYPES_SOURCE } from './source-types.ts';
 import { WALLS_SOURCE } from './source-walls.ts';
 import { SLABS_SOURCE } from './source-slabs.ts';
+import { ROOMS_SOURCE } from './source-rooms.ts';
 import type { CellValue, ScheduleDef, ScheduleRow, ScheduleSource } from './types.ts';
 
 export const SCHEDULE_SOURCE_DEFS: Readonly<Record<ScheduleSource, ScheduleSourceDef>> = {
@@ -13,6 +14,7 @@ export const SCHEDULE_SOURCE_DEFS: Readonly<Record<ScheduleSource, ScheduleSourc
   'wall-layers': LAYERS_SOURCE,
   'wall-types': TYPES_SOURCE,
   slabs: SLABS_SOURCE,
+  rooms: ROOMS_SOURCE,
 };
 
 export interface ScheduleTableRow {

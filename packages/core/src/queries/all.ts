@@ -18,6 +18,7 @@ import { compositionList } from './compositions.ts';
 import { slabList, slabOpeningList, slabTypeList } from './slabs.ts';
 import { outlineTempDimensionList } from './outline-dims.ts';
 import { wallTopSlab } from './wall-top.ts';
+import { roomList } from './rooms.ts';
 import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 
 export const CORE_QUERIES = [
@@ -31,6 +32,7 @@ export const CORE_QUERIES = [
   slabList,
   wallTopSlab,
   slabOpeningList,
+  roomList,
   outlineTempDimensionList,
   view3dList,
   slabTypeList,

@@ -25,6 +25,7 @@ import { drawRenovationPatches } from '../opening/renovation.ts';
 import { drawWallTag, tagFacts } from '../tag/draw.ts';
 import { drawSlabs } from '../slab/draw-view.ts';
 import { drawSlabOpenings } from '../slab-opening/draw-view.ts';
+import { drawRooms } from '../room/draw-view.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -123,6 +124,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
   const out = [
     ...drawSlabs(model, view),
     ...drawSlabOpenings(model, view),
+    ...drawRooms(model, view),
     ...walls,
     ...patches,
     ...drawOpenings(model, view, structure),
@@ -142,6 +144,11 @@ export function isSelectable(model: Model, view: View, id: Id): boolean {
   if (el) {
     const s = categoryState(model.display, view, el.category);
     return rulesFor(el.category).selectable && el.storeyId === view.storeyId && s.visible && !s.locked;
+  }
+  const r = model.rooms[id];
+  if (r) {
+    const s = categoryState(model.display, view, 'room');
+    return rulesFor('room').selectable && r.storeyId === view.storeyId && s.visible && !s.locked;
   }
   const o = model.openings[id] ?? model.slabOpenings[id];
   if (o) {

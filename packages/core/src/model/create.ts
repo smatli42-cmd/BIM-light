@@ -73,6 +73,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     elements: {},
     openings: {},
     slabOpenings: {},
+    rooms: {},
     relations: {},
     dimensions: {},
     variantSets: {},

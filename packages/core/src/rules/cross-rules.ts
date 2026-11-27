@@ -3,7 +3,7 @@
 // Nový typ prvku = nový řádek tabulky.
 import type { WallEdge } from '../wall/edges.ts';
 
-export type ElementKind = 'wall' | 'slab' | 'opening' | 'dimension' | 'tag';
+export type ElementKind = 'wall' | 'slab' | 'opening' | 'room' | 'dimension' | 'tag';
 
 /** Druhy bodů a čar pro přichytávání (katalog kreslení, část 2, pořadí priorit). */
 export type SnapKind = 'endpoint' | 'intersection' | 'midpoint' | 'center' | 'quadrant' | 'face' | 'axis';
@@ -60,6 +60,20 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     deletable: true,
     onDelete: ['openings'],
     hosts: ['opening'],
+    selectable: true,
+  },
+  /** Místnost (prvky stavby 9): obrys se počítá ze stěn, posouvá se jen razítko; maže se sama. */
+  room: {
+    dimensionFaces: [],
+    lengthDimension: false,
+    angularDimension: false,
+    lockable: false,
+    snaps: [],
+    movable: false,
+    offsettable: false,
+    deletable: true,
+    onDelete: [],
+    hosts: [],
     selectable: true,
   },
   opening: {

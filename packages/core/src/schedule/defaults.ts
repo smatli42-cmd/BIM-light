@@ -16,6 +16,19 @@ export const SLABS_SCHEDULE: ScheduleDef = {
   minOpeningArea: 0,
 };
 
+/** Výpis místností (prvky stavby 9): každá místnost na řádku, řazení podle čísla, součet ploch. */
+export const ROOMS_SCHEDULE: ScheduleDef = {
+  id: 'schedule-rooms',
+  name: 'Výpis místností',
+  source: 'rooms',
+  fields: ['number', 'name', 'area', 'perimeter', 'height', 'volume', 'check'],
+  groupBy: ['storey'],
+  itemize: true,
+  sortBy: 'number',
+  filter: DEFAULT_FILTER,
+  minOpeningArea: 0,
+};
+
 export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
   {
     id: 'schedule-walls',
@@ -51,6 +64,7 @@ export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
     minOpeningArea: 0,
   },
   SLABS_SCHEDULE,
+  ROOMS_SCHEDULE,
 ];
 
 export const defaultSchedules = (): Record<string, ScheduleDef> =>
