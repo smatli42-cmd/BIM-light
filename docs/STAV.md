@@ -1,12 +1,27 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D1 (jádro: data, příkazy, kresba, IFC); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D2 (nástroj Deska v sandboxu, výběr, info box, obrys ze stěn); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Desky D2: nástroj Deska, 2026-11-27 (hlavní proud; scéna `?ukazka=desky-kresleni`; screenshot Arditu)
+
+- Jádro: `slab.create` umí obrys i ze stěn (`walls: { wallIds, boundary: face | core }`) – stěny se seřadí do
+  smyčky podle konců, vnitřní líc (nebo líc nosného jádra) sousedních stěn se protne; oblouková stěna dá
+  oblouk rozložený na body. Výběr desky: `slabsAt` (klik do obrysu / na hranu, výš položená první),
+  rámeček (`boxSelect` vrací `slabIds`, filtr „Vybírat desky“), karta prvku a dotaz `element.info` u desky.
+- Sandbox: nástroj **Deska (S)** v paletě; metody v info boxu: mnohoúhelník (tracker délka / úhel, klik na
+  první bod, dvojklik nebo pravé tlačítko uzavře, Backspace vrátí bod), obdélník, natočený obdélník, podle
+  stěn (klik na stěny, Enter). Info box podle Arditu: typ, metoda, konstrukce (skladba, tloušťka, vrstvy
+  shora), ref. rovina, horní hrana k podlaží, nosný, stav nových prvků.
+- Výběr desky: klik, Shift, rámeček, Ctrl+A; tažení posune (`slab.move`), čtverečky v bodech obrysu se
+  táhnou nebo klikají (`slab.moveVertex`), Del smaže. Info box vybraných: typ, horní hrana, funkce, horní a
+  spodní líc, plocha, obvod, skladba.
+- Testy: obrys ze stěn (obdélník, pořadí, jádro, oblouk), výběr, karta, AI scénář krok D2, e2e `desky.spec.ts`.
 
 ### Desky D1: jádro, 2026-11-27 (hlavní proud; scéna `?ukazka=desky`, desky i v `?ukazka=dum`)
 - **Data:** deska je prvek `Element = Wall | Slab` (`slab/`), kategorie `slab`, obrys = mnohoúhelník,
@@ -247,6 +262,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Desky D2:** metoda „podle stěn“ jako Revit „Vybrat stěny“ (klik na stěny), ne klik do místnosti
+  (kouzelná hůlka až s místnostmi); obrys vede po vnitřním líci, volba „líc nosného jádra“ (Revit „k jádru“).
+  Stěny se řadí podle nejbližších konců, smysl oběhu z os. Ref. rovina zatím jen horní líc (Ardit nabízí
+  4 – horní / spodní líc, líce jádra; doplním, až budou potřeba). Záložka Typ a úprava skladby desky v
+  editoru typů zatím nejsou (skladba jen ke čtení). Klávesa nástroje **S**. Desky se vybírají až po
+  otvorech a stěnách (leží pod nimi); z několika desek nad sebou je první ta s výš položeným horním lícem.
+
 - **Desky D1:** referenční rovina = horní líc (Revit Floor, výchozí Archicad), vrstvy skladby od spodu.
   Úroveň podlaží = čistá podlaha: nová podlaha má horní líc 0, nová nosná deska −150 (výchozí skladba
   podlahy). Podlaha se exportuje jako IfcCovering FLOORING (IFC správně), v programu je to deska. Obrys zatím
@@ -304,10 +326,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Desky D2 (hlavní proud):** nástroj Deska v sandboxu (obdélník / mnohoúhelník / podle stěn – obrys
-  z líců nebo jádra stěn), výběr desky, info box, uzly obrysu tažením, deska v 3D (po sloučení 3D náhledu).
-  **Před rozhraním vyžádat screenshoty z Arditu:** kreslení desky, info box desky, deska v půdorysu.
-  Pak D3 (otvory v desce, základ 19) a D4 (vazba vršku stěny na desku, výkazy desek, kóty k hranám).
+- **Desky D3 (hlavní proud):** otvory v desce (základ 19 – stejný mechanismus jako ve stěně), pak D4
+  (vazba vršku stěny na desku, výkazy desek, kóty k hranám desky), záložka Typ desky v editoru typů.
+  Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
+- **Uživatel vyzkouší D2:** `?ukazka=desky-kresleni` – S → metoda Podle stěn: klik na stěny L a Enter (líc /
+  líc jádra); Mnohoúhelník, Obdélník, Natočený obdélník; pak Esc, klik do desky, tažení, čtverečky v rozích,
+  info box (horní hrana, typ), Del.
 - **Uživatel vyzkouší D1:** `?ukazka=desky` – obrysy desek, čárkovaná podesta, Obsah → vrstva Desky
   skrýt / zobrazit; Exportovat IFC a v BIMvision IfcSlab a IfcCovering se skladbou; `?ukazka=dum` desky ve
   1.NP i 2.NP.
@@ -347,6 +371,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
+- **STAV.md má 39,5 KB (limit ~40 KB):** návrh rozdělení – oddíly „Hotovo“ starší než desky (kóty,
+  stěny Z7–Z10, editor typů, opravy z 2026-11-26) přesunout do nového `docs/STAV-archiv.md`. Čeká na souhlas.
 - **Desky – zbývá:** úprava vrstev skladby jen pro desku (příkazy vrstev jsou zatím `wallType.*`), typ
   desky v editoru typů, výkaz desek (obecný výkaz zná jen stěny), oblouky v obrysu.
 - **Z10 zbývá:** kontrola překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze
@@ -401,14 +427,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po deskách D1)
+## Největší soubory (po deskách D2)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (614 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (624 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 248 | apps/sandbox/src/session/session.ts |
+| 248 | apps/sandbox/src/render/overlay.ts |
+| 246 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
+| 244 | apps/sandbox/src/session/session.ts |
 | 242 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 237 | apps/sandbox/src/render/overlay.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |
-| 233 | apps/sandbox/src/render/hatch-paint.ts |

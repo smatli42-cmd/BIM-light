@@ -7,7 +7,7 @@ import { IFC_CLASS } from '../../model/categories.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
 import { putElements } from '../../model/update.ts';
 import { outlineFromWalls, WALL_BOUNDARIES, type WallBoundary } from '../../slab/from-walls.ts';
-import { DEFAULT_FLOOR_BUILDUP, SLAB_FUNCTIONS, type Slab, type SlabFunction } from '../../slab/types.ts';
+import { defaultTopOffset, SLAB_FUNCTIONS, type Slab, type SlabFunction } from '../../slab/types.ts';
 import { storeyOf } from '../lookup.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -29,9 +29,6 @@ export interface SlabCreateParams {
 /** IFC třída podle funkce: nosná deska = IfcSlab, skladba podlahy = IfcCovering (FLOORING). */
 export const slabIfcClass = (f: SlabFunction): string =>
   f === 'floor' ? IFC_CLASS.covering : IFC_CLASS.slab;
-
-/** Výchozí horní líc: podlaha 0 (= úroveň podlaží), nosná deska −150 (pod skladbou podlahy). */
-export const defaultTopOffset = (f: SlabFunction): number => (f === 'floor' ? 0 : -DEFAULT_FLOOR_BUILDUP);
 
 /** Obrys ze stěn podlaží desky, nebo odmítnutí s důvodem. */
 function wallsOutline(model: Model, p: SlabCreateParams): Vec2[] {
@@ -56,6 +53,7 @@ export const slabCreate = defineCommand<SlabCreateParams>({
     'podle typu (structure = nosná deska, floor = skladba podlahy).',
   group: 'Deska',
   icon: 'slab',
+  shortcut: 'S',
   params: S.object(
     {
       storeyId: S.id,

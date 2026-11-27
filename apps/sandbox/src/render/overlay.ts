@@ -4,6 +4,7 @@ import {
   allWallGeometry,
   edgePath,
   facePath,
+  findSlab,
   openingOutline,
   tessellate,
   type Id,
@@ -11,7 +12,7 @@ import {
   type Model,
 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
-import type { GripView, PermDimView } from '../interaction/hits.ts';
+import type { PermDimView } from '../interaction/hits.ts';
 import type { TempDimView } from '../interaction/temp-layout.ts';
 import type { Overlay } from '../interaction/types.ts';
 
@@ -58,6 +59,12 @@ export function drawWallOutlines(
       ctx.stroke();
       continue;
     }
+    const slab = findSlab(model, id);
+    if (slab) {
+      poly(ctx, s, slab.outline);
+      ctx.stroke();
+      continue;
+    }
     const g = geoms.get(id);
     if (!g) continue;
     for (const loop of g.outlines) {
@@ -82,6 +89,7 @@ function drawSnap(ctx: Ctx, s: Session, o: Overlay) {
 export function drawOverlay(ctx: Ctx, s: Session, o: Overlay) {
   const v = s.viewport;
   if (o.hover?.length) drawWallOutlines(ctx, s, o.hover, AUX_LIGHT, 1.5);
+  if (o.selected?.length) drawWallOutlines(ctx, s, o.selected, SELECT, 2);
   ctx.strokeStyle = AUX;
   ctx.lineWidth = 1;
   for (const g of o.ghosts ?? []) {
@@ -215,7 +223,10 @@ function drawFlipArrows(ctx: Ctx, at: Vec2, d: Vec2) {
   ctx.restore();
 }
 
-export function drawGrips(ctx: Ctx, grips: readonly GripView[]) {
+export function drawGrips(
+  ctx: Ctx,
+  grips: readonly { readonly end: string; readonly at: Vec2; readonly dir?: Vec2 }[],
+) {
   ctx.fillStyle = '#ffffff';
   ctx.strokeStyle = AUX;
   ctx.lineWidth = 1.5;

@@ -38,3 +38,6 @@ export const MIN_SLAB_AREA = 1000;
 
 /** Výchozí tloušťka skladby podlahy nad nosnou deskou (mm): horní líc nové nosné desky = −150. */
 export const DEFAULT_FLOOR_BUILDUP = 150;
+
+/** Výchozí horní líc nové desky: podlaha 0 (= úroveň podlaží), nosná deska −150 (pod skladbou podlahy). */
+export const defaultTopOffset = (f: SlabFunction): number => (f === 'floor' ? 0 : -DEFAULT_FLOOR_BUILDUP);

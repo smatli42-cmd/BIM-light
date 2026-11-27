@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { vec } from '../geometry/index.ts';
 import { boxSelect, rectOf } from '../selection/box.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
+import { elementInfo } from '../selection/element-info.ts';
 import { slabsAt } from './pick.ts';
 
 const typeId = (f: Fixture, name: string) =>
@@ -35,6 +36,20 @@ describe('pravidla-interakce: Výběr / D2: výběr desky', () => {
     expect(boxSelect(f.model, view, all, false).slabIds).toEqual([rc]);
     const off = { walls: true, dimensions: true, slabs: false };
     expect(boxSelect(f.model, view, all, false, off).slabIds).toEqual([]);
+  });
+
+  it('koncepce rozhraní 2 I: karta prvku desky – typ, líce, plocha a obvod', () => {
+    const f = fixture();
+    const id = make(f, 'ŽB strop 250');
+    const info = elementInfo(f.model, id);
+    expect(info).toMatchObject({
+      kind: 'slab',
+      mark: 'D1',
+      top: -150,
+      bottom: -410,
+      area: 12,
+      perimeter: 14,
+    });
   });
 
   it('Výběr: deska ve skryté vrstvě Desky se nevybere', () => {

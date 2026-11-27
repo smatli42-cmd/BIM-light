@@ -1,8 +1,7 @@
 // Obsah info boxu podle situace (koncepce rozhraní, část 2 D): příkaz nad výběrem → jeho volby;
 // výběr → vlastnosti vybraných prvků; nástroj Stěna → výchozí nastavení nových stěn; Otvor → rozměry
-// nového otvoru; Výběr bez výběru → metoda výběru.
-import { findWall } from '@bim-light/core';
-import type { Wall } from '@bim-light/core';
+// nového otvoru; Deska → výchozí nastavení nové desky; Výběr bez výběru → metoda výběru.
+import { findSlab, findWall, type Slab, type Wall } from '@bim-light/core';
 import { WALL_TOOLS } from '../../interaction/tools/wall-method.ts';
 import type { ToolId } from '../../interaction/types.ts';
 import type { Session } from '../../session/session.ts';
@@ -11,16 +10,19 @@ import { CommandOptions, DimensionOptions, SelectOptions } from './ToolOptions.t
 import { TagAllSection } from './WallTags.tsx';
 import { ModelCheckSection } from './ModelCheck.tsx';
 import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
+import { NewSlabInfo, SelectedSlabsInfo } from './SlabInfo.tsx';
 
 const COMMANDS: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'align', 'trim', 'split'];
 
 function Selection({ s }: { s: Session }) {
   const walls = s.selection.walls.map((id) => findWall(s.model, id)).filter((w): w is Wall => !!w);
+  const slabs = s.selection.slabs.map((id) => findSlab(s.model, id)).filter((x): x is Slab => !!x);
   const dims = s.selection.dims.length;
   return (
     <>
       {walls.length > 0 && <SelectedWallsInfo key={walls.map((w) => w.id).join()} s={s} walls={walls} />}
       <OpeningPanel s={s} />
+      {slabs.length > 0 && <SelectedSlabsInfo key={slabs.map((x) => x.id).join()} s={s} slabs={slabs} />}
       {dims > 0 && (
         <section>
           <h2 data-testid="sel-dims">Vybrané kóty ({dims})</h2>
@@ -35,13 +37,13 @@ function Selection({ s }: { s: Session }) {
 
 export function InfoContent({ s }: { s: Session }) {
   const id = s.tool.id;
-  const { walls, openings, dims } = s.selection;
-  const any = walls.length + openings.length + dims.length > 0;
+  const any = !s.selection.empty;
   if (COMMANDS.includes(id)) return <CommandOptions s={s} />;
   if (id === 'opening') return <OpeningPanel s={s} />;
   if (id === 'dimension' && !any) return <DimensionOptions s={s} />;
   if (any) return <Selection s={s} />;
   if (WALL_TOOLS.includes(id)) return <NewWallInfo s={s} />;
+  if (id === 'slab') return <NewSlabInfo s={s} />;
   return (
     <>
       <SelectOptions s={s} />

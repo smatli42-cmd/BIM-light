@@ -1,4 +1,4 @@
-// Karta prvku (koncepce rozhraní, část 2 I): když kurzor chvíli stojí nad stěnou nebo otvorem, ukáže
+// Karta prvku (koncepce rozhraní, část 2 I): když kurzor chvíli stojí nad stěnou, otvorem nebo deskou, ukáže
 // souhrn vlastností. Neukazuje se hned, aby při přejíždění po výkresu neblikala; jde vypnout ve spodní
 // liště. Data počítá jádro (`elementInfo`, pro AI dotaz `element.info`).
 import { elementInfo, type ElementInfo, type Vec2 } from '@bim-light/core';
@@ -16,12 +16,32 @@ const mm = (v: number) => `${Math.round(v)} mm`;
 const m2 = (v: number) => `${v.toFixed(2).replace('.', ',')} m²`;
 
 interface Card {
-  readonly icon: 'wall' | 'opening';
+  readonly icon: 'wall' | 'opening' | 'slab';
   readonly title: string;
   readonly sub: string;
   readonly head: string;
   readonly note: string;
   readonly rows: readonly [string, string][];
+}
+
+const lvl = (v: number) => `${v >= 0 ? '+' : '−'}${(Math.abs(v) / 1000).toFixed(3).replace('.', ',')}`;
+
+function slabCard(i: Extract<ElementInfo, { kind: 'slab' }>): Card {
+  const fn = i.slabFunction === 'floor' ? 'Podlaha' : 'Deska';
+  return {
+    icon: 'slab',
+    title: fn,
+    sub: `${fn} · ${i.storeyName}`,
+    head: `${m2(i.area)} · ${mm(i.thickness)}`,
+    note: 'plocha · tloušťka',
+    rows: [
+      ['Typ', `${i.mark} ${i.typeName}`],
+      ['Horní líc', lvl(i.top)],
+      ['Spodní líc', lvl(i.bottom)],
+      ['Obvod', `${i.perimeter.toFixed(2).replace('.', ',')} m`],
+      ['Vrstva', i.layerName],
+    ],
+  };
 }
 
 function card(i: ElementInfo): Card {
@@ -41,6 +61,7 @@ function card(i: ElementInfo): Card {
         ['Vrstva', i.layerName],
       ],
     };
+  if (i.kind === 'slab') return slabCard(i);
   const niche = i.openingKind === 'niche';
   return {
     icon: 'opening',

@@ -4,6 +4,7 @@ import {
   add,
   type Dimension,
   dimensionText,
+  findSlab,
   findWall,
   type Id,
   isDimensionVisible,
@@ -42,10 +43,19 @@ export interface GripView {
   readonly dir?: Vec2;
 }
 
+/** Uzel obrysu jediné vybrané desky (D2). */
+export interface SlabGripView {
+  readonly slabId: Id;
+  readonly index: number;
+  readonly end: 'vertex';
+  readonly at: Vec2;
+}
+
 export type Hit =
   | { readonly kind: 'pin' | 'temp-text' | 'temp-line' | 'len-end'; readonly temp: TempDimView }
   | { readonly kind: 'lock' | 'dim-text' | 'dim-line'; readonly dim: PermDimView }
-  | { readonly kind: 'grip'; readonly grip: GripView };
+  | { readonly kind: 'grip'; readonly grip: GripView }
+  | { readonly kind: 'slab-vertex'; readonly grip: SlabGripView };
 
 /** Rozložení trvalé kóty v px (číslo, čáry, zámek u čísla, katalog kreslení 4.5). */
 export function permDimView(s: Session, d: Dimension): PermDimView | null {
@@ -121,6 +131,13 @@ export function gripViews(s: Session): GripView[] {
   return [...ends, ...sideGrips(s, w)];
 }
 
+/** Uzly obrysu jediné vybrané desky. */
+export function slabGripViews(s: Session): SlabGripView[] {
+  const sl = findSlab(s.model, s.selection.singleSlab);
+  if (!sl || s.tool.id !== 'select') return [];
+  return sl.outline.map((p, index) => ({ slabId: sl.id, index, end: 'vertex', at: s.viewport.toScreen(p) }));
+}
+
 /** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */
 export function hitAt(s: Session, p: Vec2, hidden: readonly Id[] = []): Hit | null {
   const temps = tempDimViews(s);
@@ -130,6 +147,7 @@ export function hitAt(s: Session, p: Vec2, hidden: readonly Id[] = []): Hit | nu
     if (s.selection.dims.includes(d.id) && near(p, d.lock, 9)) return { kind: 'lock', dim: d };
   for (const t of temps) if (t.lenEnd && near(p, t.lenEnd, 8)) return { kind: 'len-end', temp: t };
   for (const g of gripViews(s)) if (near(p, g.at, 9)) return { kind: 'grip', grip: g };
+  for (const g of slabGripViews(s)) if (near(p, g.at, 9)) return { kind: 'slab-vertex', grip: g };
   for (const t of temps) if (inRect(p, t.textRect)) return { kind: 'temp-text', temp: t };
   for (const d of perms) if (inRect(p, d.textRect)) return { kind: 'dim-text', dim: d };
   for (const t of temps) if (segDist(p, t.a, t.b) <= 5) return { kind: 'temp-line', temp: t };

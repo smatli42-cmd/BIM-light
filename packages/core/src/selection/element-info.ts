@@ -1,5 +1,5 @@
-// Karta prvku (koncepce rozhraní, část 2 I – informace po podržení myši): souhrn vlastností stěny
-// nebo otvoru spočítaný z modelu. Stejná data vidí AI dotazem `element.info` (základy 6, 15).
+// Karta prvku (koncepce rozhraní, část 2 I – informace po podržení myši): souhrn vlastností stěny,
+// otvoru nebo desky spočítaný z modelu. Stejná data vidí AI dotazem `element.info` (základy 6, 15).
 import { findWall } from '../wall/queries.ts';
 import { pathLength } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
@@ -9,6 +9,9 @@ import { layerForCategory } from '../view/effective.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { getWall, wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
+import { polygonArea, polygonPerimeter, slabLevels } from '../slab/geometry.ts';
+import { findSlab } from '../slab/queries.ts';
+import type { Slab, SlabFunction } from '../slab/types.ts';
 import { wallHeight } from '../wall-height/resolve.ts';
 
 const r1 = (v: number) => Math.round(v * 10) / 10;
@@ -45,7 +48,43 @@ export interface OpeningInfo {
   readonly layerName: string;
 }
 
-export type ElementInfo = WallInfo | OpeningInfo;
+/** Deska (D2): typ, funkce, výšky líců nad ±0,000, plocha a obvod. */
+export interface SlabInfo {
+  readonly kind: 'slab';
+  readonly id: Id;
+  readonly storeyName: string;
+  readonly typeName: string;
+  readonly mark: string;
+  readonly slabFunction: SlabFunction;
+  readonly top: number;
+  readonly bottom: number;
+  readonly thickness: number;
+  /** m² a m na dvě desetinná místa. */
+  readonly area: number;
+  readonly perimeter: number;
+  readonly layerName: string;
+}
+
+export type ElementInfo = WallInfo | OpeningInfo | SlabInfo;
+
+function slabInfo(m: Model, s: Slab): SlabInfo {
+  const t = m.slabTypes[s.typeId];
+  const lv = slabLevels(m, s);
+  return {
+    kind: 'slab',
+    id: s.id,
+    storeyName: m.storeys[s.storeyId]?.name ?? '',
+    typeName: t?.name ?? '',
+    mark: t?.mark ?? '',
+    slabFunction: s.slabFunction,
+    top: r1(lv.top),
+    bottom: r1(lv.bottom),
+    thickness: r1(lv.thickness),
+    area: m2(polygonArea(s.outline)),
+    perimeter: Math.round(polygonPerimeter(s.outline) / 10) / 100,
+    layerName: layerForCategory(m.display, 'slab')?.name ?? '',
+  };
+}
 
 function wallInfo(m: Model, w: Wall): WallInfo {
   const length = r1(pathLength(wallGeometry(m, w).faces.ref));
@@ -67,7 +106,7 @@ function wallInfo(m: Model, w: Wall): WallInfo {
   };
 }
 
-/** Karta prvku podle id (stěna nebo otvor); neznámé id = null. */
+/** Karta prvku podle id (stěna, otvor nebo deska); neznámé id = null. */
 export function elementInfo(m: Model, id: Id): ElementInfo | null {
   const o = m.openings[id];
   if (o) {
@@ -86,5 +125,7 @@ export function elementInfo(m: Model, id: Id): ElementInfo | null {
     };
   }
   const w = findWall(m, id);
-  return w ? wallInfo(m, w) : null;
+  if (w) return wallInfo(m, w);
+  const s = findSlab(m, id);
+  return s ? slabInfo(m, s) : null;
 }

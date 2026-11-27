@@ -22,6 +22,7 @@ export const TOOL_KEYS: Readonly<Record<string, ToolId>> = {
   x: 'split',
   b: 'rect',
   o: 'opening',
+  s: 'slab',
 };
 
 /** Přiblíží na všechny stěny (Home) nebo na vybrané (Z). */
@@ -45,7 +46,7 @@ function ctrlKey(s: Session, key: string): boolean {
       return true;
     case 'a': {
       const all = boxSelect(s.model, s.view, { x0: -1e12, y0: -1e12, x1: 1e12, y1: 1e12 }, false, s.filter);
-      s.selection.set(all.wallIds, all.dimensionIds, all.openingIds);
+      s.selection.set(all.wallIds, all.dimensionIds, all.openingIds, all.slabIds);
       return true;
     }
     case 'c':
@@ -90,12 +91,7 @@ export function handleKey(s: Session, k: KeyInfo): boolean {
     return true;
   }
   if (k.key === 'Delete' || (k.key === 'Backspace' && s.tool.id === 'select')) {
-    if (!s.selection.empty)
-      s.run('selection.delete', {
-        wallIds: s.selection.walls,
-        dimensionIds: s.selection.dims,
-        openingIds: s.selection.openings,
-      });
+    if (!s.selection.empty) s.run('selection.delete', s.selection.deleteParams());
     return true;
   }
   if (k.ctrl || k.alt) return false;

@@ -20,6 +20,7 @@ export const PALETTE: readonly (readonly ToolDef[])[] = [
   [
     { tool: 'wall', icon: 'wall', label: 'Stěna', key: 'W', also: ['rect', 'arc', 'pickline'] },
     { tool: 'opening', icon: 'opening', label: 'Otvor', key: 'O' },
+    { tool: 'slab', icon: 'slab', command: 'slab.create' },
   ],
   [
     { tool: 'dimension', icon: 'dimension', label: 'Kóta', key: 'D' },
