@@ -1,6 +1,7 @@
 // Obsah info boxu podle situace (koncepce rozhraní, část 2 D): příkaz nad výběrem → jeho volby;
 // výběr → vlastnosti vybraných prvků; nástroj Stěna → výchozí nastavení nových stěn; Otvor → rozměry
 // nového otvoru; Výběr bez výběru → metoda výběru.
+import { findWall } from '@bim-light/core';
 import type { Wall } from '@bim-light/core';
 import { WALL_TOOLS } from '../../interaction/tools/wall-method.ts';
 import type { ToolId } from '../../interaction/types.ts';
@@ -14,7 +15,7 @@ import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
 const COMMANDS: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'align', 'trim', 'split'];
 
 function Selection({ s }: { s: Session }) {
-  const walls = s.selection.walls.map((id) => s.model.elements[id]).filter((w): w is Wall => !!w);
+  const walls = s.selection.walls.map((id) => findWall(s.model, id)).filter((w): w is Wall => !!w);
   const dims = s.selection.dims.length;
   return (
     <>

@@ -1,5 +1,6 @@
 // Karta prvku (koncepce rozhraní, část 2 I – informace po podržení myši): souhrn vlastností stěny
 // nebo otvoru spočítaný z modelu. Stejná data vidí AI dotazem `element.info` (základy 6, 15).
+import { findWall } from '../wall/queries.ts';
 import { pathLength } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
@@ -84,6 +85,6 @@ export function elementInfo(m: Model, id: Id): ElementInfo | null {
       layerName: layerForCategory(m.display, 'opening')?.name ?? '',
     };
   }
-  const w = m.elements[id];
+  const w = findWall(m, id);
   return w ? wallInfo(m, w) : null;
 }

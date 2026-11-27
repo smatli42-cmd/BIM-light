@@ -16,7 +16,7 @@ import { predefined, wallCommonPset } from './pset.ts';
 import { bool, en, int, str, type Raw } from './step.ts';
 
 /** Doporučené kategorie vrstev IFC4 podle funkce vrstvy. */
-const LAYER_CATEGORY: Record<LayerFunction, string> = {
+export const LAYER_CATEGORY: Record<LayerFunction, string> = {
   core: 'LoadBearing',
   insulation: 'Insulation',
   finish: 'Finish',
@@ -32,7 +32,7 @@ export interface TypeRefs {
 /** Vrstvy typu, které se exportují: pás v rovině řezu (jako půdorys). */
 export const exportBand = (t: WallType) => bandAt(t, DEFAULT_CUT_HEIGHT);
 
-function material(c: IfcContext, m: Model, cache: Map<Id, Raw>, id: Id): Raw {
+export function material(c: IfcContext, m: Model, cache: Map<Id, Raw>, id: Id): Raw {
   const hit = cache.get(id);
   if (hit) return hit;
   const mat = m.materials[id];

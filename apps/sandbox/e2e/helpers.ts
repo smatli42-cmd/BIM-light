@@ -1,7 +1,10 @@
 // Pomocníci prohlížečových testů: otevření pískoviště s pevným výřezem, klikání na body v mm
 // a příprava scény příkazy z registru (přes window.__bim). Ukázková data jsou vymyšlená.
 import type { Page } from '@playwright/test';
-import type { Model } from '@bim-light/core';
+import type { Id, Model, Wall } from '@bim-light/core';
+
+/** Model v e2e testech stěn: prvky čte jako stěny (testy, které kreslí desky, použijí `allSlabs`). */
+export type WallModel = Omit<Model, 'elements'> & { readonly elements: Readonly<Record<Id, Wall>> };
 
 export interface Pt {
   x: number;
@@ -49,7 +52,8 @@ export async function dragPx(page: Page, a: Pt, b: Pt, mod?: 'Shift' | 'Alt') {
   if (mod) await page.keyboard.up(mod);
 }
 
-export const model = (page: Page): Promise<Model> => page.evaluate(() => window.__bim!.model());
+export const model = (page: Page): Promise<WallModel> =>
+  page.evaluate(() => window.__bim!.model()) as Promise<WallModel>;
 
 export async function walls(page: Page) {
   const m = await model(page);

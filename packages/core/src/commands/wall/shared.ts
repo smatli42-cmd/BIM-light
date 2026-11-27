@@ -1,4 +1,5 @@
 // Společné části příkazů stěny: schémata parametrů a pomocníci.
+import { findWall } from '../../wall/queries.ts';
 import { pathLength, type Path, type PathEnd } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import { heightError, type HeightBinding } from '../../model/height.ts';
@@ -66,7 +67,7 @@ export function applyWallChanges(
   for (const w of changed) assertPath(w.path);
   const next = propagateConnections(putElements(model, changed), motion);
   for (const id of Object.keys(next.elements)) {
-    const w = next.elements[id];
+    const w = findWall(next, id);
     if (w && pathLength(w.path) <= 0.1) fail('invalid', 'Změna by zkrátila napojenou stěnu na nulu');
   }
   return next;

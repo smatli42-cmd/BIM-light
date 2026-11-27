@@ -4,8 +4,10 @@ import { vec } from '../geometry/index.ts';
 import type { Sample } from './types.ts';
 import { rect } from './scene-helpers.ts';
 import { DIMENSION_SCENES } from './scenes-koty.ts';
+import { SLAB_SCENES } from './scenes-desky.ts';
 
 export const SCENES: readonly Sample[] = [
+  ...SLAB_SCENES,
   ...DIMENSION_SCENES,
   {
     key: 'z10-vybourani',

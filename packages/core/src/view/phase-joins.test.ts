@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { vec } from '../geometry/index.ts';
+import { getWall } from '../wall/queries.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { visibleWalls } from './visible-walls.ts';
@@ -8,7 +9,7 @@ const phase = (f: Fixture, name: string) =>
   Object.values(f.model.display.overrideCombinations).find((c) => c.phase && c.name === name)!.id;
 const joinAt = (f: Fixture, id: string, end: 'start' | 'end') => {
   const m = visibleWalls(f.model, f.model.views[f.viewId]!).model;
-  return wallGeometry(m, m.elements[id]!).cuts[end].join;
+  return wallGeometry(m, getWall(m, id)).cuts[end].join;
 };
 
 /** Stávající stěna, vybouraný prostřední úsek a do mezery nová stěna (hlášení uživatele 2026-11-26). */

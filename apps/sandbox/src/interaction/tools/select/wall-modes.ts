@@ -5,13 +5,14 @@ import {
   allWallGeometry,
   dist,
   dot,
+  findWall,
+  type Id,
   leftNormal,
   mul,
   nearestOnPath,
   roundTo,
   sub,
   tangentAt,
-  type Id,
   type Vec2,
   type WallFace,
 } from '@bim-light/core';
@@ -36,7 +37,7 @@ export class OffsetMode extends ClickOrDrag {
   }
 
   private normal(): Vec2 {
-    const w = this.s.model.elements[this.wallId];
+    const w = findWall(this.s.model, this.wallId);
     return w ? leftNormal(tangentAt(w.path, 'start')) : { x: 0, y: 1 };
   }
 
@@ -83,7 +84,7 @@ export class AddPointMode extends ClickOrDrag {
 
   protected update(p: PointerInfo) {
     this.last = p;
-    const w = this.s.model.elements[this.wallId];
+    const w = findWall(this.s.model, this.wallId);
     if (!w) return;
     const dir = tangentAt(w.path, 'start');
     const len = dist(w.path.start, w.path.end);
@@ -102,7 +103,7 @@ export class AddPointMode extends ClickOrDrag {
   }
 
   tracker(): TrackerField[] | null {
-    const w = this.s.model.elements[this.wallId];
+    const w = findWall(this.s.model, this.wallId);
     if (!w || !this.at) return null;
     const t = this.s.typed.len;
     return [

@@ -1,20 +1,21 @@
 // Zásahy myší do ovládacích prvků výkresu: trvalé kóty (čára, číslo, zámek), dočasné kóty,
 // kolečka, trojúhelník délky a uzly vybrané stěny. Vše v px, počítá se ze stavu (ne z kreslení).
 import {
+  add,
+  type Dimension,
   dimensionText,
+  findWall,
+  type Id,
+  isDimensionVisible,
   layoutDimension,
   measureDimension,
-  pointAt,
-  wallGeometry,
-  wallOutward,
-  add,
   mul,
-  isDimensionVisible,
-  type Dimension,
-  type Id,
   type PathEnd,
+  pointAt,
   type Vec2,
   type Wall,
+  wallGeometry,
+  wallOutward,
 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { inRect, near, screenText, segDist, type ScreenRect } from './screen.ts';
@@ -110,7 +111,7 @@ function sideGrips(s: Session, w: Wall): GripView[] {
 /** Uzly (koncové čtverečky) a kolečko zakřivení jediné vybrané stěny. */
 export function gripViews(s: Session): GripView[] {
   const id = s.selection.single;
-  const w = id ? s.model.elements[id] : undefined;
+  const w = findWall(s.model, id);
   if (!w || s.tool.id !== 'select') return [];
   const ends = (['start', 'end'] as const).map((end) => ({
     wallId: w.id,

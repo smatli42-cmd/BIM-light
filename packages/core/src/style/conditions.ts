@@ -3,6 +3,7 @@ import type { Id } from '../ids/index.ts';
 import type { Category } from '../model/categories.ts';
 import type { Element, VariantRef } from '../model/types.ts';
 import type { Model } from '../model/types.ts';
+import { elementLayers } from '../model/layers.ts';
 import type { GraphicEffect, Predicate } from './types.ts';
 
 /** Vlastnosti prvku, na které se pravidlo smí ptát (rozšíří se s popisem parametrů, základ 15b). */
@@ -34,8 +35,7 @@ export const variantKey = (v: VariantRef): string =>
 
 /** Fakta o BIM prvku. */
 export function elementFacts(model: Model, el: Element): ElementFacts {
-  const type = model.wallTypes[el.typeId];
-  const materialIds = type ? [...new Set(type.bands.flatMap((b) => b.layers.map((l) => l.materialId)))] : [];
+  const materialIds = [...new Set(elementLayers(model, el).map((l) => l.materialId))];
   const facts = {
     id: el.id,
     category: el.category,

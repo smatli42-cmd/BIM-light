@@ -12,7 +12,7 @@ import {
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { omitIds } from '../model/update.ts';
-import { connectionsOf, sidesFor, typeToEnd } from './queries.ts';
+import { connectionsOf, findWall, sidesFor, typeToEnd } from './queries.ts';
 import type { Wall } from './types.ts';
 
 /**
@@ -31,7 +31,7 @@ class Draft {
   readonly removedRelations = new Set<Id>();
   constructor(readonly model: Model) {}
   wall(id: Id): Wall {
-    const w = this.walls.get(id) ?? this.model.elements[id];
+    const w = this.walls.get(id) ?? findWall(this.model, id);
     if (!w) throw new Error(`Stěna ${id} neexistuje`);
     return w;
   }

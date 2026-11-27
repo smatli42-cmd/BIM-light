@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fixture } from '../testing/fixture.ts';
+import { getWall } from '../wall/queries.ts';
 
 describe('katalog-kresleni 5.2: zkušební běh příkazu pro náhled při tažení', () => {
   it('preview vrátí změněný model, ale nic neuloží a nepřidá krok Undo', () => {
@@ -7,7 +8,7 @@ describe('katalog-kresleni 5.2: zkušební běh příkazu pro náhled při taže
     const id = f.line({ x: 0, y: 0 }, { x: 0, y: 2000 });
     const steps = f.editor.history.length;
     const m = f.editor.preview('wall.moveEndpoint', { wallId: id, end: 'end', point: { x: 0, y: 3000 } });
-    expect(m?.elements[id]?.path.end.y).toBe(3000);
+    expect(m && getWall(m, id).path.end.y).toBe(3000);
     expect(f.wall(id).path.end.y).toBe(2000);
     expect(f.editor.history.length).toBe(steps);
   });

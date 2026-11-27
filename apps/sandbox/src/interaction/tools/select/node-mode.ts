@@ -1,6 +1,15 @@
 // Posun uzlu vybrané stěny (katalog kreslení 5): klik nebo tažení, přichytávání od pevného konce,
 // náhled a dočasné kóty během tažení, napojení na volný konec jiné stěny.
-import { dist, endPoint, type Id, type Model, type PathEnd, type Vec2 } from '@bim-light/core';
+import {
+  allWalls,
+  dist,
+  endPoint,
+  findWall,
+  type Id,
+  type Model,
+  type PathEnd,
+  type Vec2,
+} from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import { deltaFields, trackerMm } from '../../tracker-fields.ts';
 import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
@@ -8,7 +17,7 @@ import { ClickOrDrag } from './click-or-drag.ts';
 
 /** Volný konec jiné stěny pod bodem (přitažení uzlu = napojení, katalog kreslení 5). */
 function nodeTarget(s: Session, wallId: Id, p: Vec2, tol: number) {
-  for (const w of Object.values(s.model.elements)) {
+  for (const w of allWalls(s.model)) {
     if (w.id === wallId || w.storeyId !== s.storeyId) continue;
     for (const end of ['start', 'end'] as const) {
       if (dist(endPoint(w.path, end), p) <= tol)
@@ -34,7 +43,7 @@ export class NodeMode extends ClickOrDrag {
   ) {
     super(s, start, drag);
     s.lenEnd = end;
-    const w = s.model.elements[wallId];
+    const w = findWall(s.model, wallId);
     this.point = w ? endPoint(w.path, end) : start.world;
     this.origin = this.point;
   }
@@ -42,7 +51,7 @@ export class NodeMode extends ClickOrDrag {
   protected update(p: PointerInfo) {
     this.last = p;
     // Jako při kreslení: od pevného konce platí úhlové kroky a délka se zaokrouhluje na 10 mm.
-    const w = this.s.model.elements[this.wallId];
+    const w = findWall(this.s.model, this.wallId);
     const from = w ? endPoint(w.path, this.end === 'start' ? 'end' : 'start') : null;
     const opts = { alt: p.alt, orthoOnly: p.shift, from, exclude: new Set([this.wallId]) };
     this.point = this.s.snap(p.world, opts).point;
@@ -69,7 +78,7 @@ export class NodeMode extends ClickOrDrag {
 
   /** Délka stěny po posunu (u přímé stěny), vzdálenost posunu a ΔX / ΔY. */
   tracker(): TrackerField[] | null {
-    const w = this.s.model.elements[this.wallId];
+    const w = findWall(this.s.model, this.wallId);
     if (!w) return null;
     const other = endPoint(w.path, this.end === 'start' ? 'end' : 'start');
     const fields: TrackerField[] = [];
@@ -80,7 +89,7 @@ export class NodeMode extends ClickOrDrag {
   }
 
   overlay(): Overlay {
-    const w = this.s.model.elements[this.wallId];
+    const w = findWall(this.s.model, this.wallId);
     if (!w) return {};
     const other = endPoint(w.path, this.end === 'start' ? 'end' : 'start');
     if (this.preview) return { previewModel: this.preview, markers: [this.point] };

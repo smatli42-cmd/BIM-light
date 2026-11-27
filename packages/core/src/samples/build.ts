@@ -35,6 +35,7 @@ export function buildSample(sample: Sample, newId: IdGenerator): Model {
       return [...r.created];
     },
     type: (name) => byName(editor.model.wallTypes, name, 'Typ stěny'),
+    slabType: (name) => byName(editor.model.slabTypes, name, 'Typ desky'),
     phase: (name) => byName(editor.model.display.overrideCombinations, name, 'Filtr'),
     line(a, b, extra = {}) {
       const path = { kind: 'line', start: a, end: b };

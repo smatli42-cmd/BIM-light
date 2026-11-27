@@ -1,6 +1,13 @@
 // Vybourat úsek stěny (plán stěn Z10): první klik na stěnu = začátek úseku, druhý = konec; úsek mezi
 // nimi dostane stav „bourání“ (příkaz wall.demolishPart, stejně jako AI). Body se přichytávají.
-import { nearestOnPath, selectableWallGeometry, wallsAt, type Id, type Vec2 } from '@bim-light/core';
+import {
+  findWall,
+  type Id,
+  nearestOnPath,
+  selectableWallGeometry,
+  type Vec2,
+  wallsAt,
+} from '@bim-light/core';
 import type { Overlay } from '../../types.ts';
 import { PointCommand } from './base.ts';
 
@@ -23,7 +30,7 @@ export class DemolishTool extends PointCommand {
 
   protected click(p: Vec2) {
     const id = this.first?.wallId ?? this.wallUnder(p);
-    const w = id ? this.s.model.elements[id] : undefined;
+    const w = findWall(this.s.model, id);
     if (!w) return;
     const at = nearestOnPath(w.path, p).point;
     if (!this.first) {
@@ -45,7 +52,7 @@ export class DemolishTool extends PointCommand {
 
   protected preview(): Overlay {
     if (!this.first) return {};
-    const w = this.s.model.elements[this.first.wallId];
+    const w = findWall(this.s.model, this.first.wallId);
     const to = w && this.cur ? nearestOnPath(w.path, this.cur).point : null;
     return { hover: [this.first.wallId], markers: to ? [this.first.at, to] : [this.first.at] };
   }

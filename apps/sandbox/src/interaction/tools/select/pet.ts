@@ -5,9 +5,10 @@ import {
   connectionsOf,
   endPoint,
   endToType,
-  sidesFor,
+  findWall,
   type Id,
   type PathEnd,
+  sidesFor,
   type WallFace,
 } from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
@@ -37,7 +38,7 @@ function wallRow(s: Session): PetItem[] {
 
 /** Paleta u koncového uzlu: posun uzlu (běží), odpojit roh, spojovat / nespojovat, smazat uzel. */
 export function nodePet(s: Session, wallId: Id, end: PathEnd, setMode: SetMode) {
-  const w = s.model.elements[wallId];
+  const w = findWall(s.model, wallId);
   if (!w) return;
   const here = connectionsOf(s.model, wallId).filter((c) => sidesFor(c, wallId).own.at === endToType(end));
   const off = here.some((c) => c.noJoin);

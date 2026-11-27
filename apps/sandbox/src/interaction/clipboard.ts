@@ -3,10 +3,11 @@
 import {
   boundsOf,
   connectionsWithin,
-  specOf,
+  findWall,
   type Id,
   type Model,
   type SpecConnection,
+  specOf,
   type Vec2,
   type Wall,
   type WallSpec,
@@ -20,7 +21,7 @@ export interface Clipboard {
 }
 
 export function copyWalls(model: Model, ids: readonly Id[]): Clipboard | null {
-  const walls = ids.map((id) => model.elements[id]).filter((w): w is Wall => !!w);
+  const walls = ids.map((id) => findWall(model, id)).filter((w): w is Wall => !!w);
   if (!walls.length) return null;
   const b = boundsOf(walls.flatMap((w) => [w.path.start, w.path.end]));
   return {

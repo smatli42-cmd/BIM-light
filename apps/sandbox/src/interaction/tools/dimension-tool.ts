@@ -3,11 +3,12 @@
 // Shift+klik líc přeskočí úsek, Esc řadu nechá na místě. Kóty vzniknou až kliknutím (jeden krok Undo).
 import {
   dimensionPair,
+  type FaceHit,
+  type FaceRef,
+  findWall,
   pickFace,
   pickOpeningEdge,
   selectableWallGeometry,
-  type FaceHit,
-  type FaceRef,
 } from '@bim-light/core';
 import { FACE_PX, type Session } from '../../session/session.ts';
 import { WholeWallPick } from './whole-wall-pick.ts';
@@ -21,7 +22,7 @@ const same = (a: FaceRef, b: FaceRef) =>
   a.wallId === b.wallId && a.face === b.face && a.openingId === b.openingId;
 /** Líc obloukové stěny (ne hrana otvoru): klik do volna pak dá poloměr / průměr. */
 function isArcFace(s: Session, r: FaceRef): boolean {
-  const p = s.model.elements[r.wallId]?.path;
+  const p = findWall(s.model, r.wallId)?.path;
   return (
     !r.openingId &&
     (r.face === 'ref' || r.face === 'opp') &&

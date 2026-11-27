@@ -12,6 +12,7 @@ export * from './schedule/index.ts';
 export * from './tag/index.ts';
 export * from './wall-height/index.ts';
 export * from './opening/index.ts';
+export * from './slab/index.ts';
 export * from './relation/index.ts';
 export * from './dimension/index.ts';
 export * from './constraints/index.ts';

@@ -3,9 +3,10 @@ import {
   allWalls,
   connectionsOf,
   endToType,
-  sidesFor,
+  findWall,
   type Id,
   type PathEnd,
+  sidesFor,
   type Vec2,
   type WallFace,
 } from '@bim-light/core';
@@ -98,7 +99,7 @@ export function edgeMenu(s: Session, wallId: Id, face: WallFace, p: PointerInfo,
 
 /** Položky jen pro obloukovou stěnu (Z5): Vyrovnat, kóta poloměru a tětivy. */
 function arcItems(s: Session, wallId: Id) {
-  const w = s.model.elements[wallId];
+  const w = findWall(s.model, wallId);
   if (!w || w.path.kind !== 'arc' || Math.abs(w.path.bulge) < 1e-9) return [];
   const dim = (measure: 'radius' | 'chord') => () =>
     s.run('dimension.create', { kind: 'length', ref: { wallId, face: 'ref' }, measure, viewId: s.viewId });
@@ -119,7 +120,7 @@ export function wallMenu(s: Session, wallId: Id, at: Vec2) {
     {
       label: 'Vybrat stejný typ',
       action: () => {
-        const type = s.model.elements[wallId]?.typeId;
+        const type = findWall(s.model, wallId)?.typeId;
         s.selection.set(
           allWalls(s.model)
             .filter((w) => w.typeId === type && w.storeyId === s.storeyId)

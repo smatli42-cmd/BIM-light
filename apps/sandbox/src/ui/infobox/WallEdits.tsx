@@ -1,6 +1,7 @@
 // Pohodlí úprav vybraných stěn v info boxu (plán stěn Z9): pipeta (přenést vlastnosti z jedné stěny
 // na jiné, Revit „Match Type“, Archicad pipeta a stříkačka) a výběr stejných stěn (typ, podlaží, stav).
 // Vše přes příkaz wall.matchProperties a dotaz wall.findSame – stejně jako AI.
+import { findWall } from '@bim-light/core';
 import type { Id, Wall } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
@@ -16,7 +17,7 @@ const SAME: [string, string[]][] = [
 ];
 
 function Pipette({ s, walls }: { s: Session; walls: Wall[] }) {
-  const src = source ? s.model.elements[source] : undefined;
+  const src = findWall(s.model, source);
   const targets = walls.filter((w) => w.id !== source).map((w) => w.id);
   const srcType = src && s.model.wallTypes[src.typeId];
   const only = walls.length === 1 ? walls[0] : undefined;

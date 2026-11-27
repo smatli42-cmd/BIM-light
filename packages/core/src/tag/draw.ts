@@ -1,5 +1,6 @@
 // Kresba značky typu stěny (plán stěn Z8): kroužek se značkou typu. Velikost z velikostí na papíře
 // (výška popisu), pero a barva z funkce grafiky (základy 11, 29); kroužek leží vedle líce stěny.
+import { findWall } from '../wall/queries.ts';
 import type { Primitive } from '../drawing/primitives.ts';
 import { add, mul, offsetPath, pointAt, type Vec2 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
@@ -27,7 +28,7 @@ export function tagFacts(t: WallTag): ElementFacts {
 
 /** Střed značky v modelu (mm) – vedle zvoleného líce, nebo na ose. */
 export function tagCenter(m: Model, t: WallTag, scale: number, paper: PaperSizes): Vec2 | null {
-  const w = m.elements[t.wallId];
+  const w = findWall(m, t.wallId);
   if (!w) return null;
   const g = wallGeometry(m, w, Number.NEGATIVE_INFINITY);
   if (t.side === 'on') return pointAt(g.faces.axis, t.position);
@@ -44,7 +45,7 @@ export function drawWallTag(
   paper: PaperSizes,
   g: ResolvedEffect,
 ): Primitive[] {
-  const w = m.elements[t.wallId];
+  const w = findWall(m, t.wallId);
   const c = tagCenter(m, t, scale, paper);
   if (!g.visible || !w || !c) return [];
   const r = paper.labelText * RING * scale;

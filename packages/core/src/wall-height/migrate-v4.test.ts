@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseProject, serializeProject } from '../persistence/project-file.ts';
+import { getWall } from '../wall/queries.ts';
 import { SCHEMA_VERSION } from '../model/types.ts';
 import { resolveHeight } from '../model/height.ts';
 import { fixture } from '../testing/fixture.ts';
@@ -30,7 +31,7 @@ describe('základ 9 / plan-steny Z3: migrace projektu 4 → 5', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.model.schemaVersion).toBe(SCHEMA_VERSION);
-    const w = r.model.elements[a]!;
+    const w = getWall(r.model, a);
     expect(w.height.top).toEqual({ kind: 'storey', storeys: 2, offset: -200 });
     expect(resolveHeight(r.model, w.height)).toEqual({ bottom: 0, top: 5800 });
     expect(w.topProfile).toEqual({ kind: 'flat' });
@@ -40,7 +41,7 @@ describe('základ 9 / plan-steny Z3: migrace projektu 4 → 5', () => {
     const { text, b } = v4Project();
     const r = parseProject(text);
     if (!r.ok) throw new Error(r.error);
-    const w = r.model.elements[b]!;
+    const w = getWall(r.model, b);
     expect(w.height.top).toEqual({ kind: 'height', value: -2500 });
   });
 });
