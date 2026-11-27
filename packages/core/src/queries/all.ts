@@ -14,7 +14,13 @@ import { modelCheck } from './check.ts';
 import { wallPropertiesQuery } from './wall-properties.ts';
 import { scheduleFields, scheduleList, scheduleTable } from './schedules.ts';
 import { wallTagList } from './tags.ts';
-import { sectionElementsQuery, sectionList, sectionPresetList } from './sections.ts';
+import {
+  sectionElementsQuery,
+  sectionList,
+  sectionPick,
+  sectionPickBoxQuery,
+  sectionPresetList,
+} from './sections.ts';
 import {
   levelDimList,
   levelDimTargets,
@@ -68,6 +74,8 @@ export const CORE_QUERIES = [
   wallTagList,
   sectionList,
   sectionElementsQuery,
+  sectionPick,
+  sectionPickBoxQuery,
   sectionPresetList,
   levelDimList,
   levelDimTargets,

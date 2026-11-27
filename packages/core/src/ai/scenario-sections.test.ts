@@ -43,6 +43,17 @@ describe('AI scénář: řezy a pohledy', () => {
     expect(must(content.cut.find((r) => r.elementId === slab)).top).toBe(3000);
     const seenLeft = must(content.seen.find((r) => r.elementId === left));
     expect(seenLeft.depth).toBeGreaterThan(2500);
+    // Výběr v řezu (pokyn uživatele 2026-11-27): bod výkresu → prvek, rámeček zprava → i protnuté; smazání.
+    const row0 = must(content.cut.find((r) => r.elementId === slab));
+    const picked = c.ai.call<string[]>('section.pick', { sectionId: id, u: 4000, z: row0.top - 50 });
+    expect(picked[0]).toBe(slab);
+    const box = c.ai.call<string[]>('section.pickBox', {
+      sectionId: id,
+      a: { x: 2300, y: 500 },
+      b: { x: 1700, y: 600 },
+      crossing: true,
+    });
+    expect(box).toContain(bottom);
     c.ai.call('section.update', { sectionId: id, depth: 1000 });
     const near = c.ai.call<Content>('section.elements', { sectionId: id });
     expect(near.seen.some((r) => r.elementId === left)).toBe(false);

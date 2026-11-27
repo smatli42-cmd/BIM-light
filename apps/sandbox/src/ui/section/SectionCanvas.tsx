@@ -5,12 +5,13 @@
 import { drawSection, type Drawing, type Vec2 } from '@bim-light/core';
 import { useEffect, useRef } from 'preact/hooks';
 import { Viewport } from '../../canvas/viewport.ts';
-import { SELECT } from '../../render/overlay.ts';
+import { AUX_LIGHT, SELECT } from '../../render/overlay.ts';
 import { PAPER_BG } from '../../render/paper.ts';
 import { drawDrawing, drawPrimitive, type RenderContext } from '../../render/primitives.ts';
 import type { Session } from '../../session/session.ts';
 import { activate } from '../../session/windows.ts';
 import { SectionInput } from './section-input.ts';
+import { cardTimer, type CardState } from './section-card.ts';
 
 function pointsOf(d: Drawing): Vec2[] {
   return d.primitives.flatMap((p) =>
@@ -34,6 +35,8 @@ interface Ctx {
   readonly input: SectionInput;
   readonly schedule: () => void;
   readonly index: number;
+  /** Karta prvku po podržení myši (section-card.ts). */
+  readonly onCard: (c: CardState) => void;
 }
 
 /** Myš, kolečko a klávesy; vrací úklid. */
@@ -49,12 +52,19 @@ function events(c: Ctx): () => void {
     schedule();
   };
   const onDown = (e: MouseEvent) => (input.down(at(e), e.button, e.shiftKey), schedule());
-  const onMove = (e: MouseEvent) => input.move(at(e)) && schedule();
-  const onUp = (e: MouseEvent) => (input.up(at(e)), schedule());
+  const card = cardTimer(c.s, () => input.sel.hover, c.onCard);
+  const onMove = (e: MouseEvent) => {
+    const p = at(e);
+    const inside = p.x >= 0 && p.y >= 0 && p.x <= canvas.clientWidth && p.y <= canvas.clientHeight;
+    if (inside) card.move(p, e.buttons);
+    else card.hide();
+    if (input.move(p)) schedule();
+  };
+  const onUp = () => (input.up(), schedule());
   const onKey = (e: KeyboardEvent) => {
     const t = e.target;
     if (c.s.active !== c.index || t instanceof HTMLInputElement || t instanceof HTMLSelectElement) return;
-    if (!input.key(e.key)) return;
+    if (!input.key(e.key, e.ctrlKey || e.metaKey)) return;
     e.preventDefault();
     schedule();
   };
@@ -93,20 +103,31 @@ function painter(c: Omit<Ctx, 'schedule'>, ctx: CanvasRenderingContext2D, id: st
     ctx.fillRect(0, 0, v.width, v.height);
     const r: RenderContext = { ctx, v, pens: s.model.display.penTable, scale: d.scale, paper: s.paper };
     drawDrawing(r, d);
-    const sel = new Set(s.selection.levelDims);
-    for (const p of d.primitives)
-      if (p.source.dimensionId && sel.has(p.source.dimensionId)) drawPrimitive(r, p, SELECT);
+    // Výběr a předzvýraznění jako v půdorysu: čáry vybraných prvků barvou výběru, prvek pod kurzorem světle.
+    const hover = c.input.sel.hover;
+    for (const p of d.primitives) {
+      const id = p.source.dimensionId ?? p.source.elementId;
+      if (p.kind !== 'line' && p.kind !== 'text') continue;
+      if (id && s.selection.has(id)) drawPrimitive(r, p, SELECT);
+      else if (id && id === hover) drawPrimitive(r, p, AUX_LIGHT);
+    }
     c.input.overlay(r);
   };
 }
 
 /** Překreslování, velikost plátna a ovládání; vrací úklid. */
-function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string, index: number): () => void {
+function attach(
+  canvas: HTMLCanvasElement,
+  s: Session,
+  sectionId: string,
+  index: number,
+  onCard: (c: CardState) => void,
+): () => void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return () => undefined;
   const v = new Viewport();
   const input = new SectionInput(s, sectionId, v);
-  const paint = painter({ canvas, s, v, input, index }, ctx, sectionId);
+  const paint = painter({ canvas, s, v, input, index, onCard }, ctx, sectionId);
   let frame = 0;
   const schedule = () => {
     if (!frame)
@@ -127,7 +148,7 @@ function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string, index:
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   const off = s.subscribe(schedule);
-  const offEvents = events({ canvas, s, v, input, schedule, index });
+  const offEvents = events({ canvas, s, v, input, schedule, index, onCard });
   return () => {
     cancelAnimationFrame(frame);
     observer.disconnect();
@@ -137,10 +158,16 @@ function attach(canvas: HTMLCanvasElement, s: Session, sectionId: string, index:
 }
 
 /** Plátno řezu v pracovním okně `index`; klik nebo kolečko udělá okno aktivním. */
-export function SectionCanvas({ s, sectionId, index }: { s: Session; sectionId: string; index: number }) {
+export function SectionCanvas(p: {
+  s: Session;
+  sectionId: string;
+  index: number;
+  onCard: (c: CardState) => void;
+}) {
+  const { s, sectionId, index } = p;
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(
-    () => (ref.current ? attach(ref.current, s, sectionId, index) : undefined),
+    () => (ref.current ? attach(ref.current, s, sectionId, index, p.onCard) : undefined),
     [s, sectionId, index],
   );
   return (

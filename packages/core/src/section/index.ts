@@ -5,3 +5,4 @@ export * from './levels.ts';
 export * from './mark.ts';
 export * from './elevations.ts';
 export * from './migrate-v30.ts';
+export * from './pick.ts';

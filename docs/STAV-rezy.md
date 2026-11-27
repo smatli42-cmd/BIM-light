@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Výběr prvků v okně řezu, 2026-11-27 (pokyn uživatele; scéna `?ukazka=rezy`, Řez A)
+
+- Jádro `section/pick.ts`: plochy prvků na výkrese řezu (řezané kusy, pohledové plochy, otvory) z téhož
+  výpočtu jako kresba; `sectionPickAt` (bod → prvky, nejbližší první, otvor před svou stěnou) a
+  `sectionPickBox` (zleva celé prvky, zprava i protnuté). Dotazy AI `section.pick` a `section.pickBox`.
+  Testy `pick.test.ts`, krok v `ai/scenario-sections.test.ts`.
+- Sandbox `ui/section/section-select.ts`: klik vybere stěnu / desku / okno (i za rovinou řezu, i z jiného
+  podlaží), Shift přidá / ubere, klik do prázdna zruší, Esc zruší, Tab střídá překrývající se prvky,
+  rámeček zleva / zprava, Ctrl+A, Del, filtr výběru (stěny, desky), předzvýraznění pod kurzorem, karta
+  prvku (`section-card.ts`), pravé tlačítko = nabídka stěny / otvoru. Výběr je společný se všemi okny,
+  info box ukazuje vybrané. Posun výkresu prostředním tlačítkem (dřív i levým do prázdna).
+- E2E `rezy-vyber.spec.ts` (Studie i Projekt; klik, Shift, info box, Esc, rámeček, dvě okna, Del).
+
 ### Napojení desky na stěnu podle priority materiálů (uložení stropu), 2026-11-27 (krok schválený uživatelem)
 
 - Jedno pravidlo v jádře `junction/slab-wall.ts` (základ 7) pro řez, 3D a výkazy: nosná deska s prioritou
@@ -212,8 +225,8 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   1,6 × výška trojúhelníku na každou stranu. Automatické kóty podlaží zůstávají spočítané (nejsou data).
 
 - **Řez v okně:** styl a měřítko řezu jsou v záhlaví okna řezu (spodní lišta dál patří půdorysu, protože
-  nástroje kreslí do půdorysu). Výběr prvků v řezu zatím není – klik do řezu jen aktivuje okno; nástroje
-  a klávesy dál pracují s půdorysem okna (Revit dovoluje kreslit i v řezu – přijde s 2D kresbou).
+  nástroje kreslí do půdorysu). Výběr prvků v řezu funguje jako v půdorysu (pokyn uživatele 2026-11-27,
+  staré „klik jen aktivuje okno“ zrušeno); kreslicí nástroje dál pracují s půdorysem okna (Revit dovoluje kreslit i v řezu – přijde s 2D kresbou).
   Řez otevřený přes 3D okno nahradí 3D okno půdorysem s řezem na stejném místě (stejně jako podlaží).
 
 - **Nástroj Řez (podle Arditu):** výchozí hloubka nového řezu je teď **neomezená** (prázdné pole jako

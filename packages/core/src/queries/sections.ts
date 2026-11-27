@@ -2,6 +2,7 @@
 import { sectionOf } from '../commands/section/section.ts';
 import { S } from '../commands/schema.ts';
 import { sectionContent } from '../section/content.ts';
+import { sectionPickAt, sectionPickBox } from '../section/pick.ts';
 import { effectiveFrame, sectionCutPlane3d } from '../section/frame.ts';
 import { sectionLimits } from '../section/types.ts';
 import { defineQuery } from './types.ts';
@@ -71,4 +72,39 @@ export const sectionPresetList = defineQuery<Record<string, never>, unknown>({
       ...p,
       used: Object.values(m.sections).filter((s) => s.presetId === p.id).length,
     })),
+});
+
+export const sectionPick = defineQuery<
+  { sectionId: string; u: number; z: number; tolerance?: number },
+  unknown
+>({
+  name: 'section.pick',
+  label: 'Prvky v bodě řezu',
+  description:
+    'Prvky pod bodem výkresu řezu (u mm po výkrese, z mm nad ±0,000), nejbližší první: řezané, pak za rovinou ' +
+    'podle hloubky, otvor před svou stěnou. tolerance v mm (výchozí 50). Výběr pak přes id (stěny, desky, otvory).',
+  group: 'Řezy a pohledy',
+  params: S.object(
+    { sectionId: S.id, u: S.number('mm'), z: S.number('mm'), tolerance: S.number('mm', { minimum: 0 }) },
+    ['sectionId', 'u', 'z'],
+  ),
+  run: (m, p) => sectionPickAt(m, sectionOf(m, p.sectionId), { x: p.u, y: p.z }, p.tolerance ?? 50),
+});
+
+export const sectionPickBoxQuery = defineQuery<
+  { sectionId: string; a: { x: number; y: number }; b: { x: number; y: number }; crossing?: boolean },
+  unknown
+>({
+  name: 'section.pickBox',
+  label: 'Prvky v rámečku řezu',
+  description:
+    'Prvky v rámečku na výkrese řezu (a, b = rohy, x = u, y = z v mm): crossing = i protnuté (rámeček zprava ' +
+    'doleva), jinak jen celé (zleva doprava).',
+  group: 'Řezy a pohledy',
+  params: S.object({ sectionId: S.id, a: S.point, b: S.point, crossing: { type: 'boolean' } }, [
+    'sectionId',
+    'a',
+    'b',
+  ]),
+  run: (m, p) => sectionPickBox(m, sectionOf(m, p.sectionId), p.a, p.b, p.crossing ?? false),
 });

@@ -7,11 +7,16 @@ import { activate } from '../../session/windows.ts';
 import { Icon } from '../icons/Icon.tsx';
 import { ScaleSelect } from '../ViewControls.tsx';
 import { SectionCanvas } from './SectionCanvas.tsx';
+import { useState } from 'preact/hooks';
+import type { CardState } from './section-card.ts';
+import { ElementCard } from '../HoverCard.tsx';
+import { CanvasOverlays } from '../Overlays.tsx';
 import { PlanWindowTabs } from '../layout/WindowTabs.tsx';
 
 export function SectionWindowView(p: { s: Session; index: number; sec: Section; cls: string }) {
   const { s, index, sec } = p;
   const active = index === s.active;
+  const [card, setCard] = useState<CardState>(null);
   const suffix = active ? '' : '-passive';
   const upd = (patch: Record<string, unknown>) => s.run('section.update', { sectionId: sec.id, ...patch });
   return (
@@ -50,7 +55,9 @@ export function SectionWindowView(p: { s: Session; index: number; sec: Section; 
         <span class="view-label" data-testid={`section-label${suffix}`}>
           {sec.kind === 'section' ? 'Řez' : 'Pohled'} · {sec.name} · 1:{sec.scale}
         </span>
-        <SectionCanvas s={s} sectionId={sec.id} index={index} />
+        <SectionCanvas s={s} sectionId={sec.id} index={index} onCard={setCard} />
+        {card && <ElementCard s={s} id={card.id} at={card.at} />}
+        {active && <CanvasOverlays session={s} />}
       </main>
     </section>
   );

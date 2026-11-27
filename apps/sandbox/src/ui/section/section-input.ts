@@ -20,6 +20,7 @@ import { AUX } from '../../render/overlay.ts';
 import { drawPrimitive, type RenderContext } from '../../render/primitives.ts';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
 import { SectionDimInput } from './section-dim-input.ts';
+import { SectionSelect } from './section-select.ts';
 import type { Session } from '../../session/session.ts';
 
 /** Přichycení k hraně / úrovni (px); klik do plochy prvku vezme jeho bližší hranu. */
@@ -38,10 +39,11 @@ export class SectionInput {
   private mouse: Vec2 | null = null;
   private drag: Drag | null = null;
   private pan: Vec2 | null = null;
-  private panStart: Vec2 | null = null;
   private cache: { model: Model; targets: LevelTarget[] } | null = null;
   /** Nástroj Kóta v řezu a tažení vybrané kóty (section-dim-input.ts). */
   private readonly dims: SectionDimInput;
+  /** Výběr stěn, desek a otvorů (section-select.ts). */
+  readonly sel: SectionSelect;
   private dimDrag: { id: Id; vertical: boolean; offset0: number; start: Vec2 } | null = null;
 
   constructor(
@@ -50,6 +52,7 @@ export class SectionInput {
     private readonly v: Viewport,
   ) {
     this.dims = new SectionDimInput(s, sectionId, v);
+    this.sel = new SectionSelect(s, sectionId, v);
   }
 
   private get tool() {
@@ -82,6 +85,7 @@ export class SectionInput {
   down(screen: Vec2, button: number, shift: boolean) {
     const p = this.v.toWorld(screen);
     if (button === 1) return void (this.pan = screen);
+    if (button === 2 && !this.tool && !this.dims.active) return this.sel.context(screen, p);
     if (button !== 0) return;
     if (this.tool) return this.toolClick(p);
     if (this.dims.active) return this.dims.click(p);
@@ -100,10 +104,8 @@ export class SectionInput {
   /** Stisk na délkové kótě v řezu: výběr a tažení kótovací čáry; jinde posun výkresu. */
   private pressSectionDim(p: Vec2, screen: Vec2, shift: boolean) {
     const hit = this.dims.hit(p);
-    if (!hit) {
-      this.pan = this.panStart = screen;
-      return;
-    }
+    // Jinde výběr prvku nebo rámeček (posun výkresu prostředním tlačítkem, jako v půdorysu).
+    if (!hit) return this.sel.press(screen, p, shift);
     this.select(hit.id, shift);
     this.dimDrag = { id: hit.id, vertical: hit.vertical, offset0: hit.offset, start: p };
     this.s.changed();
@@ -143,23 +145,17 @@ export class SectionInput {
       return true;
     }
     if (this.tool) this.hover = levelTargetPick(this.targets(), p.x, p.y, this.v.px(SNAP_PX));
-    return this.tool;
+    return this.tool || this.sel.move(screen, p);
   }
 
-  up(screen: Vec2) {
+  up() {
     const d = this.drag;
-    const start = this.panStart;
-    this.drag = this.pan = this.panStart = null;
+    this.drag = this.pan = null;
     this.dropSectionDim();
+    if (this.sel.dragging) this.sel.release();
     if (d?.moved && this.mouse) {
       const at = d.at0 + this.mouse.x - d.start.x;
       this.s.run('levelDim.move', { levelDimId: d.id, at, below: this.mouse.y < d.z });
-    }
-    // Klik do prázdna (bez posunu výkresu) výběr kót zruší, jako v půdorysu.
-    const click = start && Math.hypot(screen.x - start.x, screen.y - start.y) < 3;
-    if (click && this.s.selection.levelDims.length) {
-      this.s.selection.set([]);
-      this.s.changed();
     }
   }
 
@@ -175,17 +171,19 @@ export class SectionInput {
   }
 
   /** Esc a Del v aktivním okně řezu; true = zpracováno. */
-  key(key: string): boolean {
+  key(key: string, ctrl = false): boolean {
+    if (key === 'Tab' && !this.tool && !this.dims.active) return this.sel.tab();
+    if (ctrl && (key === 'a' || key === 'A')) return (this.sel.selectAll(), true);
     if (key === 'Escape') {
       if (this.dims.active && this.dims.escape()) return true;
       else if (this.tool || this.dims.active) this.s.setTool('select');
-      else if (this.s.selection.levelDims.length) this.s.selection.set([]);
+      else if (!this.s.selection.empty) this.s.selection.set([]);
       else return false;
       this.s.changed();
       return true;
     }
-    if ((key === 'Delete' || key === 'Backspace') && this.s.selection.levelDims.length) {
-      this.s.run('selection.delete', { levelDimIds: this.s.selection.levelDims });
+    if ((key === 'Delete' || key === 'Backspace') && !this.s.selection.empty) {
+      this.s.run('selection.delete', this.s.selection.deleteParams());
       return true;
     }
     return false;
@@ -228,5 +226,6 @@ export class SectionInput {
       prims = ghost(this.drag.at0 + m.x - this.drag.start.x, this.drag.z, m.y < this.drag.z);
     for (const p of prims) drawPrimitive(r, p, AUX);
     if (this.dims.active) this.dims.overlay(r);
+    this.sel.overlay(r);
   }
 }
