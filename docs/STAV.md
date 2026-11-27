@@ -335,7 +335,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - **Desky D3 (hlavní proud):** otvory v desce (základ 19 – stejný mechanismus jako ve stěně), pak D4
   (vazba vršku stěny na desku, výkazy desek, kóty k hranám desky), záložka Typ desky v editoru typů.
   Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
-- **Povrchy místností (návrh 3D proudu, zařadit po deskách; k potvrzení):** základ 14, rozhodnutí
+- **Povrchy místností (návrh 3D proudu; uživatel 2026-11-27 potvrdil: hned po deskách D3–D4):** základ 14, rozhodnutí
   prvky-stavby sekce 9. Jedna spočítaná plocha povrchu v jádře = zdroj pro 3D, rozvinutý pohled i výkaz.
   Pořadí: místnosti z líců stěn (ČSN 73 4301) → plochy povrchů (líc v místnosti rozvinutý do roviny, minus
   otvory, plus ostění, s transformací do 3D) + typy úprav (IfcCovering: materiál, formát, spára,
