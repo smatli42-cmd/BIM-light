@@ -1,5 +1,6 @@
 // Sady zobrazení a pracovní okno podlaží (koncepce rozhraní, část 4): přepínač sad nahoře překreslí
 // pracovní okno a filtruje Obsah; uložené pohledy se nemění. Vše přes příkazy jádra.
+import { blur3D } from '../view3d/state.ts';
 import { workingViewOf, type Id } from '@bim-light/core';
 import type { Session } from './session.ts';
 
@@ -11,6 +12,7 @@ export function currentSet(s: Session): Id {
 
 /** Otevře pracovní okno podlaží (vytvoří ho, když ve starém projektu chybí). */
 export function openStorey(s: Session, storeyId: Id): void {
+  blur3D(s);
   let w = workingViewOf(s.model, storeyId);
   if (!w) {
     const r = s.run('view.create', { storeyId, styleId: currentSet(s), scale: s.view.scale, saved: false });

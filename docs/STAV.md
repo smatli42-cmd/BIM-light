@@ -8,6 +8,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
+### Obsah → Projekt: 3D pohledy a zvýraznění pracovního okna, 2026-11-27 (pokyn uživatele se screenshotem)
+
+- Skupina „3D“ s 3D pohledy projektu (klik otevře 3D okno s tím pohledem). Zvýrazněné je okno, ve kterém
+  se pracuje (rámeček, i vedle 3D okna) a jeho položka v Obsahu (podlaží, nebo 3D pohled); klik do okna
+  zvýraznění přepne. e2e `obsah-3d.spec.ts`.
+
 ### 3D pohled jako data a průhlednost povrchu, 2026-11-27 (požadavky 3D proudu)
 
 - `views3d` (migrace 20 → 21): 3D pohled s názvem, víc instancí; styl, vrstvy, filtr rekonstrukce a

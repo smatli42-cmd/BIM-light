@@ -15,6 +15,8 @@ export interface View3DState {
   fit: number;
   /** Zobrazený 3D pohled; null nebo smazaný = první v projektu. */
   viewId: Id | null;
+  /** Pracuje se ve 3D okně (klik do něj): zvýrazní se okno i 3D pohled v Obsahu. */
+  focused: boolean;
 }
 
 const states = new WeakMap<Session, View3DState>();
@@ -25,7 +27,7 @@ const openFromUrl = () => typeof location !== 'undefined' && new URLSearchParams
 export function view3d(s: Session): View3DState {
   let st = states.get(s);
   if (!st) {
-    st = { open: openFromUrl(), only: null, fit: 0, viewId: null };
+    st = { open: openFromUrl(), only: null, fit: 0, viewId: null, focused: false };
     states.set(s, st);
   }
   return st;
@@ -56,7 +58,35 @@ export function show3D(s: Session, selection: boolean) {
 
 export function close3D(s: Session) {
   view3d(s).open = false;
+  view3d(s).focused = false;
   s.changed();
+}
+
+/** Klik do 3D okna: pracuje se v něm (zvýraznění okna a položky v Obsahu). */
+export function focus3D(s: Session) {
+  const st = view3d(s);
+  if (st.focused || !st.open) return;
+  st.focused = true;
+  s.changed();
+}
+
+/** Klik do okna půdorysu: 3D okno už není to, ve kterém se pracuje. */
+export function blur3D(s: Session) {
+  const st = view3d(s);
+  if (!st.focused) return;
+  st.focused = false;
+  s.changed();
+}
+
+/** Je 3D okno to, ve kterém se pracuje? */
+export const is3DFocused = (s: Session) => view3d(s).open && view3d(s).focused;
+
+/** Otevře 3D pohled z Obsahu a začne se v něm pracovat. */
+export function open3DView(s: Session, viewId: Id) {
+  const st = view3d(s);
+  st.viewId = viewId;
+  st.focused = true;
+  show3D(s, false);
 }
 
 /** 3D pohled, který okno ukazuje (vybraný, jinak první v projektu – projekt má vždy aspoň jeden). */

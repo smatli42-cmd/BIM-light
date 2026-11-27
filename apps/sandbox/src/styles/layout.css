@@ -151,7 +151,8 @@ body,
 .windows > .splitter + .window {
   border-left: 1px solid var(--line);
 }
-.windows:has(.splitter) .window.active {
+.windows:has(.splitter) .window.active,
+.windows:has(.window-3d) .window.active {
   outline-color: var(--accent);
 }
 .window-head {

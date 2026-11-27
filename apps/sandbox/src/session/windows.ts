@@ -3,6 +3,7 @@
 import { Viewport } from '../canvas/viewport.ts';
 import type { WindowState } from './screen.ts';
 import type { Session } from './session.ts';
+import { blur3D } from '../view3d/state.ts';
 
 /** Jedno okno, nebo dvě vedle sebe (druhé začne se stejným pohledem a výřezem). */
 export function setLayout(s: Session, n: 1 | 2) {
@@ -19,6 +20,7 @@ export function setLayout(s: Session, n: 1 | 2) {
 
 /** Udělá okno aktivním (klik do něj); jiné podlaží = zruší výběr. */
 export function activate(s: Session, i: number) {
+  blur3D(s);
   if (i === s.active || !s.windows[i]) return;
   const storey = s.storeyId;
   s.active = i;

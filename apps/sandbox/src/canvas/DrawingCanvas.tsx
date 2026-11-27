@@ -83,7 +83,7 @@ export function DrawingCanvas(props: { session: Session; controller: Controller;
   );
 
   const el = () => ref.current as HTMLCanvasElement;
-  const wake = () => index !== session.active && activate(session, index);
+  const wake = () => activate(session, index);
   return (
     <canvas
       ref={ref}

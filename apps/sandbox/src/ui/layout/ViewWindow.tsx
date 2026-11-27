@@ -7,6 +7,7 @@ import type { Session } from '../../session/session.ts';
 import { Icon, IconButton } from '../icons/Icon.tsx';
 import { CanvasOverlays } from '../Overlays.tsx';
 import { activate, setWindowView } from '../../session/windows.ts';
+import { is3DFocused } from '../../view3d/state.ts';
 import { useSession } from '../use-session.ts';
 import { NewView, ScaleSelect } from '../ViewControls.tsx';
 
@@ -21,9 +22,10 @@ export function ViewWindow({ s, controller, index }: { s: Session; controller: C
   useSession(s);
   const [adding, setAdding] = useState(false);
   const active = index === s.active;
+  const cls = active && !is3DFocused(s) ? 'window active' : 'window';
   const v = s.model.views[s.windows[index]?.viewId ?? ''] ?? s.view;
   return (
-    <section class={active ? 'window active' : 'window'} data-testid={active ? 'window' : 'window-passive'}>
+    <section class={cls} data-testid={active ? 'window' : 'window-passive'}>
       <div class="window-head" onMouseDown={() => activate(s, index)}>
         <span class="window-tab">
           <Icon name="plan" size={16} />

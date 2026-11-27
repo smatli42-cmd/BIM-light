@@ -10,7 +10,7 @@ import { clipSolids } from './clip.ts';
 import { Phase3DMenu, SectionBoxButton, Storeys3DMenu, Views3DMenu } from './Controls3D.tsx';
 import { modelSolids } from './scene-model.ts';
 import type { Solid } from './solids.ts';
-import { active3d, close3D, setBox3D, show3D, view3d } from './state.ts';
+import { active3d, close3D, focus3D, setBox3D, show3D, view3d } from './state.ts';
 import { installTestHook3D } from './test-hook-3d.ts';
 import { Viewer } from './viewer.ts';
 import './view3d.css';
@@ -138,7 +138,11 @@ export function View3DWindow({ s }: { s: Session }) {
   useEffect(() => viewer?.setBackground(cssVar('--paper') || '#ffffff'), [viewer, s.theme]);
   const title = st.only ? `3D · Výběr (${st.only.length})` : '3D · Celý model';
   return (
-    <section class="window window-3d" data-testid="window-3d">
+    <section
+      class={st.focused ? 'window window-3d active' : 'window window-3d'}
+      data-testid="window-3d"
+      onMouseDown={() => focus3D(s)}
+    >
       <Head3D s={s} title={title} onFit={() => viewer?.fit()} />
       <Bar3D s={s} raw={raw} />
       <main class="workspace">
