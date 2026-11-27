@@ -67,13 +67,13 @@ export const EQUIPMENT_ITEMS: readonly ElectroLibraryItem[] = [
     'keypad',
     'Klávesnice',
     'Klávesnice EZS',
-    dev(G.security, 'IfcSwitchingDevice', 'KEYPAD', 1500, 'keypad'),
+    dev(G.security, 'IfcSwitchingDevice', 'KEYPAD', 1400, 'keypad'),
   ),
   glyphItem(
     'alarm-panel',
     'Ústředna EZS',
     'Ústředna elektrické zabezpečovací signalizace',
-    dev(G.security, 'IfcUnitaryControlElement', 'ALARMPANEL', 1500, 'alarm-panel'),
+    dev(G.security, 'IfcUnitaryControlElement', 'ALARMPANEL', 1600, 'alarm-panel'),
   ),
   glyphItem('bell', 'Zvonek', 'Domovní zvonek / gong', dev(G.control, 'IfcAlarm', 'BELL', 1400, 'bell')),
 ];

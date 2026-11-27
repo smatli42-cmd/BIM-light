@@ -23,17 +23,29 @@ Popis prvků, značek, skupin a výšek je v `docs/katalog-elektro.md`. Zadání
 - Testy: `electro/library.test.ts`, `draw.test.ts`, `follow.test.ts`, `commands/electro/electro.test.ts`,
   AI `ai/scenario-electro.test.ts`, ukázky `samples/electro-samples.test.ts`, e2e `elektro.spec.ts`.
 
+### Značky podle legendy uživatele, 2026-11-27 (pokyn uživatele; scéna `?ukazka=elektro`, tabulka vlevo)
+
+- Zdroj pravdy tvarů je legenda uživatele (Corel SVG, mimo repo). Všech 29 znaků opsáno ze souřadnic SVG
+  (`electro/glyphs-wall.ts`, `glyphs-center.ts`, převod `legend.ts`: 400 jednotek legendy = značka 4 mm),
+  rozvaděč hlavní a datový, liniové svítidlo a LED pásek podle legendy. Kresba dál přes funkci grafiky.
+- Nová 7. skupina **Stínění** (zelená, ovladač stínění), ventilátor do Silnoproudu, barvy skupin
+  z legendy, výšky a popisy typů z legendy (`legend-order.ts`). Knihovna verze 2, migrace 37 → 38.
+- Ukázka `?ukazka=elektro`: tabulka typů v pořadí a skupinách legendy (rozvaděč a liniové svítidlo v
+  rozměru legendy), typy mimo legendu ve druhém sloupci. Porovnáno s vyrenderovaným SVG vedle sebe
+  (Edge headless + snímek plátna ve stejném měřítku 20 px/mm): tvary a poměry sedí.
+- Popisek volně umístěné značky je nově svisle na středu značky a vpravo od její obálky.
+- Testy `electro/legend.test.ts` („legenda uživatele: …“: rozměry a druhy primitiv každé značky, kotva,
+  popisy), `migrate-v37.test.ts`.
+
 ## Rozhodl Code (k potvrzení)
 
 1. **Kategorie `electrical` a jedna vrstva Elektro** pro všechny elektro prvky (skupiny se rozliší
    barvou a pravidly s vlastností `electroGroup`, ne vrstvami).
-2. **Skupiny, pořadí a barvy podle legendy Arditu** (screenshot od uživatele): „Řízení a signalizace“ je
-   v Arditu také červená – zvolen tmavší odstín `#b0193e`, aby se nepletla se silnoproudem; zvonek patří do
-   Řízení a signalizace (jako Ardit).
-3. **Výchozí výšky** podle legendy Arditu (přepínače a spínače 1050, stmívač a ovladač stínění také 1050,
-   videotelefon a zvonek 1400, termostat 1500, wallbox 1200, venkovní svítidlo 2300); typy, které legenda
-   neukazuje: vývod 1f 1200, vývod 3f 600, ventilátor 2200, kamera nástěnná 2500, PIR 2200, MK 2000,
-   siréna 2500, klávesnice 1500, ústředna 1500, nástěnné svítidlo 2000.
+2. **Skupiny, pořadí a barvy podle legendy uživatele**: v legendě mají stejnou barvu data a zabezpečení
+   (tyrkys `#21b8cf`) a silnoproud a řízení (červená `#f03d3d`) – převzato beze změny; rozlišení jen
+   skupinou v legendě. Potvrdit, nebo dát skupinám odlišné odstíny.
+3. **Výchozí výšky** podle legendy uživatele (katalog, část 4); typy mimo legendu: dvojzásuvka a ostatní
+   zásuvky 300, nad linkou 1150, PIR 2200, nástěnné svítidlo 2000, rozvaděč podružný a elektroměrový 1400.
 4. **Hlásiče, Wi-Fi AP, stropní kamera a stropní svítidla bez výšky** („na stropě“); popisek výšky
    se u nich ukáže jen při zadané výšce (závěsné svítidlo).
 5. **Smazání stěny smaže elektro prvky na ní** (Revit u hostovaných prvků); rozdělení / sloučení je
@@ -42,6 +54,8 @@ Popis prvků, značek, skupin a výšek je v `docs/katalog-elektro.md`. Zadání
 7. **Rozložení rámečku „pod sebou“** se ukládá, v půdorysu se sloty kreslí vždy po líci.
 8. **Ve Studii i Projektu je elektro skryté** (vrstva Elektro vypnutá); v Elektru jsou skryté kóty.
 9. **Popisek výšky v mm** („+1150“) vůči čisté podlaze, vodorovně, před značkou do místnosti.
+10. **Typy mimo legendu** jsou složené ze znaků legendy (dvojzásuvka = dvě zásuvky…); PIR jako krabička
+   MK s textem „PIR“, svítidlo nástěnné = přisazené na držáku – potvrdit, nebo doplnit do legendy.
 
 ## Další krok
 

@@ -1,0 +1,40 @@
+// Řádky legendy uživatele (Corel SVG 2026-11-27) v pořadí: klíč typu knihovny a text sloupce „Popis“.
+// Popis typu = text legendy (budoucí legenda z modelu, základ 8); pořadí slouží ukázce a testům.
+
+export const LEGEND_ROWS: readonly (readonly [key: string, text: string])[] = [
+  ['socket', 'El. zásuvka'],
+  ['outlet1f', 'Kabelový vývod 1f'],
+  ['outlet3f', 'Kabelový vývod 3f'],
+  ['board-main', 'Rozvaděč hlavní'],
+  ['wallbox', 'Wallbox'],
+  ['fan', 'Ventilátor'],
+  ['switch1', 'Spínač jednopólový (č. 1)'],
+  ['switch6', 'Přepínač střídavý (č. 6)'],
+  ['switch5', 'Přepínač sériový (č. 5)'],
+  ['dimmer', 'Stmívač'],
+  ['lamp', 'Svítidlo stropní'],
+  ['lamp-surface', 'Svítidlo přisazené'],
+  ['lamp-pendant', 'Svítidlo závěsné'],
+  ['lamp-linear', 'Svítidlo liniové'],
+  ['led-strip', 'LED pásek'],
+  ['lamp-outdoor', 'Svítidlo venkovní'],
+  ['lamp-sensor', 'Svítidlo s čidlem'],
+  ['data', 'Datová zásuvka'],
+  ['board-data', 'Rozvaděč datový'],
+  ['wifi', 'Wi-Fi AP'],
+  ['tv', 'Anténní zásuvka'],
+  ['videophone', 'Videotelefon'],
+  ['blind', 'Ovladač stínění'],
+  ['smoke', 'Hlásič kouře'],
+  ['co', 'Detektor CO'],
+  ['contact', 'Magnetický kontakt'],
+  ['siren', 'Siréna'],
+  ['keypad', 'Klávesnice'],
+  ['alarm-panel', 'Ústředna'],
+  ['camera-ceiling', 'Kamera stropní'],
+  ['camera-wall', 'Kamera nástěnná'],
+  ['bell', 'Zvonek'],
+  ['thermostat', 'Termostat'],
+];
+
+export const LEGEND_TEXT: Readonly<Record<string, string>> = Object.fromEntries(LEGEND_ROWS);

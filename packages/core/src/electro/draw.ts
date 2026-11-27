@@ -6,7 +6,14 @@ import { add, mul, type Vec2 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
 import type { Detail, PaperSizes, ResolvedEffect } from '../style/types.ts';
 import { drawShapes, type ShapeContext } from './draw-shapes.ts';
-import { electroFrame, electroHeight, heightDiffers, symbolFrame, type ElectroFrame } from './place.ts';
+import {
+  electroFrame,
+  electroHeight,
+  heightDiffers,
+  symbolFrame,
+  toWorld,
+  type ElectroFrame,
+} from './place.ts';
 import { shapesExtent, symbolShapes } from './symbol.ts';
 import { DEFAULT_ELECTRO_TEXT, DEFAULT_SYMBOL_SIZE, type ElectroElement } from './types.ts';
 
@@ -55,8 +62,10 @@ function labels(
     const reach = ext.y1 * c.unit + gap + (Math.abs(n.x) * bw) / 2 + (Math.abs(n.y) * bh) / 2;
     center = add(add(f.origin, mul(f.ex, ((ext.x0 + ext.x1) / 2) * c.unit)), mul(n, reach));
   } else {
-    const r = Math.max(Math.abs(ext.x0), Math.abs(ext.x1), Math.abs(ext.y0), Math.abs(ext.y1)) * c.unit;
-    center = add(f.origin, { x: r + gap + bw / 2, y: 0 });
+    // Volný prvek: popisek vpravo od obálky značky, svisle na jejím středu (jako řádek legendy).
+    const mid = toWorld(f, 0, ((ext.y0 + ext.y1) / 2) * c.unit);
+    const right = Math.max(...[ext.x0, ext.x1].map((x) => toWorld(f, x * c.unit, 0).x - f.origin.x));
+    center = { x: mid.x + right + gap + bw / 2, y: mid.y };
   }
   return lines.map((text, i): Primitive => ({
     kind: 'text',

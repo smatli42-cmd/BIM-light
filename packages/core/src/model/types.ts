@@ -25,7 +25,7 @@ import type { SectionDimension } from '../section-dim/types.ts';
 import type { ElectroElement, ElectroGroup, ElectroType } from '../electro/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 37;
+export const SCHEMA_VERSION = 38;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';

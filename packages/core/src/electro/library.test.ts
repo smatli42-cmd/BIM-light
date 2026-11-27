@@ -110,13 +110,14 @@ describe('koncepce 3 Elektro: knihovna typů podle ČSN EN 60617', () => {
     });
   });
 
-  it('legenda Arditu: skupiny v pořadí Silnoproud, Osvětlení a ovládání, Data, AV a anténa, Zabezpečení a požár, Řízení a signalizace', () => {
+  it('legenda uživatele: skupiny v pořadí Silnoproud, Osvětlení a ovládání, Data, AV a anténa, Stínění, Zabezpečení a požár, Řízení a signalizace', () => {
     const names = [...DEFAULT_ELECTRO_GROUPS].sort((a, b) => a.order - b.order).map((g) => g.name);
     expect(names).toEqual([
       'Silnoproud',
       'Osvětlení a ovládání',
       'Data',
       'AV a anténa',
+      'Stínění',
       'Zabezpečení a požár',
       'Řízení a signalizace',
     ]);
@@ -124,6 +125,8 @@ describe('koncepce 3 Elektro: knihovna typů podle ČSN EN 60617', () => {
     expect(group('Zvonek')).toBe('Řízení a signalizace');
     expect(group('Termostat')).toBe('Řízení a signalizace');
     expect(group('Wallbox')).toBe('Silnoproud');
+    expect(group('Ventilátor')).toBe('Silnoproud');
+    expect(group('Ovladač stínění')).toBe('Stínění');
     expect(group('Videotelefon')).toBe('AV a anténa');
     expect(group('Hlásič kouře')).toBe('Zabezpečení a požár');
   });
@@ -134,9 +137,9 @@ describe('koncepce 3 Elektro: knihovna typů podle ČSN EN 60617', () => {
     expect(m.electroTypes['et-socket']?.source).toEqual({
       libraryId: 'electro-csn-60617',
       itemId: 'socket',
-      version: 1,
+      version: 2,
     });
-    expect(Object.keys(m.electroGroups)).toHaveLength(6);
+    expect(Object.keys(m.electroGroups)).toHaveLength(7);
     expect(m.electroElements).toEqual({});
   });
 });

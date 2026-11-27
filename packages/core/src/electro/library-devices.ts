@@ -63,7 +63,7 @@ export const DEVICE_ITEMS: readonly ElectroLibraryItem[] = [
     'Anténní zásuvka TV / R / SAT',
     outlet('AUDIOVISUALOUTLET', G.av, 300, ['tv']),
   ),
-  glyphItem('blind', 'Ovladač stínění', 'Ovladač žaluzií a rolet', sw('USERDEFINED', ['blind'], G.control)),
+  glyphItem('blind', 'Ovladač stínění', 'Ovladač žaluzií a rolet', sw('USERDEFINED', ['blind'], G.shading)),
   glyphItem(
     'socket-1150',
     'Zásuvka nad linkou 1150',
@@ -82,7 +82,7 @@ export const DEVICE_ITEMS: readonly ElectroLibraryItem[] = [
     groupId: G.power,
     ifcClass: 'IfcJunctionBox',
     predefinedType: 'POWER',
-    height: 1200,
+    height: 300,
     glyphs: ['outlet1f'],
   }),
   glyphItem('outlet3f', 'Vývod 3f', 'Vývod 400 V (sporák, varná deska)', {
@@ -90,7 +90,7 @@ export const DEVICE_ITEMS: readonly ElectroLibraryItem[] = [
     groupId: G.power,
     ifcClass: 'IfcJunctionBox',
     predefinedType: 'POWER',
-    height: 600,
+    height: 300,
     glyphs: ['outlet3f'],
   }),
   glyphItem('videophone', 'Videotelefon', 'Domácí videotelefon', {
@@ -119,7 +119,7 @@ export const DEVICE_ITEMS: readonly ElectroLibraryItem[] = [
   }),
   glyphItem('fan', 'Ventilátor', 'Ventilátor (odvod vzduchu)', {
     family: 'device',
-    groupId: G.control,
+    groupId: G.power,
     ifcClass: 'IfcFan',
     predefinedType: 'PROPELLORAXIAL',
     height: 2200,

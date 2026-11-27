@@ -29,7 +29,7 @@ describe('koncepce 3 Elektro: značka v půdorysu', () => {
   it('svislá stěna: značka se otočí s líci (kolmo k líci), text zůstane čitelný', () => {
     const f = electroFixture();
     const w = f.line({ x: 0, y: 1000 }, { x: 0, y: 5000 }, { referenceLine: 'axis' });
-    const [id] = f.run('electro.create', { typeId: T('thermostat'), wallId: w, offset: 2000, side: 'ref' });
+    const [id] = f.run('electro.create', { typeId: T('wallbox'), wallId: w, offset: 2000, side: 'ref' });
     const ps = primitivesOf(f, id ?? '');
     const b = bbox(ps.filter((p) => p.kind === 'line'));
     expect(b.y1 - b.y0).toBeGreaterThan(b.x1 - b.x0);
@@ -44,7 +44,7 @@ describe('koncepce 3 Elektro: značka v půdorysu', () => {
     f.run('view.setScale', { viewId: f.viewId, scale: 100 });
     const ps = primitivesOf(f, id);
     expect(bbox(ps).x1 - bbox(ps).x0).toBeCloseTo(2 * (h50.x1 - h50.x0));
-    expect(ps.find((p) => p.kind === 'text')).toMatchObject({ heightMm: 0.45 * 4 });
+    expect(ps.find((p) => p.kind === 'text')).toMatchObject({ heightMm: (153 / 400) * 4 });
   });
 
   it('popisek výšky jen když se výška liší od výchozí výšky typu; označení vždy', () => {
@@ -110,27 +110,27 @@ describe('koncepce 3 Elektro: značka v půdorysu', () => {
 });
 
 describe('koncepce 4, základ 11: grafika elektro prvků', () => {
-  it('barva skupiny legendy je výchozí grafika (patro 1): zásuvka červeně, spínač oranžově, data modře', () => {
+  it('barva skupiny legendy je výchozí grafika (patro 1): zásuvka červeně, spínač oranžově, data tyrkysově (legenda uživatele)', () => {
     const f = electroFixture();
     const stroke = (type: string) => {
       const [id] = f.run('electro.create', { typeId: T(type), wallId: f.wallId, offset: 500 });
       const p = primitivesOf(f, id ?? '').find((x) => x.kind === 'line');
       return p?.kind === 'line' ? p.stroke : null;
     };
-    expect(stroke('socket')).toMatchObject({ color: '#d32f2f', pen: 2 });
-    expect(stroke('switch1')?.color).toBe('#ef8a00');
-    expect(stroke('data')?.color).toBe('#0288d1');
+    expect(stroke('socket')).toMatchObject({ color: '#f03d3d', pen: 2 });
+    expect(stroke('switch1')?.color).toBe('#ffa84d');
+    expect(stroke('data')?.color).toBe('#21b8cf');
     const el = Object.values(f.model.electroElements)[0];
     const view = f.model.views[f.viewId];
     const why = el && view && resolveGraphics(f.model.display, view, electroFacts(f.model, el)).why;
     expect(why && why.lineColor.source).toBe('skupina Silnoproud');
   });
 
-  it('rámeček (Ardit): každý slot má barvu své skupiny – zásuvky červeně, datová modře, anténní fialově', () => {
+  it('rámeček: každý slot má barvu své skupiny – zásuvky červeně, datová tyrkysově, anténní fialově (legenda uživatele)', () => {
     const f = electroFixture();
     const id = onWall(f, { slots: ['socket', 'data', 'tv'] });
     const colors = primitivesOf(f, id).flatMap((p) => (p.kind === 'line' ? [p.stroke.color] : []));
-    expect(new Set(colors)).toEqual(new Set(['#d32f2f', '#0288d1', '#6a3fbf']));
+    expect(new Set(colors)).toEqual(new Set(['#f03d3d', '#21b8cf', '#5e3dc2']));
   });
 
   it('styl Elektro: stavba šedě bez šraf (pravidlo „Elektro – stavba šedě“), elektro barevně', () => {
