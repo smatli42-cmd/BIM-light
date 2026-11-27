@@ -31,12 +31,15 @@ export interface Solid {
   readonly slabs: readonly Slab[];
 }
 
-/** Půdorys otvoru: obdélník (u oblouku výseč po 16 dílcích) přes tloušťku, u niky jen do hloubky. */
-export function openingFootprint(model: Model, o: Opening, host: Wall): Vec2[] {
+/**
+ * Půdorys otvoru: obdélník (u oblouku výseč po 16 dílcích) přes tloušťku, u niky jen do hloubky;
+ * `over` = přesah přes líc (výřez), 0 = přesně v lících (záplata rekonstrukce).
+ */
+export function openingFootprint(model: Model, o: Opening, host: Wall, over = OVER): Vec2[] {
   const { s0, s1 } = openingSpan(o);
   const [a, b] = openingAcross(model, o);
-  const overA = Math.sign(a - b) * OVER;
-  const overB = o.kind === 'niche' ? 0 : Math.sign(b - a) * OVER;
+  const overA = Math.sign(a - b) * over;
+  const overB = o.kind === 'niche' ? 0 : Math.sign(b - a) * over;
   const lo = Math.min(a + overA, b + overB);
   const hi = Math.max(a + overA, b + overB);
   const n = host.path.kind === 'arc' && Math.abs(host.path.bulge) > 1e-9 ? 16 : 1;

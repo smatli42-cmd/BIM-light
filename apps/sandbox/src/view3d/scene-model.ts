@@ -14,6 +14,7 @@ import {
   type View,
   type Wall,
 } from '@bim-light/core';
+import { patchColor, patchSolid } from './patches.ts';
 import { slabSolids } from './slab-solids.ts';
 import { wallSolids, type Solid } from './solids.ts';
 
@@ -39,12 +40,16 @@ export function shownModel(model: Model, view: View): { model: Model; walls: Wal
     model.relations,
     (r) => r.kind !== 'wall-connection' || (keep.has(r.relating.wallId) && keep.has(r.related.wallId)),
   );
-  const openings = pick(
-    model.openings,
-    (o) =>
-      keep.has(o.hostId) &&
-      resolveGraphics(model.display, onStorey(view, o.storeyId), openingFacts(o)).effect.visible,
-  );
+  // Otvor vyřízne stěnu, když je vidět, nebo když má barevnou záplatu (probourání v Bouracích pracích).
+  const openings = pick(model.openings, (o) => {
+    const host = model.elements[o.hostId];
+    if (!keep.has(o.hostId) || host?.category !== 'wall') return false;
+    const v = onStorey(view, o.storeyId);
+    return (
+      resolveGraphics(model.display, v, openingFacts(o)).effect.visible ||
+      patchColor(model, v, o, host) !== null
+    );
+  });
   return { model: { ...model, elements, relations, openings }, walls };
 }
 
@@ -58,6 +63,16 @@ function withSurface(model: Model, view: View, el: Element, solids: Solid[]): So
   return color ? solids.map((x) => ({ ...x, color })) : solids;
 }
 
+/** Záplaty rekonstrukce u otvorů stěny (probourání, zazdívka) jako barevné bloky. */
+function patchesOf(model: Model, view: View, w: Wall): Solid[] {
+  const v = onStorey(view, w.storeyId);
+  return Object.values(model.openings).flatMap((o) => {
+    const color = o.hostId === w.id ? patchColor(model, v, o, w) : null;
+    const solid = color ? patchSolid(model, o, w, color) : null;
+    return solid ? [solid] : [];
+  });
+}
+
 /**
  * Tělesa modelu pro 3D okno; `only` = jen tyto prvky (Zobrazit výběr ve 3D), null = vše.
  * Napojení se počítá jen mezi zobrazenými stěnami (jako v půdorysu).
@@ -69,7 +84,10 @@ export function modelSolids(model: Model, view: View, only: ReadonlySet<Id> | nu
   return [
     ...shown.walls
       .filter((w) => want(w.id))
-      .flatMap((w) => withSurface(model, view, w, wallSolids(shown.model, w))),
+      .flatMap((w) => [
+        ...withSurface(model, view, w, wallSolids(shown.model, w)),
+        ...patchesOf(shown.model, view, w),
+      ]),
     ...slabs.flatMap((d) => withSurface(model, view, d, slabSolids(model, d))),
   ];
 }

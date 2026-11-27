@@ -37,10 +37,15 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - **Barva povrchu přes funkci grafiky** (požadavek 3 splněn v `main`, fffa6dd): barva ve 3D =
   `resolveGraphics(...).effect.surfaceColor ?? barva materiálu` pro stěny i desky; přebarví všechny vrstvy prvku.
 
+- **Rekonstrukce u otvorů ve 3D** (`view3d/patches.ts`, jako záplaty v půdorysu): probourání (nový otvor
+  ve stávající stěně) je v Bouracích pracích žlutý blok v místě otvoru; v plánovaném stavu otvor, ve
+  stávajícím stavu celá stěna. Zazdívka se obarví, jen když pravidlo „nový“ dává barvu povrchu.
+  Oprava 2026-11-27 po připomínce uživatele (v bouracích pracích byla vidět jen příčka).
+
 ## Co zkusit
 
 - `?ukazka=dum&3d` → spodní lišta **Přepisy** (kombinace) → *Fáze – bourací práce*: bouraná příčka zežloutne
-  v půdorysu i ve 3D.
+  v půdorysu i ve 3D a v nosné zdi je žlutě probourání dveří 900 × 2100.
 
 - Uživatel vyzkoušel 2026-11-27: „3D náhled funguje“ (lokálně, `?ukazka=dum&3d`).
 - `…/BIM-light/?ukazka=desky&3d` a `?ukazka=desky-kresleni&3d` – stropy a podlahy ve 3D; klik na desku ji
