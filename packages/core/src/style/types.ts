@@ -125,6 +125,13 @@ export interface PaperSizes {
 
 export type CategoryGraphics = Partial<Readonly<Record<Category, GraphicEffect>>>;
 
+/** Popisky kóty terénu u nároží (RT = rostlý, UT = upravený terén) a které řádky se kreslí. */
+export interface TerrainLabels {
+  readonly rt: string;
+  readonly ut: string;
+  readonly show: 'both' | 'rt' | 'ut';
+}
+
 /** Styl zobrazení (základ 27). */
 export interface Style {
   readonly id: Id;
@@ -145,6 +152,8 @@ export interface Style {
    * nevyplněná, absolutní (Bpv) plná.
    */
   readonly levelMarkFilled?: boolean;
+  /** Kóta terénu v půdorysu: popisky rostlého / upraveného terénu a co se zobrazí; chybí = RT, UT, obojí. */
+  readonly terrainLabels?: TerrainLabels;
   readonly defaultScale: number;
   /** Měřítko šraf: násobí všechny rozměry šraf (0,5–3, výchozí 1). Mění velikost, ne tvar. */
   readonly hatchScale: number;

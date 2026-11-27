@@ -21,10 +21,12 @@ export const REF: JsonSchema = {
       },
       ['kind', 'elementId', 'edge'],
     ),
+    S.object({ kind: { type: 'string', enum: ['terrain'] }, z: S.number('mm k ±0,000') }, ['kind', 'z']),
   ],
   description:
     'na co kóta ukazuje: { kind: "storey", storeyId } = úroveň podlaží, { kind: "edge", elementId, edge: ' +
-    '"top" | "bottom" } = horní / spodní hrana stěny nebo desky (dotaz levelDim.targets)',
+    '"top" | "bottom" } = horní / spodní hrana stěny nebo desky (dotaz levelDim.targets), { kind: ' +
+    '"terrain", z } = terén zadaný číslem (mm k ±0,000; plný trojúhelník)',
 };
 
 export const levelDimOf = (m: Model, id: Id): LevelDimension =>

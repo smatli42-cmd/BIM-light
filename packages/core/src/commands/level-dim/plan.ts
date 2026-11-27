@@ -17,6 +17,7 @@ import { storeyOf, viewOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 import { REF } from './level-dim.ts';
+import { cornerAt } from '../../level-dim/terrain.ts';
 
 const planOf = (m: Model, id: Id): PlanLevelDimension =>
   m.planLevelDims[id] ?? fail('not-found', `Výšková kóta ${id} neexistuje`);
@@ -30,12 +31,29 @@ const put = (m: Model, d: PlanLevelDimension): Model => {
 const FIELDS: Record<string, JsonSchema> = {
   marker: S.enumOf(
     PLAN_LEVEL_MARKERS,
-    'značka: box = hodnota v rámečku (výchozí), circle = kroužek s poličkou',
+    'značka: box = výška podlahy v rámečku (výchozí), circle = kóta terénu RT / UT u nároží',
   ),
   absolute: { type: 'boolean', description: 'absolutní kóta v m n. m. Bpv' },
+  rt: {
+    oneOf: [{ type: 'number' }, { type: 'null' }],
+    description: 'rostlý terén (mm k ±0,000), kóta terénu',
+  },
+  ut: {
+    oneOf: [{ type: 'number' }, { type: 'null' }],
+    description: 'upravený terén (mm k ±0,000), kóta terénu',
+  },
   annotationLayerId: S.id,
 };
-type Fields = { marker?: PlanLevelMarker; absolute?: boolean; annotationLayerId?: Id };
+type Fields = {
+  marker?: PlanLevelMarker;
+  absolute?: boolean;
+  annotationLayerId?: Id;
+  rt?: number | null;
+  ut?: number | null;
+};
+
+/** Kóta terénu se naváže na roh stěny do 100 mm od bodu (posune se s ním). */
+const ANCHOR_TOL = 100;
 
 /** Skupina anotací: zadaná, aktivní skupina pohledu, nebo výchozí stylu prvního pohledu podlaží. */
 function layerFor(m: Model, storeyId: Id, viewId?: Id, given?: Id): Id {
@@ -52,7 +70,8 @@ export const planLevelDimCreate = defineCommand<
   description:
     'Vloží výškovou kótu do půdorysu podlaží: point = kótovaný bod (mm), textAt = poloha hodnoty (výchozí ' +
     'v bodě). Kótuje horní líc nejvyšší desky / podlahy pod bodem, jinak úroveň podlaží (ref jde zadat). ' +
-    'marker = box (hodnota v rámečku) / circle (kroužek s poličkou: nahoře k ±0,000, dole nad podlažím), ' +
+    'marker = box (výška podlahy v rámečku) / circle (kóta terénu u nároží: rt = rostlý, ut = upravený ' +
+    'terén v mm k ±0,000; naváže se na roh stěny do 100 mm od bodu a posune se s ním), ' +
     'viewId = pohled (skupina anotací = jeho aktivní).',
   group: 'Kóta',
   params: S.object({ storeyId: S.id, point: S.point, textAt: S.point, ref: REF, viewId: S.id, ...FIELDS }, [
@@ -71,6 +90,9 @@ export const planLevelDimCreate = defineCommand<
       absolute: p.absolute ?? false,
       annotationLayerId: layerFor(model, p.storeyId, p.viewId, p.annotationLayerId),
       locked: false,
+      ...(p.marker === 'circle'
+        ? { rt: p.rt ?? null, ut: p.ut ?? null, anchor: cornerAt(model, p.storeyId, p.point, ANCHOR_TOL) }
+        : {}),
     };
     return { model: put(model, d), created: [d.id] };
   },
@@ -100,7 +122,9 @@ export const planLevelDimUpdate = defineCommand<
 >({
   name: 'planLevelDim.update',
   label: 'Upravit výškovou kótu v půdorysu',
-  description: 'Změní značku (box / circle), absolutní, vrstvu, ref nebo zámek. Zamčenou jde jen odemknout.',
+  description:
+    'Změní značku (box / circle), absolutní, RT / UT (rt, ut v mm), vrstvu, ref nebo zámek. Zamčenou jde jen ' +
+    'odemknout.',
   group: 'Kóta',
   params: S.object({ levelDimId: S.id, ref: REF, ...FIELDS, locked: { type: 'boolean' } }, ['levelDimId']),
   run(model, p) {

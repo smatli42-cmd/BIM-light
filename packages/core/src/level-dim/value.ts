@@ -9,6 +9,7 @@ import type { LevelRef } from './types.ts';
 /** Výška kótované úrovně nad ±0,000 (mm); null = odkaz už neplatí (prvek smazán). */
 export function levelZ(model: Model, ref: LevelRef): number | null {
   if (ref.kind === 'storey') return model.storeys[ref.storeyId]?.elevation ?? null;
+  if (ref.kind === 'terrain') return ref.z;
   const el = model.elements[ref.elementId];
   if (!el) return null;
   if (el.category === 'slab') {

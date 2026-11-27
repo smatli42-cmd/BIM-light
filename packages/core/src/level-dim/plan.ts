@@ -1,24 +1,32 @@
-// Výšková kóta v půdorysu (české zvyklosti, vzor Arditu): hodnota horního líce podlahy / desky v bodě
-// (relativně k ±0,000) v obdélníkovém rámečku tenkou čarou, bez praporku. Druhá značka „kroužek“: kroužek
-// v bodě s vyplněnou horní polovinou, odkazová čára k vodorovné poličce, nad ní výška k ±0,000, pod ní
-// výška nad úrovní podlaží. Anotace podlaží se skupinou anotací a zámkem (základ 28), asociativní: odkazuje
-// na desku (horní líc), nebo na úroveň podlaží, když v bodě žádná deska není.
-import type { Primitive, PrimitiveSource, Stroke } from '../drawing/primitives.ts';
+// Výšková kóta v půdorysu (české zvyklosti, vzor Arditu): značka **rámeček** = výška horního líce podlahy /
+// desky v bodě (relativně k ±0,000) v obdélníku tenkou čarou, bez praporku – asociativní k desce (jinak
+// k úrovni podlaží). Značka **kroužek** = kóta terénu u nároží (RT / UT, terrain.ts) navázaná na roh stěny.
+// Anotace podlaží se skupinou anotací a zámkem (základ 28); pero a barva z grafiky kategorie kót.
+import type { Primitive } from '../drawing/primitives.ts';
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { slabLevels } from '../slab/geometry.ts';
 import { pointInSlab } from '../slab/pick.ts';
 import { allSlabs } from '../slab/queries.ts';
-import type { PaperSizes, ResolvedEffect } from '../style/types.ts';
+import type { PaperSizes, ResolvedEffect, Style } from '../style/types.ts';
 import { levelMarkSize } from './symbol.ts';
 import { annotationFacts } from '../section/facts.ts';
 import { resolveGraphics } from '../style/graphics.ts';
-import { layerState } from '../view/effective.ts';
+import { layerState, styleOfView } from '../view/effective.ts';
 import type { LevelRef } from './types.ts';
 import { absoluteText, elevationText, levelZ } from './value.ts';
+import {
+  cornerPoint,
+  drawTerrainMark,
+  painter,
+  terrainLines,
+  textWidth,
+  type CornerAnchor,
+  type Painter,
+} from './terrain.ts';
 
-/** Značka v půdorysu: rámeček (hlavní, Ardit), nebo kroužek s poličkou. */
+/** Značka v půdorysu: rámeček (výška podlahy), nebo kroužek (kóta terénu RT / UT u nároží). */
 export type PlanLevelMarker = 'box' | 'circle';
 export const PLAN_LEVEL_MARKERS: readonly PlanLevelMarker[] = ['box', 'circle'];
 
@@ -32,6 +40,11 @@ export interface PlanLevelDimension {
   readonly textAt: Vec2;
   readonly marker: PlanLevelMarker;
   readonly absolute: boolean;
+  /** Kóta terénu: rostlý a upravený terén (mm k ±0,000) zadané číslem, dokud není terén v modelu. */
+  readonly rt?: number | null;
+  readonly ut?: number | null;
+  /** Kóta terénu navázaná na roh stěny (posune se s ním); chybí = pevný bod. */
+  readonly anchor?: CornerAnchor | null;
   readonly annotationLayerId: Id;
   readonly locked: boolean;
 }
@@ -44,75 +57,48 @@ export function planLevelRef(model: Model, storeyId: Id, p: Vec2): LevelRef {
   return top ? { kind: 'edge', elementId: top.id, edge: 'top' } : { kind: 'storey', storeyId };
 }
 
-/** Text kóty; null = odkaz neplatí. `second` = výška nad úrovní podlaží (spodní text kroužku). */
-export function planLevelTexts(model: Model, d: PlanLevelDimension): { main: string; second: string } | null {
+/** Kótovaný bod: roh stěny, na který je kóta navázaná, jinak uložený bod. */
+export const planLevelPoint = (model: Model, d: PlanLevelDimension): Vec2 =>
+  (d.anchor && cornerPoint(model, d.anchor)) || d.point;
+
+/** Řádky textu kóty (rámeček: jedna hodnota; kroužek: RT / UT podle stylu); null = odkaz neplatí. */
+export function planLevelTexts(model: Model, d: PlanLevelDimension, style?: Style): string[] | null {
+  if (d.marker === 'circle')
+    return terrainLines(model, style, { rt: d.rt ?? null, ut: d.ut ?? null, absolute: d.absolute });
   const z = levelZ(model, d.ref);
   if (z === null) return null;
-  const base = model.storeys[d.storeyId]?.elevation ?? 0;
-  return { main: d.absolute ? absoluteText(model, z) : elevationText(z), second: elevationText(z - base) };
-}
-
-/** Přibližná šířka textu na papíře (mm) – písmo kreslí vykreslení, jádro jen odhaduje rámeček. */
-const textWidth = (text: string, h: number) => text.length * h * 0.62;
-
-const circle = (c: Vec2, r: number, a0: number, a1: number, n = 24): Vec2[] =>
-  Array.from({ length: n + 1 }, (_, i) => {
-    const a = a0 + ((a1 - a0) * i) / n;
-    return { x: c.x + r * Math.cos(a), y: c.y + r * Math.sin(a) };
-  });
-
-interface Painter {
-  readonly text: (at: Vec2, t: string) => Primitive;
-  readonly line: (points: Vec2[], closed?: boolean) => Primitive;
-  readonly fill: (polygon: Vec2[]) => Primitive;
-}
-
-function painter(id: Id, g: ResolvedEffect, th: number): Painter {
-  const source: PrimitiveSource = { dimensionId: id, role: 'výšková kóta' };
-  const stroke: Stroke = { pen: g.projectionPen, color: g.lineColor, lineType: 'solid' };
-  return {
-    text: (at, t) => ({ kind: 'text', at, text: t, heightMm: th, angle: 0, color: g.lineColor, source }),
-    line: (points, closed = false) => ({ kind: 'line', points, closed, stroke, source }),
-    fill: (polygon) => ({ kind: 'fill', polygon, color: g.lineColor, transparency: 0, source }),
-  };
+  return [d.absolute ? absoluteText(model, z) : elevationText(z)];
 }
 
 /** Rámeček kolem hodnoty (tenká čára). */
-function boxMark(d: PlanLevelDimension, text: string, th: number, scale: number, p: Painter): Primitive[] {
-  const w = (textWidth(text, th) / 2 + th * 0.4) * scale;
-  const h = th * 0.9 * scale;
-  const { x, y } = d.textAt;
+function boxMark(at: Vec2, text: string, th: number, p: Painter): Primitive[] {
+  const w = textWidth(text, th) / 2 + th * 0.4;
+  const h = th * 0.9;
   const box = [
-    { x: x - w, y: y - h },
-    { x: x + w, y: y - h },
-    { x: x + w, y: y + h },
-    { x: x - w, y: y + h },
+    { x: at.x - w, y: at.y - h },
+    { x: at.x + w, y: at.y - h },
+    { x: at.x + w, y: at.y + h },
+    { x: at.x - w, y: at.y + h },
   ];
-  return [p.line(box, true), p.text(d.textAt, text)];
+  return [p.line(box, true), p.text(at, text)];
 }
 
+/** Kresba kóty; `point` = kótovaný bod z modelu (u rohu stěny se s ním posune i hodnota). */
 export function drawPlanLevel(
   d: PlanLevelDimension,
-  texts: { main: string; second: string },
+  lines: readonly string[],
+  point: Vec2,
   sizes: PaperSizes,
   scale: number,
   g: ResolvedEffect,
 ): Primitive[] {
-  const th = sizes.labelText;
-  const p = painter(d.id, g, th);
-  if (d.marker === 'box') return boxMark(d, texts.main, th, scale, p);
+  const th = sizes.labelText * scale;
+  const p = painter(d.id, g, sizes.labelText);
+  const shift = { x: point.x - d.point.x, y: point.y - d.point.y };
+  const textAt = { x: d.textAt.x + shift.x, y: d.textAt.y + shift.y };
+  if (d.marker === 'box') return boxMark(textAt, lines[0] ?? '', th, p);
   const r = (levelMarkSize(sizes) / 2) * scale;
-  const shelf = Math.max(textWidth(texts.main, th), textWidth(texts.second, th)) * scale;
-  const dir = d.textAt.x >= d.point.x ? 1 : -1;
-  const end = { x: d.textAt.x + dir * shelf, y: d.textAt.y };
-  const mid = (d.textAt.x + end.x) / 2;
-  return [
-    p.fill(circle(d.point, r, 0, Math.PI)),
-    p.line(circle(d.point, r, 0, 2 * Math.PI), true),
-    p.line([d.point, d.textAt, end]),
-    p.text({ x: mid, y: d.textAt.y + th * 0.8 * scale }, texts.main),
-    p.text({ x: mid, y: d.textAt.y - th * 0.8 * scale }, texts.second),
-  ];
+  return drawTerrainMark({ point, textAt, lines }, r, th, p);
 }
 
 /** Výškové kóty podlaží pohledu (půdorys): skupina anotací, funkce grafiky (kategorie kót). */
@@ -123,9 +109,9 @@ export function drawPlanLevels(
   return Object.values(model.planLevelDims ?? {}).flatMap((d) => {
     if (d.storeyId !== view.storeyId || !layerState(model.display, view, d.annotationLayerId).visible)
       return [];
-    const texts = planLevelTexts(model, d);
+    const lines = planLevelTexts(model, d, styleOfView(model.display, view));
     const g = resolveGraphics(model.display, view, annotationFacts(d.id, 'dimension')).effect;
-    if (!texts || !g.visible) return [];
-    return drawPlanLevel(d, texts, model.display.paperSizes, view.scale, g);
+    if (!lines || !g.visible) return [];
+    return drawPlanLevel(d, lines, planLevelPoint(model, d), model.display.paperSizes, view.scale, g);
   });
 }

@@ -5,3 +5,4 @@ export * from './draw.ts';
 export * from './targets.ts';
 export * from './migrate-v32.ts';
 export * from './plan.ts';
+export * from './terrain.ts';

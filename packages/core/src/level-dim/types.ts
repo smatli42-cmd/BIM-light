@@ -6,7 +6,9 @@ import type { Id } from '../ids/index.ts';
 /** Na co kóta ukazuje: úroveň podlaží, nebo horní / spodní hrana prvku (stěna, deska). */
 export type LevelRef =
   | { readonly kind: 'storey'; readonly storeyId: Id }
-  | { readonly kind: 'edge'; readonly elementId: Id; readonly edge: 'top' | 'bottom' };
+  | { readonly kind: 'edge'; readonly elementId: Id; readonly edge: 'top' | 'bottom' }
+  /** Kóta terénu zadaná číslem (mm k ±0,000), dokud terén není v modelu; kreslí se plně (ČSN 01 3420). */
+  | { readonly kind: 'terrain'; readonly z: number };
 
 export interface LevelDimension {
   readonly id: Id;

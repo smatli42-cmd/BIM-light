@@ -120,6 +120,14 @@ describe('ČSN 01 3420: výškové kóty v řezu', () => {
     expect(filled(rel as string)).toBe(true);
   });
 
+  it('ČSN 01 3420 / terén (rozhodnutí uživatele): kóta terénu zadaná číslem má plný trojúhelník', () => {
+    const f = fixture();
+    const { sec } = scene(f);
+    const [id] = f.run('levelDim.create', { sectionId: sec, ref: { kind: 'terrain', z: -150 }, at: 0 });
+    expect(marks(f, sec, id as string).some((p) => p.kind === 'fill')).toBe(true);
+    expect(textOf(marks(f, sec, id as string))).toBe('-0,150');
+  });
+
   it('základ 28: skrytá skupina anotací kótu skryje; zamčenou nejde posunout, smazat ano', () => {
     const f = fixture();
     const { sec } = scene(f);

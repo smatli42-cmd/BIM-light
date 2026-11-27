@@ -4,7 +4,7 @@ import { S } from '../commands/schema.ts';
 import { sectionOf } from '../commands/section/section.ts';
 import { levelTargets } from '../level-dim/targets.ts';
 import { absoluteText, elevationText, levelZ } from '../level-dim/value.ts';
-import { planLevelTexts } from '../level-dim/plan.ts';
+import { planLevelPoint, planLevelTexts } from '../level-dim/plan.ts';
 import { defineQuery } from './types.ts';
 
 export const levelDimList = defineQuery<{ sectionId?: string }, unknown>({
@@ -48,13 +48,18 @@ export const planLevelDimList = defineQuery<{ storeyId?: string }, unknown>({
   name: 'planLevelDim.list',
   label: 'Výškové kóty v půdorysu',
   description:
-    'Výškové kóty v půdorysu (volitelně jen storeyId): id, podlaží, ref (deska / podlaží), point, textAt, ' +
-    'marker, text (hodnota k ±0,000, jak je na výkrese), second (výška nad úrovní podlaží), z v mm.',
+    'Výškové kóty v půdorysu (volitelně jen storeyId): id, podlaží, marker (box = výška podlahy v rámečku, ' +
+    'circle = kóta terénu RT / UT u nároží), ref, point (u rohu stěny spočítaný), textAt, rt / ut (mm), ' +
+    'anchor (roh stěny), lines = řádky textu jak jsou na výkrese, text = první řádek, z v mm (rámeček).',
   group: 'Kóta',
   params: S.object({ storeyId: S.id }, []),
   run: (m, p) =>
     Object.values(m.planLevelDims)
       .filter((d) => !p.storeyId || d.storeyId === p.storeyId)
-      .map((d) => ({ ...d, z: levelZ(m, d.ref), ...(planLevelTexts(m, d) ?? { main: null, second: null }) }))
-      .map(({ main, ...r }) => ({ ...r, text: main })),
+      .map((d) => {
+        const style = Object.values(m.views).find((v) => v.storeyId === d.storeyId)?.styleId;
+        const lines = planLevelTexts(m, d, style ? m.display.styles[style] : undefined);
+        const z = d.marker === 'box' ? levelZ(m, d.ref) : null;
+        return { ...d, point: planLevelPoint(m, d), z, lines, text: lines?.[0] ?? null };
+      }),
 });

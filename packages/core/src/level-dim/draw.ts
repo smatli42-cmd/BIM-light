@@ -15,7 +15,9 @@ import { absoluteText, elevationText, levelZ } from './value.ts';
 export function levelDimSymbol(model: Model, s: Section, d: LevelDimension) {
   const z = levelZ(model, d.ref);
   if (z === null) return null;
-  const filled = d.absolute || styleOfView(model.display, s).levelMarkFilled === true;
+  // ČSN 01 3420 (rozhodnutí uživatele): relativní prázdná, absolutní a terén plné.
+  const filled =
+    d.absolute || d.ref.kind === 'terrain' || styleOfView(model.display, s).levelMarkFilled === true;
   const text = d.absolute ? absoluteText(model, z) : elevationText(z);
   return { x: d.at, z, text, below: d.below, filled };
 }

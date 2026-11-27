@@ -199,7 +199,7 @@ export function houseSections(c: SampleContext) {
   const points = [vec(-2500, 6500), vec(5000, 6500), vec(5000, 8000), vec(W + 2500, 8000)];
   c.run('section.create', { points, direction: 'right', presetId: preset, styleId: projectStyle(c) });
   c.run('elevation.create', {});
-  // Výškové kóty v půdorysu 1.NP: podlaha obývacího pokoje v rámečku, roh stavby kroužkem s poličkou.
+  // Výškové kóty v půdorysu 1.NP: podlaha obývacího pokoje v rámečku, kóta terénu RT / UT u nároží stavby.
   const plan = { storeyId: c.storeyId, viewId: c.viewId };
   c.run('planLevelDim.create', { ...plan, point: vec(1500, 3000) });
   c.run('planLevelDim.create', {
@@ -207,6 +207,8 @@ export function houseSections(c: SampleContext) {
     point: vec(-465, -465),
     textAt: vec(-2000, -1200),
     marker: 'circle',
+    rt: -200,
+    ut: -150,
   });
 }
 

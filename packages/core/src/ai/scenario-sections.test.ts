@@ -126,7 +126,7 @@ describe('AI scénář: řezy a pohledy', () => {
     expect(c.ai.call<unknown[]>('levelDim.list', {})).toHaveLength(0);
   });
 
-  it('výšková kóta v půdorysu: AI okótuje podlahu, změní výšku podlahy a přepne značku na kroužek', () => {
+  it('výšková kóta v půdorysu: AI okótuje podlahu, změní výšku podlahy a přepne na kótu terénu RT / UT', () => {
     const c = start();
     room(c);
     const types = c.ai.call<{ id: string; slabFunction: string }[]>('slabType.list');
@@ -143,12 +143,14 @@ describe('AI scénář: řezy a pohledy', () => {
       point: { x: 3000, y: 2000 },
       viewId: c.viewId,
     });
-    type Row = { id: string; text: string; marker: string; ref: { elementId?: string } };
+    type Row = { id: string; text: string; marker: string; lines: string[]; ref: { elementId?: string } };
     let row = must(c.ai.call<Row[]>('planLevelDim.list', {}).find((r) => r.id === id));
     expect(row).toMatchObject({ text: '+0,150', marker: 'box', ref: { elementId: floor } });
     c.ai.call('slab.update', { slabIds: [floor], topOffset: 0 });
-    c.ai.call('planLevelDim.update', { levelDimId: id, marker: 'circle' });
     row = must(c.ai.call<Row[]>('planLevelDim.list', {}).find((r) => r.id === id));
-    expect(row).toMatchObject({ text: '±0,000', marker: 'circle' });
+    expect(row.text).toBe('±0,000');
+    c.ai.call('planLevelDim.update', { levelDimId: id, marker: 'circle', rt: -150, ut: -100 });
+    row = must(c.ai.call<Row[]>('planLevelDim.list', {}).find((r) => r.id === id));
+    expect(row).toMatchObject({ text: 'RT=-0,150', marker: 'circle', lines: ['RT=-0,150', 'UT=-0,100'] });
   });
 });

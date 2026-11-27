@@ -51,19 +51,42 @@ describe('výšková kóta v půdorysu (české zvyklosti, Ardit)', () => {
     expect(f.model.planLevelDims[on as string]).toBeUndefined();
   });
 
-  it('Ardit / půdorys, kroužek: horní polovina plná, polička s výškou k ±0,000 nahoře a nad podlažím dole', () => {
+  it('DSP / kóta terénu u nároží: kroužek s plnou polovinou a čtvercem bodu, RT a UT nad a pod poličkou', () => {
     const f = fixture();
-    floor(f, 150);
     const [id] = f.run('planLevelDim.create', {
       storeyId: f.storeyId,
       point: v(0, 0),
       textAt: v(-1500, -500),
       marker: 'circle',
+      rt: -150,
+      ut: -150,
     });
     const ps = prims(f, id as string);
     expect(ps.some((p) => p.kind === 'fill')).toBe(true);
-    const t = ps.filter((p) => p.kind === 'text');
-    expect(t.map((p) => (p.kind === 'text' ? p.text : ''))).toEqual(['+0,150', '+0,150']);
+    expect(ps.filter((p) => p.kind === 'line' && p.closed)).toHaveLength(2);
+    expect(texts(ps)).toEqual(['RT=-0,150', 'UT=-0,150']);
+  });
+
+  it('DSP / kóta terénu: navázaná na roh stěny se s ním posune; popisky a jen UT nastaví styl', () => {
+    const f = fixture();
+    const w = f.line(v(0, 0), v(5000, 0));
+    const corner = f.wall(w).path.start;
+    const [id] = f.run('planLevelDim.create', {
+      storeyId: f.storeyId,
+      point: corner,
+      textAt: v(-1500, -800),
+      marker: 'circle',
+      rt: -200,
+      ut: -150,
+    });
+    expect(f.model.planLevelDims[id as string]?.anchor?.wallId).toBe(w);
+    f.run('wall.move', { wallIds: [w], vector: v(0, 1000) });
+    const circleLine = prims(f, id as string).find((p) => p.kind === 'line' && p.closed);
+    const ys = circleLine?.kind === 'line' ? circleLine.points.map((q) => q.y) : [];
+    expect(Math.min(...ys)).toBeGreaterThan(500);
+    const style = f.model.views[f.viewId]!.styleId;
+    f.run('style.setTerrainLabels', { styleId: style, ut: 'UT', show: 'ut' });
+    expect(texts(prims(f, id as string))).toEqual(['UT=-0,150']);
   });
 
   it('základ 28: kóta je v aktivní skupině anotací pohledu; zamčená se neposune, posun jen textu u kroužku', () => {
