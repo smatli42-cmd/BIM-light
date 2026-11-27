@@ -38,6 +38,8 @@ export interface GraphicEffect {
    * aby šedá výplň Studie nezešedila 3D.
    */
   readonly surfaceColor?: string | null;
+  /** Průhlednost povrchu ve 3D 0–100 % (Revit: bourání lehce průhledně); null = podle materiálu. */
+  readonly surfaceTransparency?: number | null;
   /** Šrafa: z materiálu, žádná, nebo pevně daná. */
   readonly hatch?: 'material' | 'none' | HatchEffect;
   /** Průhlednost 0–100 %. */

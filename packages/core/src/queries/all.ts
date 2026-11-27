@@ -1,4 +1,5 @@
 // Všechny dotazy jádra (čtení modelu pro AI). Nový dotaz = nový soubor + řádek zde.
+import { view3dList } from './views-3d.ts';
 import { dimensionList } from './dimensions.ts';
 import { elementGraphics } from './element-graphics.ts';
 import { elementInfoQuery } from './element-info.ts';
@@ -27,6 +28,7 @@ export const CORE_QUERIES = [
   openingList,
   slabList,
   slabOpeningList,
+  view3dList,
   slabTypeList,
   dimensionList,
   hatchList,

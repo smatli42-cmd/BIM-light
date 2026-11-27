@@ -8,6 +8,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
+### 3D pohled jako data a průhlednost povrchu, 2026-11-27 (požadavky 3D proudu)
+
+- `views3d` (migrace 20 → 21): 3D pohled s názvem, víc instancí; styl, vrstvy, filtr rekonstrukce a
+  přepisy jako u půdorysu (funkce grafiky bere `GraphicView`), `storeyIds` (null = všechna) a
+  `sectionBox` (kvádr v mm, osy modelu). Nový projekt i migrace mají výchozí „3D“. Příkazy `view3d.create /
+  rename / delete / setStoreys / setSectionBox / setStyle / setPhaseFilter / setLayerState`, dotaz
+  `view3d.list`, AI scénář. Grafika: `surfaceTransparency` (null = materiál), bourání 50 %.
+
 ### Desky D3: otvory v deskách, 2026-11-27 (scéna `?ukazka=desky-otvory`; otvor pro schodiště v `?ukazka=dum`)
 
 - Jádro: `slabOpenings` (migrace 18 → 19) – svislý otvor, obrys v půdorysu, hostitelé `hostIds` = desky

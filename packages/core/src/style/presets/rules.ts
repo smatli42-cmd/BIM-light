@@ -11,6 +11,8 @@ export interface RulePreset {
 
 /** Sytá žlutá povrchu bouraných prvků ve 3D (jako Archicad); světlá výplň řezu by splynula s omítkou. */
 export const DEMOLISHED_SURFACE = '#f2c200';
+/** Bourané prvky ve 3D lehce průhledně (%), aby bylo vidět, co je za nimi (jako Revit). */
+export const DEMOLISHED_TRANSPARENCY = 50;
 
 const status = (value: string): Predicate => ({ property: 'status', op: 'eq', value });
 
@@ -30,6 +32,7 @@ export const RULE_PRESETS: readonly RulePreset[] = [
       lineType: 'dashed',
       fillColor: '#fff3b0',
       surfaceColor: DEMOLISHED_SURFACE,
+      surfaceTransparency: DEMOLISHED_TRANSPARENCY,
       hatch: 'none',
     },
   },
