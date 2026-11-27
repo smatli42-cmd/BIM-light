@@ -28,6 +28,7 @@ import { drawSlabOpenings } from '../slab-opening/draw-view.ts';
 import { drawRooms } from '../room/draw-view.ts';
 import { drawTileJoints } from '../covering/draw-joints.ts';
 import { drawSectionMarks } from '../section/mark.ts';
+import { drawPlanLevels } from '../level-dim/plan.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -139,6 +140,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
   }
   out.push(...drawTags(model, view));
   out.push(...drawSectionMarks(model, view));
+  out.push(...drawPlanLevels(model, view));
   return { scale: view.scale, primitives: out };
 }
 

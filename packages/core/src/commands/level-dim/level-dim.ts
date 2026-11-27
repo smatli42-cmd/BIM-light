@@ -10,7 +10,7 @@ import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 import { sectionOf } from '../section/section.ts';
 
-const REF: JsonSchema = {
+export const REF: JsonSchema = {
   oneOf: [
     S.object({ kind: { type: 'string', enum: ['storey'] }, storeyId: S.id }, ['kind', 'storeyId']),
     S.object(
@@ -29,6 +29,10 @@ const REF: JsonSchema = {
 
 export const levelDimOf = (m: Model, id: Id): LevelDimension =>
   m.levelDims[id] ?? fail('not-found', `Výšková kóta ${id} neexistuje`);
+
+/** Výšková kóta v řezu nebo v půdorysu (mazání bere obě). */
+export const anyLevelDimOf = (m: Model, id: Id): unknown =>
+  m.levelDims[id] ?? m.planLevelDims[id] ?? fail('not-found', `Výšková kóta ${id} neexistuje`);
 const put = (m: Model, d: LevelDimension): Model => ({ ...m, levelDims: { ...m.levelDims, [d.id]: d } });
 
 function check(m: Model, d: LevelDimension): LevelDimension {
@@ -115,16 +119,18 @@ export const levelDimUpdate = defineCommand<Fields & { levelDimId: Id; ref?: Lev
 
 /** Smaže výškové kóty (i zamčené – zámek brání změně, ne smazání). */
 export const removeLevelDims = (m: Model, ids: readonly Id[]): Model =>
-  ids.length ? { ...m, levelDims: omitIds(m.levelDims, ids) } : m;
+  ids.length
+    ? { ...m, levelDims: omitIds(m.levelDims, ids), planLevelDims: omitIds(m.planLevelDims, ids) }
+    : m;
 
 export const levelDimDelete = defineCommand<{ levelDimIds: Id[] }>({
   name: 'levelDim.delete',
   label: 'Smazat výškovou kótu',
-  description: 'Smaže výškové kóty v řezech (i zamčené – zámek brání jen posunu a změně).',
+  description: 'Smaže výškové kóty v řezech i v půdorysu (i zamčené – zámek brání jen posunu a změně).',
   group: 'Řezy a pohledy',
   params: S.object({ levelDimIds: { type: 'array', items: S.id, minItems: 1 } }, ['levelDimIds']),
   run(model, p) {
-    p.levelDimIds.forEach((id) => levelDimOf(model, id));
+    p.levelDimIds.forEach((id) => anyLevelDimOf(model, id));
     return { model: removeLevelDims(model, p.levelDimIds) };
   },
 });

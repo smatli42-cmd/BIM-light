@@ -49,7 +49,12 @@ export function deleteElements(input: Model, ids: readonly Id[]): Model {
       ([, d]) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId),
     ),
   );
-  const model = { ...input, levelDims };
+  const planLevelDims = Object.fromEntries(
+    Object.entries(input.planLevelDims ?? {}).filter(
+      ([, d]) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId),
+    ),
+  );
+  const model = { ...input, levelDims, planLevelDims };
   const cascade = new Set(
     ids.flatMap((id) => {
       const el = model.elements[id];

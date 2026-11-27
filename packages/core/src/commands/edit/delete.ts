@@ -2,7 +2,7 @@
 import type { Id } from '../../ids/index.ts';
 import { omitIds, removeDimensions, removeRooms, removeSlabOpenings } from '../../model/update.ts';
 import { sectionOf } from '../section/section.ts';
-import { levelDimOf, removeLevelDims } from '../level-dim/level-dim.ts';
+import { anyLevelDimOf, removeLevelDims } from '../level-dim/level-dim.ts';
 import { roomOf } from '../room/room.ts';
 import { slabOpeningOf } from '../slab-opening/edit.ts';
 import { deleteElements, deleteOpenings } from '../../rules/delete.ts';
@@ -29,7 +29,7 @@ export const selectionDelete = defineCommand<{
   description:
     'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), ' +
     'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds), místnosti (roomIds), řezy ' +
-    '(sectionIds), výškové kóty v řezech (levelDimIds) a kóty jedním krokem.',
+    '(sectionIds), výškové kóty v řezech i půdorysu (levelDimIds) a kóty jedním krokem.',
   group: 'Úpravy',
   shortcut: 'Delete',
   params: S.object(
@@ -72,7 +72,7 @@ export const selectionDelete = defineCommand<{
     slabs.forEach((id) => slabOf(model, id));
     rooms.forEach((id) => roomOf(model, id));
     secs.forEach((id) => sectionOf(model, id));
-    lds.forEach((id) => levelDimOf(model, id));
+    lds.forEach((id) => anyLevelDimOf(model, id));
     const m = deleteOpenings(
       removeSlabOpenings(removeDimensions(removeRooms(model, rooms), dims), holes),
       ops.filter((id) => model.openings[id]),
