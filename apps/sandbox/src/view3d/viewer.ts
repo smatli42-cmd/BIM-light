@@ -1,44 +1,55 @@
-// 3D okno (three.js): kamera s osou Z nahoru jako v modelu, otáčení / posun / zoom (OrbitControls),
-// přiblížení na obsah, výběr kliknutím a zvýraznění vybraných prvků. Kreslí jen na požádání
-// (po změně kamery nebo scény), aby nebralo výkon půdorysu.
+// 3D okno (three.js): kamera s osou Z nahoru jako v modelu (perspektiva / axonometrie, view3d/camera-rig.ts),
+// režim zobrazení, slunce a stíny, rovina řezu, mřížka, ořezový kvádr, procházka, výběr kliknutím
+// a zvýraznění vybraných prvků. Kreslí jen na požádání (po změně kamery nebo scény), aby nebralo výkon půdorysu.
 import {
   Box3,
   Color,
-  DirectionalLight,
   Group,
-  HemisphereLight,
   MeshLambertMaterial,
-  MOUSE,
-  PerspectiveCamera,
   Raycaster,
   Scene,
-  Sphere,
   Vector2,
   Vector3,
   WebGLRenderer,
 } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import type { CutPlane3d, Point3, Projection3d } from '@bim-light/core';
 import { BoxGizmo, type HandleRef } from './box-gizmo.ts';
+import { installHandles } from './handles.ts';
+import { CameraRig, type DragTool } from './camera-rig.ts';
 import type { Box3D } from './clip.ts';
-import { buildMeshes, disposeGroup, highlight, Materials } from './mesh.ts';
+import { clipPlaneOf, CutGizmo } from './cut-gizmo.ts';
+import { makeGrid } from './grid.ts';
+import { buildMeshes, DEFAULT_LOOK, disposeGroup, highlight, Materials, type Look } from './mesh.ts';
 import type { Solid } from './solids.ts';
+import { SunLight } from './sun-light.ts';
+import { Walk } from './walk.ts';
 
-/** Směr pohledu při „Zobrazit vše“: od jihovýchodu shora (axonometrie jako výchozí 3D v Archicadu). */
-const VIEW_DIR = new Vector3(1, -1.3, 0.9).normalize();
+/** Vzhled scény z 3D pohledu (bez roviny řezu – ta má vlastní setCut). */
+export type SceneLook = Omit<Look, 'clip'> & { readonly sunDir: Point3 };
 
 export class Viewer {
   readonly renderer: WebGLRenderer;
-  readonly camera = new PerspectiveCamera(40, 1, 0.05, 5000);
-  readonly controls: OrbitControls;
+  readonly rig: CameraRig;
+  readonly walk: Walk;
   private readonly scene = new Scene();
   private readonly root = new Group();
-  private readonly mats = new Materials();
+  private mats = new Materials();
   private groups = new Map<string, Group>();
+  private solids: readonly Solid[] = [];
   private readonly selectedMat: MeshLambertMaterial;
   private frame = 0;
-  private readonly gizmo: BoxGizmo;
+  readonly gizmo: BoxGizmo;
+  readonly cut: CutGizmo;
+  private readonly offHandles: () => void;
+  private readonly sun = new SunLight();
+  private look: SceneLook = { ...DEFAULT_LOOK, sunDir: { x: -0.3, y: -0.6, z: 0.75 } };
+  private grid: Group | null = null;
   /** Po puštění úchytu ořezového kvádru: nový kvádr (mm). */
   onBoxChange: (box: Box3D) => void = () => {};
+  /** Po puštění úchytu roviny řezu: nová rovina (mm). */
+  onCutChange: (plane: CutPlane3d) => void = () => {};
+  /** Procházka skončila (Esc). */
+  onWalkEnd: () => void = () => {};
 
   constructor(
     readonly canvas: HTMLCanvasElement,
@@ -46,22 +57,29 @@ export class Viewer {
   ) {
     this.renderer = new WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
     this.renderer.setPixelRatio(window.devicePixelRatio || 1);
+    this.renderer.localClippingEnabled = true;
     this.scene.background = new Color(colors.background);
     this.selectedMat = new MeshLambertMaterial({ color: colors.selection });
-    this.camera.up.set(0, 0, 1);
-    this.camera.position.set(20, -26, 18);
-    this.controls = new OrbitControls(this.camera, canvas);
-    // Levé tlačítko otáčí, prostřední a pravé posouvá, kolečko přibližuje k místu kurzoru.
-    this.controls.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.PAN, RIGHT: MOUSE.PAN };
-    this.controls.zoomToCursor = true;
-    this.controls.screenSpacePanning = true;
-    this.controls.addEventListener('change', () => this.render());
-    const sun = new DirectionalLight(0xffffff, 1.6);
-    sun.position.set(-0.5, -1, 1.6);
+    this.rig = new CameraRig(canvas, () => this.render());
+    this.walk = new Walk(
+      this.rig,
+      canvas,
+      () => this.render(),
+      () => this.onWalkEnd(),
+    );
     this.gizmo = new BoxGizmo(colors.selection);
-    this.scene.add(new HemisphereLight(0xffffff, 0x8a8f99, 1.4), sun, this.root, this.gizmo.group);
-    // Zachycení dřív než OrbitControls: tažení úchytu kvádru kameru neotáčí.
-    canvas.addEventListener('pointerdown', this.onHandleDown, { capture: true });
+    this.cut = new CutGizmo(colors.selection);
+    this.scene.add(this.sun.group, this.root, this.gizmo.group, this.cut.group);
+    this.offHandles = installHandles(this);
+  }
+
+  get camera() {
+    return this.rig.camera;
+  }
+
+  /** Obsah scény (m), bez pomůcek. */
+  bounds(): Box3 {
+    return new Box3().setFromObject(this.root);
   }
 
   /** Ořezový kvádr: obrys a úchyty (null = vypnutý). */
@@ -70,60 +88,91 @@ export class Viewer {
     this.render();
   }
 
-  private ndc(x: number, y: number): Vector2 {
+  /** Rovina řezu (null = bez řezu): ořízne plochy i hrany, ukáže obdélník a úchyt. */
+  setCut(plane: CutPlane3d | null) {
+    const same = JSON.stringify(plane) === JSON.stringify(this.cut.value);
+    const b = this.bounds();
+    this.cut.set(plane, b.isEmpty() ? 20 : b.getSize(new Vector3()).length() * 0.8);
+    if (!same) this.rebuild();
+    this.render();
+  }
+
+  /** Režim zobrazení, barvy motivu, stíny a směr ke slunci. */
+  setLook(look: SceneLook) {
+    const prev = this.look;
+    this.look = look;
+    this.scene.background = new Color(look.background);
+    const remesh =
+      prev.mode !== look.mode ||
+      prev.background !== look.background ||
+      prev.ink !== look.ink ||
+      prev.shadows !== look.shadows;
+    if (remesh) this.rebuild();
+    else this.updateSun();
+    this.render();
+  }
+
+  /** Mřížka v pracovní rovině ve výšce `z` mm; null = bez mřížky. */
+  setGrid(z: number | null) {
+    if (this.grid) {
+      this.scene.remove(this.grid);
+      disposeGroup(this.grid);
+      this.grid = null;
+    }
+    if (z !== null) {
+      this.grid = new Group().add(makeGrid(this.bounds(), z * 0.001, this.look.background));
+      this.scene.add(this.grid);
+    }
+    this.render();
+  }
+
+  get hasGrid(): boolean {
+    return !!this.grid;
+  }
+
+  setProjection(p: Projection3d) {
+    if (this.walk.active) return;
+    this.rig.setProjection(p);
+    this.render();
+  }
+
+  setDragTool(t: DragTool) {
+    this.rig.setDragTool(t);
+  }
+
+  ray(x: number, y: number): Raycaster {
     const r = this.canvas.getBoundingClientRect();
-    return new Vector2((x / r.width) * 2 - 1, -(y / r.height) * 2 + 1);
+    const ray = new Raycaster();
+    ray.setFromCamera(new Vector2((x / r.width) * 2 - 1, -(y / r.height) * 2 + 1), this.camera);
+    return ray;
   }
 
   /** Úchyt kvádru pod bodem plátna (px), nebo null. */
   handleAt(x: number, y: number): HandleRef | null {
-    const ray = new Raycaster();
-    ray.setFromCamera(this.ndc(x, y), this.camera);
-    const hit = ray.intersectObjects(this.gizmo.handles, false)[0];
+    const hit = this.ray(x, y).intersectObjects(this.gizmo.handles, false)[0];
     return (hit?.object.userData as HandleRef | undefined) ?? null;
-  }
-
-  private readonly onHandleDown = (e: PointerEvent) => {
-    const start = this.gizmo.value;
-    const h = e.button === 0 && start ? this.handleAt(e.offsetX, e.offsetY) : null;
-    if (!h || !start) return;
-    e.stopImmediatePropagation();
-    e.preventDefault();
-    const r = this.canvas.getBoundingClientRect();
-    let box = start;
-    const move = (m: PointerEvent) => {
-      box = this.gizmo.dragged(
-        start,
-        h,
-        m.clientX - e.clientX,
-        m.clientY - e.clientY,
-        this.camera,
-        r.width,
-        r.height,
-      );
-      this.setBox(box);
-    };
-    const up = () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-      this.onBoxChange(box);
-    };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
-  };
-
-  setBackground(color: string) {
-    this.scene.background = new Color(color);
-    this.render();
   }
 
   /** Nahradí obsah scény tělesy modelu. */
   setSolids(solids: readonly Solid[]) {
+    this.solids = solids;
+    this.rebuild();
+  }
+
+  private rebuild() {
     for (const g of this.groups.values()) disposeGroup(g);
     this.root.clear();
-    this.groups = buildMeshes(solids, this.mats);
+    this.mats.dispose();
+    const clip = this.cut.value ? [clipPlaneOf(this.cut.value)] : [];
+    this.mats = new Materials({ ...this.look, clip });
+    this.groups = buildMeshes(this.solids, this.mats);
     for (const g of this.groups.values()) this.root.add(g);
+    this.updateSun();
     this.render();
+  }
+
+  private updateSun() {
+    this.sun.update(this.renderer, this.look.sunDir, this.look.shadows, this.bounds());
   }
 
   get elementIds(): string[] {
@@ -136,36 +185,26 @@ export class Viewer {
     this.render();
   }
 
-  /** Přiblíží kameru na všechna tělesa (směr pohledu VIEW_DIR). */
+  /** Přiblíží kameru na všechna tělesa. */
   fit() {
-    const box = new Box3().setFromObject(this.root);
-    if (box.isEmpty()) return;
-    const sphere = box.getBoundingSphere(new Sphere());
-    const fov = (this.camera.fov * Math.PI) / 180;
-    const fovMin = Math.min(fov, 2 * Math.atan(Math.tan(fov / 2) * this.camera.aspect));
-    const dist = (sphere.radius / Math.sin(fovMin / 2)) * 1.05;
-    this.controls.target.copy(sphere.center);
-    this.camera.position.copy(sphere.center).addScaledVector(VIEW_DIR, dist);
-    this.camera.near = Math.max(0.01, dist / 1000);
-    this.camera.far = dist * 20;
-    this.camera.updateProjectionMatrix();
-    this.controls.update();
+    if (this.walk.active) return;
+    this.rig.fit(this.bounds());
     this.render();
   }
 
   resize(width: number, height: number) {
     if (width <= 0 || height <= 0) return;
     this.renderer.setSize(width, height, false);
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
+    this.rig.resize(width, height);
     this.render();
   }
 
-  /** Prvek pod bodem okna (px od levého horního rohu plátna), nebo null. */
+  /** Prvek pod bodem plátna (px), nebo null; část odříznutá rovinou řezu se nepočítá. */
   pick(x: number, y: number): string | null {
-    const ray = new Raycaster();
-    ray.setFromCamera(this.ndc(x, y), this.camera);
-    const hit = ray.intersectObjects(this.root.children, true).find((h) => h.object.type === 'Mesh');
+    const plane = this.cut.value ? clipPlaneOf(this.cut.value) : null;
+    const hit = this.ray(x, y)
+      .intersectObjects(this.root.children, true)
+      .find((h) => h.object.type === 'Mesh' && (!plane || plane.distanceToPoint(h.point) >= 0));
     return (hit?.object.userData.elementId as string | undefined) ?? null;
   }
 
@@ -180,9 +219,8 @@ export class Viewer {
   screenOf(id: string): { x: number; y: number } | null {
     const g = this.groups.get(id);
     if (!g) return null;
-    const c = new Box3().setFromObject(g).getCenter(new Vector3()).project(this.camera);
-    const r = this.canvas.getBoundingClientRect();
-    return { x: ((c.x + 1) / 2) * r.width, y: ((1 - c.y) / 2) * r.height };
+    const c = new Box3().setFromObject(g).getCenter(new Vector3());
+    return this.screenOfPoint(c.x * 1000, c.y * 1000, c.z * 1000);
   }
 
   render() {
@@ -195,12 +233,16 @@ export class Viewer {
 
   dispose() {
     cancelAnimationFrame(this.frame);
-    this.canvas.removeEventListener('pointerdown', this.onHandleDown, { capture: true });
+    this.walk.stop();
+    this.offHandles();
+    this.setGrid(null);
     this.gizmo.dispose();
+    this.cut.dispose();
+    this.sun.dispose();
     for (const g of this.groups.values()) disposeGroup(g);
     this.mats.dispose();
     this.selectedMat.dispose();
-    this.controls.dispose();
+    this.rig.controls.dispose();
     this.renderer.dispose();
   }
 }

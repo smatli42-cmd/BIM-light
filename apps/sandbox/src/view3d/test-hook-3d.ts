@@ -19,6 +19,10 @@ export interface TestHook3D {
   storeys(): string[] | null;
   /** Úchyt ořezového kvádru v px stránky. */
   handleOf(axis: 'x' | 'y' | 'z', side: 'min' | 'max'): { x: number; y: number } | null;
+  /** Stav prohlížeče: projekce kamery, stíny, mřížka, procházka, poloha kamery (m). */
+  scene(): { projection: string; shadows: boolean; grid: boolean; walking: boolean; eye: number[] };
+  /** Úchyt roviny řezu v px stránky, nebo null. */
+  cutHandle(): { x: number; y: number } | null;
 }
 
 declare global {
@@ -48,6 +52,20 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
       const c = { x: (b.min.x + b.max.x) / 2, y: (b.min.y + b.max.y) / 2, z: (b.min.z + b.max.z) / 2 };
       c[axis] = b[side][axis];
       const p = v.screenOfPoint(c.x, c.y, c.z);
+      const r = v.canvas.getBoundingClientRect();
+      return { x: p.x + r.left, y: p.y + r.top };
+    },
+    scene: () => ({
+      projection: v.rig.projection,
+      shadows: v.renderer.shadowMap.enabled,
+      grid: v.hasGrid,
+      walking: v.walk.active,
+      eye: v.camera.position.toArray(),
+    }),
+    cutHandle() {
+      const c = active3d(s).cutPlane;
+      if (!c) return null;
+      const p = v.screenOfPoint(c.origin.x, c.origin.y, c.origin.z);
       const r = v.canvas.getBoundingClientRect();
       return { x: p.x + r.left, y: p.y + r.top };
     },

@@ -124,7 +124,7 @@ function mid(b: Box3D): Vector3 {
   return new Vector3(b.min.x + b.max.x, b.min.y + b.max.y, b.min.z + b.max.z).multiplyScalar(MM / 2);
 }
 
-function toScreen(p: Vector3, camera: Camera, width: number, height: number) {
+export function toScreen(p: Vector3, camera: Camera, width: number, height: number) {
   const c = p.clone().project(camera);
   return { x: ((c.x + 1) / 2) * width, y: ((1 - c.y) / 2) * height };
 }

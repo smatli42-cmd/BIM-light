@@ -16,6 +16,7 @@
   position: relative;
   z-index: 5;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
@@ -32,4 +33,89 @@
   justify-content: flex-start;
   text-align: left;
   white-space: nowrap;
+}
+/* Nástroje podle lišty Arditu: textová tlačítka Ořez / Řez, přepínač Persp. / Axon., výběr režimu. */
+.tools-3d {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.tools-3d .icon-btn {
+  width: 2.8rem;
+  height: 2.8rem;
+}
+.tools-3d select {
+  min-height: 2.8rem;
+  padding: 0 0.6rem;
+}
+.tools-3d .seg > button,
+.tb3-text {
+  min-height: 2.6rem;
+  padding: 0.2rem 1rem;
+  border: 1px solid var(--btn-line);
+  border-radius: var(--r);
+  background: var(--btn);
+  font-weight: 600;
+  cursor: pointer;
+}
+.tools-3d .seg {
+  padding: 0.2rem;
+}
+.tools-3d .seg > button {
+  border-color: transparent;
+  background: transparent;
+}
+.tools-3d .seg > button.active,
+.tb3-text.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+/* Slunce a stíny: panel pod lištou u pravého okraje (vejde se i do úzkého okna). */
+.sun-pop {
+  position: absolute;
+  top: 100%;
+  right: 6px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 22rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 18%);
+}
+.sun-pop label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.sun-pop input[type='number'] {
+  width: 8rem;
+}
+.sun-at {
+  color: var(--muted, #666);
+  font-size: 0.92em;
+}
+/* „i“ vpravo dole: karty prvků zapnout / vypnout. */
+.info-3d {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  font-weight: 700;
+  font-style: italic;
+  cursor: pointer;
+}
+.info-3d[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
 }

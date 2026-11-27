@@ -6,8 +6,10 @@ import { rect } from './scene-helpers.ts';
 import { DIMENSION_SCENES } from './scenes-koty.ts';
 import { SLAB_SCENES } from './scenes-desky.ts';
 import { ROOM_SCENES } from './scenes-mistnosti.ts';
+import { VIEW3D_SCENES } from './scenes-3d.ts';
 
 export const SCENES: readonly Sample[] = [
+  ...VIEW3D_SCENES,
   ...ROOM_SCENES,
   ...SLAB_SCENES,
   ...DIMENSION_SCENES,

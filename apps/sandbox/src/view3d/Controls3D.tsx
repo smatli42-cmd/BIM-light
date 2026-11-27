@@ -4,7 +4,6 @@
 import { storeysOf, type Id } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { BarMenu, type MenuItem } from '../ui/bottom/BarMenu.tsx';
-import { IconButton } from '../ui/icons/Icon.tsx';
 import { solidsBounds, type Box3D } from './clip.ts';
 import type { Solid } from './solids.ts';
 import { phaseFilters } from '../ui/bottom/phase.tsx';
@@ -80,13 +79,15 @@ export function SectionBoxButton({ s, solids }: { s: Session; solids: readonly S
     if (b) setBox3D(s, grow(b, MARGIN));
   };
   return (
-    <IconButton
-      icon="section-box"
-      label={on ? 'Vypnout ořezový kvádr' : 'Ořezový kvádr (kolem výběru, jinak kolem všeho)'}
-      testid="view3d-box"
-      pressed={on}
+    <button
+      class={on ? 'tb3-text active' : 'tb3-text'}
+      data-testid="view3d-box"
+      aria-pressed={on}
+      title={on ? 'Vypnout ořezový kvádr' : 'Ořez – kvádr kolem výběru, jinak kolem všeho; úchyty se táhnou'}
       onClick={toggle}
-    />
+    >
+      Ořez
+    </button>
   );
 }
 

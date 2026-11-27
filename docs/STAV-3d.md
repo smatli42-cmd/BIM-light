@@ -67,7 +67,30 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - **Průhlednost povrchu** přes funkci grafiky (`surfaceTransparency`): bourání 50 % jako v Revitu, včetně
   záplaty probourání; sklo dál 35 % krytí z materiálu (`view3d/surface.ts`).
 
+## Hotovo (krok 5 – lišta 3D okna podle Ardit Designeru, 2026-11-27)
+
+- **Jádro** (malé změny s testy): View3d má navíc `projection`, `renderMode`, `sun` (stíny, ručně / podle
+  data a času), `cutPlane` (bod + směr) a `grid`; příkazy `view3d.setProjection / setRenderMode / setSun /
+  setCutPlane / setGrid`, `view3d.list` vrací i vypočtenou polohu slunce; migrace 23 → 24; krok v AI
+  scénáři. Poloha slunce `core/src/sun/` (S-JTSK → zeměpisné souřadnice, algoritmus NOAA, SEČ / SELČ).
+- **Lišta** (vpravo, jako Ardit): otáčet / posouvat (ruka) / přiblížit vše, **Persp. / Axon.**, režim
+  **Materiály / Bílý model / Čárový / Skryté hrany / Skica** (kreslené hrany s přetažením), **Slunce
+  a stíny**, **Procházka** (Shift+F3), **Ořez** (kvádr), **Řez** + výběr roviny, **mřížka**. Vlevo zůstal
+  pohled, fáze a podlaží.
+- **Řez ve 3D:** rovina ořízne plochy i hrany (bez výplně řezu, jako Ardit), odříznutá část nevrhá stín
+  ani nejde vybrat; svislý podle pohledu, nebo vodorovný 1,2 m nad podlažím; modrý úchyt rovinu posouvá.
+- **Karta prvku** po podržení myši i ve 3D (stejná jako v půdorysu, `ElementCard`); „i“ vpravo dole ji
+  vypne (stejné nastavení jako v půdorysu).
+- **Procházka:** oko 1,6 m nad aktivním podlažím, W A S D / šipky, Shift rychleji, Q / E dolů / nahoru,
+  tažení rozhlížení, kolečko krok, Esc konec; klávesy nejdou do půdorysu.
+- Prohlížeč rozdělen: `camera-rig.ts`, `sun-light.ts`, `cut-gizmo.ts`, `handles.ts`, `grid.ts`, `walk.ts`,
+  `sketch.ts`, `use-viewer.ts`, `use-hover-3d.ts`, `Toolbar3D.tsx`, `Sun3D.tsx`, `Cut3D.tsx`.
+
 ## Co zkusit
+
+- `?ukazka=3d-lista` → Obsah → 3D: dům v axonometrii ve Skice se stíny 21. 6. v 15:00 a svislým řezem.
+  Přepínej Persp. / Axon. a režimy, ☀ Slunce: datum a čas (stíny se pohnou), Řez: táhni modrý úchyt,
+  vodorovný řez; mřížka; podrž myš nad stěnou (karta); Shift+F3 procházka (W A S D, Esc).
 
 - `?ukazka=dum&3d` → v liště 3D okna **Fáze ›** Bourací práce: bourané žlutě a poloprůhledně, půdorys
   beze změny; **3D ›** Nový 3D pohled – má vlastní nastavení; Ctrl+Z vrátí změnu kvádru.
@@ -108,6 +131,14 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Výběr ve 3D zvýrazní prvek barvou výběru (akcent rozhraní), ne obrysem.
 - Typ s více výškovými pásy: vrstvy ve 3D zatím podle pásu v rovině řezu přes celou výšku (viz níže).
 
+- **Lišta 3D (krok 5):** Ctrl+Y pro Řez (jako Ardit) se nepoužije – v BIM-light je Ctrl+Y Znovu.
+  Režim Skica bere stíny podle nastavení slunce (nezapíná je sám). Bílý model a skica mají mírný vlastní jas,
+  aby plochy na slunci byly skoro bílé. Natočení georeference = úhel osy Y projektu od severu po směru
+  hodin (od azimutu slunce se odečítá). Bez georeference (S-JTSK 0, 0) se slunce počítá pro střed ČR.
+  Mřížka je ve výšce aktivního podlaží (2 mm pod ním, aby podlaha neblikala). Otáčet / posouvat a procházka
+  jsou ovládání kamery, ne data pohledu. Ukázkový dům (`house.ts`) beze změny – nastavení je ve scéně
+  `3d-lista` (dům se pak nemusí měnit kvůli e2e testům výchozího 3D).
+
 ## Potřebuji od hlavní session (změny jádra)
 
 1. **Exportovat `visibleWalls`** z `view/index.ts` (teď je jen interní). 3D si filtr skládá sám
@@ -136,6 +167,14 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Povrchy místností (malby, obklady, spárořezy; návrh poslán hlavní session 2026-11-27, uživatel souhlasí):
   jádro spočítá plochy povrchů (obrys v rovině líce + transformace do 3D + spáry), 3D je jen zobrazí
   tenkou plochou před lícem a spáry čarami – stejná data jako rozvinutý pohled a výkaz.
-- Řezová rovina / ořez 3D (3D výřez), skrýt podlaží, průsvitnost výběru.
-- Kamery a scény, slunce podle polohy, materiály s texturou, export glTF/USD (rozhodnutí 14).
+- **Další kroky lišty podle Arditu** (zapsáno na pokyn 2026-11-27):
+  - **Studie oslunění** – stíny po hodinách (např. 8–18 h) jako animace a jako výkres na list.
+  - **Kamera** (Ctrl+Alt+F3) – dvoubodová perspektiva (svislice svisle), pohledy podle světových stran,
+    figurka (pohled z místa).
+  - **Scény** (ikona filmového pásu) – uložené pohledy kamery s nastavením, přehrávání jako animace.
+  - **Řez A / Řez B** v nabídce Řezu – až budou řezy v jádře: rovina z uloženého řezu, hloubka, výplně
+    řezu, výškové kóty v řezu, pohled na řez, uložit jako scénu.
+  - Místnosti ve 3D (průhledné objemy v barvě místnosti) – až bude jádro místností v `main` (dá vědět
+    hlavní session).
+- Skrýt podlaží, průsvitnost výběru, materiály s texturou, export glTF/USD (rozhodnutí 14).
 - Bundle sandboxu narostl o three.js (~600 kB); později načítat 3D okno až při otevření (dynamický import).
