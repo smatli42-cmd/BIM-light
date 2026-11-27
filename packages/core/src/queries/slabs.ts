@@ -3,6 +3,7 @@ import { S } from '../commands/schema.ts';
 import type { Model } from '../model/types.ts';
 import { polygonArea, polygonPerimeter, slabLevels } from '../slab/geometry.ts';
 import { allSlabs, slabTypeUsage } from '../slab/queries.ts';
+import { allSlabOpenings, slabNetArea, slabOpeningsOf } from '../slab-opening/geometry.ts';
 import type { Slab } from '../slab/types.ts';
 import { defineQuery } from './types.ts';
 
@@ -25,16 +26,40 @@ function summary(m: Model, s: Slab) {
     thickness: r1(lv.thickness),
     /** Plocha v m² (na 2 desetinná místa) a obvod v mm. */
     area: Math.round(polygonArea(s.outline) / 1e4) / 100,
+    /** Plocha bez otvorů (m²) a počet otvorů v desce (D3). */
+    netArea: Math.round(slabNetArea(m, s) / 1e4) / 100,
+    openings: slabOpeningsOf(m, s.id).length,
     perimeter: r1(polygonPerimeter(s.outline)),
   };
 }
+
+export const slabOpeningList = defineQuery<{ storeyId?: string }, unknown>({
+  name: 'slabOpening.list',
+  label: 'Otvory v deskách',
+  description:
+    'Svislé otvory v deskách (prostupy, šachty): obrys (mm), plocha (m²), desky, které vyřízne (hostIds), stav.',
+  group: 'Otvor',
+  params: S.object({ storeyId: S.id }, []),
+  run: (m, p) =>
+    allSlabOpenings(m)
+      .filter((o) => !p.storeyId || o.storeyId === p.storeyId)
+      .map((o) => ({
+        id: o.id,
+        storeyId: o.storeyId,
+        hostIds: o.hostIds,
+        status: o.status,
+        outline: o.outline.map((q) => ({ x: r1(q.x), y: r1(q.y) })),
+        area: Math.round(polygonArea(o.outline) / 1e4) / 100,
+      })),
+});
 
 export const slabList = defineQuery<{ storeyId?: string }, unknown>({
   name: 'slab.list',
   label: 'Seznam desek',
   description:
     'Desky (stropy a skladby podlah): obrys (mm), horní a spodní líc nad ±0,000 (mm), tloušťka podle ' +
-    'skladby, plocha (m²) a obvod (mm). Volitelně jen jedno podlaží.',
+    'skladby, plocha (m²), plocha bez otvorů netArea (m²), počet otvorů a obvod (mm). Volitelně jen jedno ' +
+    'podlaží.',
   group: 'Deska',
   params: S.object({ storeyId: S.id }, []),
   run: (m, p) =>

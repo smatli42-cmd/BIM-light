@@ -83,7 +83,10 @@ function upper(c: SampleContext) {
   opening(c, bottom, 2000, 1500, 1500, 900);
   opening(c, bottom, 8500, 1500, 1500, 900);
   opening(c, top, 3000, 2400, 2200, 0);
-  if (storeyId) slabs(c, storeyId, 'ŽB strop 250', 315);
+  if (!storeyId) return;
+  slabs(c, storeyId, 'ŽB strop 250', 315);
+  // Otvor pro schodiště ve stropě nad 1.NP (D3): prořízne strop i podlahu 2.NP.
+  c.run('slabOpening.create', { storeyId, rect: { a: vec(4000, 4700), b: vec(6800, 5900) } });
 }
 
 export const HOUSE: Sample = {
@@ -93,7 +96,7 @@ export const HOUSE: Sample = {
   date: '2026-11-26',
   description:
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
-    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP a podlahy. Kóty, ' +
+    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy. Kóty, ' +
     'značky typů, výkazy; filtr rekonstrukce ve spodní liště.',
   build(c) {
     ground(c);

@@ -9,13 +9,14 @@ import type { Dimension } from '../dimension/types.ts';
 import type { DisplaySettings, GraphicEffect } from '../style/types.ts';
 import type { View } from '../view/types.ts';
 import type { Opening } from '../opening/types.ts';
+import type { SlabOpening } from '../slab-opening/types.ts';
 import type { Category } from './categories.ts';
 import type { ScheduleDef } from '../schedule/types.ts';
 import type { WallTag } from '../tag/types.ts';
 import type { Slab, SlabType } from '../slab/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 18;
+export const SCHEMA_VERSION = 19;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -110,6 +111,8 @@ export interface Model {
   readonly elements: Readonly<Record<Id, Element>>;
   /** Otvory v hostitelích (základ 19, plán stěn Z4); hostitel je uložený odkaz `hostId`. */
   readonly openings: Readonly<Record<Id, Opening>>;
+  /** Otvory v deskách (D3, základ 19): svislý řez, obrys v půdorysu, hostitelé = desky. */
+  readonly slabOpenings: Readonly<Record<Id, SlabOpening>>;
   /** Vztahy jako samostatné objekty (základ 1, 24). */
   readonly relations: Readonly<Record<Id, Relation>>;
   /** Kóty patří podlaží a mají skupinu anotací (základ 28). */

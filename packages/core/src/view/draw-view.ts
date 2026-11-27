@@ -24,6 +24,7 @@ import { drawOpening, openingFacts } from '../opening/draw.ts';
 import { drawRenovationPatches } from '../opening/renovation.ts';
 import { drawWallTag, tagFacts } from '../tag/draw.ts';
 import { drawSlabs } from '../slab/draw-view.ts';
+import { drawSlabOpenings } from '../slab-opening/draw-view.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -119,7 +120,13 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
   // Záplaty rekonstrukce kryjí celou tloušťku stěny – jen při zobrazení celé skladby.
   const patches =
     structure === 'all' ? drawRenovationPatches(model, view, visibleWalls(model, view).shown) : [];
-  const out = [...drawSlabs(model, view), ...walls, ...patches, ...drawOpenings(model, view, structure)];
+  const out = [
+    ...drawSlabs(model, view),
+    ...drawSlabOpenings(model, view),
+    ...walls,
+    ...patches,
+    ...drawOpenings(model, view, structure),
+  ];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;
@@ -136,7 +143,7 @@ export function isSelectable(model: Model, view: View, id: Id): boolean {
     const s = categoryState(model.display, view, el.category);
     return rulesFor(el.category).selectable && el.storeyId === view.storeyId && s.visible && !s.locked;
   }
-  const o = model.openings[id];
+  const o = model.openings[id] ?? model.slabOpenings[id];
   if (o) {
     const s = categoryState(model.display, view, 'opening');
     return rulesFor('opening').selectable && o.storeyId === view.storeyId && s.visible && !s.locked;

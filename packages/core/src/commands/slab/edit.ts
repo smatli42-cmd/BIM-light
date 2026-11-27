@@ -3,7 +3,8 @@
 import { add, type Vec2 } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
-import { putElements } from '../../model/update.ts';
+import { putElements, putSlabOpenings } from '../../model/update.ts';
+import { shiftOpenings } from '../slab-opening/edit.ts';
 import { SLAB_FUNCTIONS, type SlabFunction } from '../../slab/types.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -78,7 +79,9 @@ export const slabMoveVertex = defineCommand<{ slabId: Id; index: number; point: 
 export const slabMove = defineCommand<{ slabIds: Id[]; vector: Vec2; copy?: boolean }>({
   name: 'slab.move',
   label: 'Posunout desku',
-  description: 'Posune desky o vektor v půdorysu (mm). copy = ponechat původní a vytvořit posunuté kopie.',
+  description:
+    'Posune desky o vektor v půdorysu (mm), i s otvory, které jsou jen v nich. copy = ponechat původní ' +
+    'a vytvořit posunuté kopie (bez otvorů).',
   group: 'Deska',
   params: S.object({ slabIds: SLAB_IDS, vector: S.point, copy: { type: 'boolean' } }, ['slabIds', 'vector']),
   run(model, p, ctx) {
@@ -87,6 +90,10 @@ export const slabMove = defineCommand<{ slabIds: Id[]; vector: Vec2; copy?: bool
       const moved = { ...s, outline: s.outline.map((q) => add(q, p.vector)) };
       return p.copy ? { ...moved, id: ctx.newId() } : moved;
     });
-    return { model: putElements(model, out), created: p.copy ? out.map((s) => s.id) : [] };
+    // Otvor, jehož všechny desky se posouvají, jde s nimi (patří jim); šachta přes jiné desky stojí.
+    const ids = new Set(p.slabIds);
+    const along = Object.values(model.slabOpenings).filter((o) => o.hostIds.every((h) => ids.has(h)));
+    const m = p.copy ? model : putSlabOpenings(model, shiftOpenings(along, p.vector));
+    return { model: putElements(m, out), created: p.copy ? out.map((s) => s.id) : [] };
   },
 });

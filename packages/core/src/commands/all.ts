@@ -82,6 +82,8 @@ import {
 import { wallTypeLoad } from './wall-type/load.ts';
 import { slabCreate } from './slab/create.ts';
 import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edit.ts';
+import { slabOpeningCreate } from './slab-opening/create.ts';
+import { slabOpeningMove, slabOpeningMoveVertex, slabOpeningSetOutline } from './slab-opening/edit.ts';
 import { slabTypeDelete, slabTypeDuplicate, slabTypeUpdate } from './slab/type.ts';
 
 export const CORE_COMMANDS = [
@@ -126,6 +128,10 @@ export const CORE_COMMANDS = [
   slabSetOutline,
   slabMoveVertex,
   slabMove,
+  slabOpeningCreate,
+  slabOpeningSetOutline,
+  slabOpeningMoveVertex,
+  slabOpeningMove,
   slabTypeDuplicate,
   slabTypeUpdate,
   slabTypeDelete,

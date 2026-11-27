@@ -48,7 +48,7 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     hosts: ['wall', 'opening'],
     selectable: true,
   },
-  /** Deska (D1): kóty k hranám a otvory v desce přijdou s D2 / D3; přichytí se na rohy a středy hran. */
+  /** Deska (D1, D3): s deskou zaniknou její otvory (otvor bez hostitele); kóty k hranám přijdou s D4. */
   slab: {
     dimensionFaces: [],
     lengthDimension: false,
@@ -58,7 +58,7 @@ export const CROSS_RULES: Readonly<Record<ElementKind, CrossRules>> = {
     movable: true,
     offsettable: false,
     deletable: true,
-    onDelete: [],
+    onDelete: ['openings'],
     hosts: ['opening'],
     selectable: true,
   },

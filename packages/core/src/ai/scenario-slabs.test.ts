@@ -55,4 +55,28 @@ describe('AI scénář: deska (D1)', () => {
     // Řetěz po směru hodin s tloušťkou ven: vnitřní líc = zadaný obdélník 6 × 4 m.
     expect(row.area).toBe(24);
   });
+
+  it('D3: otvor pro schodiště prořízne strop i podlahu; čistá plocha', () => {
+    const c = start();
+    const types = c.ai.call<SlabTypeRow[]>('slabType.list');
+    const rect = { a: { x: 0, y: 0 }, b: { x: 6000, y: 4000 } };
+    for (const name of ['ŽB strop 250', 'Podlaha anhydrit 150'])
+      c.ai.call('slab.create', {
+        storeyId: c.storeyId,
+        typeId: must(types.find((t) => t.name === name)).id,
+        rect,
+      });
+    const [hole] = c.ai.call<string[]>('slabOpening.create', {
+      storeyId: c.storeyId,
+      rect: { a: { x: 1000, y: 1000 }, b: { x: 3000, y: 2000 } },
+    });
+    const holes = c.ai.call<{ id: string; hostIds: string[]; area: number }[]>('slabOpening.list');
+    expect(holes).toEqual([expect.objectContaining({ id: hole, area: 2 })]);
+    expect(must(holes[0]).hostIds).toHaveLength(2);
+    const rows = c.ai.call<(SlabRow & { netArea: number; openings: number })[]>('slab.list');
+    expect(rows.map((r) => [r.netArea, r.openings])).toEqual([
+      [22, 1],
+      [22, 1],
+    ]);
+  });
 });

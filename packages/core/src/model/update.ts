@@ -3,6 +3,7 @@ import type { Dimension } from '../dimension/types.ts';
 import type { Id } from '../ids/index.ts';
 import type { Opening } from '../opening/types.ts';
 import type { Relation } from '../relation/types.ts';
+import type { SlabOpening } from '../slab-opening/types.ts';
 import type { DisplaySettings } from '../style/types.ts';
 import type { View } from '../view/types.ts';
 import type { WallType } from '../wall/types.ts';
@@ -34,6 +35,15 @@ export const putOpenings = (m: Model, ops: readonly Opening[]): Model => ({
 export const removeOpenings = (m: Model, ids: Iterable<Id>): Model => ({
   ...m,
   openings: drop(m.openings, ids),
+});
+
+export const putSlabOpenings = (m: Model, ops: readonly SlabOpening[]): Model => ({
+  ...m,
+  slabOpenings: ops.reduce(put, m.slabOpenings),
+});
+export const removeSlabOpenings = (m: Model, ids: Iterable<Id>): Model => ({
+  ...m,
+  slabOpenings: drop(m.slabOpenings, ids),
 });
 
 export const putRelations = (m: Model, rels: readonly Relation[]): Model => ({
