@@ -85,7 +85,7 @@ export const slabTypeList = defineQuery<Record<string, never>, unknown>({
   name: 'slabType.list',
   label: 'Typy desek',
   description:
-    'Typy desek: název, značka, výchozí funkce, nosná, skladba (vrstvy od spodu), tloušťka, počet desek.',
+    'Typy desek: název, značka, výchozí funkce, nosná, skladba (vrstvy od spodu: materialId, název materiálu, tloušťka, funkce), tloušťka, počet desek.',
   group: 'Deska',
   params: S.object({}, []),
   run: (m) =>
@@ -101,6 +101,7 @@ export const slabTypeList = defineQuery<Record<string, never>, unknown>({
         compositionName: c?.name ?? '',
         thickness: c ? c.layers.reduce((s, l) => s + l.thickness, 0) : 0,
         layers: (c?.layers ?? []).map((l) => ({
+          materialId: l.materialId,
           material: m.materials[l.materialId]?.name ?? '',
           thickness: l.thickness,
           function: l.function,

@@ -15,17 +15,35 @@ function checkComposition(m: Model, id: Id) {
   if (!c.use.slab) fail('invalid', `Skladba „${c.name}“ není určená pro desku`);
 }
 
-export const slabTypeDuplicate = defineCommand<{ typeId: Id; name?: string }>({
+/** Kopie skladby typu pod volným id a názvem „… – kopie“ (pro vlastní skladbu duplikátu). */
+function copyComposition(m: Model, id: Id, name: string, newId: () => Id): { model: Model; id: Id } {
+  const c = m.compositions[id] ?? fail('not-found', `Skladba ${id} neexistuje`);
+  const copy = { ...c, id: newId(), name };
+  return { model: { ...m, compositions: { ...m.compositions, [copy.id]: copy } }, id: copy.id };
+}
+
+export const slabTypeDuplicate = defineCommand<{ typeId: Id; name?: string; ownComposition?: boolean }>({
   name: 'slabType.duplicate',
   label: 'Duplikovat typ desky',
   description:
-    'Vytvoří kopii typu desky (sdílí stejnou skladbu, dokud ji nezměníš). Kopie nemá odkaz na knihovnu.',
+    'Vytvoří kopii typu desky. Bez ownComposition sdílí kopie stejnou skladbu (úprava vrstev platí pro oba); ' +
+    's ownComposition: true dostane vlastní kopii skladby (jako Duplikovat v editoru typů). Kopie nemá ' +
+    'odkaz na knihovnu.',
   group: 'Typ desky',
-  params: S.object({ typeId: S.id, name: { type: 'string' } }, ['typeId']),
+  params: S.object(
+    {
+      typeId: S.id,
+      name: { type: 'string' },
+      ownComposition: { type: 'boolean', description: 'vlastní kopie skladby' },
+    },
+    ['typeId'],
+  ),
   run(model, p, ctx) {
     const { source: _s, ...t } = slabTypeOf(model, p.typeId);
-    const copy: SlabType = { ...t, id: ctx.newId(), name: p.name ?? `${t.name} – kopie` };
-    return { model: put(model, copy), created: [copy.id] };
+    const name = p.name ?? `${t.name} – kopie`;
+    const own = p.ownComposition ? copyComposition(model, t.compositionId, name, ctx.newId) : null;
+    const copy: SlabType = { ...t, id: ctx.newId(), name, compositionId: own?.id ?? t.compositionId };
+    return { model: put(own?.model ?? model, copy), created: [copy.id] };
   },
 });
 

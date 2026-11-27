@@ -4,6 +4,12 @@ import { slabCreate } from './create.ts';
 import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './edit.ts';
 import { slabLinkRoom, slabLinkWalls, slabRestoreLink, slabUnlink } from './link.ts';
 import { slabTypeDelete, slabTypeDuplicate, slabTypeUpdate } from './type.ts';
+import {
+  slabTypeAddLayer,
+  slabTypeMoveLayer,
+  slabTypeRemoveLayer,
+  slabTypeUpdateLayer,
+} from './type-layers.ts';
 import { slabOpeningCreate } from '../slab-opening/create.ts';
 import { slabOpeningMove, slabOpeningMoveVertex, slabOpeningSetOutline } from '../slab-opening/edit.ts';
 
@@ -25,4 +31,8 @@ export const SLAB_COMMANDS = [
   slabTypeDuplicate,
   slabTypeUpdate,
   slabTypeDelete,
+  slabTypeAddLayer,
+  slabTypeRemoveLayer,
+  slabTypeMoveLayer,
+  slabTypeUpdateLayer,
 ] as const;
