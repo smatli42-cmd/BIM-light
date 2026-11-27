@@ -259,9 +259,18 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-Stav k 2026-11-27 večer (přechod na jiný počítač): vše je v `main`, CI zelené, žádná rozdělaná práce.
-Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou
-v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
+Stav k 2026-11-28 (přechod na jiný počítač): vše je v `main` (c19f67d), CI zelené, žádná rozdělaná práce
+ani neuložené změny v sessions. Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní
+pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
+Řezy, výškové kóty a záložky pohledů vede `docs/STAV-rezy.md`, elektro `docs/STAV-elektro.md`.
+
+**Čeká na rozhodnutí uživatele (z 2026-11-27):**
+- Elektro: stejné barvy skupin z legendy (Data = Zabezpečení tyrkys, Silnoproud = Řízení červená) nechat,
+  nebo odlišit; typy mimo legendu (dvojzásuvka a složené z legendy, PIR jako obdélník „PIR“, svítidlo
+  nástěnné = přisazené na držáku) potvrdit, nebo uživatel doplní legendu v Corelu.
+- Legenda značek uživatele (Corel SVG, zdroj tvarů elektro značek) je jen na původním počítači
+  v `D:\Download\legenda elektro znacek.svg` (mimo repo, repo je veřejné); tvary už jsou v knihovně jádra.
+- Řezy: žlutá barva fáze bourání v řezu a další body „Rozhodl Code“ v `docs/STAV-rezy.md`.
 
 1. **Řezy – dál:** výškové kóty parapetů, nadpraží a terénu, tlačítko „plné praporky“ ve stylu, „Řez A / Řez B“ v rozbalovači 3D okna (data:
    `section.list` → `cutPlane3d`), popis skladeb u řezu, okna a dveře v řezu (etapa 4), terén.
