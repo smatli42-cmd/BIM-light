@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Fáze v řezu a u desek, 2026-11-27 (hlášení uživatele se screenshoty Řezu B)
+
+- **Fáze ve spodní liště při aktivním řezu** měnila půdorys; nově nastaví fázi řezu (`section.update`
+  `phaseFilterId`; každý pohled má svou fázi jako v Revitu). Lišta tedy vždy patří aktivnímu oknu
+  (půdorys, řez, 3D).
+- **Bourání v řezu nebylo poznat:** zbouraná příčka v Řezu B je rovnoběžná s rovinou řezu a leží za ní,
+  její obrys splývá s obrysem místnosti (podlaha, strop, boční stěny) – nepřibude žádná čára (stejně
+  stěna za ní v Plánovaném stavu). Nově se pohledová plocha prvku s barvou povrchu z funkce grafiky
+  (fáze: bourání žlutě, nové červeně) vyplní touto barvou, zakrytá bližšími prvky (`section/draw.ts`,
+  test `phase-fill.test.ts`). Bez fáze (Vše) se nic nevyplňuje.
+- **Deska má Stav (fáze) v info boxu** vybraných desek (data i příkaz `slab.update` ho měly, UI ne).
+- E2E `faze-rez.spec.ts`.
+
 ### Oprava: bourací práce ve 3D, napojení podle fáze, 2026-11-27 (hlášení uživatele se screenshotem 3D)
 
 - Přepínač **Fáze ve spodní liště** při aktivním 3D okně měnil fázi půdorysu a 3D zůstalo na „Vše“ (bourání
@@ -212,6 +225,8 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Rozhodl Code (k potvrzení)
 
+- **Barva fáze v řezu (k potvrzení):** pohledové plochy v řezu a pohledu dostanou barvu povrchu z funkce
+  grafiky (stejná jako ve 3D, bourání žlutě 50 %); řezané konstrukce mají dál výplň řezu z grafiky.
 - **Fáze a napojení (k potvrzení):** zbouraný a nový prvek se nenapojují ani deska × stěna (Revit / Archicad
   nespojují bourání s novým); stávající se napojuje s oběma. Spodní lišta (Fáze) řídí aktivní okno, 3D má
   i dál vlastní fázi v záhlaví (je to totéž nastavení). Strop nad 1.NP v ukázce je „stávající“.

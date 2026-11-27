@@ -1,6 +1,6 @@
 // Info box desky (D2; podle Arditu „Deska – výchozí nastavení“, koncepce rozhraní 2 D): typ, geometrická
 // metoda, konstrukce (skladba, tloušťka, vrstvy), referenční rovina, horní líc k podlaží, vlastnosti.
-// Vybrané desky: typ, horní líc, funkce, výšky líců, plocha a obvod, smazání.
+// Vybrané desky: typ, horní líc, funkce, stav (fáze), výšky líců, plocha a obvod, smazání.
 import {
   defaultTopOffset,
   formatLength,
@@ -16,7 +16,7 @@ import { IconButton } from '../icons/Icon.tsx';
 import type { IconName } from '../icons/paths.ts';
 import { NumberInput } from '../NumberInput.tsx';
 import { openTypeEditor } from '../type-editor/TypeEditorDialog.tsx';
-import { NewStatusField } from './NewStatus.tsx';
+import { NewStatusField, STATUS_LABELS } from './NewStatus.tsx';
 import { Section } from './Section.tsx';
 import { SlabLinkSection } from './SlabLinkSection.tsx';
 import type { SlabMethod } from '../../session/slab-defaults.ts';
@@ -160,6 +160,23 @@ function FromModel({ s, slab }: { s: Session; slab: Slab }) {
   );
 }
 
+/** Stav (fáze) vybraných desek – stávající / bourání / nový (stejně jako u stěn). */
+function StatusSelect({ value, onPick }: { value: string | undefined; onPick: (v: string) => void }) {
+  return (
+    <label>
+      Stav (fáze)
+      <select data-testid="slab-status" value={value ?? ''} onChange={(e) => onPick(e.currentTarget.value)}>
+        {value === undefined && <option value="">různé</option>}
+        {STATUS_LABELS.map(([v, label]) => (
+          <option key={v} value={v}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 /** Vybrané desky: vlastnosti instance a údaje z modelu. */
 export function SelectedSlabsInfo({ s, slabs }: { s: Session; slabs: readonly Slab[] }) {
   const ids = slabs.map((x) => x.id);
@@ -194,6 +211,7 @@ export function SelectedSlabsInfo({ s, slabs }: { s: Session; slabs: readonly Sl
           ))}
         </select>
       </label>
+      <StatusSelect value={same((x) => x.status)} onPick={(status) => update({ status })} />
       {one && <FromModel s={s} slab={one} />}
       {one && <SlabLinkSection s={s} slab={one} />}
       {typeId && <Construction s={s} typeId={typeId} />}

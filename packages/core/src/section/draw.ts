@@ -3,6 +3,7 @@
 // za rovinou do hloubky pohledu pohledové hrany perem pohledu se zakrytím. Pohled (fasáda): jen pohledové hrany.
 // Podrobnost: hrubá = obrys a výplň, střední = vrstvy a šrafy, jemná = navíc hranice nosného jádra.
 // Úrovně podlaží a výškové kóty. Barvy, pera, šrafy jen z funkce grafiky a materiálů.
+import { difference } from '../covering/polygon.ts';
 import type { Drawing, Primitive, Stroke } from '../drawing/primitives.ts';
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
@@ -78,6 +79,31 @@ function drawCut(items: readonly CutItem[], detail: Detail, look: DrawLookup): P
   return [...out, ...drawCutLines(lineItems, linePieces, detail)];
 }
 
+/**
+ * Pohledové plochy v barvě povrchu z funkce grafiky (fáze: bourání žlutě, nové červeně – jako ve 3D;
+ * hlášení uživatele 2026-11-27: rovnoběžná zbouraná stěna za rovinou jinak nemá vlastní čáru). Plocha se
+ * zakryje řezanými a bližšími prvky; bez barvy povrchu (výchozí) se nic nevyplní.
+ */
+function drawProjectionFills(items: readonly ProjItem[], cut: readonly CutItem[]): Primitive[] {
+  const cutRings = cut.flatMap((c) => c.pieces.flatMap((p) => ringsOf(p.shapes)));
+  return [...items]
+    .sort((a, b) => b.depth - a.depth)
+    .flatMap((p) => {
+      const color = p.g.surfaceColor;
+      if (!color) return [];
+      const nearer = items.filter((q) => q !== p && q.depth < p.depth).flatMap((q) => ringsOf(q.shapes));
+      return difference(p.shapes, [...cutRings, ...nearer])
+        .flatMap(simplePieces)
+        .map((polygon): Primitive => ({
+          kind: 'fill',
+          polygon,
+          color,
+          transparency: p.g.surfaceTransparency ?? 0,
+          source: { elementId: p.elementId, role: 'pohledová plocha' },
+        }));
+    });
+}
+
 /** Pohledové hrany se zakrytím bližšími plochami. */
 function drawProjection(items: readonly ProjItem[], cut: readonly CutItem[]): Primitive[] {
   const occ: Occluder[] = [
@@ -151,6 +177,7 @@ export function drawSection(model: Model, sectionId: Id): Drawing {
   return {
     scale: s.scale,
     primitives: [
+      ...drawProjectionFills(proj, cutItems),
       ...drawProjection(proj, cutItems),
       ...drawCut(cutItems, detailOf(model.display, s), lookup(model, s)),
       ...drawLevels(model, {

@@ -8,6 +8,7 @@ import type { ScreenOptions } from '../../session/screen.ts';
 import { BarMenu } from './BarMenu.tsx';
 import { setScreen } from './groups.tsx';
 import { active3d, is3DFocused } from '../../view3d/state.ts';
+import { windowSection } from '../../session/section-windows.ts';
 
 /** Předvolby fází projektu: id a krátký název (bez „Fáze – “), první písmeno velké. */
 export function phaseFilters(model: Model): { id: Id; label: string }[] {
@@ -22,15 +23,39 @@ export function phaseFilters(model: Model): { id: Id; label: string }[] {
 export const phaseLabel = (model: Model, view: View): string =>
   phaseFilters(model).find((f) => f.id === view.phaseFilterId)?.label ?? 'Vše';
 
+/** Pohled aktivního okna a příkaz, který mu nastaví fázi (3D, řez, jinak půdorys). */
+function phaseTarget(s: Session): {
+  id: Id;
+  phaseFilterId: Id | null;
+  set: (f: Id | null) => void;
+  what: string;
+} {
+  if (is3DFocused(s)) {
+    const v = active3d(s);
+    return {
+      ...v,
+      what: '3D okna',
+      set: (filterId) => s.run('view3d.setPhaseFilter', { viewId: v.id, filterId }),
+    };
+  }
+  const sec = windowSection(s, s.active);
+  if (sec)
+    return {
+      ...sec,
+      what: 'řezu',
+      set: (phaseFilterId) => s.run('section.update', { sectionId: sec.id, phaseFilterId }),
+    };
+  const v = s.view;
+  return { ...v, what: 'okna', set: (filterId) => s.run('view.setPhaseFilter', { viewId: v.id, filterId }) };
+}
+
 /**
- * Fáze aktivního okna (hlášení uživatele 2026-11-27: přepnutí v liště při aktivním 3D okně měnilo půdorys,
- * 3D zůstalo na „Vše“). Lišta patří aktivnímu oknu: 3D okno → view3d.setPhaseFilter, jinak view.setPhaseFilter.
+ * Fáze aktivního okna (hlášení uživatele 2026-11-27: přepnutí v liště při aktivním 3D okně / řezu měnilo
+ * půdorys). Lišta patří aktivnímu oknu: 3D, řez (Revit: každý pohled má svou fázi), jinak půdorys.
  */
 export function PhaseMenu({ s }: { s: Session }) {
-  const in3d = is3DFocused(s);
-  const v = in3d ? active3d(s) : s.view;
-  const command = in3d ? 'view3d.setPhaseFilter' : 'view.setPhaseFilter';
-  const set = (filterId: Id | null) => s.run(command, { viewId: v.id, filterId });
+  const v = phaseTarget(s);
+  const set = v.set;
   const items = [
     ...phaseFilters(s.model).map((f) => ({
       label: f.label,
@@ -45,7 +70,7 @@ export function PhaseMenu({ s }: { s: Session }) {
     <BarMenu
       icon="phase"
       label={label ?? 'Fáze'}
-      title={in3d ? 'Filtr rekonstrukce (fáze) 3D okna' : 'Filtr rekonstrukce (fáze) okna'}
+      title={`Filtr rekonstrukce (fáze) ${v.what}`}
       testid="phase-menu"
       sections={[{ items }]}
     />
