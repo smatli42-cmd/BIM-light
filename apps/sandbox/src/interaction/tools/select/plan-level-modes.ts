@@ -1,7 +1,7 @@
 // Výběr výškové kóty v půdorysu nástrojem Výběr: klik na hodnotu (rámeček) nebo kroužek vybere (Shift přidá),
 // tažení ji posune (u kroužku tažení hodnoty posune jen hodnotu, kroužek zůstane), Del smaže.
 // Mění se jen příkazem planLevelDim.move (stejně jako AI).
-import { layerState, levelMarkSize, roundTo, sub, type Id, type Vec2 } from '@bim-light/core';
+import { layerState, levelMarkSize, planLevelPoint, roundTo, sub, type Id, type Vec2 } from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import { DRAG_PX, type Mode } from '../../mode.ts';
 import type { Overlay, PointerInfo } from '../../types.ts';
@@ -14,15 +14,18 @@ function planLevelUnder(s: Session, p: PointerInfo): { id: Id; text: boolean } |
   for (const d of Object.values(s.model.planLevelDims)) {
     if (d.storeyId !== s.view.storeyId || !layerState(s.model.display, s.view, d.annotationLayerId).visible)
       continue;
+    // Kóta terénu navázaná na roh stěny se kreslí posunutá s rohem.
+    const pt = planLevelPoint(s.model, d);
+    const textAt = { x: d.textAt.x + pt.x - d.point.x, y: d.textAt.y + pt.y - d.point.y };
     const w = th * 4 + s.viewport.px(3);
     const box = d.marker === 'box' ? th : th * 2;
     const dx =
       d.marker === 'box'
-        ? p.world.x - d.textAt.x
-        : (p.world.x - d.textAt.x) * Math.sign(d.textAt.x - d.point.x || 1) - w;
-    if (Math.abs(dx) <= w && Math.abs(p.world.y - d.textAt.y) <= box) return { id: d.id, text: true };
+        ? p.world.x - textAt.x
+        : (p.world.x - textAt.x) * Math.sign(textAt.x - pt.x || 1) - w;
+    if (Math.abs(dx) <= w && Math.abs(p.world.y - textAt.y) <= box) return { id: d.id, text: true };
     const r = (levelMarkSize(sizes) / 2) * k + s.viewport.px(3);
-    if (d.marker === 'circle' && Math.hypot(p.world.x - d.point.x, p.world.y - d.point.y) <= r)
+    if (d.marker === 'circle' && Math.hypot(p.world.x - pt.x, p.world.y - pt.y) <= r)
       return { id: d.id, text: false };
   }
   return null;

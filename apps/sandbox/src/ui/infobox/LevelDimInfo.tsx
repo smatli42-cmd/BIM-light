@@ -44,6 +44,14 @@ export function NewLevelDimInfo({ s }: { s: Session }) {
         testid="level-marker-default"
         onPick={(m) => ((d.marker = m), s.changed())}
       />
+      {d.marker === 'circle' && (
+        <TerrainFields
+          rt={d.rt}
+          ut={d.ut}
+          prefix="level-default"
+          onSet={(patch) => (Object.assign(d, patch), s.changed())}
+        />
+      )}
     </Section>
   );
 }
@@ -58,8 +66,8 @@ function MarkerSelect(p: { value: 'box' | 'circle'; testid: string; onPick: (m: 
         value={p.value}
         onChange={(e) => p.onPick(e.currentTarget.value as 'box' | 'circle')}
       >
-        <option value="box">hodnota v rámečku</option>
-        <option value="circle">kroužek s poličkou</option>
+        <option value="box">výška podlahy v rámečku</option>
+        <option value="circle">kóta terénu RT / UT (nároží)</option>
       </select>
     </label>
   );
@@ -69,20 +77,26 @@ function MarkerSelect(p: { value: 'box' | 'circle'; testid: string; onPick: (m: 
 function PlanOne({ s, d }: { s: Session; d: PlanLevelDimension }) {
   const upd = (patch: Record<string, unknown>) =>
     s.run('planLevelDim.update', { levelDimId: d.id, ...patch });
-  const t = planLevelTexts(s.model, d);
+  const style = s.model.display.styles[s.view.styleId];
+  const t = planLevelTexts(s.model, d, style);
+  const terrain = d.marker === 'circle';
   return (
     <Section
       title="Výšková kóta"
-      info="Hodnota horního líce desky pod bodem (jinak úroveň podlaží), z modelu."
+      info="Rámeček: horní líc desky pod bodem z modelu. Kóta terénu: RT / UT zadané číslem, dokud terén není v modelu."
     >
       <div class="ib-row">
         <span class="muted">Hodnota</span>
-        <strong data-testid="level-value">{t?.main ?? '–'}</strong>
+        <strong data-testid="level-value">{t?.join(' / ') ?? '–'}</strong>
       </div>
-      <div class="ib-row">
-        <span class="muted">Kótuje</span>
-        <span>{refLabel(s, d.ref)}</span>
-      </div>
+      {terrain ? (
+        <TerrainFields rt={d.rt ?? null} ut={d.ut ?? null} prefix="level" onSet={upd} />
+      ) : (
+        <div class="ib-row">
+          <span class="muted">Kótuje</span>
+          <span>{refLabel(s, d.ref)}</span>
+        </div>
+      )}
       <MarkerSelect value={d.marker} testid="level-marker" onPick={(marker) => upd({ marker })} />
       <Check
         label="Absolutní (m n. m. Bpv)"
@@ -95,7 +109,38 @@ function PlanOne({ s, d }: { s: Session; d: PlanLevelDimension }) {
   );
 }
 
+/** Rostlý a upravený terén (mm k ±0,000); prázdné = neznámý („?“). */
+function TerrainFields(p: {
+  rt: number | null;
+  ut: number | null;
+  prefix: string;
+  onSet: (patch: { rt?: number | null; ut?: number | null }) => void;
+}) {
+  const num = (label: string, key: 'rt' | 'ut', value: number | null) => (
+    <label>
+      {label}
+      <input
+        type="number"
+        step={10}
+        data-testid={`${p.prefix}-${key}`}
+        value={value ?? ''}
+        onChange={(e) => {
+          const t = e.currentTarget.value.trim();
+          p.onSet({ [key]: t === '' || !Number.isFinite(Number(t)) ? null : Number(t) });
+        }}
+      />
+    </label>
+  );
+  return (
+    <>
+      {num('RT – rostlý terén (mm k ±0,000)', 'rt', p.rt)}
+      {num('UT – upravený terén (mm k ±0,000)', 'ut', p.ut)}
+    </>
+  );
+}
+
 function refLabel(s: Session, ref: LevelDimension['ref']): string {
+  if (ref.kind === 'terrain') return 'terén (zadaná výška)';
   if (ref.kind === 'storey') return `úroveň podlaží ${s.model.storeys[ref.storeyId]?.name ?? '?'}`;
   const el = s.model.elements[ref.elementId];
   const what = el?.category === 'slab' ? 'deska' : 'stěna';

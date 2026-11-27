@@ -64,12 +64,15 @@ export function sectionCreateParams(s: Session) {
 export interface LevelDimDefaults {
   absolute: boolean;
   marker: 'box' | 'circle';
+  /** Kóta terénu: rostlý a upravený terén (mm k ±0,000), null = neznámý. */
+  rt: number | null;
+  ut: number | null;
 }
 
 const levelStore = new WeakMap<Session, LevelDimDefaults>();
 
 export function levelDimDefaults(s: Session): LevelDimDefaults {
   let d = levelStore.get(s);
-  if (!d) levelStore.set(s, (d = { absolute: false, marker: 'box' }));
+  if (!d) levelStore.set(s, (d = { absolute: false, marker: 'box', rt: null, ut: null }));
   return d;
 }

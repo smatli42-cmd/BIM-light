@@ -1,6 +1,6 @@
 // Nástroj Výšková kóta (ČSN 01 3420, Ardit): v půdorysu klik na bod podlahy / desky (přichytávání jako
-// u kót), druhý klik umístí hodnotu (rámeček, nebo kroužek s poličkou podle info boxu); kóta bere horní líc
-// desky pod bodem. V okně řezu kreslí nástroj ui/section/section-input.ts. Esc vrátí krok.
+// u kót), druhý klik umístí hodnotu: rámeček = horní líc desky pod bodem, kroužek = kóta terénu RT / UT
+// u nároží (naváže se na roh stěny). V okně řezu kreslí nástroj ui/section/section-input.ts. Esc vrátí krok.
 import type { SnapResult, Vec2 } from '@bim-light/core';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
 import type { Session } from '../../session/session.ts';
@@ -42,6 +42,7 @@ export class LevelDimTool implements Tool {
       textAt: e,
       marker: d.marker,
       absolute: d.absolute,
+      ...(d.marker === 'circle' ? { rt: d.rt, ut: d.ut } : {}),
       viewId: this.s.viewId,
     });
     if (r.ok) this.point = null;

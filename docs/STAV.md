@@ -13,14 +13,16 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - Jádro (`level-dim/plan.ts`, migrace 33 → 34): anotace podlaží se skupinou anotací (aktivní skupina
   pohledu) a zámkem, asociativní – v bodě bere horní líc nejvyšší desky / podlahy pod ním, jinak úroveň
   podlaží; zápis ±0,000 / +0,150 / -0,450 (absolutní „m n. m.“). Značka **rámeček** (hodnota v obdélníku
-  tenkou čarou, hlavní, jako Ardit) nebo **kroužek** (horní polovina plná, odkazová čára k poličce, nad ní
-  výška k ±0,000, pod ní výška nad úrovní podlaží). Velikost písma a kroužku z `display.paperSizes`, pero
+  tenkou čarou, jako Ardit) nebo **kóta terénu u nároží** (kroužek s plnou polovinou a čtvercem bodu,
+  odkazová čára k poličce, nad ní „RT=-0,200“ rostlý terén, pod ní „UT=-0,150“ upravený terén; hodnoty
+  zadané číslem, navázaná na roh stěny – posune se s ním; popisky a co se kreslí ve stylu
+  `style.setTerrainLabels`). V řezu jde kóta terénu (`ref: terrain`, číslo) s plným trojúhelníkem. Velikost písma a kroužku z `display.paperSizes`, pero
   a barva z grafiky kategorie kót. Smazaná deska vezme své kóty.
 - Příkazy `planLevelDim.create / move / update`, mazání `levelDim.delete` / `selection.delete`; dotaz
   `planLevelDim.list`; AI krok v `scenario-sections`.
 - Sandbox: nástroj **Výšková kóta** funguje v půdorysu (klik na bod, druhý klik = poloha hodnoty) i v okně
   řezu. Výběr klikem, tažení (u kroužku tažení hodnoty posune jen hodnotu), Del. Info box: hodnota,
-  co kótuje, značka (rámeček / kroužek), absolutní, zámek. E2E `vyskove-koty-pudorys.spec.ts`.
+  co kótuje / RT a UT, značka (rámeček / kóta terénu), absolutní, zámek. E2E `vyskove-koty-pudorys.spec.ts`.
 
 ### Výškové kóty v řezech a pohledech (ČSN 01 3420), 2026-11-27 (scéna `?ukazka=rezy`, Řez A i v `?ukazka=dum`)
 
@@ -208,8 +210,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
-- **Výšková kóta v půdorysu:** kroužek z Arditu chápu jako kótu bodu (Archicad Level Dimension v půdorysu)
-  s poličkou: nahoře výška k ±0,000, dole výška nad úrovní podlaží; hlavní značka je rámeček. Kóta odkazuje
+- **Výšková kóta v půdorysu:** kroužek = kóta terénu u nároží RT / UT (upřesnil uživatel). Na roh stěny se
+  naváže, když je bod do 100 mm od rohu líce stěny; smazaná stěna = kóta zůstane na posledním bodě. Kóta
+  rámečku odkazuje
   na desku, která byla pod bodem při vložení – posun kóty desku nemění. Rámeček má velikost podle odhadu
   šířky textu (jádro písmo nezná). Bez nové položky velikostí: text = výška popisu, kroužek = `levelMark`.
 - **Výškové kóty v řezu:** relativní kóta má prázdný trojúhelník (rozhodl uživatel 2026-11-27, ČSN 01 3420);
@@ -392,6 +395,10 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 
 ## Otevřené
 
+- **Terén:** zatím není v modelu – RT / UT u kóty terénu a výška terénu v řezu jsou čísla zadaná u značky;
+  až bude terén (situace, etapa), vezmou se z něj.
+- **Záložky pohledů (pro informaci, bez pokynu nedělat):** Ardit má otevřené pohledy jako záložky
+  v záhlaví okna („1.NP“, „Výpis oken a dveří“, „Řez A“) – možné rozšíření otevírání pohledů.
 - **STAV.md má 41 KB (limit ~40 KB):** návrh rozdělení – hotové kroky řezů a výškových kót přesunout
   do nového `docs/STAV-rezy.md` (jako `STAV-steny.md`), v STAV.md nechat odkaz. Čeká na souhlas.
 - **Řezy – zbývá:** výběr prvků v okně řezu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
