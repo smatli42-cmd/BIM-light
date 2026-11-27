@@ -33,6 +33,11 @@ export interface GraphicEffect {
   readonly lineType?: LineType;
   /** Plná výplň řezu; null = bez výplně. */
   readonly fillColor?: string | null;
+  /**
+   * Barva povrchu ve 3D (Archicad „Override Surface“); null = barva materiálu. Oddělená od výplně řezu,
+   * aby šedá výplň Studie nezešedila 3D.
+   */
+  readonly surfaceColor?: string | null;
   /** Šrafa: z materiálu, žádná, nebo pevně daná. */
   readonly hatch?: 'material' | 'none' | HatchEffect;
   /** Průhlednost 0–100 %. */
