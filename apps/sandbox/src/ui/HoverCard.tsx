@@ -16,7 +16,7 @@ const mm = (v: number) => `${Math.round(v)} mm`;
 const m2 = (v: number) => `${v.toFixed(2).replace('.', ',')} m²`;
 
 interface Card {
-  readonly icon: 'wall' | 'opening' | 'slab';
+  readonly icon: 'wall' | 'opening' | 'slab' | 'room';
   readonly title: string;
   readonly sub: string;
   readonly head: string;
@@ -44,6 +44,30 @@ function slabCard(i: Extract<ElementInfo, { kind: 'slab' }>): Card {
   };
 }
 
+const STATE: Record<string, string> = {
+  ok: 'v pořádku',
+  'not-enclosed': 'neuzavřená',
+  'in-wall': 'bod ve stěně',
+  redundant: 'nadbytečná',
+};
+
+function roomCard(i: Extract<ElementInfo, { kind: 'room' }>): Card {
+  return {
+    icon: 'room',
+    title: `${i.number} ${i.name}`,
+    sub: `Místnost · ${i.storeyName}`,
+    head: m2(i.area),
+    note: 'plocha podle ČSN 73 4301',
+    rows: [
+      ['Obvod', `${i.perimeter.toFixed(2).replace('.', ',')} m`],
+      ['Výška', mm(i.height)],
+      ['Objem', `${i.volume.toFixed(2).replace('.', ',')} m³`],
+      ['Kontrola', STATE[i.state] ?? i.state],
+      ['Vrstva', i.layerName],
+    ],
+  };
+}
+
 function card(i: ElementInfo): Card {
   if (i.kind === 'wall')
     return {
@@ -62,6 +86,7 @@ function card(i: ElementInfo): Card {
       ],
     };
   if (i.kind === 'slab') return slabCard(i);
+  if (i.kind === 'room') return roomCard(i);
   const niche = i.openingKind === 'niche';
   return {
     icon: 'opening',

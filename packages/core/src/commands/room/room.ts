@@ -45,7 +45,7 @@ export const roomCreate = defineCommand<RoomCreateParams>({
     'stěně se odmítne; neuzavřený prostor se přijme s varováním (room.list → state).',
   group: 'Místnost',
   icon: 'room',
-  shortcut: 'P',
+  shortcut: 'N',
   params: S.object(
     {
       storeyId: S.id,

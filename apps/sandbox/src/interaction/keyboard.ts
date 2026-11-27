@@ -24,6 +24,7 @@ export const TOOL_KEYS: Readonly<Record<string, ToolId>> = {
   b: 'rect',
   o: 'opening',
   s: 'slab',
+  n: 'room',
 };
 
 /** Přiblíží na všechny stěny (Home) nebo na vybrané (Z). */
@@ -47,7 +48,14 @@ function ctrlKey(s: Session, key: string): boolean {
       return true;
     case 'a': {
       const all = boxSelect(s.model, s.view, { x0: -1e12, y0: -1e12, x1: 1e12, y1: 1e12 }, false, s.filter);
-      s.selection.set(all.wallIds, all.dimensionIds, all.openingIds, all.slabIds, all.slabOpeningIds);
+      s.selection.set(
+        all.wallIds,
+        all.dimensionIds,
+        all.openingIds,
+        all.slabIds,
+        all.slabOpeningIds,
+        all.roomIds,
+      );
       return true;
     }
     case 'c':

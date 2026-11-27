@@ -1,4 +1,4 @@
-// Výběr stěn, otvorů (ve stěnách i deskách), desek a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
+// Výběr stěn, otvorů (ve stěnách i deskách), desek, místností a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
 import type { Id, Model } from '@bim-light/core';
 
 export class Selection {
@@ -10,6 +10,8 @@ export class Selection {
   slabs: Id[] = [];
   /** Vybrané otvory v deskách (D3). */
   slabOpenings: Id[] = [];
+  /** Vybrané místnosti. */
+  rooms: Id[] = [];
 
   get empty(): boolean {
     return this.count === 0;
@@ -17,7 +19,7 @@ export class Selection {
 
   private get count(): number {
     const n = this.walls.length + this.dims.length + this.openings.length;
-    return n + this.slabs.length + this.slabOpenings.length;
+    return n + this.slabs.length + this.slabOpenings.length + this.rooms.length;
   }
 
   /** Právě jedna vybraná stěna (ukazují se dočasné kóty a uzly). */
@@ -40,18 +42,25 @@ export class Selection {
     return this.slabs.length === 1 && this.count === 1 ? (this.slabs[0] as Id) : null;
   }
 
+  /** Právě jedna vybraná místnost (info box místnosti). */
+  get singleRoom(): Id | null {
+    return this.rooms.length === 1 && this.count === 1 ? (this.rooms[0] as Id) : null;
+  }
+
   set(
     walls: readonly Id[],
     dims: readonly Id[] = [],
     openings: readonly Id[] = [],
     slabs: readonly Id[] = [],
     slabOpenings: readonly Id[] = [],
+    rooms: readonly Id[] = [],
   ) {
     this.walls = [...new Set(walls)];
     this.dims = [...new Set(dims)];
     this.openings = [...new Set(openings)];
     this.slabs = [...new Set(slabs)];
     this.slabOpenings = [...new Set(slabOpenings)];
+    this.rooms = [...new Set(rooms)];
   }
 
   clear() {
@@ -83,8 +92,12 @@ export class Selection {
     this.slabOpenings = Selection.toggle(this.slabOpenings, id);
   }
 
+  toggleRoom(id: Id) {
+    this.rooms = Selection.toggle(this.rooms, id);
+  }
+
   has(id: Id): boolean {
-    const lists = [this.walls, this.dims, this.openings, this.slabs, this.slabOpenings];
+    const lists = [this.walls, this.dims, this.openings, this.slabs, this.slabOpenings, this.rooms];
     return lists.some((l) => l.includes(id));
   }
 
@@ -96,6 +109,7 @@ export class Selection {
       openingIds: this.openings,
       slabIds: this.slabs,
       slabOpeningIds: this.slabOpenings,
+      roomIds: this.rooms,
     };
   }
 
@@ -106,5 +120,6 @@ export class Selection {
     this.openings = this.openings.filter((id) => model.openings[id]);
     this.slabs = this.slabs.filter((id) => model.elements[id]?.category === 'slab');
     this.slabOpenings = this.slabOpenings.filter((id) => model.slabOpenings[id]);
+    this.rooms = this.rooms.filter((id) => model.rooms[id]);
   }
 }

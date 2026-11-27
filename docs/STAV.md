@@ -1,12 +1,27 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, přesný otvor v desce (vodítka, kóty, tracker); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, místnosti (první část povrchů místností); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Místnosti, 2026-11-27 (povrchy místností, část 1; scéna `?ukazka=mistnosti`, místnosti i v `?ukazka=dum`)
+
+- Jádro `room/`: místnost = IfcSpace v `model.rooms` (číslo, název, bod uvnitř, vršek, stav, varianta, poloha
+  razítka, ruční obrys se zámkem). Obrys se počítá (`arrangement.ts`): obrysy stěn rozložené na hrany, hranice
+  volného prostoru, nejmenší smyčka kolem bodu; ostrovy (sloup, komín) se odečtou, výklenky ≥ 0,30 m / ≥ 2,00 m
+  k podlaze se vyříznou ze stěn, dveře nic nemění, oblouky rozložené na body. Stav ok / neuzavřená / bod ve
+  stěně / nadbytečná. Plocha 2 des. místa, obvod, výška, objem. Migrace 22 → 23 (+ Výpis místností).
+- Příkazy `room.create` (N), `room.update`, `room.delete`, `selection.delete` roomIds,
+  `element.setGraphicOverride` i pro místnosti; dotaz `room.list`, karta prvku; AI `scenario-rooms.test.ts`.
+- Kresba: razítko podle `labels` stylu (číslo, název, plocha), písmo na papíře, výplň jen z grafiky (pravidlo,
+  přepis). IFC: IfcSpace s obrysem (ostrovy = vnitřní křivky), výškou, Pset_SpaceCommon, Qto (web-ifc).
+- Sandbox: nástroj Místnost (náhled obrysu a plochy pod kurzorem), výběr klikem do místnosti / na razítko,
+  rámečkem, filtr „Vybírat místnosti“, info box (číslo, název, plocha jen ke čtení, výška, varování), tažení
+  razítka, Del. E2E `mistnosti.spec.ts`.
 
 ### Přesný otvor v desce: vodítka, dočasné kóty, tracker, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-presny-otvor`)
 
@@ -338,6 +353,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Místnosti:** místnost je zvlášť (`model.rooms`), ne mezi prvky – IfcSpace nemá typ ani skladbu.
+  Hranice = stěny protínající 1200 mm nad podlahou (Revit „Computation Height“), i z podlaží pod; nová
+  místnost vidí stávající + nové stěny, stávající stávající + bourané. Výchozí výška = podlaží nad. Ve stejném
+  prostoru je nadbytečná druhá místnost (Revit). Klik do místnosti má přednost před deskou, u hrany desky (6 px)
+  deska. Číslo „podlaží.pořadí“ (1.01, 2.01, 0.01 pro 1.PP). Zkratka N (P je Pole). Dělicí čáry místností
+  nejsou (dokumenty je nemají) – přijdou s 2D kresbou. Bez výplně ve výchozí grafice; barvu dá pravidlo.
+
 - **Přesný otvor:** kóty při kreslení před 1. klikem jdou od kurzoru (jen informace), po 1. kliku od položených
   bodů (stojí, klik na číslo je posune; velikost pak trackerem) – Revit u náčrtu edituje jen položené.
   Měří se od krajní hrany (nebo krajního rohu) obrysu ve směru X / Y; líc stěny má přednost před hranou desky
@@ -426,7 +448,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 - **Uživatel vyzkouší D4:** `?ukazka=desky-d4` – vybrat stěnu → Vršek „Vršek k desce“; v 2.NP změnit strop
   (horní hrana, typ) a zkontrolovat výšku stěn 1.NP; D → hrana / roh desky a otvoru; Výkazy → Výkaz desek.
-- **Hlavní proud dál:** povrchy místností (návrh níže); záložka Typ desky (Otevřené).
+- **Uživatel vyzkouší místnosti:** `?ukazka=mistnosti` – N a klik do chodby; klik do místnosti / na razítko,
+  info box, tažení razítka; posun příčky; Výkazy → Výpis místností; Exportovat IFC (IfcSpace).
+- **Hlavní proud dál:** povrchy místností část 2 – plochy povrchů, typy úprav, zóny, výkaz (návrh níže);
+  místnosti ve 3D předá koordinátor 3D proudu; záložka Typ desky (Otevřené).
 - **Uživatel vyzkouší D3:** `?ukazka=desky-otvory` – O → V desce, obdélník do desky; klik do otvoru,
   tažení, body, Del; posun desky s otvorem; IFC v BIMvision.
   Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
@@ -479,6 +504,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
+- **Místnosti – zbývá:** šikmé stropy (< 1,30 m, ČSN 73 4301) po střechách; volba 1 desetinného místa v nastavení
+  projektu (funkce `areaM2` ji umí); úprava ručního obrysu myší (příkaz je); místnosti ve variantách v kresbě.
 - **STAV.md má 39,5 KB (limit ~40 KB):** návrh rozdělení – oddíly „Hotovo“ starší než desky (kóty,
   stěny Z7–Z10, editor typů, opravy z 2026-11-26) přesunout do nového `docs/STAV-archiv.md`. Čeká na souhlas.
 - **Desky – zbývá:** záložka Typ desky v info boxu a typ desky v editoru typů, úprava vrstev skladby jen pro
@@ -536,14 +563,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po přesném otvoru v desce)
+## Největší soubory (po místnostech)
 
 Výstup `npm run check:size`: kód bez varování, varování jen STAV.md (návrh rozdělení v Otevřené).
 
 | Řádky | Soubor |
 |---|---|
-| 250 | apps/sandbox/src/render/overlay.ts |
+| 248 | apps/sandbox/src/session/session.ts |
+| 246 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 243 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
-| 242 | apps/sandbox/src/session/session.ts |
+| 240 | packages/core/src/commands/all.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |

@@ -34,7 +34,7 @@ describe('pravidla-interakce: Výběr / D2: výběr desky', () => {
     expect(boxSelect(f.model, view, part, true).slabIds).toEqual([rc]);
     const all = rectOf(vec(-100, -100), vec(5000, 4000));
     expect(boxSelect(f.model, view, all, false).slabIds).toEqual([rc]);
-    const off = { walls: true, dimensions: true, slabs: false };
+    const off = { walls: true, dimensions: true, slabs: false, rooms: true };
     expect(boxSelect(f.model, view, all, false, off).slabIds).toEqual([]);
   });
 

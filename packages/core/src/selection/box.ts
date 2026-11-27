@@ -9,6 +9,7 @@ import { isDimensionVisible, isSelectable } from '../view/draw-view.ts';
 import type { View } from '../view/types.ts';
 import { selectableSlabs } from '../slab/pick.ts';
 import { selectableSlabOpenings } from '../slab-opening/pick.ts';
+import { selectableRoomOutlines } from '../room/pick.ts';
 import { pointInPolygon, selectableWallGeometry } from './pick.ts';
 
 export interface Rect {
@@ -61,9 +62,11 @@ export interface SelectionFilter {
   readonly dimensions: boolean;
   /** Desky (D2). */
   readonly slabs: boolean;
+  /** Místnosti (výběr obrysem). */
+  readonly rooms: boolean;
 }
 
-export const ALL_CATEGORIES: SelectionFilter = { walls: true, dimensions: true, slabs: true };
+export const ALL_CATEGORIES: SelectionFilter = { walls: true, dimensions: true, slabs: true, rooms: true };
 
 /** Body kóty (čára, odkazové čáry, místo čísla) pro výběr rámečkem. */
 export function dimensionPoints(model: Model, view: View, id: Id): Vec2[] {
@@ -82,6 +85,7 @@ export interface BoxSelection {
   readonly slabIds: Id[];
   /** Otvory v deskách (D3); řídí se filtrem desek. */
   readonly slabOpeningIds: Id[];
+  readonly roomIds: Id[];
 }
 
 export function boxSelect(
@@ -122,5 +126,10 @@ export function boxSelect(
         .filter((o) => take(o.outline))
         .map((o) => o.id)
     : [];
-  return { wallIds, dimensionIds, openingIds, slabIds, slabOpeningIds };
+  const roomIds = filter.rooms
+    ? selectableRoomOutlines(model, view)
+        .filter((r) => take(r.outline))
+        .map((r) => r.id)
+    : [];
+  return { wallIds, dimensionIds, openingIds, slabIds, slabOpeningIds, roomIds };
 }

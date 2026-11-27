@@ -71,6 +71,12 @@ export function SelectOptions({ s }: { s: Session }) {
         checked={s.filter.slabs}
         onSet={(v) => set(() => (s.filter = { ...s.filter, slabs: v }))}
       />
+      <Check
+        label="Vybírat místnosti"
+        testid="filter-rooms"
+        checked={s.filter.rooms}
+        onSet={(v) => set(() => (s.filter = { ...s.filter, rooms: v }))}
+      />
       <GridOption s={s} />
     </Section>
   );

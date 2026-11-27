@@ -42,8 +42,17 @@ export class BoxMode implements Mode {
         [...s.selection.openings, ...got.openingIds],
         [...s.selection.slabs, ...got.slabIds],
         [...s.selection.slabOpenings, ...got.slabOpeningIds],
+        [...s.selection.rooms, ...got.roomIds],
       );
-    else s.selection.set(got.wallIds, got.dimensionIds, got.openingIds, got.slabIds, got.slabOpeningIds);
+    else
+      s.selection.set(
+        got.wallIds,
+        got.dimensionIds,
+        got.openingIds,
+        got.slabIds,
+        got.slabOpeningIds,
+        got.roomIds,
+      );
   }
 
   down() {

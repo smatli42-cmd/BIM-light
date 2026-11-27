@@ -25,6 +25,7 @@ import { NodeMode } from './node-mode.ts';
 import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
 import { OutlineVertexMode, outlineUnder, pickOutline, PressOutlineMode } from './slab-modes.ts';
+import { flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
@@ -104,9 +105,11 @@ export class SelectTool implements Tool {
     this.mode = new BoxMode(this.s, p.screen, p.shift);
   }
 
-  /** Otvor v desce / deska pod kurzorem (až po stěnách): Shift přidá, klik vybere, tažení posune. */
+  /** Razítko, otvor v desce, místnost, deska (až po stěnách): Shift přidá, klik vybere, tažení posune. */
   private pressSlab(p: PointerInfo): boolean {
     const hit = outlineUnder(this.s, p);
+    const room = stampUnder(this.s, p) ?? (hit?.kind === 'hole' ? null : roomUnder(this.s, p));
+    if (room) return ((this.mode = pressRoom(this.s, room, p)), true);
     if (!hit) return false;
     pickOutline(this.s, hit.kind, hit.id, p.shift);
     if (!p.shift) this.mode = new PressOutlineMode(this.s, hit.kind, hit.id, p);
@@ -172,7 +175,7 @@ export class SelectTool implements Tool {
 
   move(p: PointerInfo) {
     if (this.mode?.active) this.mode.move(p);
-    else this.hover = this.openingUnder(p) ?? this.wallsUnder(p)[0] ?? outlineUnder(this.s, p)?.id ?? null;
+    else this.hover = this.openingUnder(p) ?? this.wallsUnder(p)[0] ?? flatUnder(this.s, p);
   }
 
   up(p: PointerInfo) {

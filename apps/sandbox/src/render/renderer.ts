@@ -59,7 +59,7 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   drawWallOutlines(
     ctx,
     s,
-    [...sel.walls, ...sel.openings, ...sel.slabs, ...sel.slabOpenings],
+    [...sel.walls, ...sel.openings, ...sel.slabs, ...sel.slabOpenings, ...sel.rooms],
     SELECT,
     2,
     model,

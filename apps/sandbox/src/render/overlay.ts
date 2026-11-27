@@ -6,6 +6,7 @@ import {
   edgePath,
   facePath,
   findSlab,
+  roomInfo,
   openingOutline,
   tessellate,
   type Id,
@@ -57,6 +58,15 @@ export function drawWallOutlines(
     if (o) {
       poly(ctx, s, openingOutline(model, o));
       ctx.stroke();
+      continue;
+    }
+    const room = model.rooms[id];
+    if (room) {
+      const g = roomInfo(model, room);
+      for (const loop of [g.outline, ...g.holes].filter((l) => l.length)) {
+        poly(ctx, s, loop);
+        ctx.stroke();
+      }
       continue;
     }
     const slab = findSlab(model, id) ?? model.slabOpenings[id];

@@ -51,6 +51,18 @@ function ground(c: SampleContext) {
     c.run('dimension.wholeWall', { wallId, viewId: c.viewId, walls: true });
   c.run('wallTag.tagAll', { viewId: c.viewId });
   slabs(c, c.storeyId, 'ŽB základová deska 300', 465);
+  rooms(c, c.storeyId, [
+    [800, 3500, 'Obývací pokoj'],
+    [1700, 7000, 'Pokoj'],
+    [5200, 7000, 'Kuchyně'],
+    [9500, 2000, 'Ložnice'],
+    [9500, 7500, 'Koupelna'],
+  ]);
+}
+
+/** Místnosti podlaží (prvky stavby 9): bod uvnitř a název; obrys a plocha se spočítají ze stěn. */
+function rooms(c: SampleContext, storeyId: Id, list: readonly (readonly [number, number, string])[]) {
+  for (const [x, y, name] of list) c.run('room.create', { storeyId, point: vec(x, y), name });
 }
 
 /** Desky podlaží (D1): nosná deska pod obvodovými stěnami (`under` = přesah pod stěny) a podlaha v místnostech. */
@@ -85,6 +97,12 @@ function upper(c: SampleContext) {
   opening(c, top, 3000, 2400, 2200, 0);
   if (!storeyId) return;
   slabs(c, storeyId, 'ŽB strop 250', 315);
+  rooms(c, storeyId, [
+    [3500, 2000, 'Pokoj'],
+    [3500, 7000, 'Pracovna'],
+    [9500, 2500, 'Ložnice'],
+    [9500, 7000, 'Šatna'],
+  ]);
   // Otvor pro schodiště ve stropě nad 1.NP (D3): prořízne strop i podlahu 2.NP.
   const [stair] = c.run('slabOpening.create', { storeyId, rect: { a: vec(4000, 4700), b: vec(6800, 5900) } });
   // Přesný odstup schodiště 100 mm od líce stěny pod ním (dočasná kóta, outline.setDistance).
@@ -120,7 +138,8 @@ export const HOUSE: Sample = {
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
     'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy; ' +
     'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
-    'značky typů, výkazy; filtr rekonstrukce ve spodní liště.',
+    'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301 a Výpis místností; filtr rekonstrukce ' +
+    've spodní liště.',
   build(c) {
     ground(c);
     upper(c);

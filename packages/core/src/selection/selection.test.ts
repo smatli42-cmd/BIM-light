@@ -54,6 +54,7 @@ describe('pravidla-interakce / Výběr', () => {
       walls: true,
       dimensions: false,
       slabs: false,
+      rooms: false,
     });
     expect(onlyWalls.dimensionIds).toEqual([]);
     expect(onlyWalls.wallIds.length).toBe(4);

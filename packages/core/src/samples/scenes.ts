@@ -5,8 +5,10 @@ import type { Sample } from './types.ts';
 import { rect } from './scene-helpers.ts';
 import { DIMENSION_SCENES } from './scenes-koty.ts';
 import { SLAB_SCENES } from './scenes-desky.ts';
+import { ROOM_SCENES } from './scenes-mistnosti.ts';
 
 export const SCENES: readonly Sample[] = [
+  ...ROOM_SCENES,
   ...SLAB_SCENES,
   ...DIMENSION_SCENES,
   {

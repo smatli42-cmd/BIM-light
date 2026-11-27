@@ -30,6 +30,7 @@ export interface TestHook {
     openings: string[];
     slabs: string[];
     slabOpenings: string[];
+    rooms: string[];
   };
   tool(): string;
   storeyId(): string;
@@ -104,6 +105,7 @@ export function installTestHook(s: Session) {
       openings: [...s.selection.openings],
       slabs: [...s.selection.slabs],
       slabOpenings: [...s.selection.slabOpenings],
+      rooms: [...s.selection.rooms],
     }),
     tool: () => s.tool.id,
     storeyId: () => s.storeyId,

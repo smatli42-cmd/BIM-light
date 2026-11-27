@@ -13,6 +13,8 @@ import { polygonArea, polygonPerimeter, slabLevels } from '../slab/geometry.ts';
 import { findSlab } from '../slab/queries.ts';
 import type { Slab, SlabFunction } from '../slab/types.ts';
 import { wallHeight } from '../wall-height/resolve.ts';
+import { roomInfo } from '../room/queries.ts';
+import type { RoomState } from '../room/types.ts';
 
 const r1 = (v: number) => Math.round(v * 10) / 10;
 /** m² na dvě desetinná místa. */
@@ -65,7 +67,42 @@ export interface SlabInfo {
   readonly layerName: string;
 }
 
-export type ElementInfo = WallInfo | OpeningInfo | SlabInfo;
+/** Místnost (prvky stavby 9): číslo, název, plocha podle ČSN 73 4301, obvod, výška, objem, stav výpočtu. */
+export interface RoomCardInfo {
+  readonly kind: 'room';
+  readonly id: Id;
+  readonly storeyName: string;
+  readonly number: string;
+  readonly name: string;
+  /** m² (2 desetinná místa), obvod v m, výška v mm, objem v m³. */
+  readonly area: number;
+  readonly perimeter: number;
+  readonly height: number;
+  readonly volume: number;
+  readonly state: RoomState;
+  readonly layerName: string;
+}
+
+export type ElementInfo = WallInfo | OpeningInfo | SlabInfo | RoomCardInfo;
+
+function roomCard(m: Model, id: Id): RoomCardInfo | null {
+  const r = m.rooms[id];
+  if (!r) return null;
+  const g = roomInfo(m, r);
+  return {
+    kind: 'room',
+    id,
+    storeyName: m.storeys[r.storeyId]?.name ?? '',
+    number: r.number,
+    name: r.name,
+    area: m2(g.area),
+    perimeter: Math.round(g.perimeter / 10) / 100,
+    height: r1(g.height),
+    volume: Math.round(g.volume / 1e6) / 1000,
+    state: g.state,
+    layerName: layerForCategory(m.display, 'room')?.name ?? '',
+  };
+}
 
 function slabInfo(m: Model, s: Slab): SlabInfo {
   const t = m.slabTypes[s.typeId];
@@ -127,5 +164,5 @@ export function elementInfo(m: Model, id: Id): ElementInfo | null {
   const w = findWall(m, id);
   if (w) return wallInfo(m, w);
   const s = findSlab(m, id);
-  return s ? slabInfo(m, s) : null;
+  return s ? slabInfo(m, s) : roomCard(m, id);
 }

@@ -12,6 +12,7 @@ export const ICONS = {
   rect: ['M4 5h16v14H4z', 'M7 8h10v8H7z'],
   // Deska: šikmo viděná deska (tloušťka) a metody (mnohoúhelník, obdélník, natočený, podle stěn)
   slab: ['M3 10l7-4h11l-7 4z', 'M3 10v4h11l7-4v-4', 'M14 10v4'],
+  room: ['M4 4h16v16H4z', 'M4 13h7v7', 'M8 8.5h8'],
   'slab-polygon': ['M12 3l8 6-3 10H7L4 9z'],
   'slab-rect': ['M4 6h16v12H4z'],
   'slab-rotated': ['M9 3l12 6-6 12L3 15z'],

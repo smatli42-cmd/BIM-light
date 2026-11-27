@@ -13,6 +13,12 @@ import { allRoomGeometry } from './queries.ts';
 const selectable = (model: Model, view: View) =>
   Object.values(model.rooms).filter((r) => r.variant.kind === 'main' && isSelectable(model, view, r.id));
 
+/** Obrysy místností, které jde vybrat (výběr rámečkem). */
+export function selectableRoomOutlines(model: Model, view: View) {
+  const geo = allRoomGeometry(model, view.storeyId);
+  return selectable(model, view).map((r) => ({ id: r.id, outline: geo.get(r.id)?.outline ?? [] }));
+}
+
 /** Místnosti, jejichž razítko leží pod bodem. */
 export function roomStampsAt(model: Model, view: View, p: Vec2, tol: number): Id[] {
   const labels = styleOfView(model.display, view).labels ?? {};
