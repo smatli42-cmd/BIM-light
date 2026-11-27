@@ -16,8 +16,12 @@ import {
   type Id,
   type Model,
   type Vec2,
+  type View3d,
   type Wall,
 } from '@bim-light/core';
+import type { Box3D } from './clip.ts';
+import { clipTriangles } from './clip-triangles.ts';
+import { surfaceSheets, type Sheet } from './surface-sheets.ts';
 import { patchLook, patchSolid } from './patches.ts';
 import { slabSolids } from './slab-solids.ts';
 import { wallSolids, type Solid } from './solids.ts';
@@ -112,4 +116,20 @@ export function selectionElements(
   const hosts = openings.map((id) => model.openings[id]?.hostId).filter((x): x is Id => !!x);
   const slabHosts = slabOpenings.flatMap((id) => model.slabOpenings[id]?.hostIds ?? []);
   return new Set([...walls, ...hosts, ...slabs, ...slabHosts]);
+}
+
+/** Povrchy místností pro 3D okno: na zobrazených stěnách, podle podlaží a výběru, oříznuté kvádrem. */
+export function viewSheets(
+  model: Model,
+  view: View3d,
+  only: ReadonlySet<Id> | null,
+  box: Box3D | null,
+): Sheet[] {
+  const walls = new Set(shownModel(model, view).walls.map((w) => w.id));
+  const storeys = view.storeyIds ? new Set(view.storeyIds) : null;
+  const sheets = surfaceSheets(model, view, { walls, storeys, only });
+  if (!box) return sheets;
+  return sheets
+    .map((x) => ({ ...x, positions: clipTriangles(x.positions, box) }))
+    .filter((x) => x.positions.length > 0);
 }

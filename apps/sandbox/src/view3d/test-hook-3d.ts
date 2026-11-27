@@ -20,7 +20,14 @@ export interface TestHook3D {
   /** Úchyt ořezového kvádru v px stránky. */
   handleOf(axis: 'x' | 'y' | 'z', side: 'min' | 'max'): { x: number; y: number } | null;
   /** Stav prohlížeče: projekce kamery, stíny, mřížka, procházka, poloha kamery (m). */
-  scene(): { projection: string; shadows: boolean; grid: boolean; walking: boolean; eye: number[] };
+  scene(): {
+    projection: string;
+    shadows: boolean;
+    grid: boolean;
+    walking: boolean;
+    eye: number[];
+    sheets: number;
+  };
   /** Bod stránky (px), kde klik trefí prvek `id` (hledá v mřížce po 8 px), nebo null. */
   hitOf(id: string): { x: number; y: number } | null;
   /** Úchyt roviny řezu v px stránky, nebo null. */
@@ -63,6 +70,7 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
       grid: v.hasGrid,
       walking: v.walk.active,
       eye: v.camera.position.toArray(),
+      sheets: v.root.children.reduce((n, g) => n + (g.userData.sheets ? g.children.length : 0), 0),
     }),
     hitOf(id) {
       const r = v.canvas.getBoundingClientRect();

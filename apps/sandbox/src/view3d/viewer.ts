@@ -15,13 +15,15 @@ import {
 import type { CutPlane3d, Point3, Projection3d } from '@bim-light/core';
 import { BoxGizmo, type HandleRef } from './box-gizmo.ts';
 import { installHandles } from './handles.ts';
-import { CameraRig, type DragTool } from './camera-rig.ts';
+import { CameraRig } from './camera-rig.ts';
 import type { Box3D } from './clip.ts';
 import { clipPlaneOf, CutGizmo } from './cut-gizmo.ts';
 import { makeGrid } from './grid.ts';
 import { buildMeshes, DEFAULT_LOOK, disposeGroup, highlight, Materials, type Look } from './mesh.ts';
 import type { Solid } from './solids.ts';
+import { buildSheets } from './sheets-mesh.ts';
 import { SunLight } from './sun-light.ts';
+import type { Sheet } from './surface-sheets.ts';
 import { Walk } from './walk.ts';
 
 /** Vzhled scény z 3D pohledu (bez roviny řezu – ta má vlastní setCut). */
@@ -32,10 +34,11 @@ export class Viewer {
   readonly rig: CameraRig;
   readonly walk: Walk;
   private readonly scene = new Scene();
-  private readonly root = new Group();
+  readonly root = new Group();
   private mats = new Materials();
   private groups = new Map<string, Group>();
   private solids: readonly Solid[] = [];
+  private sheets: readonly Sheet[] = [];
   private readonly selectedMat: MeshLambertMaterial;
   private frame = 0;
   readonly gizmo: BoxGizmo;
@@ -136,10 +139,6 @@ export class Viewer {
     this.render();
   }
 
-  setDragTool(t: DragTool) {
-    this.rig.setDragTool(t);
-  }
-
   ray(x: number, y: number): Raycaster {
     const r = this.canvas.getBoundingClientRect();
     const ray = new Raycaster();
@@ -153,20 +152,22 @@ export class Viewer {
     return (hit?.object.userData as HandleRef | undefined) ?? null;
   }
 
-  /** Nahradí obsah scény tělesy modelu. */
-  setSolids(solids: readonly Solid[]) {
+  /** Nahradí obsah scény tělesy modelu a povrchy místností. */
+  setSolids(solids: readonly Solid[], sheets: readonly Sheet[] = []) {
     this.solids = solids;
+    this.sheets = sheets;
     this.rebuild();
   }
 
   private rebuild() {
-    for (const g of this.groups.values()) disposeGroup(g);
+    disposeGroup(this.root);
     this.root.clear();
     this.mats.dispose();
     const clip = this.cut.value ? [clipPlaneOf(this.cut.value)] : [];
     this.mats = new Materials({ ...this.look, clip });
     this.groups = buildMeshes(this.solids, this.mats);
     for (const g of this.groups.values()) this.root.add(g);
+    this.root.add(buildSheets(this.sheets, this.mats));
     this.updateSun();
     this.render();
   }
@@ -204,7 +205,7 @@ export class Viewer {
     const plane = this.cut.value ? clipPlaneOf(this.cut.value) : null;
     const hit = this.ray(x, y)
       .intersectObjects(this.root.children, true)
-      .find((h) => h.object.type === 'Mesh' && (!plane || plane.distanceToPoint(h.point) >= 0));
+      .find((h) => h.object.userData.elementId && (!plane || plane.distanceToPoint(h.point) >= 0));
     return (hit?.object.userData.elementId as string | undefined) ?? null;
   }
 
@@ -239,7 +240,7 @@ export class Viewer {
     this.gizmo.dispose();
     this.cut.dispose();
     this.sun.dispose();
-    for (const g of this.groups.values()) disposeGroup(g);
+    disposeGroup(this.root);
     this.mats.dispose();
     this.selectedMat.dispose();
     this.rig.controls.dispose();

@@ -2,9 +2,49 @@
 import { HOUSE } from './house.ts';
 import type { Sample, SampleContext } from './types.ts';
 
+/** Id typu úpravy povrchu podle názvu. */
+const covering = (c: SampleContext, name: string) =>
+  Object.values(c.model.coveringTypes).find((t) => t.name === name)?.id ?? null;
+
+/** Povrchy místností domu: koupelna obklad do 1,5 m a dlažba, kuchyně béžová, ostatní bílá a vinyl. */
+function finishes(c: SampleContext) {
+  for (const room of Object.values(c.model.rooms)) {
+    const wet = room.name === 'Koupelna';
+    const roomId = room.id;
+    if (wet)
+      c.run('covering.setZones', {
+        roomId,
+        zones: [
+          { typeId: covering(c, 'Obklad 300×600 bílý'), top: 1500 },
+          { typeId: covering(c, 'Malba bílá'), top: null },
+        ],
+      });
+    else {
+      const paint = room.name === 'Kuchyně' ? 'Malba béžová' : 'Malba bílá';
+      c.run('covering.assign', { roomId, place: 'walls', typeId: covering(c, paint) });
+    }
+    const floor = wet || room.name === 'Kuchyně' ? 'Dlažba 600×600 šedá' : 'Vinyl dub';
+    c.run('covering.assign', { roomId, place: 'floor', typeId: covering(c, floor) });
+  }
+}
+
 const first3d = (c: SampleContext) => Object.keys(c.model.views3d)[0] as string;
 
 export const VIEW3D_SCENES: readonly Sample[] = [
+  {
+    key: '3d-povrchy',
+    title: '3D – povrchy místností: malby, obklad, dlažba',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Ukázkový dům s úpravami povrchů: koupelna obklad do 1,5 m a dlažba, kuchyně béžová malba a dlažba, ' +
+      'ostatní místnosti bílá malba a vinyl. Otevři 3D (F4), zapni Řez nebo Ořez a podívej se dovnitř; ' +
+      'v režimu Bílý model a Skica barvy povrchů zmizí, v Bourací práce také.',
+    build(c) {
+      HOUSE.build(c);
+      finishes(c);
+    },
+  },
   {
     key: '3d-lista',
     title: '3D – lišta podle Arditu: skica, stíny, řez',

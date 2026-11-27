@@ -91,7 +91,22 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Klik ve 3D vybere prvek z libovolného podlaží a půdorys zůstane (dřív okno přeskočilo na podlaží prvku).
   Info box ukáže a mění vybraný prvek jiného podlaží. Test `e2e/nahled-3d-vyber.spec.ts`.
 
+## Hotovo (krok 6 – povrchy místností ve 3D, 2026-11-27)
+
+- Úpravy povrchů z jádra (`allSurfaces`, stejný zdroj jako výkaz povrchů) jako tenké plochy 1 mm před lícem
+  (`view3d/surface-sheets.ts`, `sheets-mesh.ts`): barva a průhlednost přes funkci grafiky (`surfaceLook`,
+  kategorie covering), plocha bez úpravy se nekreslí. Líc obloukové stěny po pruzích 200 mm.
+- Filtr 3D pohledu: vrstva / kategorie covering, filtr rekonstrukce (místnost i stěna), podlaží, výběr F4
+  (povrchy vybraných stěn), ořezový kvádr (přesný ořez trojúhelníků, `clip-triangles.ts`), rovina řezu.
+- Jen v režimu **Materiály**; Bílý model, Skica, Skryté hrany a Čárový povrchy nekreslí. Plochy nejdou
+  vybrat kliknutím (klik trefí stěnu za nimi).
+- Scéna `?ukazka=3d-povrchy`: dům, koupelna obklad do 1,5 m + dlažba, kuchyně béžová + dlažba, jinde bílá
+  malba + vinyl.
+
 ## Co zkusit
+
+- `?ukazka=3d-povrchy&3d` → Řez › Vodorovný (nad podlažím): podlahy vinyl a dlažba, malby, obklad koupelny
+  do 1,5 m; přepni na Skicu – barvy povrchů zmizí.
 
 - `?ukazka=3d-lista` → Obsah → 3D: dům v axonometrii ve Skice se stíny 21. 6. v 15:00 a svislým řezem.
   Přepínej Persp. / Axon. a režimy, ☀ Slunce: datum a čas (stíny se pohnou), Řez: táhni modrý úchyt,
@@ -169,9 +184,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 
 ## Otevřené / další kroky
 
-- Povrchy místností (malby, obklady, spárořezy; návrh poslán hlavní session 2026-11-27, uživatel souhlasí):
-  jádro spočítá plochy povrchů (obrys v rovině líce + transformace do 3D + spáry), 3D je jen zobrazí
-  tenkou plochou před lícem a spáry čarami – stejná data jako rozvinutý pohled a výkaz.
+- Povrchy ve 3D: **spárořez** obkladu a dlažby čarami (formát a spára jsou v typu úpravy), výběr / karta
+  povrchu kliknutím ve 3D.
 - **Úpravy myší přímo ve 3D** (táhnout uzly, hrany, výšky; pokyn uživatele 2026-11-27 – samostatná
   kategorie, až ke konci). Teď se ve 3D jen vybírá a mění přes info box.
 - **Další kroky lišty podle Arditu** (zapsáno na pokyn 2026-11-27):

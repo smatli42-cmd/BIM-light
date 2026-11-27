@@ -13,7 +13,7 @@ import { useSession } from '../ui/use-session.ts';
 import type { DragTool } from './camera-rig.ts';
 import { clipSolids } from './clip.ts';
 import { Phase3DMenu, Storeys3DMenu, Views3DMenu } from './Controls3D.tsx';
-import { modelSolids } from './scene-model.ts';
+import { modelSolids, viewSheets } from './scene-model.ts';
 import type { Solid } from './solids.ts';
 import { active3d, close3D, focus3D, show3D, view3d } from './state.ts';
 import { Toolbar3D, type CameraUi } from './Toolbar3D.tsx';
@@ -69,7 +69,7 @@ function useCameraUi(s: Session, viewer: Viewer | null): CameraUi {
   const [tool, setToolState] = useState<DragTool>('orbit');
   const [walking, setWalking] = useState(false);
   const setTool = (t: DragTool) => {
-    viewer?.setDragTool(t);
+    viewer?.rig.setDragTool(t);
     setToolState(t);
   };
   const toggleWalk = () => {
@@ -142,7 +142,11 @@ export function View3DWindow({ s }: { s: Session }) {
   );
   const box = v.sectionBox;
   const solids = useMemo(() => (box ? clipSolids(raw, box) : raw), [raw, box]);
-  useEffect(() => viewer?.setSolids(solids), [viewer, solids]);
+  const sheets = useMemo(
+    () => viewSheets(s.model, v, st.only ? new Set(st.only) : null, box),
+    [s.model, v, onlyKey, box],
+  );
+  useEffect(() => viewer?.setSolids(solids, sheets), [viewer, solids, sheets]);
   useViewLook(s, viewer, solids);
   useEffect(() => viewer?.setBox(box), [viewer, box]);
   useEffect(() => viewer?.fit(), [viewer, st.fit]);
