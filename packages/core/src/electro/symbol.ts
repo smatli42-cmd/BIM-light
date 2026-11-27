@@ -12,18 +12,20 @@ import type { ElectroElement, SymbolShape } from './types.ts';
 export interface PlacedShapes {
   readonly dx: number;
   readonly shapes: readonly SymbolShape[];
+  /** Znak slotu (rámeček: každý slot má barvu své skupiny). */
+  readonly glyph?: string;
 }
 
 const SLOT_GAP = 0.1;
 
 function slotShapes(keys: readonly string[]): PlacedShapes[] {
-  const glyphs = keys.map((k) => GLYPHS[k]).filter((g) => !!g);
-  const total = glyphs.reduce((s, g) => s + g.width, 0) + SLOT_GAP * Math.max(0, glyphs.length - 1);
+  const glyphs = keys.flatMap((k) => (GLYPHS[k] ? [{ key: k, g: GLYPHS[k] }] : []));
+  const total = glyphs.reduce((s, { g }) => s + g.width, 0) + SLOT_GAP * Math.max(0, glyphs.length - 1);
   let x = -total / 2;
-  return glyphs.map((g) => {
+  return glyphs.map(({ key, g }) => {
     const dx = x + g.width / 2;
     x += g.width + SLOT_GAP;
-    return { dx, shapes: g.shapes };
+    return { dx, shapes: g.shapes, glyph: key };
   });
 }
 

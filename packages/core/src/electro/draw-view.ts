@@ -8,11 +8,15 @@ import { categoryState, detailOf, styleOfView } from '../view/effective.ts';
 import type { View } from '../view/types.ts';
 import { drawElectroElement, type ElectroDrawOptions } from './draw.ts';
 import type { ElectroElement } from './types.ts';
+import { SLOT_GROUP } from './groups.ts';
 
-/** Fakta o elektro prvku pro funkci grafiky (podmínky pravidel: kategorie, profese, skupina…). */
-export function electroFacts(m: Model, el: ElectroElement): ElementFacts {
+/**
+ * Fakta o elektro prvku pro funkci grafiky (podmínky pravidel: kategorie, profese, skupina…). `groupId`
+ * = skupina slotu rámečku, když se liší od skupiny typu.
+ */
+export function electroFacts(m: Model, el: ElectroElement, groupId?: string): ElementFacts {
   const t = m.electroTypes[el.typeId];
-  const group = t ? m.electroGroups[t.groupId] : undefined;
+  const group = m.electroGroups[groupId ?? t?.groupId ?? ''];
   return {
     id: el.id,
     category: 'electrical',
@@ -35,15 +39,25 @@ export function electroFacts(m: Model, el: ElectroElement): ElementFacts {
 export function drawElectro(m: Model, view: View): Primitive[] {
   if (!categoryState(m.display, view, 'electrical').visible) return [];
   const style = styleOfView(m.display, view);
-  const o: ElectroDrawOptions = {
+  const base = {
     scale: view.scale,
     detail: detailOf(m.display, view),
     paper: m.display.paperSizes,
     marks: style.labels['electroMarks'] !== false,
     heights: style.labels['electroHeights'] !== false,
   };
+  const effect = (el: ElectroElement, groupId?: string) =>
+    resolveGraphics(m.display, view, electroFacts(m, el, groupId)).effect;
   return Object.values(m.electroElements ?? {}).flatMap((el) => {
     if (el.storeyId !== view.storeyId || el.variant.kind !== 'main') return [];
-    return drawElectroElement(m, el, resolveGraphics(m.display, view, electroFacts(m, el)).effect, o);
+    const own = m.electroTypes[el.typeId]?.groupId;
+    const o: ElectroDrawOptions = {
+      ...base,
+      slotEffect: (glyph) => {
+        const gid = SLOT_GROUP[glyph];
+        return gid && gid !== own ? effect(el, gid) : undefined;
+      },
+    };
+    return drawElectroElement(m, el, effect(el), o);
   });
 }

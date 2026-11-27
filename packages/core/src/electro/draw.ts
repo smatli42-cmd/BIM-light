@@ -17,6 +17,8 @@ export interface ElectroDrawOptions {
   readonly paper: PaperSizes;
   readonly marks: boolean;
   readonly heights: boolean;
+  /** Grafika slotu jiné skupiny než typ (datová a anténní zásuvka v rámečku); chybí = grafika prvku. */
+  readonly slotEffect?: (glyph: string) => ResolvedEffect | undefined;
 }
 
 /** Popisek výšky: „+1150“ (mm nad podlahou), „−300“ pod podlahou. */
@@ -81,7 +83,10 @@ export function drawElectroElement(
   const f = symbolFrame(base, el, o.scale);
   const c: ShapeContext = { frame: f, unit, sizeMm, g, source: { elementId: el.id, role: 'značka elektro' } };
   const placed = symbolShapes(m, el, unit, o.detail);
-  const out = placed.flatMap((p) => drawShapes(p.shapes, p.dx, c));
+  const out = placed.flatMap((p) => {
+    const sg = p.glyph && o.slotEffect?.(p.glyph);
+    return drawShapes(p.shapes, p.dx, sg ? { ...c, g: sg } : c);
+  });
   if (o.detail === 'coarse') return out;
   const shifted = Math.hypot(f.origin.x - base.origin.x, f.origin.y - base.origin.y) > 1e-6;
   if (shifted)

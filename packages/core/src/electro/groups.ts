@@ -24,5 +24,17 @@ export const DEFAULT_ELECTRO_GROUPS: readonly ElectroGroup[] = [
   { id: G.control, name: 'Řízení', color: '#795548', order: 6 },
 ];
 
+/** Skupina znaku slotu rámečku (datová a anténní zásuvka v rámečku se zásuvkami mají svou barvu). */
+export const SLOT_GROUP: Readonly<Record<string, string>> = {
+  socket: G.power,
+  data: G.data,
+  tv: G.av,
+  switch1: G.lighting,
+  switch6: G.lighting,
+  switch5: G.lighting,
+  dimmer: G.lighting,
+  blind: G.control,
+};
+
 export const defaultElectroGroups = (): Record<Id, ElectroGroup> =>
   Object.fromEntries(DEFAULT_ELECTRO_GROUPS.map((g) => [g.id, g]));

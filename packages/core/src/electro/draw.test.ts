@@ -126,6 +126,13 @@ describe('koncepce 4, základ 11: grafika elektro prvků', () => {
     expect(why && why.lineColor.source).toBe('skupina Silnoproud');
   });
 
+  it('rámeček (Ardit): každý slot má barvu své skupiny – zásuvky červeně, datová modře, anténní fialově', () => {
+    const f = electroFixture();
+    const id = onWall(f, { slots: ['socket', 'data', 'tv'] });
+    const colors = primitivesOf(f, id).flatMap((p) => (p.kind === 'line' ? [p.stroke.color] : []));
+    expect(new Set(colors)).toEqual(new Set(['#d32f2f', '#0288d1', '#6a3fbf']));
+  });
+
   it('styl Elektro: stavba šedě bez šraf (pravidlo „Elektro – stavba šedě“), elektro barevně', () => {
     const f = electroFixture();
     const wall = drawView(f.model, f.viewId).primitives.filter((p) => p.source.elementId === f.wallId);
