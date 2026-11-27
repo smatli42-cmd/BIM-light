@@ -1,6 +1,8 @@
 // Migrace zobrazení (základ 9; požadavek 3D náhledu): balíček zobrazení 5 → 6, projekt 17 → 18.
 // Efekt grafiky dostane barvu povrchu ve 3D (`surfaceColor`, null = barva materiálu). Výchozí grafika
-// null; pravidlo pro bourané prvky s výplní dostane stejnou barvu povrchu, aby bourání bylo žluté i ve 3D.
+// null; pravidlo pro bourané prvky s výplní dostane sytou žlutou povrchu, aby bourání bylo vidět i ve 3D.
+import { DEMOLISHED_SURFACE } from './presets/rules.ts';
+
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -12,7 +14,7 @@ function withSurface(rule: unknown): unknown {
   if (!isObj(rule) || !isObj(rule['effect'])) return rule;
   const e = rule['effect'];
   if ('surfaceColor' in e || typeof e['fillColor'] !== 'string' || !isDemolishedRule(rule)) return rule;
-  return { ...rule, effect: { ...e, surfaceColor: e['fillColor'] } };
+  return { ...rule, effect: { ...e, surfaceColor: DEMOLISHED_SURFACE } };
 }
 
 export function displayV5toV6(data: Obj): Obj {

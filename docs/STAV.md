@@ -22,7 +22,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 ### Barva povrchu ve 3D v grafice, 2026-11-27 (požadavek 3 z 3D proudu, `docs/STAV-3d.md`)
 
 - Efekt grafiky má `surfaceColor` (null = barva materiálu; Archicad Override Surface), odděleně od výplně
-  řezu. Výchozí null, pravidlo „Bourání žlutě čárkovaně“ ho nastaví žlutě; „proč“ v `resolveGraphics`,
+  řezu. Výchozí null, pravidlo „Bourání žlutě čárkovaně“ ho nastaví sytě žlutě (#f2c200; světlá #fff3b0
+  ve 3D splývala s omítkou, migrace 19 → 20); „proč“ v `resolveGraphics`,
   schéma balíčku. Migrace projektu 17 → 18 a balíčku zobrazení 5 → 6.
 
 ### Desky D2: nástroj Deska, 2026-11-27 (hlavní proud; scéna `?ukazka=desky-kresleni`; screenshot Arditu)

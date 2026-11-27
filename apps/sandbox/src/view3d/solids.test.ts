@@ -99,8 +99,8 @@ describe('3D náhled / co je vidět: filtr rekonstrukce a vrstvy aktivního pohl
       (c) => c.name === 'Fáze – bourací práce',
     )!.id;
     f.run('view.setOverrideCombination', { viewId: f.viewId, combinationId: combo });
-    expect(colors(old)).toEqual(new Set(['#fff3b0']));
-    expect(colors(keep)).not.toContain('#fff3b0');
+    expect(colors(old)).toEqual(new Set(['#f2c200']));
+    expect(colors(keep)).not.toContain('#f2c200');
   });
 
   it('3D náhled / vrstvy: skryté vrstvy pohledu skryjí stěny i ve 3D', () => {

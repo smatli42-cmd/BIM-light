@@ -17,6 +17,7 @@ import { displayV1toV2 } from '../hatch/migrate-v1.ts';
 import { displayV2toV3 } from '../hatch/migrate-v2.ts';
 import { displayV3toV4 } from './migrate-v3.ts';
 import { displayV5toV6 } from './migrate-v5.ts';
+import { displayV6toV7 } from './migrate-v6.ts';
 import { displayV4toV5 } from '../view/migrate-v11.ts';
 import { HATCH_SCHEMA } from '../hatch/schema.ts';
 import { DISPLAY_SCHEMA_VERSION } from './presets/create.ts';
@@ -26,7 +27,8 @@ export const DISPLAY_PACKAGE_FORMAT = 'bim-light-display';
 
 /**
  * Migrace balíčku zobrazení. 1 → 2: kopie šraf a id šrafy v efektech (základ 34);
- * 2 → 3: měřítko šraf ve stylu a příznak základní / odvozená u šraf; 5 → 6: barva povrchu ve 3D.
+ * 2 → 3: měřítko šraf ve stylu a příznak základní / odvozená u šraf; 5 → 6: barva povrchu ve 3D;
+ * 6 → 7: sytá žlutá povrchu bouraných.
  */
 export const DISPLAY_MIGRATIONS: Migrations = {
   1: displayV1toV2,
@@ -34,6 +36,7 @@ export const DISPLAY_MIGRATIONS: Migrations = {
   3: displayV3toV4,
   4: displayV4toV5,
   5: displayV5toV6,
+  6: displayV6toV7,
 };
 
 export function exportDisplayPackage(display: DisplaySettings): string {

@@ -9,6 +9,9 @@ export interface RulePreset {
   readonly effect: GraphicEffect;
 }
 
+/** Sytá žlutá povrchu bouraných prvků ve 3D (jako Archicad); světlá výplň řezu by splynula s omítkou. */
+export const DEMOLISHED_SURFACE = '#f2c200';
+
 const status = (value: string): Predicate => ({ property: 'status', op: 'eq', value });
 
 export const RULE_PRESETS: readonly RulePreset[] = [
@@ -26,7 +29,7 @@ export const RULE_PRESETS: readonly RulePreset[] = [
       lineColor: '#d4a800',
       lineType: 'dashed',
       fillColor: '#fff3b0',
-      surfaceColor: '#fff3b0',
+      surfaceColor: DEMOLISHED_SURFACE,
       hatch: 'none',
     },
   },

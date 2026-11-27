@@ -19,6 +19,7 @@ import { projectV14toV15 } from '../tag/migrate-v14.ts';
 import { projectV16toV17 } from '../slab/migrate-v16.ts';
 import { projectV17toV18 } from '../style/migrate-v5.ts';
 import { projectV18toV19 } from '../slab-opening/migrate-v18.ts';
+import { projectV19toV20 } from '../style/migrate-v6.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -33,7 +34,7 @@ export const PROJECT_EXTENSION = '.bim';
  * 11 → 12: filtr rekonstrukce pohledu; 12 → 13: vlastnosti typů stěn (Z7);
  * 13 → 14: značky typů a výkazy (Z8); 14 → 15: značky typu stěn v půdorysu (Z8);
  * 15 → 16: skladby; 16 → 17: typy desek (D1); 17 → 18: barva povrchu ve 3D v grafice;
- * 18 → 19: otvory v deskách (D3).
+ * 18 → 19: otvory v deskách (D3); 19 → 20: sytá žlutá povrchu bouraných ve 3D.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -54,6 +55,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   16: projectV16toV17,
   17: projectV17toV18,
   18: projectV18toV19,
+  19: projectV19toV20,
 };
 
 export function serializeProject(model: Model): string {

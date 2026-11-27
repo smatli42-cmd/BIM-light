@@ -21,7 +21,8 @@ describe('základ 11 / 3D náhled: barva povrchu ve 3D přes funkci grafiky', ()
       combinationId: combo(f, 'Fáze – bourací práce'),
     });
     const g = resolveGraphics(f.model.display, view(), elementFacts(f.model, f.wall(id)));
-    expect(g.effect.surfaceColor).toBe('#fff3b0');
+    expect(g.effect.surfaceColor).toBe('#f2c200');
+    expect(g.effect.fillColor).toBe('#fff3b0');
     expect(g.why.surfaceColor.source).toBe('Bourání žlutě čárkovaně');
   });
 
@@ -53,9 +54,29 @@ describe('základ 11 / 3D náhled: barva povrchu ve 3D přes funkci grafiky', ()
     if (!r.ok) return;
     expect(r.model.display.baseGraphics.surfaceColor).toBeNull();
     const demolish = Object.values(r.model.display.rules).find((x) => x.name === 'Bourání žlutě čárkovaně');
-    expect(demolish?.effect.surfaceColor).toBe('#fff3b0');
+    expect(demolish?.effect.surfaceColor).toBe('#f2c200');
     const red = Object.values(r.model.display.rules).find((x) => x.name === 'Nové červeně');
     expect(red?.effect.surfaceColor).toBeUndefined();
     expect(r.model.display.schemaVersion).toBe(DISPLAY_SCHEMA_VERSION);
+  });
+
+  it('základ 9: migrace 19 → 20 – světlá žlutá povrchu bourání (#fff3b0) se změní na sytou, vlastní barva ne', () => {
+    const f = fixture();
+    const raw = JSON.parse(serializeProject(f.model)) as Record<string, unknown>;
+    const display = raw['display'] as Record<string, Record<string, unknown>>;
+    const rules = Object.fromEntries(
+      Object.entries(display['rules']!).map(([k, r]) => {
+        const rule = r as { name: string; effect: Record<string, unknown> };
+        const color = rule.name === 'Bourání žlutě čárkovaně' ? '#fff3b0' : rule.effect['surfaceColor'];
+        return [k, { ...rule, effect: { ...rule.effect, surfaceColor: color } }];
+      }),
+    );
+    const old = { ...raw, schemaVersion: 19, display: { ...display, schemaVersion: 6, rules } };
+    const r = parseProject(JSON.stringify(old));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const demolish = Object.values(r.model.display.rules).find((x) => x.name === 'Bourání žlutě čárkovaně');
+    expect(demolish?.effect.surfaceColor).toBe('#f2c200');
+    expect(demolish?.effect.fillColor).toBe('#fff3b0');
   });
 });

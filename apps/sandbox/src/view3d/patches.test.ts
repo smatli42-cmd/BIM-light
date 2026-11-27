@@ -10,7 +10,7 @@ const phase = (f: Fixture, name: string) =>
   Object.values(f.model.display.overrideCombinations).find((c) => c.name === name)!.id;
 const volume = (solids: readonly Solid[]) =>
   solids.reduce((v, s) => v + s.slabs.reduce((a, b) => a + shapeArea(b.shape) * (b.z1 - b.z0), 0), 0);
-const YELLOW = '#fff3b0';
+const YELLOW = '#f2c200';
 
 /** Stávající stěna 300 s novým otvorem 1000 × 2000 (probourání). */
 function probourani() {
