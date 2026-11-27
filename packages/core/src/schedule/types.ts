@@ -3,9 +3,9 @@
 import type { Id } from '../ids/index.ts';
 import type { Status } from '../model/types.ts';
 
-/** Zdroj řádků: stěny, vrstvy stěn (výkaz materiálů), typy stěn (legenda skladeb). */
-export type ScheduleSource = 'walls' | 'wall-layers' | 'wall-types';
-export const SCHEDULE_SOURCES: readonly ScheduleSource[] = ['walls', 'wall-layers', 'wall-types'];
+/** Zdroj řádků: stěny, vrstvy stěn (výkaz materiálů), typy stěn (legenda skladeb), desky (D4). */
+export type ScheduleSource = 'walls' | 'wall-layers' | 'wall-types' | 'slabs';
+export const SCHEDULE_SOURCES: readonly ScheduleSource[] = ['walls', 'wall-layers', 'wall-types', 'slabs'];
 
 export interface ScheduleFilter {
   /** Jen tato podlaží; prázdné = všechna. */

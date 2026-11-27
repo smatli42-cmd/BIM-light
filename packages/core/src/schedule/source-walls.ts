@@ -15,7 +15,7 @@ export const STATUS_LABELS: Readonly<Record<Status, string>> = {
 };
 
 /** Název varianty prvku (hlavní model, nebo „sada – varianta“). */
-export function variantLabel(m: Model, w: Wall): string {
+export function variantLabel(m: Model, w: Pick<Wall, 'variant'>): string {
   if (w.variant.kind === 'main') return 'hlavní model';
   const { setId, variantId } = w.variant;
   const set = m.variantSets[setId];

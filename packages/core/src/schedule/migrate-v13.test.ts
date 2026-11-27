@@ -22,6 +22,7 @@ describe('základ 9 / plan-steny Z8: migrace projektu 13 → 14', () => {
       'Výkaz stěn',
       'Výkaz materiálů stěn',
       'Legenda skladeb',
+      'Výkaz desek', // přidá migrace 21 → 22 (desky D4)
     ]);
   });
 });

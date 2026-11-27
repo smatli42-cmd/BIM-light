@@ -6,3 +6,4 @@ export * from './csv.ts';
 export * from './defaults.ts';
 export * from './migrate-v13.ts';
 export { STATUS_LABELS } from './source-walls.ts';
+export * from './migrate-v21.ts';

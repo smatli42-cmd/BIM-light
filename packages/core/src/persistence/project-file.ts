@@ -21,6 +21,7 @@ import { projectV17toV18 } from '../style/migrate-v5.ts';
 import { projectV18toV19 } from '../slab-opening/migrate-v18.ts';
 import { projectV19toV20 } from '../style/migrate-v6.ts';
 import { projectV20toV21 } from '../view-3d/migrate-v20.ts';
+import { projectV21toV22 } from '../schedule/migrate-v21.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -59,6 +60,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   18: projectV18toV19,
   19: projectV19toV20,
   20: projectV20toV21,
+  21: projectV21toV22,
 };
 
 export function serializeProject(model: Model): string {

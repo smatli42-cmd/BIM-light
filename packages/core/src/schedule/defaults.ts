@@ -1,6 +1,20 @@
-// Výchozí výkazy nového projektu (plán stěn Z8): výkaz stěn, výkaz materiálů stěn, legenda skladeb.
+// Výchozí výkazy nového projektu (plán stěn Z8): výkaz stěn, výkaz materiálů stěn, legenda skladeb
+// a výkaz desek (D4).
 // Jsou to obyčejná data – uživatel (i AI) je upraví, smaže nebo přidá další stejným mechanismem.
 import { DEFAULT_FILTER, type ScheduleDef } from './types.ts';
+
+/** Výkaz desek (D4): po typech se součty ploch, obvodu a objemu. */
+export const SLABS_SCHEDULE: ScheduleDef = {
+  id: 'schedule-slabs',
+  name: 'Výkaz desek',
+  source: 'slabs',
+  fields: ['mark', 'type', 'storey', 'thickness', 'count', 'area', 'netArea', 'perimeter', 'volume'],
+  groupBy: ['mark', 'type', 'storey'],
+  itemize: false,
+  sortBy: null,
+  filter: DEFAULT_FILTER,
+  minOpeningArea: 0,
+};
 
 export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
   {
@@ -36,6 +50,7 @@ export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
     filter: DEFAULT_FILTER,
     minOpeningArea: 0,
   },
+  SLABS_SCHEDULE,
 ];
 
 export const defaultSchedules = (): Record<string, ScheduleDef> =>
