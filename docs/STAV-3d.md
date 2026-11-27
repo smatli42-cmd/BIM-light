@@ -101,6 +101,10 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   i povrchy, řezná plocha je plná v barvách vrstev (dřív jen ořez obrazu – dovnitř těles šlo vidět a desky
   vypadaly jako tenké pláty). Obraz se ořezává jen během tažení úchytu a u šikmé roviny; průsvitný obdélník
   roviny jen během tažení.
+- **Bez prolínání stěny a desky** (`overlaps.ts`, hlášení uživatele 2026-11-27): obvodová stěna 1.NP
+  prochází stropem 2.NP, tělesa se překrývala a plochy se při otáčení střídaly. Teď se těleso s nižší
+  prioritou v místě překryvu vyřízne – **stěna má přednost před deskou** (fasáda i zateplení souvislé,
+  deska končí na líci stěny).
 - **Skica jemněji:** přetah 2 % délky (15–60 mm), odchylka konce ±4 mm.
 - **Stíny:** výchozí vypnuté (beze změny), zapnuté měkké (PCF), menší bias a normalBias proti „akné“.
 - Přesah desky v domě (465 / 315 mm) je správně: obdélník stěn jde od zadané čáry ven, deska končí v líci.
@@ -165,6 +169,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Výběr ve 3D zvýrazní prvek barvou výběru (akcent rozhraní), ne obrysem.
 - Typ s více výškovými pásy: vrstvy ve 3D zatím podle pásu v rovině řezu přes celou výšku (viz níže).
 
+- **Priorita průniku ve 3D:** stěna > deska (v Archicadu podle materiálu; až budou priority materiálů,
+  vezme se z nich – pak by nosný strop mohl projít obvodovou zdí až pod zateplení).
 - **Lišta 3D (krok 5):** Ctrl+Y pro Řez (jako Ardit) se nepoužije – v BIM-light je Ctrl+Y Znovu.
   Režim Skica bere stíny podle nastavení slunce (nezapíná je sám). Bílý model a skica mají mírný vlastní jas,
   aby plochy na slunci byly skoro bílé. Natočení georeference = úhel osy Y projektu od severu po směru

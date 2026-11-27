@@ -23,6 +23,7 @@ import type { Box3D } from './clip.ts';
 import { cutTriangles, exactCut } from './clip-plane.ts';
 import { clipTriangles } from './clip-triangles.ts';
 import { surfaceSheets, type Sheet } from './surface-sheets.ts';
+import { resolveOverlaps } from './overlaps.ts';
 import { patchLook, patchSolid } from './patches.ts';
 import { slabSolids } from './slab-solids.ts';
 import { wallSolids, type Solid } from './solids.ts';
@@ -95,7 +96,7 @@ export function modelSolids(
   const shown = shownModel(model, view);
   const want = (e: Element) => (!only || only.has(e.id)) && (!storeys || storeys.has(e.storeyId));
   const slabs = allSlabs(model).filter((d) => want(d) && isShown(model, view, d));
-  return [
+  const all = [
     ...shown.walls
       .filter(want)
       .flatMap((w) => [
@@ -104,6 +105,8 @@ export function modelSolids(
       ]),
     ...slabs.flatMap((d) => surfaced(model, view, d, slabSolids(model, d, slabHoles(model, view, d.id)))),
   ];
+  // Překryvy stěna × deska: stěna má přednost, deska se v ní vyřízne (bez prolínání ploch).
+  return resolveOverlaps(all, (id) => (model.elements[id]?.category === 'wall' ? 2 : 1));
 }
 
 /** Prvky pro „Zobrazit výběr ve 3D“: vybrané stěny a desky a hostitelé vybraných otvorů (i v deskách). */
