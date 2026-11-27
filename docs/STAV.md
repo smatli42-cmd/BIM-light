@@ -1,12 +1,33 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, řezy a pohledy z modelu (jádro a okno řezu); typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Řezy a pohledy z modelu – jádro a kresba, 2026-11-27 (scéna `?ukazka=rezy`, řezy A, B a 4 pohledy i v `?ukazka=dum`)
+
+- Jádro `section/`: řez i pohled (fasáda) je druh pohledu v projektu (`model.sections`, migrace 30 → 31):
+  druh, název, označení (A, B… / 1–4), čára start–end v půdorysu, směr pohledu (doleva / doprava), hloubka
+  (výchozí 15 m, pohled bez omezení), rozsah výšky, měřítko, styl, místní úpravy, filtr rekonstrukce, přepisy
+  prvků, skupina anotací značky. Pro 3D okno rovina řezu `cutPlane3d` (dotaz `section.list`).
+- Příkazy `section.create / update / rename / delete`, `elevation.create` (4 pohledy kolem obálky, název
+  podle světové strany s natočením k severu); dotazy `section.list`, `section.elements` (co řez protíná:
+  rozsah u / z a materiály; co je vidět za rovinou a jak daleko). AI `ai/scenario-sections.test.ts`.
+- Kresba řezu (`drawSection`, jen primitiva): stěny přímé i oblouk a desky proříznuté po vrstvách – výplň a
+  šrafa materiálu přes funkci grafiky (i izolace pásem), obrys perem řezu sjednocený přes stejný materiál
+  (stěna + strop z betonu bez čáry), hranice vrstev, jemná = hranice jádra; otvory (parapet, nadpraží, nika
+  do své hloubky); za rovinou do hloubky pohledu pohledové hrany perem pohledu se zakrytím bližšími prvky.
+  Tři podrobnosti, filtr rekonstrukce, vrstvy. Úrovně podlaží čerchovaně s názvem a výškové kóty (±0,000,
+  +3,000) + kóta nejvyššího bodu. Pohled (fasáda) = jen pohledové hrany.
+- Značka řezu v půdorysu (`section/mark.ts`): tlusté konce, tenká čerchovaná čára, šipky směru, písmeno;
+  skupina anotací (základ 28), pera z grafiky kategorie Značky, velikosti od výšky popisu.
+- Přesun do jádra beze změny chování: `drawCutLines` (čáry řezu stěn), `materialHatch`, `openingFootprint`.
+- Sandbox: Obsah → Projekt → skupiny **Řezy** a **Pohledy**, klik otevře okno s kresbou (kolečko přiblíží,
+  tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ### Podlaha pod dveřmi, 2026-11-27 (pokyn uživatele; scéna `?ukazka=podlaha-dvere`, dveře v `?ukazka=dum`)
 
@@ -125,6 +146,21 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 ### Šrafy (ČSN 01 3420, tepelná izolace, velikost) hotovo (podrobnosti v `docs/STAV-srafy.md`)
 
 ## Rozhodl Code (k potvrzení)
+
+- **Řezy a pohledy:** řez i pohled jsou jeden druh dat (`kind`), jako Revit Section / Elevation. Směr pohledu
+  = doleva / doprava od čáry start → end (výchozí doleva); na výkrese je vpravo pravá ruka pozorovatele.
+  Výchozí hloubka řezu 15 m, pohledu bez omezení; výchozí styl = styl prvního půdorysu, měřítko 1:100.
+  Šířka výkresu = délka čáry (Revit ořízne pohled šířkou čáry). Vícepásové typy stěn se v řezu kreslí
+  celou výškou podle vrstev pásu v rovině řezu (jako 3D). Pohledové hrany: obrys části prvku v pásmu pohledu
+  (stěna = šířka × výška minus otvory, deska = šířka × tloušťka), zakrytí podle nejbližšího bodu prvku;
+  hrany splývající s hranou bližšího prvku zůstanou. Deska v řezu má šrafu materiálu (výchozí grafika
+  kategorie Desky, migrace ji doplní; půdorys desky šrafu dál nekreslí). Úrovně podlaží: čerchovaná čára,
+  název vlevo, výšková kóta vpravo (trojúhelník hrotem na čáře, metry na 3 místa). Značka řezu se kreslí
+  v půdorysech podlaží, která řez protíná (bez rozsahu ve všech), ve skupině anotací viditelné ve všech
+  stylech (výchozí „Kresba 2D“), aby byla vidět ve Studii i v Projektu (Revit: značka ve všech půdorysech).
+  Velikosti značky jsou násobky výšky popisu (bez nové položky velikostí na papíře). Pohledy (fasády)
+  značku v půdorysu nemají (české výkresy je nekreslí). Názvy pohledů podle strany, kam fasáda hledí
+  (Pohled jižní…), označení 1–4. Okno řezu je zatím dialog nad výkresem jako okno výkazu.
 
 - **Podlaha pod dveřmi:** A = místnost u referenčního líce stěny, B = u protilehlého. Sokl (obvod podlahy)
   zůstává podle místnosti, proužek ho nemění. Volba platí jen pro průchozí otvor k podlaze (parapet ≤ 1 mm).
@@ -257,22 +293,24 @@ Stav k 2026-11-27 večer (přechod na jiný počítač): vše je v `main`, CI ze
 Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou
 v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
 
-1. **Řezy a pohledy z modelu** (rozhodnuto uživatelem jako další krok; `docs/rozhodnuti-platforma-ui-vystupy.md`,
-   `docs/checklist-dps-bim-light.md`): řez jako druh pohledu (`core/src/section/` – čára řezu, směr, hloubka,
-   Řez A/B, styl, měřítko, fáze), Pohled 1–4 (fasády); kresba z modelu – stěny a desky po vrstvách se šrafami
-   přes funkci grafiky, prvky za rovinou tenčím perem, podrobnost, výškové kóty a úrovně podlaží; značka řezu
-   v půdorysu (ČSN, anotace podlaží); příkazy `section.*`, `elevation.create`, dotaz `section.list`, AI
-   scénář; nástroj Řez, Obsah → Projekt skupiny Řezy a Pohledy; data řezu použitelná pro 3D „Řez A / Řez B“
-   (rozbalovač v liště 3D okna). Před rozhraním si vyžádat screenshot z Arditu.
+1. **Řezy a pohledy – rozhraní** (jádro hotové, čeká na screenshot z Arditu): nástroj Řez (kreslení čáry,
+   směr, hloubka), info box řezu (směr, hloubka, rozsah, měřítko, styl, fáze), výběr a tažení značky řezu,
+   řez jako okno vedle půdorysu (ne dialog), „Řez A / Řez B“ v rozbalovači 3D okna (data: `section.list` →
+   `cutPlane3d`). Dál v jádře: popis skladeb u řezu, okna a dveře v řezu (etapa 4), terén, zalomený řez.
 2. **Spáry ve 3D** (3D okno) z dotazu `covering.joints` (tvar ve `docs/STAV-3d.md` / popis dotazu v registru).
 3. **Podlahy a stropy** (poslední část povrchů místností) a rozvinutý pohled stěny se spárořezem (Otevřené).
 4. Body „Rozhodl Code (k potvrzení)“ projít s uživatelem.
 
-**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `podlaha-dvere`, `typy-desek`, `desky-vazba`,
+**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `rezy`, `podlaha-dvere`, `typy-desek`, `desky-vazba`,
 `sparorez`, `povrchy`, `mistnosti`, `desky-d4`, `desky-presny-otvor`, `desky-otvory`, `desky-kresleni`,
 `desky`, `dum` (i s `&3d`). Starší seznam „vyzkouší“ je v `docs/STAV-archiv.md`.
 
 ## Otevřené
+
+- **Řezy – zbývá:** rozhraní (viz Další krok), popis skladeb (odkaz se skladbou vrstev), materiály a terén
+  ve fasádě, okolní zástavba, šikmé střechy a schodiště (až budou prvky), zalomený řez, hrany prvků za
+  rovinou podrobněji (rohy šikmo viděných stěn, ostění u fasády), místnosti a kóty v řezu, výškové kóty
+  parapetů a nadpraží na fasádě, uložení vlastní polohy výškových kót.
 
 - **Povrchy – zbývá:** okno typů úprav (dnes jen příkazy / AI a výběr v info boxu), rozvinutý pohled
   stěny se spárořezem (dotaz `covering.joints` ho umí), spárořez stropu (podhledu) v pohledu nahoru, vazba
@@ -333,12 +371,12 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 - Z3 (rozhodnutí E): **desky** – vršek stěny nejde přichytit ke stropu, „omítka pod strop“ je jen číslo
   prodloužení. **Ukládání projektu v sandboxu** – Platform v prohlížeči umí jen stažení (export IFC).
 - Z4: **okna a dveře** (etapa 4) – ostění se počítá bez výplně; obalení podle polohy okna doplní etapa 4.
-  **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
-  parapet), kresba jen v půdorysu.
+  **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez** – otvor se v řezu kreslí jako prázdný
+  (parapet, nadpraží); výplň okna / dveří až s etapou 4.
 
-## Největší soubory (po vazbě desek)
+## Největší soubory (po řezech a pohledech)
 
-Výstup `npm run check:size`: zdrojové soubory bez varování; varování jen STAV.md (41 KB, návrh v Otevřené).
+Výstup `npm run check:size`: bez varování (STAV.md 35 KB).
 
 | Řádky | Soubor |
 |---|---|
