@@ -6,6 +6,7 @@ import { STATUSES } from '../../model/types.ts';
 import { SCHEDULE_SOURCE_DEFS } from '../../schedule/compute.ts';
 import {
   DEFAULT_FILTER,
+  JAMB_RULES,
   SCHEDULE_SOURCES,
   type ScheduleDef,
   type ScheduleFilter,
@@ -37,6 +38,10 @@ const EDITABLE = {
   sortBy: { oneOf: [{ type: 'string' }, { type: 'null' }], description: 'řazení ve skupině' },
   filter: FILTER,
   minOpeningArea: S.number('otvory do této plochy (m²) se z ploch neodečítají', { minimum: 0 }),
+  jambRule: S.enumOf(
+    JAMB_RULES,
+    'výkaz povrchů – ostění: deducted = jen u odečtených otvorů, all = vždy, none = nikdy',
+  ),
 } as const satisfies Record<string, JsonSchema>;
 
 type Editable = Partial<Omit<ScheduleDef, 'id' | 'source' | 'filter'>> & { filter?: Partial<ScheduleFilter> };
@@ -60,7 +65,7 @@ export const scheduleCreate = defineCommand<Editable & { source: ScheduleSource;
   label: 'Nový výkaz',
   description:
     'Vytvoří výkaz (tabulku z modelu): zdroj walls (stěny) / wall-layers (vrstvy = materiály) / ' +
-    'wall-types (legenda skladeb), sloupce, seskupení, řazení, filtr a pravidlo odečtu otvorů. ' +
+    'wall-types (legenda skladeb) / slabs / rooms / coverings (povrchy místností), sloupce, seskupení, řazení, filtr a pravidlo odečtu otvorů. ' +
     'Bez sloupců dostane všechna pole zdroje.',
   group: GROUP,
   params: S.object({ source: S.enumOf(SCHEDULE_SOURCES, 'zdroj řádků'), ...EDITABLE }, ['source', 'name']),
@@ -75,6 +80,7 @@ export const scheduleCreate = defineCommand<Editable & { source: ScheduleSource;
       sortBy: p.sortBy ?? null,
       filter: { ...DEFAULT_FILTER, ...p.filter },
       minOpeningArea: p.minOpeningArea ?? 0,
+      ...(p.jambRule && { jambRule: p.jambRule }),
     };
     return { model: checked(model, def), created: [def.id] };
   },
@@ -85,7 +91,7 @@ export const scheduleUpdate = defineCommand<Editable & { scheduleId: Id }>({
   label: 'Upravit výkaz',
   description:
     'Změní definici výkazu (jen zadané): název, sloupce, seskupení, po prvcích / součty skupin, řazení, ' +
-    'filtr (podlaží, stavy, varianty, jen použité typy) a mez odečtu otvorů (m²).',
+    'filtr (podlaží, stavy, varianty, jen použité typy), mez odečtu otvorů (m²) a přičtení ostění.',
   group: GROUP,
   params: S.object({ scheduleId: S.id, ...EDITABLE }, ['scheduleId']),
   run(model, { scheduleId, filter, ...rest }) {

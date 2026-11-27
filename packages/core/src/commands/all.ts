@@ -81,14 +81,10 @@ import {
   wallTypeUpdateLayer,
 } from './wall-type/layers.ts';
 import { wallTypeLoad } from './wall-type/load.ts';
-import { slabCreate } from './slab/create.ts';
-import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edit.ts';
-import { slabOpeningCreate } from './slab-opening/create.ts';
+import { SLAB_COMMANDS } from './slab/all.ts';
 import { ROOM_COMMANDS } from './room/all.ts';
-import { outlineSetDistance } from './slab/distance.ts';
+import { COVERING_COMMANDS } from './covering/all.ts';
 import { VIEW3D_COMMANDS } from './view-3d/all.ts';
-import { slabOpeningMove, slabOpeningMoveVertex, slabOpeningSetOutline } from './slab-opening/edit.ts';
-import { slabTypeDelete, slabTypeDuplicate, slabTypeUpdate } from './slab/type.ts';
 
 export const CORE_COMMANDS = [
   storeyCreate,
@@ -129,21 +125,10 @@ export const CORE_COMMANDS = [
   wallDisconnect,
   wallSetJoin,
   wallCross,
-  slabCreate,
-  slabUpdate,
-  slabSetOutline,
-  slabMoveVertex,
-  slabMove,
-  slabOpeningCreate,
-  slabOpeningSetOutline,
-  slabOpeningMoveVertex,
-  slabOpeningMove,
+  ...SLAB_COMMANDS,
   ...ROOM_COMMANDS,
-  outlineSetDistance,
+  ...COVERING_COMMANDS,
   ...VIEW3D_COMMANDS,
-  slabTypeDuplicate,
-  slabTypeUpdate,
-  slabTypeDelete,
   openingCreate,
   openingMove,
   openingUpdate,

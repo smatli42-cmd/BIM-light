@@ -1,6 +1,7 @@
 // Zdroj výkazu „místnosti“ (výpis místností, základ 8, prvky stavby 9): jeden řádek = jedna místnost;
 // plocha podle ČSN 73 4301 (2 desetinná místa), obvod, výška a objem. Neuzavřená místnost má plochu 0
 // a stav „neuzavřená“ (Revit „Not Enclosed“).
+import { finishText } from '../covering/finish.ts';
 import type { Model } from '../model/types.ts';
 import { allRoomGeometry } from '../room/queries.ts';
 import type { Room, RoomState } from '../room/types.ts';
@@ -73,9 +74,9 @@ export const ROOMS_SOURCE: ScheduleSourceDef = {
         height: g?.height ?? 0,
         volume: ok ? g.volume / 1e9 : 0,
         floorLevel: levelText(level),
-        floorFinish: p.floorFinish ?? '',
-        wallFinish: p.wallFinish ?? '',
-        ceilingFinish: p.ceilingFinish ?? '',
+        floorFinish: finishText(m, r, 'floorFinish') ?? '',
+        wallFinish: finishText(m, r, 'wallFinish') ?? '',
+        ceilingFinish: finishText(m, r, 'ceilingFinish') ?? '',
         occupants: p.occupants ?? 0,
         temperature: p.temperature ?? '',
         note: p.note ?? '',

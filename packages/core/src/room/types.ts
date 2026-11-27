@@ -7,8 +7,9 @@ import type { Id } from '../ids/index.ts';
 import type { HeightTop } from '../model/height.ts';
 import type { Status, VariantRef } from '../model/types.ts';
 import type { GraphicEffect } from '../style/types.ts';
+import type { RoomCoverings } from '../covering/types.ts';
 
-/** Zadávané údaje místnosti; povrchy zatím jako text (později z povrchů místnosti). */
+/** Zadávané údaje místnosti; text povrchů je ruční přepis (jinak se bere z přiřazených úprav). */
 export interface RoomProps {
   readonly floorFinish?: string;
   readonly wallFinish?: string;
@@ -49,6 +50,8 @@ export interface Room {
   readonly floorOffset?: number;
   /** Údaje, které program nespočítá (zadává uživatel nebo AI). */
   readonly props?: RoomProps;
+  /** Úpravy povrchů: zóny stěn, přepisy jednotlivých stěn, podlaha, strop (základ 14). */
+  readonly coverings?: RoomCoverings;
   /** Přepis grafiky „ve všech pohledech“ (patro 5). */
   readonly graphicOverride?: GraphicEffect;
 }

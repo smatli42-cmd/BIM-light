@@ -20,6 +20,8 @@ import { outlineTempDimensionList } from './outline-dims.ts';
 import { wallTopSlab } from './wall-top.ts';
 import { roomCategoryList, roomList } from './rooms.ts';
 import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
+import { coveringSurfaces, coveringTypeList } from './coverings.ts';
+import { coveringRoom } from './covering-room.ts';
 
 export const CORE_QUERIES = [
   projectInfo,
@@ -34,6 +36,9 @@ export const CORE_QUERIES = [
   slabOpeningList,
   roomList,
   roomCategoryList,
+  coveringTypeList,
+  coveringRoom,
+  coveringSurfaces,
   outlineTempDimensionList,
   view3dList,
   slabTypeList,

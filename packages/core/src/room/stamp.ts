@@ -1,6 +1,7 @@
 // Obsah razítka místnosti (katalog pohledů: číslo, název, plocha). Které údaje razítko ukazuje a v jakém
 // pořadí, je data stylu (`Style.roomStamp`, přenáší se s nastavením zobrazení, základy 27, 31); platí pro
 // všechna razítka v pohledech se stylem. Prázdný údaj se vynechá.
+import { finishText } from '../covering/finish.ts';
 import type { Model } from '../model/types.ts';
 import { STATUS_LABELS } from '../schedule/source-walls.ts';
 import type { Style } from '../style/types.ts';
@@ -80,6 +81,8 @@ export function areaSplit(model: Model, r: Room, area: number) {
   return { living: living ? area : 0, utility: living ? 0 : area };
 }
 
+const labeled = (label: string, v: string | null) => (v ? `${label}: ${v}` : null);
+
 /** Text jednoho údaje razítka; null = údaj chybí (řádek se vynechá). */
 export function stampValue(model: Model, r: Room, g: RoomGeometry, f: RoomStampField): string | null {
   const p = r.props ?? {};
@@ -98,9 +101,9 @@ export function stampValue(model: Model, r: Room, g: RoomGeometry, f: RoomStampF
     storey: () => model.storeys[r.storeyId]?.name ?? null,
     category: () => model.roomCategories[r.categoryId ?? '']?.name ?? null,
     status: () => STATUS_LABELS[r.status],
-    floorFinish: () => (p.floorFinish ? `podlaha: ${p.floorFinish}` : null),
-    wallFinish: () => (p.wallFinish ? `stěny: ${p.wallFinish}` : null),
-    ceilingFinish: () => (p.ceilingFinish ? `strop: ${p.ceilingFinish}` : null),
+    floorFinish: () => labeled('podlaha', finishText(model, r, 'floorFinish')),
+    wallFinish: () => labeled('stěny', finishText(model, r, 'wallFinish')),
+    ceilingFinish: () => labeled('strop', finishText(model, r, 'ceilingFinish')),
     occupants: () => (p.occupants !== undefined ? `${p.occupants} os.` : null),
     temperature: () => (p.temperature !== undefined ? `${dec(p.temperature, 0)} °C` : null),
     note: () => p.note || null,

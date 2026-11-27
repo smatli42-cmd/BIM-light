@@ -17,9 +17,10 @@ import type { WallTag } from '../tag/types.ts';
 import type { Slab, SlabType } from '../slab/types.ts';
 import type { Room } from '../room/types.ts';
 import type { RoomCategory } from '../room/category.ts';
+import type { CoveringType } from '../covering/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 26;
+export const SCHEMA_VERSION = 27;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -120,6 +121,8 @@ export interface Model {
   readonly rooms: Readonly<Record<Id, Room>>;
   /** Kategorie (funkce) místností: barva a druh plochy (Archicad Zone Category). */
   readonly roomCategories: Readonly<Record<Id, RoomCategory>>;
+  /** Typy úprav povrchů (IfcCovering: malba, obklad, dlažba…); přiřazení je v místnostech. */
+  readonly coveringTypes: Readonly<Record<Id, CoveringType>>;
   /** Vztahy jako samostatné objekty (základ 1, 24). */
   readonly relations: Readonly<Record<Id, Relation>>;
   /** Kóty patří podlaží a mají skupinu anotací (základ 28). */

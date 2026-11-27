@@ -1,6 +1,7 @@
 // Nový prázdný projekt: budova, podlaží 1.NP, knihovní materiály, výchozí typy stěn,
 // nastavení zobrazení (Studie, Projekt) s kopiemi použitých šraf a pohled. Ukázková data jsou vymyšlená.
 import { defaultRoomCategories } from '../room/category.ts';
+import { coveringLibraryFor } from '../covering/library.ts';
 import { newView3d } from '../view-3d/types.ts';
 import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
@@ -44,7 +45,8 @@ function emptyProject(newId: IdGenerator, name: string): Model {
   const buildingId = newId();
   const storeyId = newId();
   const mats = materials(newId);
-  const display = withHatchesFor(createDefaultDisplay(newId), mats);
+  const covering = coveringLibraryFor(byId(mats));
+  const display = withHatchesFor(createDefaultDisplay(newId), Object.values(covering.materials));
   const slabs = slabLibraryForProject(mats, newId);
   const study = Object.values(display.styles)[0];
   if (!study) throw new Error('Chybí výchozí styl');
@@ -67,7 +69,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     project: { id: newId(), name, georef: { sjtskY: 0, sjtskX: 0, rotationDeg: 0, elevationBpv: 0 } },
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },
     storeys: { [storeyId]: { id: storeyId, name: '1.NP', buildingId, elevation: 0, height: 3000 } },
-    materials: byId(mats),
+    materials: covering.materials,
     wallTypes: byId(wallTypes(mats, newId)),
     slabTypes: byId(slabs.map((s) => s.type)),
     compositions: byId(slabs.map((s) => s.composition)),
@@ -76,6 +78,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     slabOpenings: {},
     rooms: {},
     roomCategories: defaultRoomCategories(),
+    coveringTypes: covering.types,
     relations: {},
     dimensions: {},
     variantSets: {},

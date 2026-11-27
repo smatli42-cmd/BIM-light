@@ -29,6 +29,23 @@ export const ROOMS_SCHEDULE: ScheduleDef = {
   minOpeningArea: 0,
 };
 
+/**
+ * Výkaz povrchů (prvky stavby 9): m² po místnostech a typech úprav, délky soklů. Rozpočtová praxe:
+ * otvory do 4 m² se neodečítají a jejich ostění se nepřičítá; větší se odečtou a ostění přičte.
+ */
+export const COVERINGS_SCHEDULE: ScheduleDef = {
+  id: 'schedule-coverings',
+  name: 'Výkaz povrchů',
+  source: 'coverings',
+  fields: ['room', 'place', 'type', 'area', 'length'],
+  groupBy: ['room', 'place', 'type'],
+  itemize: false,
+  sortBy: null,
+  filter: DEFAULT_FILTER,
+  minOpeningArea: 4,
+  jambRule: 'deducted',
+};
+
 export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
   {
     id: 'schedule-walls',
@@ -65,6 +82,7 @@ export const DEFAULT_SCHEDULES: readonly ScheduleDef[] = [
   },
   SLABS_SCHEDULE,
   ROOMS_SCHEDULE,
+  COVERINGS_SCHEDULE,
 ];
 
 export const defaultSchedules = (): Record<string, ScheduleDef> =>
