@@ -41,4 +41,18 @@ describe('AI scénář: deska (D1)', () => {
     c.ai.call('selection.delete', { slabIds: [floor, rc] });
     expect(c.ai.call<SlabRow[]>('slab.list')).toHaveLength(0);
   });
+
+  it('D2: strop podle stěn místnosti – obrys po vnitřním líci', () => {
+    const c = start();
+    const walls = room(c);
+    const rcType = must(c.ai.call<SlabTypeRow[]>('slabType.list').find((t) => t.name === 'ŽB strop 250'));
+    const [rc] = c.ai.call<string[]>('slab.create', {
+      storeyId: c.storeyId,
+      typeId: rcType.id,
+      walls: { wallIds: walls, boundary: 'face' },
+    });
+    const row = must(c.ai.call<SlabRow[]>('slab.list').find((r) => r.id === rc));
+    // Řetěz po směru hodin s tloušťkou ven: vnitřní líc = zadaný obdélník 6 × 4 m.
+    expect(row.area).toBe(24);
+  });
 });

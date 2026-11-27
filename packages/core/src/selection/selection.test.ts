@@ -53,6 +53,7 @@ describe('pravidla-interakce / Výběr', () => {
     const onlyWalls = boxSelect(f.model, viewOf(f), rectOf(vec(-2000, -2000), vec(6000, 6000)), false, {
       walls: true,
       dimensions: false,
+      slabs: false,
     });
     expect(onlyWalls.dimensionIds).toEqual([]);
     expect(onlyWalls.wallIds.length).toBe(4);

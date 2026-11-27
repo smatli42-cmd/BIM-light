@@ -1,5 +1,5 @@
 // Výběr rámečkem (pravidla-interakce: Výběr; kóty 12): zleva doprava jen celé prvky,
-// zprava doleva i protnuté. Vybírají se stěny i kóty; filtr podle kategorie.
+// zprava doleva i protnuté. Vybírají se stěny, otvory, desky i kóty; filtr podle kategorie.
 import type { Vec2 } from '../geometry/index.ts';
 import { openingOutline } from '../opening/draw.ts';
 import type { Id } from '../ids/index.ts';
@@ -7,6 +7,7 @@ import type { Model } from '../model/types.ts';
 import { layoutDimension } from '../dimension/layout.ts';
 import { isDimensionVisible, isSelectable } from '../view/draw-view.ts';
 import type { View } from '../view/types.ts';
+import { selectableSlabs } from '../slab/pick.ts';
 import { pointInPolygon, selectableWallGeometry } from './pick.ts';
 
 export interface Rect {
@@ -57,9 +58,11 @@ export function polygonTouchesRect(poly: readonly Vec2[], r: Rect): boolean {
 export interface SelectionFilter {
   readonly walls: boolean;
   readonly dimensions: boolean;
+  /** Desky (D2). */
+  readonly slabs: boolean;
 }
 
-export const ALL_CATEGORIES: SelectionFilter = { walls: true, dimensions: true };
+export const ALL_CATEGORIES: SelectionFilter = { walls: true, dimensions: true, slabs: true };
 
 /** Body kóty (čára, odkazové čáry, místo čísla) pro výběr rámečkem. */
 export function dimensionPoints(model: Model, view: View, id: Id): Vec2[] {
@@ -74,6 +77,8 @@ export interface BoxSelection {
   readonly dimensionIds: Id[];
   /** Otvory (plán stěn Z4); řídí se filtrem stěn. */
   readonly openingIds: Id[];
+  /** Desky (D2). */
+  readonly slabIds: Id[];
 }
 
 export function boxSelect(
@@ -104,5 +109,10 @@ export function boxSelect(
         .filter((o) => isSelectable(model, view, o.id) && take(openingOutline(model, o)))
         .map((o) => o.id)
     : [];
-  return { wallIds, dimensionIds, openingIds };
+  const slabIds = filter.slabs
+    ? selectableSlabs(model, view)
+        .filter((sl) => take(sl.outline))
+        .map((sl) => sl.id)
+    : [];
+  return { wallIds, dimensionIds, openingIds, slabIds };
 }
