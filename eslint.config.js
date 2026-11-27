@@ -11,6 +11,8 @@ export default tseslint.config(
       'docs/reference/**',
       '**/playwright-report/**',
       '**/test-results/**',
+      // Pracovní kopie jiných sessions (worktree) mají vlastní kontrolu.
+      '.claude/**',
     ],
   },
   js.configs.recommended,
