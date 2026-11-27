@@ -1,12 +1,28 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, zámeček jen u vybrané kóty, posun čísla kóty.
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D1 (jádro: data, příkazy, kresba, IFC); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Desky D1: jádro, 2026-11-27 (hlavní proud; scéna `?ukazka=desky`, desky i v `?ukazka=dum`)
+- **Data:** deska je prvek `Element = Wall | Slab` (`slab/`), kategorie `slab`, obrys = mnohoúhelník,
+  `topOffset` = horní líc nad úrovní podlaží, tloušťka dolů podle skladby typu. `slabFunction`: nosná
+  deska / skladba podlahy (rozhodnutí sekce 5: dvě samostatné desky). Typy desek `slabTypes` (název,
+  značka D1/P1, skladba „pro desku“ ze společných skladeb, nosná); knihovna 4 typů. Migrace 16 → 17.
+- **Příkazy:** `slab.create` (outline / rect), `slab.update`, `slab.setOutline`, `slab.moveVertex`,
+  `slab.move` (i kopie), `slabType.duplicate / update / delete`, `selection.delete` s `slabIds`. Dotazy
+  `slab.list` (výšky líců, plocha m², obvod) a `slabType.list`; AI scénář `ai/scenario-slabs.test.ts`.
+- **Kresba v půdorysu:** pod rovinou řezu plný obrys perem pohledu (2), nad řezem čárkovaně, v řezu perem
+  řezu; vrstva Desky, filtr rekonstrukce a pravidla přes funkci grafiky; kreslí se pod stěnami.
+- **IFC:** strop = IfcSlab FLOOR + IfcSlabType, podlaha = IfcCovering FLOORING + IfcCoveringType;
+  tělo vytažené z obrysu, IfcMaterialLayerSetUsage AXIS3, Pset_SlabCommon / Pset_CoveringCommon
+  (ověřeno web-ifc). Materiál ve skladbě desky se počítá do použití materiálu; podlaží s deskou nejde smazat.
+- Prvky se v jádru i sandboxu čtou přes `findWall` / `allWalls` (stěnové nástroje desky ignorují).
+  `check:size` přeskakuje `.claude` (worktree druhého proudu).
 
 ### Kóty: zámeček jen u vybrané, posun čísla, 2026-11-27 (pokyn uživatele; scéna `?ukazka=kota-cislo`)
 - **Zámeček** se kreslí a jde kliknout jen u vybrané kóty (jako Revit); u kóty, která brání změně, se dál
@@ -231,6 +247,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Desky D1:** referenční rovina = horní líc (Revit Floor, výchozí Archicad), vrstvy skladby od spodu.
+  Úroveň podlaží = čistá podlaha: nová podlaha má horní líc 0, nová nosná deska −150 (výchozí skladba
+  podlahy). Podlaha se exportuje jako IfcCovering FLOORING (IFC správně), v programu je to deska. Obrys zatím
+  jen z úseček (oblouky v obrysu později), hrany se nesmí křížit. Deska v půdorysu bez šraf a vrstev
+  (patří do řezu); výplň jen pravidlem grafiky. Hrany desky pod stěnou zatím nejsou skryté (zakryje je
+  výplň stěny, kde je). Profese nové desky „architecture“ jako u stěn.
+
 - **Z10:** probourání a zazdívka jsou otvor se stavem (žádný nový druh prvku); jejich místo se kreslí
   grafikou opačného stavu (probourání = bourání, zazdívka = nový), jen obrys a výplň, bez vlastní šrafy
   zdiva u zazdívky (výplň podle pravidla). Kontrola: „nenapojený konec“ = volný konec blíž k referenční čáře jiné stěny než
@@ -281,7 +304,15 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Příští session (dohoda s uživatelem 2026-11-27): dva paralelní proudy** podle
+- **Desky D2 (hlavní proud):** nástroj Deska v sandboxu (obdélník / mnohoúhelník / podle stěn – obrys
+  z líců nebo jádra stěn), výběr desky, info box, uzly obrysu tažením, deska v 3D (po sloučení 3D náhledu).
+  **Před rozhraním vyžádat screenshoty z Arditu:** kreslení desky, info box desky, deska v půdorysu.
+  Pak D3 (otvory v desce, základ 19) a D4 (vazba vršku stěny na desku, výkazy desek, kóty k hranám).
+- **Uživatel vyzkouší D1:** `?ukazka=desky` – obrysy desek, čárkovaná podesta, Obsah → vrstva Desky
+  skrýt / zobrazit; Exportovat IFC a v BIMvision IfcSlab a IfcCovering se skladbou; `?ukazka=dum` desky ve
+  1.NP i 2.NP.
+- **Druhý proud běží:** 3D náhled ve vlastním worktree (větev `nahled-3d`), stav v `docs/STAV-3d.md`.
+- **Dohoda 2026-11-27: dva paralelní proudy** podle
   `docs/postup-etapy-bim-light.md` (Předplatné a paralelní práce):
   - **Hlavní proud (tato session, jádro):** desky D1–D4 (data, kresba, IFC; kreslení obdélník /
     mnohoúhelník / podle stěn; otvory v desce; vazba vršku stěny, výkazy). Před rozhraním vyžádat
@@ -316,6 +347,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
+- **Desky – zbývá:** úprava vrstev skladby jen pro desku (příkazy vrstev jsou zatím `wallType.*`), typ
+  desky v editoru typů, výkaz desek (obecný výkaz zná jen stěny), oblouky v obrysu.
 - **Z10 zbývá:** kontrola překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze
   zaměřování a kouzelná hůlka (etapa 3).
 - **Skladby – další:** výpočty u skladby podle vzoru Arditu (U, R, plošná hmotnost, CO₂e, cena,
@@ -368,14 +401,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po stěnách Z8)
+## Největší soubory (po deskách D1)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (534 souborů).
+Výstup `npm run check:size`: varování 0, chyb 0 (614 souborů).
 
 | Řádky | Soubor |
 |---|---|
-| 247 | apps/sandbox/src/session/session.ts |
-| 236 | apps/sandbox/src/render/overlay.ts |
+| 248 | apps/sandbox/src/session/session.ts |
+| 242 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 237 | apps/sandbox/src/render/overlay.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |
-| 232 | apps/sandbox/src/interaction/tools/arc-wall-tool.ts |
-| 227 | packages/core/src/ai/scenario-walls.test.ts |
+| 233 | apps/sandbox/src/render/hatch-paint.ts |
