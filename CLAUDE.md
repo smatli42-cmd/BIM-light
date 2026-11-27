@@ -1,8 +1,8 @@
 # BIM-light – paměť projektu pro Claude Code
 
 Vlastní lehký BIM program (web, později desktop). Uživatel je architekt, programovat se učí:
-piš česky, stručně, odborný pojem vysvětli jednou větou. Na začátku každé session přečti tento soubor
-a `docs/STAV.md`.
+piš česky, stručně, odborný pojem vysvětli jednou větou. Na začátku každé session přečti tento soubor,
+`docs/pracovni-postup.md` (pokyny uživatele, jak spolu pracujeme) a `docs/STAV.md`.
 
 ## Jak spolu pracujeme
 
