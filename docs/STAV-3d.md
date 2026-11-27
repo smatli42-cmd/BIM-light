@@ -3,7 +3,7 @@
 Samostatná session ve vlastním worktree a větvi `claude/nahled-3d-4b94ee`. Jádro (`packages/core`) jen čte;
 změny jádra si vyžádá od hlavní session (sekce níže). Sloučení do `main` přes PR po zelených testech a se
 souhlasem uživatele.
-PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, čeká na sloučení desek do `main`).
+PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026-11-27 se souhlasem uživatele (3D okno, desky, barva povrchu).
 
 ## Hotovo (krok 1 – 3D okno, 2026-11-27)
 
