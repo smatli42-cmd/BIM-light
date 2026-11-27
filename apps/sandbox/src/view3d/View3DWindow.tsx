@@ -1,8 +1,7 @@
 // E – 3D okno vedle půdorysu (koncepce rozhraní, část 2 E; rozhodnutí 14): hlavička s názvem a tlačítky,
-// pod ní 3D model. Ukazuje stěny podle stylu a filtru rekonstrukce aktivního pohledu; klik vybere prvek
+// pod ní 3D model. Ukazuje stěny a desky podle stylu a filtru rekonstrukce aktivního pohledu; klik vybere prvek
 // (výběr je společný s půdorysem), Shift+klik přidá / odebere.
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { getWall } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { openStorey } from '../session/sets.ts';
 import { Icon, IconButton } from '../ui/icons/Icon.tsx';
@@ -24,13 +23,14 @@ function clickPick(s: Session, v: Viewer) {
     down = null;
     const id = v.pick(e.offsetX, e.offsetY);
     // Prvek jiného podlaží: aktivní okno přejde na jeho podlaží (výběr pak v půdorysu vidět, jako Archicad).
-    const storey = id ? getWall(s.model, id).storeyId : undefined;
-    if (storey && storey !== s.storeyId) openStorey(s, storey);
-    const cur = s.selection.walls;
-    if (e.shiftKey && id) {
-      const walls = cur.includes(id) ? cur.filter((w) => w !== id) : [...cur, id];
-      s.selection.set(walls, s.selection.dims, s.selection.openings);
-    } else s.selection.set(id ? [id] : []);
+    const el = id ? s.model.elements[id] : undefined;
+    if (el && el.storeyId !== s.storeyId) openStorey(s, el.storeyId);
+    const slab = el?.category === 'slab';
+    if (e.shiftKey && el) {
+      if (slab) s.selection.toggleSlab(el.id);
+      else s.selection.toggleWall(el.id);
+    } else if (el) s.selection.set(slab ? [] : [el.id], [], [], slab ? [el.id] : []);
+    else s.selection.clear();
     s.changed();
   };
   v.canvas.addEventListener('pointerdown', onDown);
@@ -83,7 +83,8 @@ export function View3DWindow({ s }: { s: Session }) {
   );
   useEffect(() => viewer?.setSolids(solids), [viewer, solids]);
   useEffect(() => viewer?.fit(), [viewer, st.fit]);
-  useEffect(() => viewer?.setSelection(s.selection.walls), [viewer, solids, s.selection.walls]);
+  const picked = [...s.selection.walls, ...s.selection.slabs];
+  useEffect(() => viewer?.setSelection(picked), [viewer, solids, picked.join(',')]);
   useEffect(() => viewer?.setBackground(cssVar('--paper') || '#ffffff'), [viewer, s.theme]);
   const title = st.only ? `3D · Výběr (${st.only.length})` : '3D · Celý model';
   return (

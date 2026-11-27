@@ -1,7 +1,8 @@
-// Co se ve 3D ukáže: stěny všech podlaží (nebo jen vybrané, F4) podle stylu a filtru rekonstrukce
+// Co se ve 3D ukáže: stěny a desky všech podlaží (nebo jen vybrané, F4) podle stylu a filtru rekonstrukce
 // aktivního pohledu – skrytá vrstva (kategorie), filtr fáze i pravidlo „skrýt“ prvek ve 3D vynechají,
 // otvor skrytý filtrem stěnu nevyřízne (stejně jako v půdorysu, plán stěn Z10). Jen čtení jádra.
 import {
+  allSlabs,
   allWalls,
   categoryState,
   elementFacts,
@@ -9,16 +10,18 @@ import {
   resolveGraphics,
   type Id,
   type Model,
+  type Element,
   type View,
   type Wall,
 } from '@bim-light/core';
+import { slabSolids } from './slab-solids.ts';
 import { wallSolids, type Solid } from './solids.ts';
 
 /** Pohled aktivního okna přenesený na jiné podlaží (styl, vrstvy a filtr zůstávají). */
 const onStorey = (view: View, storeyId: Id): View =>
   storeyId === view.storeyId ? view : { ...view, id: `${view.id}@3d@${storeyId}`, storeyId };
 
-function isShown(model: Model, view: View, w: Wall): boolean {
+function isShown(model: Model, view: View, w: Element): boolean {
   if (w.variant.kind !== 'main') return false;
   const v = onStorey(view, w.storeyId);
   if (!categoryState(model.display, v, w.category).visible) return false;
@@ -51,11 +54,21 @@ export function shownModel(model: Model, view: View): { model: Model; walls: Wal
  */
 export function modelSolids(model: Model, view: View, only: ReadonlySet<Id> | null = null): Solid[] {
   const shown = shownModel(model, view);
-  return shown.walls.filter((w) => !only || only.has(w.id)).flatMap((w) => wallSolids(shown.model, w));
+  const want = (id: Id) => !only || only.has(id);
+  const slabs = allSlabs(model).filter((d) => want(d.id) && isShown(model, view, d));
+  return [
+    ...shown.walls.filter((w) => want(w.id)).flatMap((w) => wallSolids(shown.model, w)),
+    ...slabs.flatMap((d) => slabSolids(model, d)),
+  ];
 }
 
-/** Prvky pro „Zobrazit výběr ve 3D“: vybrané stěny a hostitelé vybraných otvorů. */
-export function selectionElements(model: Model, walls: readonly Id[], openings: readonly Id[]): Set<Id> {
+/** Prvky pro „Zobrazit výběr ve 3D“: vybrané stěny a desky a hostitelé vybraných otvorů. */
+export function selectionElements(
+  model: Model,
+  walls: readonly Id[],
+  openings: readonly Id[],
+  slabs: readonly Id[] = [],
+): Set<Id> {
   const hosts = openings.map((id) => model.openings[id]?.hostId).filter((x): x is Id => !!x);
-  return new Set([...walls, ...hosts]);
+  return new Set([...walls, ...hosts, ...slabs]);
 }

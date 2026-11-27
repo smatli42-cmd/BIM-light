@@ -31,8 +31,8 @@ test('koncepce-rozhrani / G 10: Zobrazit vše ve 3D otevře 3D okno s celým uk�
   const ids = await elements3d(page);
   const storeys = new Set(ids.map((id) => (m.elements[id] as { storeyId: string }).storeyId));
   expect(storeys.size).toBe(2);
-  // Bouraná příčka je ve stylu Studie bez filtru vidět; všechny 3D prvky jsou stěny modelu.
-  for (const id of ids) expect(m.elements[id]?.category).toBe('wall');
+  // Dům ve 3D má stěny i desky (stropy a podlahy) – všechny 3D prvky jsou prvky modelu.
+  expect(new Set(ids.map((id) => m.elements[id]?.category))).toEqual(new Set(['wall', 'slab']));
   await page.getByTestId('view3d-close').click();
   await expect(page.getByTestId('window-3d')).toHaveCount(0);
 });
@@ -71,4 +71,26 @@ test('koncepce-rozhrani / G 10: odkaz ?ukazka=dum&3d otevře dům rovnou s 3D ok
   await page.goto('./?ukazka=dum&3d');
   await expect(page.getByTestId('window-3d')).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.__bim3d?.drawn())).toBe(true);
+});
+
+test('koncepce-rozhrani / G 10: deska je ve 3D, klik na ni ji vybere v půdorysu a F4 ukáže jen ji', async ({
+  page,
+}) => {
+  await open(page);
+  const slab = await page.evaluate(
+    () =>
+      window.__bim!.run('slab.create', {
+        storeyId: window.__bim!.storeyId(),
+        typeId: Object.values(window.__bim!.model().slabTypes).find((t) => t.name === 'ŽB strop 250')!.id,
+        rect: { a: { x: 0, y: 0 }, b: { x: 6000, y: 4000 } },
+      })[0] as string,
+  );
+  await page.keyboard.press('Shift+F4');
+  await expect.poll(() => elements3d(page)).toEqual([slab]);
+  await expect.poll(() => page.evaluate((id) => window.__bim3d?.pageOf(id), slab)).not.toBeNull();
+  const at = (await page.evaluate((id) => window.__bim3d!.pageOf(id), slab))!;
+  await page.mouse.click(at.x, at.y);
+  await expect.poll(() => page.evaluate(() => window.__bim!.selection().slabs)).toEqual([slab]);
+  await page.keyboard.press('F4');
+  await expect(page.getByTestId('window-3d-title')).toHaveText('3D · Výběr (1)');
 });

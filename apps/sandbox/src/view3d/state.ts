@@ -28,12 +28,14 @@ export function view3d(s: Session): View3DState {
 }
 
 /**
- * Otevře 3D okno vedle půdorysu. `selection` = Zobrazit výběr ve 3D (F4): jen vybrané stěny a hostitelé
+ * Otevře 3D okno vedle půdorysu. `selection` = Zobrazit výběr ve 3D (F4): jen vybrané stěny, desky a hostitelé
  * vybraných otvorů; bez výběru ukáže vše (jako Archicad).
  */
 export function show3D(s: Session, selection: boolean) {
   const st = view3d(s);
-  const ids = selection ? [...selectionElements(s.model, s.selection.walls, s.selection.openings)] : [];
+  const ids = selection
+    ? [...selectionElements(s.model, s.selection.walls, s.selection.openings, s.selection.slabs)]
+    : [];
   st.open = true;
   st.only = ids.length ? ids : null;
   st.fit++;

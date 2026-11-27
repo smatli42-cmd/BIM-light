@@ -26,10 +26,19 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
   - odkaz `?…&3d` otevře 3D okno hned po načtení.
 - Testy: `view3d/solids.test.ts`, `view3d/edges.test.ts` (Vitest), `e2e/nahled-3d.spec.ts` (Playwright).
 
+## Hotovo (krok 2 – desky ve 3D, 2026-11-27)
+
+- `main` s deskami D1 + D2 sloučen do větve (bez konfliktů).
+- `view3d/slab-solids.ts`: deska = vrstvy skladby od spodního líce nahoru (`slabLevels`), každá vrstva těleso
+  s barvou materiálu; strop i podlaha. Viditelnost jako u stěn (vrstva „Desky“, filtr rekonstrukce, pravidla).
+- Klik na desku ve 3D ji vybere v půdorysu (Shift přidá / ubere), F4 ukáže vybrané desky.
+- Testy: `view3d/slab-solids.test.ts`, e2e „deska je ve 3D…“; ukázka `dum` má ve 3D stěny i desky.
+
 ## Co zkusit
 
 - Uživatel vyzkoušel 2026-11-27: „3D náhled funguje“ (lokálně, `?ukazka=dum&3d`).
-
+- `…/BIM-light/?ukazka=desky&3d` a `?ukazka=desky-kresleni&3d` – stropy a podlahy ve 3D; klik na desku ji
+  vybere; nakresli novou desku nástrojem S a hned je ve 3D.
 - `…/BIM-light/?ukazka=dum&3d` – dům ve 3D: obě podlaží, zateplení (barvy vrstev v ostění), okna a nika,
   oblouková příčka. Otáčet levým tlačítkem, posouvat pravým, kolečko.
 - Ve spodní liště **Fáze** → Plánovaný stav: bouraná příčka zmizí i ve 3D; Stávající stav: nové příčky zmizí.
@@ -70,7 +79,7 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 
 ## Otevřené / další kroky
 
-- Desky (hlavní proud) – jakmile budou v jádře, přidat jejich tělesa (stejný mechanismus `sliceLayer`).
+- Otvory v deskách (základ 19) – až je jádro bude mít, vyříznout stejně jako u stěn (`sliceLayer`).
 - Povrchy místností (malby, obklady, spárořezy; návrh poslán hlavní session 2026-11-27, uživatel souhlasí):
   jádro spočítá plochy povrchů (obrys v rovině líce + transformace do 3D + spáry), 3D je jen zobrazí
   tenkou plochou před lícem a spáry čarami – stejná data jako rozvinutý pohled a výkaz.
