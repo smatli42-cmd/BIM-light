@@ -15,16 +15,8 @@ import { PAPER_BG } from './paper.ts';
 import { drawDrawing, drawPrimitive, type RenderContext } from './primitives.ts';
 import { drawMain, drawRevealed, drawTrace } from './screen-layers.ts';
 import { drawOptionsOf } from '../session/screen.ts';
-import {
-  AUX,
-  drawGrips,
-  drawLock,
-  drawOverlay,
-  drawTempDim,
-  drawWallOutlines,
-  FLASH,
-  SELECT,
-} from './overlay.ts';
+import { AUX, drawGrips, drawOverlay, drawWallOutlines, FLASH, SELECT } from './overlay.ts';
+import { drawLock, drawTempDim } from './overlay-dims.ts';
 
 function drawModel(r: RenderContext, s: Session, model: Model, hidden: readonly string[]) {
   const drawing = drawView(model, s.viewId, drawOptionsOf(s.screen));
