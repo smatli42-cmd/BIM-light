@@ -14,6 +14,7 @@ import { wallPropertiesQuery } from './wall-properties.ts';
 import { scheduleFields, scheduleList, scheduleTable } from './schedules.ts';
 import { wallTagList } from './tags.ts';
 import { compositionList } from './compositions.ts';
+import { slabList, slabTypeList } from './slabs.ts';
 import { wallTypeLibrary, wallTypeList } from './wall-types.ts';
 
 export const CORE_QUERIES = [
@@ -24,6 +25,8 @@ export const CORE_QUERIES = [
   wallGet,
   wallPropertiesQuery,
   openingList,
+  slabList,
+  slabTypeList,
   dimensionList,
   hatchList,
   materialList,

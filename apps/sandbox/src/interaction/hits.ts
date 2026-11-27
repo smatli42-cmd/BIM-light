@@ -1,20 +1,22 @@
 // Zásahy myší do ovládacích prvků výkresu: trvalé kóty (čára, číslo, zámek), dočasné kóty,
 // kolečka, trojúhelník délky a uzly vybrané stěny. Vše v px, počítá se ze stavu (ne z kreslení).
 import {
+  add,
+  type Dimension,
   dimensionText,
+  findSlab,
+  findWall,
+  type Id,
+  isDimensionVisible,
   layoutDimension,
   measureDimension,
-  pointAt,
-  wallGeometry,
-  wallOutward,
-  add,
   mul,
-  isDimensionVisible,
-  type Dimension,
-  type Id,
   type PathEnd,
+  pointAt,
   type Vec2,
   type Wall,
+  wallGeometry,
+  wallOutward,
 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { inRect, near, screenText, segDist, type ScreenRect } from './screen.ts';
@@ -41,10 +43,19 @@ export interface GripView {
   readonly dir?: Vec2;
 }
 
+/** Uzel obrysu jediné vybrané desky (D2). */
+export interface SlabGripView {
+  readonly slabId: Id;
+  readonly index: number;
+  readonly end: 'vertex';
+  readonly at: Vec2;
+}
+
 export type Hit =
   | { readonly kind: 'pin' | 'temp-text' | 'temp-line' | 'len-end'; readonly temp: TempDimView }
   | { readonly kind: 'lock' | 'dim-text' | 'dim-line'; readonly dim: PermDimView }
-  | { readonly kind: 'grip'; readonly grip: GripView };
+  | { readonly kind: 'grip'; readonly grip: GripView }
+  | { readonly kind: 'slab-vertex'; readonly grip: SlabGripView };
 
 /** Rozložení trvalé kóty v px (číslo, čáry, zámek u čísla, katalog kreslení 4.5). */
 export function permDimView(s: Session, d: Dimension): PermDimView | null {
@@ -110,7 +121,7 @@ function sideGrips(s: Session, w: Wall): GripView[] {
 /** Uzly (koncové čtverečky) a kolečko zakřivení jediné vybrané stěny. */
 export function gripViews(s: Session): GripView[] {
   const id = s.selection.single;
-  const w = id ? s.model.elements[id] : undefined;
+  const w = findWall(s.model, id);
   if (!w || s.tool.id !== 'select') return [];
   const ends = (['start', 'end'] as const).map((end) => ({
     wallId: w.id,
@@ -118,6 +129,13 @@ export function gripViews(s: Session): GripView[] {
     at: s.viewport.toScreen(w.path[end]),
   }));
   return [...ends, ...sideGrips(s, w)];
+}
+
+/** Uzly obrysu jediné vybrané desky. */
+export function slabGripViews(s: Session): SlabGripView[] {
+  const sl = findSlab(s.model, s.selection.singleSlab);
+  if (!sl || s.tool.id !== 'select') return [];
+  return sl.outline.map((p, index) => ({ slabId: sl.id, index, end: 'vertex', at: s.viewport.toScreen(p) }));
 }
 
 /** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */
@@ -129,6 +147,7 @@ export function hitAt(s: Session, p: Vec2, hidden: readonly Id[] = []): Hit | nu
     if (s.selection.dims.includes(d.id) && near(p, d.lock, 9)) return { kind: 'lock', dim: d };
   for (const t of temps) if (t.lenEnd && near(p, t.lenEnd, 8)) return { kind: 'len-end', temp: t };
   for (const g of gripViews(s)) if (near(p, g.at, 9)) return { kind: 'grip', grip: g };
+  for (const g of slabGripViews(s)) if (near(p, g.at, 9)) return { kind: 'slab-vertex', grip: g };
   for (const t of temps) if (inRect(p, t.textRect)) return { kind: 'temp-text', temp: t };
   for (const d of perms) if (inRect(p, d.textRect)) return { kind: 'dim-text', dim: d };
   for (const t of temps) if (segDist(p, t.a, t.b) <= 5) return { kind: 'temp-line', temp: t };

@@ -39,7 +39,8 @@ export type ToolId =
   | 'paste'
   | 'pickline'
   | 'opening'
-  | 'arc';
+  | 'arc'
+  | 'slab';
 
 /** Co nástroj kreslí přes výkres (světle modré pomocné značky, katalog kreslení 2). */
 export interface Overlay {
@@ -61,6 +62,8 @@ export interface Overlay {
   readonly faces?: readonly { readonly wallId: Id; readonly face: WallEdge; readonly openingId?: Id }[];
   /** Stěny zvýrazněné pod kurzorem. */
   readonly hover?: readonly Id[];
+  /** Prvky vybrané nástrojem (např. stěny obrysu desky), kreslí se barvou výběru. */
+  readonly selected?: readonly Id[];
   /** Model po rozpracované změně (tažení uzlu): kreslí se místo skutečného, nic se neukládá. */
   readonly previewModel?: Model | null;
   /** Rámeček výběru v px. */

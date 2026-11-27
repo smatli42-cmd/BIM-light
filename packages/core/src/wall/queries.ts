@@ -12,6 +12,12 @@ export function getWall(model: Model, id: Id): Wall {
   return el;
 }
 
+/** Stěna podle id, nebo undefined (neexistuje / není stěna). */
+export function findWall(model: Model, id: Id | null | undefined): Wall | undefined {
+  const el = id ? model.elements[id] : undefined;
+  return el?.category === 'wall' ? el : undefined;
+}
+
 export function getWallType(model: Model, id: Id): WallType {
   const t = model.wallTypes[id];
   if (!t) throw new Error(`Typ stěny ${id} neexistuje`);

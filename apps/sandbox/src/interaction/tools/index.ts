@@ -12,6 +12,8 @@ import { CopyTool, MirrorTool, MoveTool, RotateTool } from './commands/transform
 import { DimensionTool } from './dimension-tool.ts';
 import { OpeningTool } from './opening-tool.ts';
 import { PickLineTool } from './pick-line-tool.ts';
+import { SlabTool } from './slab-tool.ts';
+import { SlabWallsTool } from './slab-walls-tool.ts';
 import { SelectTool } from './select/select-tool.ts';
 import { WallTool } from './wall-tool.ts';
 
@@ -36,6 +38,8 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
   paste: (s) => new PasteTool(s),
   pickline: (s) => new PickLineTool(s),
   opening: (s) => new OpeningTool(s),
+  // Metoda „podle stěn“ má vlastní nástroj interakce (info box přepne metodu a nástroj znovu vytvoří).
+  slab: (s) => (s.slab.method === 'walls' ? new SlabWallsTool(s) : new SlabTool(s)),
 };
 
 /** Nástroje, které pracují s vybranými stěnami (přesun, kopie a zrcadlení i s otvory). */

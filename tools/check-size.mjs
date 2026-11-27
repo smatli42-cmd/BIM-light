@@ -5,7 +5,15 @@ import { fileURLToPath } from 'node:url';
 import { countLines, evaluate, isChecked } from './size-rules.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const SKIP = new Set(['node_modules', '.git', 'dist', 'playwright-report', 'test-results', 'coverage']);
+const SKIP = new Set([
+  'node_modules',
+  '.git',
+  '.claude',
+  'dist',
+  'playwright-report',
+  'test-results',
+  'coverage',
+]);
 
 function walk(dir, out) {
   for (const name of readdirSync(dir)) {

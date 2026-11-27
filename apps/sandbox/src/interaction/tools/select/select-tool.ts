@@ -24,6 +24,7 @@ import { PressOpeningMode } from './opening-modes.ts';
 import { NodeMode } from './node-mode.ts';
 import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
+import { PressSlabMode, SlabVertexMode, slabUnder } from './slab-modes.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
@@ -99,7 +100,20 @@ export class SelectTool implements Tool {
       this.mode = new PressWallMode(this.s, id, p);
       return;
     }
+    if (this.pressSlab(p)) return;
     this.mode = new BoxMode(this.s, p.screen, p.shift);
+  }
+
+  /** Deska pod kurzorem (až po otvorech a stěnach): Shift přidá, klik vybere, tažení posune. */
+  private pressSlab(p: PointerInfo): boolean {
+    const sl = slabUnder(this.s, p);
+    if (!sl) return false;
+    if (p.shift) this.s.selection.toggleSlab(sl);
+    else {
+      if (!this.s.selection.slabs.includes(sl)) this.s.selection.set([], [], [], [sl]);
+      this.mode = new PressSlabMode(this.s, sl, p);
+    }
+    return true;
   }
 
   private onHit(hit: Hit, p: PointerInfo) {
@@ -108,6 +122,8 @@ export class SelectTool implements Tool {
     else if (hit.kind === 'lock')
       s.run('dimension.setLocked', { dimensionId: hit.dim.id, locked: !hit.dim.locked });
     else if (hit.kind === 'len-end') s.lenEnd = s.lenEnd === 'end' ? 'start' : 'end';
+    else if (hit.kind === 'slab-vertex')
+      this.mode = new SlabVertexMode(s, hit.grip.slabId, hit.grip.index, p, true);
     else if (hit.kind === 'grip') {
       const e = hit.grip.end;
       const id = hit.grip.wallId;
@@ -159,7 +175,7 @@ export class SelectTool implements Tool {
 
   move(p: PointerInfo) {
     if (this.mode?.active) this.mode.move(p);
-    else this.hover = this.openingUnder(p) ?? this.wallsUnder(p)[0] ?? null;
+    else this.hover = this.openingUnder(p) ?? this.wallsUnder(p)[0] ?? slabUnder(this.s, p);
   }
 
   up(p: PointerInfo) {

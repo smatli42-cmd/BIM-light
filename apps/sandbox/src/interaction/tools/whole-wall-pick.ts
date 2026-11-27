@@ -2,12 +2,13 @@
 // klik na stěnu vybere stěnu a líc blíž kliknutí, řetěz celé stěny (otvory, volitelně i šířky všech
 // stěn) se pak nese na myši a druhý klik ho položí. Kóty vznikají příkazem dimension.wholeWall.
 import {
+  type Dimension,
+  findWall,
+  type Id,
   nearestOnPath,
   selectableWallGeometry,
-  wallsAt,
-  type Dimension,
-  type Id,
   type Vec2,
+  wallsAt,
 } from '@bim-light/core';
 import { FACE_PX, type Session } from '../../session/session.ts';
 import type { Overlay, PointerInfo } from '../types.ts';
@@ -33,7 +34,7 @@ export class WholeWallPick {
   private params(p: Vec2) {
     const pk = this.picked;
     if (!pk) return null;
-    const w = this.s.model.elements[pk.wallId];
+    const w = findWall(this.s.model, pk.wallId);
     const g = selectableWallGeometry(this.s.model, this.s.view).find((x) => x.wallId === pk.wallId);
     if (!w || !g) return null;
     const distance = Math.max(MIN_DISTANCE, nearestOnPath(g.faces[pk.side], p).distance);

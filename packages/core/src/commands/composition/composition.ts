@@ -2,6 +2,7 @@
 // deska, střecha), přiřadit skladbu pásu typu stěny, smazat nepoužitou. Vrstvy skladby se mění příkazy
 // wallType.* (addLayer, updateLayer…) – změna platí pro všechny typy, které skladbu sdílejí.
 import { compositionUsers } from '../../composition/store.ts';
+import { slabTypeUsers } from '../../slab/queries.ts';
 import type { Composition } from '../../composition/types.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
@@ -60,6 +61,8 @@ export const compositionSetUse = defineCommand<{
     const next = { ...c.use, ...use };
     if (!next.wall && compositionUsers(model, c.id).length)
       fail('invalid', `Skladbu „${c.name}“ používá typ stěny – pro stěnu musí zůstat`);
+    if (!next.slab && slabTypeUsers(model, c.id).length)
+      fail('invalid', `Skladbu „${c.name}“ používá typ desky – pro desku musí zůstat`);
     return { model: put(model, { ...c, use: next }) };
   },
 });
@@ -91,7 +94,7 @@ export const compositionDelete = defineCommand<{ compositionId: Id }>({
   params: S.object({ compositionId: S.id }, ['compositionId']),
   run(model, p) {
     const c = compositionOf(model, p.compositionId);
-    const users = compositionUsers(model, c.id);
+    const users = [...compositionUsers(model, c.id), ...slabTypeUsers(model, c.id)];
     if (users.length) fail('invalid', `Skladbu „${c.name}“ používá: ${users.map((t) => t.name).join(', ')}`);
     const { [c.id]: _gone, ...compositions } = model.compositions;
     return { model: { ...model, compositions } };

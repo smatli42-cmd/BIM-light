@@ -80,6 +80,9 @@ import {
   wallTypeUpdateLayer,
 } from './wall-type/layers.ts';
 import { wallTypeLoad } from './wall-type/load.ts';
+import { slabCreate } from './slab/create.ts';
+import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edit.ts';
+import { slabTypeDelete, slabTypeDuplicate, slabTypeUpdate } from './slab/type.ts';
 
 export const CORE_COMMANDS = [
   storeyCreate,
@@ -118,6 +121,14 @@ export const CORE_COMMANDS = [
   wallDisconnect,
   wallSetJoin,
   wallCross,
+  slabCreate,
+  slabUpdate,
+  slabSetOutline,
+  slabMoveVertex,
+  slabMove,
+  slabTypeDuplicate,
+  slabTypeUpdate,
+  slabTypeDelete,
   openingCreate,
   openingMove,
   openingUpdate,

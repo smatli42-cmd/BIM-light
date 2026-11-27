@@ -1,5 +1,6 @@
 // Společné části příkazů typu stěny (plán stěn Z1): popis vrstvy (z něj vzniká řádek editoru
 // i nástroj pro AI, základ 15b), uložení s validací, volný název, oprava referenční čáry.
+import { allWalls } from '../../wall/queries.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { storeTypeCompositions, syncTypes } from '../../composition/store.ts';
@@ -45,7 +46,7 @@ export function withLayers(type: WallType, bandIndex: number, layers: readonly W
 
 /** Stěny s referenční čárou „líc jádra“ u typu bez jádra dostanou „líc“ (poloha se nemění: bez jádra je to totéž). */
 export function normalizeRefLines(model: Model): Model {
-  const fix = Object.values(model.elements).filter((w) => {
+  const fix = allWalls(model).filter((w) => {
     const t = model.wallTypes[w.typeId];
     return w.referenceLine === 'core-face' && t && !typeHasCore(t);
   });

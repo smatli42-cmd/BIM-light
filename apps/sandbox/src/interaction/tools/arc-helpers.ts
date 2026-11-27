@@ -1,14 +1,15 @@
 // Pomocníci nástroje Oblouková stěna (Z5): náhled pásu, strana kurzoru, napsaná čísla, údaje
 // trackeru a přichycení bodu oblouku na kružnici sousedního oblouku.
 import {
+  allWalls,
   arcData,
   cross,
   dist,
   offsetPath,
   parseNumber,
+  type Path,
   sub,
   tessellate,
-  type Path,
   type Vec2,
 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
@@ -47,7 +48,7 @@ export function arcInfo(p: Path): { radius: string; sweep: string } {
  * a v uzlech se napojí bez švu.
  */
 export function circleSnap(s: Session, a: Vec2, b: Vec2, q: Vec2, tol: number): Vec2 | null {
-  for (const w of Object.values(s.model.elements)) {
+  for (const w of allWalls(s.model)) {
     const p = w.path;
     if (w.storeyId !== s.storeyId || p.kind !== 'arc' || Math.abs(p.bulge) < 1e-9) continue;
     const { center: c, radius: r } = arcData(p);

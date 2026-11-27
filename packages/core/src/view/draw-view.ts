@@ -1,5 +1,6 @@
 // Kresba pohledu: vše se počítá z modelu (základ 4). Styl mění jen vzhled (základ 26),
 // měřítko jen tloušťky čar (základ 29) – ty ale určí až vykreslení přes tabulku per.
+import { findWall } from '../wall/queries.ts';
 import { drawDimension } from '../dimension/draw.ts';
 import type { Dimension } from '../dimension/types.ts';
 import type { Drawing, Primitive } from '../drawing/primitives.ts';
@@ -22,6 +23,7 @@ import { wallProperties } from '../wall-props/resolve.ts';
 import { drawOpening, openingFacts } from '../opening/draw.ts';
 import { drawRenovationPatches } from '../opening/renovation.ts';
 import { drawWallTag, tagFacts } from '../tag/draw.ts';
+import { drawSlabs } from '../slab/draw-view.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -73,7 +75,7 @@ function drawWalls(model: Model, view: View, merge: boolean, structure: Structur
 
 /** Je hostitel nosná stěna? (Jen jádro nosných skryje otvory nenosných stěn, plán stěn Z7.) */
 function hostBearing(model: Model, hostId: Id): boolean {
-  const host = model.elements[hostId];
+  const host = findWall(model, hostId);
   return !!host && wallProperties(model, host).loadBearing;
 }
 
@@ -117,7 +119,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
   // Záplaty rekonstrukce kryjí celou tloušťku stěny – jen při zobrazení celé skladby.
   const patches =
     structure === 'all' ? drawRenovationPatches(model, view, visibleWalls(model, view).shown) : [];
-  const out = [...walls, ...patches, ...drawOpenings(model, view, structure)];
+  const out = [...drawSlabs(model, view), ...walls, ...patches, ...drawOpenings(model, view, structure)];
   for (const d of Object.values(model.dimensions)) {
     if (!isDimensionVisible(model, view, d)) continue;
     const g = resolveGraphics(model.display, view, dimensionFacts(d)).effect;

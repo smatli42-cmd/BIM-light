@@ -8,7 +8,7 @@ import {
   type Primitive,
 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
-import { gripViews, permDimViews } from '../interaction/hits.ts';
+import { gripViews, permDimViews, slabGripViews } from '../interaction/hits.ts';
 import { tempDimViews } from '../interaction/temp-layout.ts';
 import { drawGrid } from './grid.ts';
 import { PAPER_BG } from './paper.ts';
@@ -63,7 +63,8 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
   if (!s.screen.trace.over) drawTrace(r, s, model);
   drawModel(r, s, model, hidden);
   if (s.screen.trace.over) drawTrace(r, s, model);
-  drawWallOutlines(ctx, s, [...s.selection.walls, ...s.selection.openings], SELECT, 2, model);
+  const sel = s.selection;
+  drawWallOutlines(ctx, s, [...sel.walls, ...sel.openings, ...sel.slabs], SELECT, 2, model);
   for (const d of o.draftDims ?? []) {
     const g = resolveGraphics(s.model.display, s.view, dimensionFacts(d)).effect;
     for (const p of drawDimension(s.model, d, s.view.scale, s.model.display.paperSizes, g))
@@ -75,7 +76,7 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
     for (const d of permDimViews(s, hidden))
       if (s.selection.dims.includes(d.id) || flash.has(d.id)) drawLock(ctx, d, flash.has(d.id));
     for (const t of tempDimViews(s, model)) drawTempDim(ctx, t);
-    drawGrips(ctx, gripViews(s));
+    drawGrips(ctx, [...gripViews(s), ...slabGripViews(s)]);
   }
   drawOverlay(ctx, s, o);
 }

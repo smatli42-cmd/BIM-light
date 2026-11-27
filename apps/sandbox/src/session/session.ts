@@ -7,7 +7,6 @@ import {
   Editor,
   snapGeometry,
   resolveSnap,
-  typeHasCore,
   ALL_CATEGORIES,
   type ExecuteResult,
   type Id,
@@ -28,6 +27,7 @@ import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { methodOfTool, wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
 import { Selection } from './selection.ts';
+import { keepNewTypes, newSlabDefaults, type SlabDefaults } from './slab-defaults.ts';
 import { OPENING_DEFAULTS, TOOL_OPTIONS, type OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
 import { DEFAULT_SCREEN, type ScreenOptions } from './screen.ts';
@@ -69,6 +69,8 @@ export class Session {
   options = { ...TOOL_OPTIONS };
   /** Rozměry nového otvoru (nástroj Otvor, plán stěn Z4). */
   openingDefaults: OpeningDefaults = { ...OPENING_DEFAULTS };
+  /** Výchozí nastavení nové desky (nástroj Deska, D2). */
+  slab: SlabDefaults;
   typed: TypedInput = { field: 'len', len: '', ang: '' };
   menu: MenuState | null = null;
   /** Paleta u uzlu / hrany vybrané stěny (koncepce rozhraní, část 2 I). */
@@ -104,6 +106,7 @@ export class Session {
     this.editor = new Editor(m, { registry: this.registry, newId });
     this.viewId = Object.keys(m.views)[0] as Id;
     this.wallTypeId = Object.values(m.wallTypes)[0]?.id ?? '';
+    this.slab = newSlabDefaults(m);
     this.tool = createTool('select', this);
     const ui = loadUi();
     this.theme = ui.theme;
@@ -112,17 +115,10 @@ export class Session {
       // Pohled mohl zmizet (Undo nového pohledu): přepne se na první existující.
       for (const w of this.windows)
         if (!this.model.views[w.viewId]) w.viewId = Object.keys(this.model.views)[0] as Id;
-      this.keepNewWallType();
+      keepNewTypes(this);
       this.selection.prune(this.model);
       this.changed();
     });
-  }
-
-  /** Typ nových stěn mohl zmizet (smazání, vyčištění); bez jádra nejde „líc jádra“ (plán stěn Z1). */
-  private keepNewWallType() {
-    if (!this.model.wallTypes[this.wallTypeId]) this.wallTypeId = Object.keys(this.model.wallTypes)[0] ?? '';
-    const t = this.model.wallTypes[this.wallTypeId];
-    if (this.wallRefLine === 'core-face' && t && !typeHasCore(t)) this.wallRefLine = 'face';
   }
 
   /** Přepne motiv (světlý / tmavý) nebo podklad výkresu a zapamatuje volbu. */

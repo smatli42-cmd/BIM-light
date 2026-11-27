@@ -50,6 +50,14 @@ function ground(c: SampleContext) {
   for (const wallId of [bottom, left])
     c.run('dimension.wholeWall', { wallId, viewId: c.viewId, walls: true });
   c.run('wallTag.tagAll', { viewId: c.viewId });
+  slabs(c, c.storeyId, 'ŽB základová deska 300', 465);
+}
+
+/** Desky podlaží (D1): nosná deska pod obvodovými stěnami (`under` = přesah pod stěny) a podlaha v místnostech. */
+function slabs(c: SampleContext, storeyId: Id, structure: string, under: number) {
+  const r = (d: number) => ({ a: vec(-d, -d), b: vec(W + d, H + d) });
+  c.run('slab.create', { storeyId, typeId: c.slabType(structure), rect: r(under) });
+  c.run('slab.create', { storeyId, typeId: c.slabType('Podlaha anhydrit 150'), rect: r(0) });
 }
 
 /** 2.NP: nová nástavba (obvodové stěny, příčky, okna). */
@@ -75,6 +83,7 @@ function upper(c: SampleContext) {
   opening(c, bottom, 2000, 1500, 1500, 900);
   opening(c, bottom, 8500, 1500, 1500, 900);
   opening(c, top, 3000, 2400, 2200, 0);
+  if (storeyId) slabs(c, storeyId, 'ŽB strop 250', 315);
 }
 
 export const HOUSE: Sample = {
@@ -84,7 +93,8 @@ export const HOUSE: Sample = {
   date: '2026-11-26',
   description:
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
-    'nika, oblouková příčka), 2.NP nástavba. Kóty, značky typů, výkazy; filtr rekonstrukce ve spodní liště.',
+    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP a podlahy. Kóty, ' +
+    'značky typů, výkazy; filtr rekonstrukce ve spodní liště.',
   build(c) {
     ground(c);
     upper(c);

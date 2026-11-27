@@ -14,6 +14,8 @@ export interface SampleContext {
   readonly viewId: Id;
   /** Id typu stěny podle názvu. */
   type(name: string): Id;
+  /** Id typu desky podle názvu. */
+  slabType(name: string): Id;
   /** Id filtru rekonstrukce (fáze) podle názvu, např. „Fáze – plánovaný stav“. */
   phase(name: string): Id;
   /** Přímá stěna (zkratka pro wall.create s autoConnect). */

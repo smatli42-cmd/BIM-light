@@ -10,6 +10,12 @@ export const ICONS = {
   'wall-arc': ['M4 19A12 12 0 0 1 20 9', 'M7 20.5A9 9 0 0 1 20.5 12.5', 'M4 19l3 1.5', 'M20 9l.5 3.5'],
   'wall-line': ['M3 18L21 6', 'M5 10h10v4H5z'],
   rect: ['M4 5h16v14H4z', 'M7 8h10v8H7z'],
+  // Deska: šikmo viděná deska (tloušťka) a metody (mnohoúhelník, obdélník, natočený, podle stěn)
+  slab: ['M3 10l7-4h11l-7 4z', 'M3 10v4h11l7-4v-4', 'M14 10v4'],
+  'slab-polygon': ['M12 3l8 6-3 10H7L4 9z'],
+  'slab-rect': ['M4 6h16v12H4z'],
+  'slab-rotated': ['M9 3l12 6-6 12L3 15z'],
+  'slab-walls': ['M3 3h18v18H3z', 'M6 6h12v12H6z', 'M8.5 8.5h7v7h-7z'],
   opening: ['M3 8h6v8H3z', 'M15 8h6v8h-6z', 'M9 8a6 6 0 0 1 6 0', 'c:12,12,1'],
   dimension: ['M4 7v10', 'M20 7v10', 'M4 12h16', 'M6 14l-2-2 2-2', 'M18 10l2 2-2 2'],
   angle: ['M4 20L20 20', 'M4 20L16 6', 'M10 20a6 6 0 0 0-1.6-4.1'],

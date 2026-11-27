@@ -3,6 +3,7 @@ import { checkWalls } from '../check/walls.ts';
 import { sequentialIds } from '../ids/index.ts';
 import { visibleWalls } from '../view/visible-walls.ts';
 import { wallGeometry } from '../wall/geometry.ts';
+import { allWalls } from '../wall/queries.ts';
 import { buildSample, findSample, SAMPLES } from './index.ts';
 
 const build = (key: string) => buildSample(findSample(key)!, sequentialIds());
@@ -36,7 +37,7 @@ describe('pokyn uživatele 2026-11-26: ukázky se postaví příkazy v aktuáln�
     const m = build('z10-vybourani');
     const view = Object.values(m.views)[0]!;
     const vis = visibleWalls(m, view).model;
-    for (const w of Object.values(vis.elements)) {
+    for (const w of allWalls(vis)) {
       const g = wallGeometry(vis, w);
       expect([g.cuts.start.join, g.cuts.end.join]).toContain('straight');
     }

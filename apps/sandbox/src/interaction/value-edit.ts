@@ -1,14 +1,15 @@
 // Změna čísla v kótě (katalog kreslení 3.3–3.4, pravidla-interakce kóty 1, 9, 10; základ 25).
 // Pohne se vybraná stěna; u délky uchopený konec. Zámek se změnou čísla nikdy nemění.
 import {
+  type Dimension,
   dot,
+  findWall,
   formatLength,
+  type Id,
   leftNormal,
   measureDimension,
   parseNumber,
   tangentAt,
-  type Dimension,
-  type Id,
 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import type { PermDimView } from './hits.ts';
@@ -39,7 +40,7 @@ export function editTemp(s: Session, t: TempDimView) {
         s.run('wall.setLength', { wallId, end: s.lenEnd, length: v, face: 'ref' });
         return;
       }
-      const w = s.model.elements[wallId];
+      const w = findWall(s.model, wallId);
       if (!w) return;
       const n = leftNormal(tangentAt(w.path, 'start'));
       const distance = -(v - t.temp.value) * dot(t.temp.dir, n);

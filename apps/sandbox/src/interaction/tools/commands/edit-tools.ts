@@ -1,13 +1,14 @@
 // Zarovnat (L), Do rohu (T), Rozdělit (X), Obdélník (B), Okno přiblížení
 // (pravidla-interakce: Příkazy nad výběrem a úpravy).
 import {
+  type FaceRef,
+  findWall,
+  type Id,
   nearestOnPath,
   pickFace,
   selectableWallGeometry,
-  wallsAt,
-  type FaceRef,
-  type Id,
   type Vec2,
+  wallsAt,
 } from '@bim-light/core';
 import { splitGap } from '../../../session/opening-defaults.ts';
 import { FACE_PX, type Session } from '../../../session/session.ts';
@@ -92,7 +93,7 @@ export class SplitTool extends PointCommand {
   protected click(p: Vec2) {
     const raw = this.last?.world;
     const id = raw ? wallAt(this.s, raw) : null;
-    const w = id ? this.s.model.elements[id] : undefined;
+    const w = findWall(this.s.model, id);
     if (!w) return;
     this.s.run('wall.split', { wallId: w.id, point: nearestOnPath(w.path, p).point, ...splitGap(this.s) });
   }

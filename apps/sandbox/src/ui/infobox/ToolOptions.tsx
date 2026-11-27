@@ -65,6 +65,12 @@ export function SelectOptions({ s }: { s: Session }) {
         checked={s.filter.dimensions}
         onSet={(v) => set(() => (s.filter = { ...s.filter, dimensions: v }))}
       />
+      <Check
+        label="Vybírat desky"
+        testid="filter-slabs"
+        checked={s.filter.slabs}
+        onSet={(v) => set(() => (s.filter = { ...s.filter, slabs: v }))}
+      />
       <GridOption s={s} />
     </Section>
   );

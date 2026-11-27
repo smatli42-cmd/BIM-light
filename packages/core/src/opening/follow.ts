@@ -5,6 +5,7 @@
 // - Pohnul se jen začátek (prodloužení, zkrácení): otvor zůstane na místě = drží vzdálenost od konce.
 // - Jinak (změnila se délka i oba konce, např. odsazení s klouzáním konců): otvor zůstane na místě
 //   ve světě – jeho počátek se promítne na novou referenční čáru.
+import { findWall } from '../wall/queries.ts';
 import { dist, pathLength, type Path } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
 import { putOpenings } from '../model/update.ts';
@@ -27,8 +28,8 @@ function newOffset(o: Opening, before: Path, after: Path): number {
 export function followOpenings(before: Model, after: Model): Model {
   const changed: Opening[] = [];
   for (const o of Object.values(after.openings)) {
-    const a = after.elements[o.hostId];
-    const b = before.elements[o.hostId];
+    const a = findWall(after, o.hostId);
+    const b = findWall(before, o.hostId);
     if (!a || !b || a.path === b.path || before.openings[o.id]?.hostId !== o.hostId) continue;
     const offset = newOffset(o, b.path, a.path);
     if (Math.abs(offset - o.offset) > 1e-9) changed.push({ ...o, offset });

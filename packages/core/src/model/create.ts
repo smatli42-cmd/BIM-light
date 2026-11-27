@@ -12,6 +12,7 @@ import { WALL_TYPE_LIBRARY, wallTypeFromLibrary } from '../wall-type/library.ts'
 import { DEFAULT_CUT_HEIGHT } from '../wall/layers.ts';
 import { SCHEMA_VERSION, type Model } from './types.ts';
 import { defaultSchedules } from '../schedule/defaults.ts';
+import { slabLibraryForProject } from '../slab/library.ts';
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
   Object.fromEntries(items.map((i) => [i.id, i]));
@@ -42,6 +43,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
   const storeyId = newId();
   const mats = materials(newId);
   const display = withHatchesFor(createDefaultDisplay(newId), mats);
+  const slabs = slabLibraryForProject(mats, newId);
   const study = Object.values(display.styles)[0];
   if (!study) throw new Error('Chybí výchozí styl');
   const view: View = {
@@ -65,7 +67,8 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     storeys: { [storeyId]: { id: storeyId, name: '1.NP', buildingId, elevation: 0, height: 3000 } },
     materials: byId(mats),
     wallTypes: byId(wallTypes(mats, newId)),
-    compositions: {},
+    slabTypes: byId(slabs.map((s) => s.type)),
+    compositions: byId(slabs.map((s) => s.composition)),
     elements: {},
     openings: {},
     relations: {},

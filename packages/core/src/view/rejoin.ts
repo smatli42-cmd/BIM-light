@@ -3,6 +3,7 @@
 // jiné zobrazené stěny ve stejném bodě (nová stěna místo bourané). Jako v Archicadu se napojení počítá
 // mezi zobrazenými prvky. Model se nemění – doplní se jen do kopie pro kresbu; ručně odpojené konce
 // („nespojovat“ je uložený vztah) se nedotknou.
+import { findWall } from '../wall/queries.ts';
 import { endPoint, type PathEnd } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import { sameNode } from '../junction/frame.ts';
@@ -20,7 +21,7 @@ const ENDS: readonly PathEnd[] = ['start', 'end'];
 const isFree = (m: Model, e: End) =>
   !connectionsOf(m, e.wallId).some((c) => sidesFor(c, e.wallId).own.at === endToType(e.end));
 const pointOf = (m: Model, e: End) => {
-  const w = m.elements[e.wallId];
+  const w = findWall(m, e.wallId);
   return w ? endPoint(w.path, e.end) : { x: Number.NaN, y: Number.NaN };
 };
 

@@ -1,5 +1,6 @@
 // Dotaz pro AI: skladby projektu (krok 3 editoru typů) – název, „Použít pro“, tloušťka, vrstvy
 // a typy stěn, které skladbu sdílejí.
+import { slabTypeUsers } from '../slab/queries.ts';
 import { S } from '../commands/schema.ts';
 import { compositionUsers } from '../composition/store.ts';
 import type { CompositionUse } from '../composition/types.ts';
@@ -36,5 +37,6 @@ export const compositionList = defineQuery<Record<string, never>, CompositionRow
         function: l.function,
       })),
       wallTypes: compositionUsers(m, c.id).map((t) => ({ id: t.id, name: t.name })),
+      slabTypes: slabTypeUsers(m, c.id).map((t) => ({ id: t.id, name: t.name })),
     })),
 });

@@ -1,6 +1,7 @@
 // Úprava a smazání podlaží (základ 12, plán stěn Z3). Podlaží jsou naskládaná na sebe jako v Archicadu:
 // změna konstrukční výšky posune všechna podlaží nad ním, změna úrovně posune podlaží i ta nad ním
 // a podlaží pod ním změní výšku. Výšky prvků se počítají z podlaží, takže se přepočítají samy.
+import { allSlabs } from '../../slab/queries.ts';
 import type { Id } from '../../ids/index.ts';
 import { storeyStack } from '../../model/storeys.ts';
 import type { Model, Storey } from '../../model/types.ts';
@@ -70,6 +71,7 @@ export function storeyDependents(model: Model, storeyId: Id): { elements: number
       if (base < index && base + w.height.top.storeys >= index) elements++;
     }
   }
+  elements += allSlabs(model).filter((sl) => sl.storeyId === storeyId).length;
   const dimensions = Object.values(model.dimensions).filter((d) => d.storeyId === storeyId).length;
   return { elements, dimensions };
 }
