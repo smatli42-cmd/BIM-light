@@ -1,10 +1,9 @@
 // Obsah → Projekt → Řezy a Pohledy (koncepce rozhraní, část 4): seznam řezů a pohledů projektu, klik otevře
-// okno s kresbou z modelu. Zakládání a úpravy zatím jen příkazy (AI) – nástroj Řez přijde podle Arditu.
+// okno s kresbou z modelu. Okno řezu je jedno pro celou aplikaci (section-defaults.ts).
 import type { Section } from '@bim-light/core';
-import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
 import { Icon } from '../icons/Icon.tsx';
-import { SectionDialog } from '../section/SectionDialog.tsx';
+import { openSection } from '../../session/section-defaults.ts';
 
 function Group(p: { title: string; kind: Section['kind']; s: Session; open: (id: string) => void }) {
   const items = Object.values(p.s.model.sections).filter((x) => x.kind === p.kind);
@@ -27,12 +26,11 @@ function Group(p: { title: string; kind: Section['kind']; s: Session; open: (id:
 }
 
 export function Sections({ s }: { s: Session }) {
-  const [open, setOpen] = useState<string | null>(null);
+  const open = (id: string) => openSection(s, id);
   return (
     <>
-      <Group title="Řezy" kind="section" s={s} open={setOpen} />
-      <Group title="Pohledy" kind="elevation" s={s} open={setOpen} />
-      {open && <SectionDialog s={s} sectionId={open} onClose={() => setOpen(null)} />}
+      <Group title="Řezy" kind="section" s={s} open={open} />
+      <Group title="Pohledy" kind="elevation" s={s} open={open} />
     </>
   );
 }

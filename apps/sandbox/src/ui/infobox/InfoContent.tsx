@@ -13,6 +13,7 @@ import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
 import { NewSlabInfo, SelectedSlabsInfo } from './SlabInfo.tsx';
 import { SelectedSlabOpenings } from './SlabOpeningInfo.tsx';
 import { NewRoomPanel, SelectedRoomsInfo } from './RoomInfo.tsx';
+import { NewSectionInfo, SelectedSectionsInfo } from './SectionInfo.tsx';
 
 const COMMANDS: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'align', 'trim', 'split'];
 
@@ -26,6 +27,7 @@ function Selection({ s }: { s: Session }) {
       <OpeningPanel s={s} />
       <SelectedSlabOpenings s={s} />
       <SelectedRoomsInfo s={s} />
+      <SelectedSectionsInfo s={s} />
       {slabs.length > 0 && <SelectedSlabsInfo key={slabs.map((x) => x.id).join()} s={s} slabs={slabs} />}
       {dims > 0 && (
         <section>
@@ -49,6 +51,7 @@ export function InfoContent({ s }: { s: Session }) {
   if (WALL_TOOLS.includes(id)) return <NewWallInfo s={s} />;
   if (id === 'slab') return <NewSlabInfo s={s} />;
   if (id === 'room') return <NewRoomPanel s={s} />;
+  if (id === 'section') return <NewSectionInfo s={s} />;
   return (
     <>
       <SelectOptions s={s} />

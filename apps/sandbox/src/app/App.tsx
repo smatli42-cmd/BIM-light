@@ -22,6 +22,7 @@ import { installTestHook } from './test-hook.ts';
 import { sampleFromUrl } from '../ui/samples/open.ts';
 import { view3d } from '../view3d/state.ts';
 import { View3DWindow } from '../view3d/View3DWindow.tsx';
+import { SectionWindow } from '../ui/section/SectionDialog.tsx';
 
 /** Okna pohledů vedle sebe (koncepce rozhraní, část 2 E); 3D okno vpravo vedle nich. */
 function Windows({ s, controller }: { s: Session; controller: Controller }) {
@@ -78,6 +79,7 @@ export function App() {
       </div>
       <BottomBar s={session} />
       <LessonGuide s={session} />
+      <SectionWindow s={session} />
     </div>
   );
 }

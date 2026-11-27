@@ -1,7 +1,9 @@
 // Okno řezu / pohledu (rozhodnutí 19): kresba spočítaná z modelu nad výkresem (jako okno výkazu). Zatím jen
 // prohlížení – nástroj Řez, info box řezu a další ovládání přijdou podle vzoru z Arditu (koncepce rozhraní).
 import { useEffect } from 'preact/hooks';
+import { openSection, openSectionId } from '../../session/section-defaults.ts';
 import type { Session } from '../../session/session.ts';
+import { useSession } from '../use-session.ts';
 import { IconButton } from '../icons/Icon.tsx';
 import { SectionCanvas } from './SectionCanvas.tsx';
 
@@ -38,4 +40,11 @@ export function SectionDialog(p: { s: Session; sectionId: string; onClose: () =>
       </div>
     </div>
   );
+}
+
+/** Okno řezu otevřené odkudkoli (Obsah, info box, dvojklik na značku); jedno najednou. */
+export function SectionWindow({ s }: { s: Session }) {
+  useSession(s);
+  const id = openSectionId(s);
+  return id ? <SectionDialog s={s} sectionId={id} onClose={() => openSection(s, null)} /> : null;
 }

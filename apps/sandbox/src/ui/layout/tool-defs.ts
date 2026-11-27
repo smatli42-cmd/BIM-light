@@ -23,6 +23,7 @@ export const PALETTE: readonly (readonly ToolDef[])[] = [
     { tool: 'slab', icon: 'slab', command: 'slab.create' },
     { tool: 'room', icon: 'room', command: 'room.create' },
   ],
+  [{ tool: 'section', icon: 'section', command: 'section.create' }],
   [
     { tool: 'dimension', icon: 'dimension', label: 'Kóta', key: 'D' },
     { tool: 'angle', icon: 'angle', label: 'Úhel', key: 'U' },

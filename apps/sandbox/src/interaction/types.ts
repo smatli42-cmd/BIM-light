@@ -42,7 +42,8 @@ export type ToolId =
   | 'opening'
   | 'arc'
   | 'slab'
-  | 'room';
+  | 'room'
+  | 'section';
 
 /** Co nástroj kreslí přes výkres (světle modré pomocné značky, katalog kreslení 2). */
 export interface Overlay {

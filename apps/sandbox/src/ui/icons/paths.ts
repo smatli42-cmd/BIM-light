@@ -137,6 +137,8 @@ export const ICONS = {
   walk: ['c:13,4.5,1.6', 'M10 21l2-6 3 3v3', 'M12 15l1-6 3 3 3 1', 'M13 9l-3 1-2 3'],
   cube: ['M12 3l8 4.5v9L12 21l-8-4.5v-9z', 'M4 7.5l8 4.5 8-4.5', 'M12 12v9'],
   section: ['M12 3v18', 'M12 4h6', 'M15.5 2l2.5 2-2.5 2', 'M12 20h6', 'M15.5 18l2.5 2-2.5 2', 'M4 9h5v6H4z'],
+  'section-straight': ['M4 12h16', 'M4 8v8', 'M20 8v8'],
+  'section-jogged': ['M3 8h8v8h10', 'M3 5v6', 'M21 13v6'],
   elevation: ['M4 20h16', 'M6 20V10l6-5 6 5v10', 'M9 13h2v3H9z', 'M13 13h2v3h-2z'],
   'cube-selection': [
     'M12 6l5 2.8v5.6L12 17.2l-5-2.8V8.8z',
