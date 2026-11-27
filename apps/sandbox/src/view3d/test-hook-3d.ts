@@ -21,6 +21,8 @@ export interface TestHook3D {
   handleOf(axis: 'x' | 'y' | 'z', side: 'min' | 'max'): { x: number; y: number } | null;
   /** Stav prohlížeče: projekce kamery, stíny, mřížka, procházka, poloha kamery (m). */
   scene(): { projection: string; shadows: boolean; grid: boolean; walking: boolean; eye: number[] };
+  /** Bod stránky (px), kde klik trefí prvek `id` (hledá v mřížce po 8 px), nebo null. */
+  hitOf(id: string): { x: number; y: number } | null;
   /** Úchyt roviny řezu v px stránky, nebo null. */
   cutHandle(): { x: number; y: number } | null;
 }
@@ -62,6 +64,12 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
       walking: v.walk.active,
       eye: v.camera.position.toArray(),
     }),
+    hitOf(id) {
+      const r = v.canvas.getBoundingClientRect();
+      for (let y = 4; y < r.height; y += 8)
+        for (let x = 4; x < r.width; x += 8) if (v.pick(x, y) === id) return { x: x + r.left, y: y + r.top };
+      return null;
+    },
     cutHandle() {
       const c = active3d(s).cutPlane;
       if (!c) return null;

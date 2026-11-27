@@ -2,7 +2,6 @@
 // společný s půdorysem, Shift+klik přidá / odebere), tažení úchytů kvádru a roviny řezu jako příkazy.
 import { useEffect, useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
-import { openStorey } from '../session/sets.ts';
 import { active3d, setBox3D } from './state.ts';
 import { installTestHook3D } from './test-hook-3d.ts';
 import { Viewer } from './viewer.ts';
@@ -18,9 +17,9 @@ function clickPick(s: Session, v: Viewer) {
     if (!down || Math.hypot(e.offsetX - down.x, e.offsetY - down.y) > 4) return;
     down = null;
     const id = v.pick(e.offsetX, e.offsetY);
-    // Prvek jiného podlaží: aktivní okno přejde na jeho podlaží (výběr pak v půdorysu vidět, jako Archicad).
+    // Výběr ve 3D nepřepíná podlaží půdorysu (pokyn uživatele 2026-11-27): prvek jiného podlaží se vybere,
+    // info box ho ukáže a mění, půdorys zůstane.
     const el = id ? s.model.elements[id] : undefined;
-    if (el && el.storeyId !== s.storeyId) openStorey(s, el.storeyId);
     const slab = el?.category === 'slab';
     if (e.shiftKey && el) {
       if (slab) s.selection.toggleSlab(el.id);

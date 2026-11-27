@@ -86,6 +86,11 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Prohlížeč rozdělen: `camera-rig.ts`, `sun-light.ts`, `cut-gizmo.ts`, `handles.ts`, `grid.ts`, `walk.ts`,
   `sketch.ts`, `use-viewer.ts`, `use-hover-3d.ts`, `Toolbar3D.tsx`, `Sun3D.tsx`, `Cut3D.tsx`.
 
+## Hotovo (oprava – výběr ve 3D nepřepíná podlaží, 2026-11-27)
+
+- Klik ve 3D vybere prvek z libovolného podlaží a půdorys zůstane (dřív okno přeskočilo na podlaží prvku).
+  Info box ukáže a mění vybraný prvek jiného podlaží. Test `e2e/nahled-3d-vyber.spec.ts`.
+
 ## Co zkusit
 
 - `?ukazka=3d-lista` → Obsah → 3D: dům v axonometrii ve Skice se stíny 21. 6. v 15:00 a svislým řezem.
@@ -108,8 +113,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   oblouková příčka. Otáčet levým tlačítkem, posouvat pravým, kolečko.
 - Ve spodní liště **Fáze** → Plánovaný stav: bouraná příčka zmizí i ve 3D; Stávající stav: nové příčky zmizí.
 - Panel **Vrstvy**: skrýt vrstvu stěn → zmizí i ve 3D.
-- Vybrat stěnu v půdorysu → **F4** (jen ona), **Shift+F4** zpět celý dům. Kliknout na stěnu 2.NP ve 3D →
-  půdorys přejde na 2.NP a stěna je vybraná.
+- Vybrat stěnu v půdorysu → **F4** (jen ona), **Shift+F4** zpět celý dům. Kliknout ve 3D na desku nebo
+  stěnu 2.NP → vybere se, půdorys **zůstane** na svém podlaží a info box ji ukáže a mění (typ, horní hrana).
 
 ## Rozhodl Code (k potvrzení)
 
@@ -167,6 +172,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Povrchy místností (malby, obklady, spárořezy; návrh poslán hlavní session 2026-11-27, uživatel souhlasí):
   jádro spočítá plochy povrchů (obrys v rovině líce + transformace do 3D + spáry), 3D je jen zobrazí
   tenkou plochou před lícem a spáry čarami – stejná data jako rozvinutý pohled a výkaz.
+- **Úpravy myší přímo ve 3D** (táhnout uzly, hrany, výšky; pokyn uživatele 2026-11-27 – samostatná
+  kategorie, až ke konci). Teď se ve 3D jen vybírá a mění přes info box.
 - **Další kroky lišty podle Arditu** (zapsáno na pokyn 2026-11-27):
   - **Studie oslunění** – stíny po hodinách (např. 8–18 h) jako animace a jako výkres na list.
   - **Kamera** (Ctrl+Alt+F3) – dvoubodová perspektiva (svislice svisle), pohledy podle světových stran,
