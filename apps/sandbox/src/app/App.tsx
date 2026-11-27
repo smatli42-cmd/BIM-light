@@ -20,8 +20,10 @@ import { applyTheme } from '../ui/theme.ts';
 import { useSession } from '../ui/use-session.ts';
 import { installTestHook } from './test-hook.ts';
 import { sampleFromUrl } from '../ui/samples/open.ts';
+import { view3d } from '../view3d/state.ts';
+import { View3DWindow } from '../view3d/View3DWindow.tsx';
 
-/** Okna pohledů vedle sebe (koncepce rozhraní, část 2 E). */
+/** Okna pohledů vedle sebe (koncepce rozhraní, část 2 E); 3D okno vpravo vedle nich. */
 function Windows({ s, controller }: { s: Session; controller: Controller }) {
   useSession(s);
   return (
@@ -32,6 +34,8 @@ function Windows({ s, controller }: { s: Session; controller: Controller }) {
           <ViewWindow s={s} controller={controller} index={i} />
         </Fragment>
       ))}
+      {view3d(s).open && <WindowSplitter />}
+      {view3d(s).open && <View3DWindow s={s} />}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { LookGroup, OverridesMenu, RevealToggle } from '../bottom/look.tsx';
 import { WindowsGroup } from '../bottom/windows.tsx';
 import { PhaseMenu, StructureMenu } from '../bottom/phase.tsx';
 import { useSession } from '../use-session.ts';
+import { View3DGroup } from '../../view3d/BottomGroup.tsx';
 import { AnnotationGroup, CutPlane, HatchScale } from '../ViewControls.tsx';
 
 export function BottomBar({ s }: { s: Session }) {
@@ -23,6 +24,7 @@ export function BottomBar({ s }: { s: Session }) {
       <LookGroup s={s} />
       <OverridesMenu s={s} />
       <StructureMenu s={s} />
+      <View3DGroup s={s} />
       <PhaseMenu s={s} />
       <HatchScale s={s} />
       <CutPlane s={s} />

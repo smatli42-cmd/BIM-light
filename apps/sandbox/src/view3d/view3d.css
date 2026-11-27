@@ -1,0 +1,13 @@
+/* 3D okno (koncepce rozhraní, část 2 E): plátno přes celé okno, hláška bez WebGL uprostřed. */
+.window-3d .workspace {
+  background: var(--paper);
+}
+.window-3d .drawing {
+  touch-action: none;
+}
+.view3d-error {
+  position: absolute;
+  inset: 40% 16px auto;
+  text-align: center;
+  color: var(--muted, #666);
+}

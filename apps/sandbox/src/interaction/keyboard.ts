@@ -2,6 +2,7 @@
 // Nástroj dostane klávesu první (psaní čísel, Tab, Enter); tady je zbytek.
 import { allWallGeometry, boundsOf, boxSelect, type Vec2 } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
+import { show3D } from '../view3d/state.ts';
 import { copyWalls } from './clipboard.ts';
 import type { KeyInfo, ToolId } from './types.ts';
 
@@ -78,6 +79,11 @@ export function handleKey(s: Session, k: KeyInfo): boolean {
   if (k.key === 'Escape') {
     s.menu = null;
     if (!s.tool.escape() && s.tool.id !== 'select') s.setTool('select');
+    return true;
+  }
+  // 3D okno (koncepce rozhraní, G 10): F4 výběr, Ctrl+F4 vše; Shift+F4 navíc, Ctrl+F4 si v Chromu bere karta.
+  if (k.key === 'F4') {
+    show3D(s, !k.ctrl && !k.shift);
     return true;
   }
   if (k.ctrl && k.key.toLowerCase() === 'z' && k.shift) return ctrlKey(s, 'y');

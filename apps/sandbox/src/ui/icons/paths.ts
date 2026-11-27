@@ -110,6 +110,17 @@ export const ICONS = {
   curve: ['M3 17c4-10 14-10 18 0', 'c:12,9.5,1.6'],
   card: ['M4 5h16v14H4z', 'M7 9h6', 'M7 13h10', 'M7 16h7'],
   table: ['M4 5h16v14H4z', 'M4 10h16', 'M4 14.5h16', 'M10 5v14'],
+  // 3D okno: krychle (Zobrazit ve 3D), krychle s rámečkem výběru (Zobrazit výběr ve 3D).
+  cube: ['M12 3l8 4.5v9L12 21l-8-4.5v-9z', 'M4 7.5l8 4.5 8-4.5', 'M12 12v9'],
+  'cube-selection': [
+    'M12 6l5 2.8v5.6L12 17.2l-5-2.8V8.8z',
+    'M7 8.8l5 2.8 5-2.8',
+    'M12 11.6v5.6',
+    'M3 7V3h4',
+    'M17 3h4v4',
+    'M21 17v4h-4',
+    'M7 21H3v-4',
+  ],
 } as const;
 
 export type IconName = keyof typeof ICONS;
