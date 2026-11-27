@@ -26,6 +26,13 @@ import { View3DWindow } from '../view3d/View3DWindow.tsx';
 /** Okna pohledů vedle sebe (koncepce rozhraní, část 2 E); 3D okno vpravo vedle nich. */
 function Windows({ s, controller }: { s: Session; controller: Controller }) {
   useSession(s);
+  // 3D nahradilo jediné okno půdorysu (otevřeno z Obsahu): ukazuje se jen 3D.
+  if (view3d(s).open && view3d(s).solo)
+    return (
+      <div class="windows">
+        <View3DWindow s={s} />
+      </div>
+    );
   return (
     <div class="windows">
       {s.windows.map((_, i) => (

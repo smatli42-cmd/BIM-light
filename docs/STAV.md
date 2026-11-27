@@ -16,6 +16,8 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - Oprava (hlášení uživatele se screenshoty): Obsah otevírá do okna, ve kterém se pracuje – pracuje-li se
   ve 3D, podlaží / pohled nahradí 3D okno vpravo (levé se nemění). Rámeček aktivního okna je vrstva nad
   obsahem (dřív ho hlavička a plátno překrývaly). Předzvýraznění prvku zmizí, když myš opustí okno.
+- Pokyn uživatele: 3D z Obsahu nahradí aktivní okno půdorysu (u dvou oken to aktivní, druhé zůstane;
+  u jediného okna se ukáže jen 3D a podlaží z Obsahu ho vrátí). F4 a tlačítko 3D dál otevírají 3D vedle.
 
 ### 3D pohled jako data a průhlednost povrchu, 2026-11-27 (požadavky 3D proudu)
 

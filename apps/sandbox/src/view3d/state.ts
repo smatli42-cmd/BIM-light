@@ -17,6 +17,8 @@ export interface View3DState {
   viewId: Id | null;
   /** Pracuje se ve 3D okně (klik do něj): zvýrazní se okno i 3D pohled v Obsahu. */
   focused: boolean;
+  /** 3D nahradilo jediné okno půdorysu (otevřeno z Obsahu): ukazuje se jen 3D okno. */
+  solo: boolean;
 }
 
 const states = new WeakMap<Session, View3DState>();
@@ -27,7 +29,7 @@ const openFromUrl = () => typeof location !== 'undefined' && new URLSearchParams
 export function view3d(s: Session): View3DState {
   let st = states.get(s);
   if (!st) {
-    st = { open: openFromUrl(), only: null, fit: 0, viewId: null, focused: false };
+    st = { open: openFromUrl(), only: null, fit: 0, viewId: null, focused: false, solo: false };
     states.set(s, st);
   }
   return st;
@@ -59,6 +61,7 @@ export function show3D(s: Session, selection: boolean) {
 export function close3D(s: Session) {
   view3d(s).open = false;
   view3d(s).focused = false;
+  view3d(s).solo = false;
   s.changed();
 }
 
@@ -81,10 +84,20 @@ export function blur3D(s: Session) {
 /** Je 3D okno to, ve kterém se pracuje? */
 export const is3DFocused = (s: Session) => view3d(s).open && view3d(s).focused;
 
-/** Otevře 3D pohled z Obsahu a začne se v něm pracovat. */
+/**
+ * Otevře 3D pohled z Obsahu v okně, ve kterém se pracuje (princip Arditu, pokyn uživatele 2026-11-27):
+ * otevřené 3D okno jen přepne pohled; jinak 3D nahradí aktivní okno půdorysu – u dvou oken vedle sebe
+ * zůstane druhé půdorysné okno, u jediného okna se ukáže jen 3D.
+ */
 export function open3DView(s: Session, viewId: Id) {
   const st = view3d(s);
   st.viewId = viewId;
+  if (!st.open) {
+    if (s.windows.length > 1) {
+      s.windows.splice(s.active, 1);
+      s.active = 0;
+    } else st.solo = true;
+  }
   st.focused = true;
   show3D(s, false);
 }

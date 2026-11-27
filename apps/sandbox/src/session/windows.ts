@@ -3,7 +3,7 @@
 import { Viewport } from '../canvas/viewport.ts';
 import type { WindowState } from './screen.ts';
 import type { Session } from './session.ts';
-import { blur3D, close3D, is3DFocused } from '../view3d/state.ts';
+import { blur3D, close3D, is3DFocused, view3d } from '../view3d/state.ts';
 
 /** Jedno okno, nebo dvě vedle sebe (druhé začne se stejným pohledem a výřezem). */
 export function setLayout(s: Session, n: 1 | 2) {
@@ -31,12 +31,13 @@ export function activate(s: Session, i: number) {
 
 /**
  * Otevře pohled z Obsahu v okně, ve kterém se pracuje (princip Arditu). Pracuje-li se ve 3D okně, nahradí
- * ho okno půdorysu na stejném místě (vpravo); levé okno se nemění.
+ * ho okno půdorysu na stejném místě (vpravo, levé se nemění; samotné 3D se vrátí na jedno okno).
  */
 export function openInActive(s: Session, viewId: string) {
   if (is3DFocused(s)) {
+    const solo = view3d(s).solo;
     close3D(s);
-    if (s.windows.length === 1) {
+    if (s.windows.length === 1 && !solo) {
       s.windows.push({ viewId, viewport: Object.assign(new Viewport(), s.viewport) });
     }
     activate(s, s.windows.length - 1);
