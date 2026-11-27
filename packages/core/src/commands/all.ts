@@ -84,6 +84,7 @@ import { wallTypeLoad } from './wall-type/load.ts';
 import { slabCreate } from './slab/create.ts';
 import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edit.ts';
 import { slabOpeningCreate } from './slab-opening/create.ts';
+import { outlineSetDistance } from './slab/distance.ts';
 import {
   view3dCreate,
   view3dDelete,
@@ -143,6 +144,7 @@ export const CORE_COMMANDS = [
   slabOpeningSetOutline,
   slabOpeningMoveVertex,
   slabOpeningMove,
+  outlineSetDistance,
   view3dCreate,
   view3dRename,
   view3dDelete,

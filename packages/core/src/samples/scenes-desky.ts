@@ -5,6 +5,31 @@ import type { Sample } from './types.ts';
 
 export const SLAB_SCENES: readonly Sample[] = [
   {
+    key: 'desky-presny-otvor',
+    title: 'Přesný otvor v desce – pomocné čáry, kóty, tracker',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Místnost 6 × 4 m se stropem a jedním otvorem (prostup 600 × 400). Zkus: O (Otvor) → V desce → ' +
+      'Obdélník; kurzor se přichytí k rohům a hranám desky i otvoru, z rohů vedou pomocné čáry. Po prvním ' +
+      'kliku klikni na číslo modré kóty (např. 1000) a napiš 800 – roh se posune; pak napiš šířku, Tab, ' +
+      'hloubku a Enter. Esc, klik do otvoru: kóty k lícům stěn, klik na číslo otvor posune. Totéž u desky (S).',
+    build(c) {
+      rect(c, 'Zdivo 300', 6000, 4000);
+      const sid = c.storeyId;
+      c.run('slab.create', {
+        storeyId: sid,
+        typeId: c.slabType('ŽB strop 250'),
+        rect: { a: vec(0, 0), b: vec(6000, 4000) },
+      });
+      const [hole] = c.run('slabOpening.create', {
+        storeyId: sid,
+        rect: { a: vec(1000, 1000), b: vec(1600, 1400) },
+      });
+      c.run('outline.setDistance', { elementId: hole, side: 'x+', value: 3000 });
+    },
+  },
+  {
     key: 'desky-d4',
     title: 'D4 – vršek stěn k desce, výkaz desek, kóty k hranám desky',
     kind: 'scena',

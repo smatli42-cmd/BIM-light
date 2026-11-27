@@ -3,6 +3,7 @@ import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { SnapKind } from '../rules/cross-rules.ts';
 import type { WallFace } from '../wall/types.ts';
+import type { SnapOutline } from './outline-snap.ts';
 
 /**
  * Druh kandidáta; „kolmo“ je líc, na který se z výchozího bodu dopadá kolmo, „tečna“ je bod oblouku,
@@ -19,6 +20,8 @@ export interface SnapCandidate {
   readonly priority: number;
   readonly wallId?: Id | undefined;
   readonly face?: WallFace | undefined;
+  /** Deska nebo otvor v desce, z jejíhož obrysu kandidát je. */
+  readonly ownerId?: Id | undefined;
 }
 
 export interface SnapOptions {
@@ -38,6 +41,10 @@ export interface SnapOptions {
   readonly grid?: number | null;
   /** Stěny, ke kterým se nepřichytává (právě se hýbou). */
   readonly exclude?: ReadonlySet<Id>;
+  /** Obrysy desek a otvorů v deskách, ke kterým se přichytává (hrany, rohy, průsečíky). */
+  readonly outlines?: readonly SnapOutline[];
+  /** Další body, ze kterých vedou pomocné čáry (např. už položené body rozpracovaného obrysu). */
+  readonly guidePoints?: readonly Vec2[];
 }
 
 export interface SnapInfo {
@@ -48,6 +55,7 @@ export interface SnapInfo {
   readonly count: number;
   readonly wallId?: Id | undefined;
   readonly face?: WallFace | undefined;
+  readonly ownerId?: Id | undefined;
 }
 
 export interface SnapResult {

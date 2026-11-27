@@ -7,6 +7,7 @@ import type { Model } from '../model/types.ts';
 import { allWallGeometry, type WallGeometry } from '../wall/geometry.ts';
 import { freePoint, snapAngle } from './angle.ts';
 import { outlineCorners, snapCandidates } from './candidates.ts';
+import { outlineCandidates, outlinePoints, snapOutlines } from './outline-snap.ts';
 import type { SnapOptions, SnapResult } from './types.ts';
 
 /** Geometrie stěn podlaží, ke kterým se dá přichytit. */
@@ -19,7 +20,9 @@ export function resolveSnap(geoms: readonly WallGeometry[], raw: Vec2, o: SnapOp
   if (o.disabled) return { point: raw, snap: null, guides: [] };
   const from = o.from ?? null;
   const ray = { prevDir: o.prevDir ?? null, orthoOnly: o.orthoOnly ?? false };
-  const list = snapCandidates(geoms, raw, o.tolerance, from, ray);
+  const outlines = o.outlines ?? [];
+  const extra = outlineCandidates(outlines, geoms, raw, o.tolerance, from);
+  const list = snapCandidates(geoms, raw, o.tolerance, from, ray, extra);
   if (list.length) {
     const i = (((o.cycle ?? 0) % list.length) + list.length) % list.length;
     const c = list[i];
@@ -31,6 +34,7 @@ export function resolveSnap(geoms: readonly WallGeometry[], raw: Vec2, o: SnapOp
         count: list.length,
         wallId: c.wallId,
         face: c.face,
+        ownerId: c.ownerId,
       };
       return { point: c.point, snap, guides: [] };
     }
@@ -41,7 +45,7 @@ export function resolveSnap(geoms: readonly WallGeometry[], raw: Vec2, o: SnapOp
     if (Math.hypot(node.x - raw.x, node.y - raw.y) <= o.tolerance)
       return { point: node, snap: { kind: 'grid', label: 'mřížka', index: 0, count: 1 }, guides: [] };
   }
-  const corners = outlineCorners(geoms);
+  const corners = [...outlineCorners(geoms), ...outlinePoints(outlines), ...(o.guidePoints ?? [])];
   if (from) {
     const a = snapAngle(raw, from, o.prevDir ?? null, o.orthoOnly ?? false, corners, o.tolerance);
     if (a) return a;
@@ -49,7 +53,8 @@ export function resolveSnap(geoms: readonly WallGeometry[], raw: Vec2, o: SnapOp
   return freePoint(raw, from, corners, o.tolerance);
 }
 
-/** Zkratka: přichytí bod k modelu podlaží. */
+/** Zkratka: přichytí bod k modelu podlaží (stěny, desky a otvory v deskách). */
 export function snapPoint(model: Model, storeyId: Id, raw: Vec2, o: SnapOptions): SnapResult {
-  return resolveSnap(snapGeometry(model, storeyId, o.exclude), raw, o);
+  const outlines = o.outlines ?? snapOutlines(model, storeyId, o.exclude);
+  return resolveSnap(snapGeometry(model, storeyId, o.exclude), raw, { ...o, outlines });
 }

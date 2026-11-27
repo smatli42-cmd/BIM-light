@@ -87,6 +87,8 @@ function upper(c: SampleContext) {
   slabs(c, storeyId, 'ŽB strop 250', 315);
   // Otvor pro schodiště ve stropě nad 1.NP (D3): prořízne strop i podlahu 2.NP.
   const [stair] = c.run('slabOpening.create', { storeyId, rect: { a: vec(4000, 4700), b: vec(6800, 5900) } });
+  // Přesný odstup schodiště 100 mm od líce stěny pod ním (dočasná kóta, outline.setDistance).
+  c.run('outline.setDistance', { elementId: stair, side: 'y-', value: 100 });
   // D4: kóta od hrany otvoru ke stropu k líci nosné zdi.
   const bearing = Object.values(c.model.elements).find(
     (e) => e.category === 'wall' && e.storeyId === storeyId && e.typeId === c.type('Nosná zeď 330'),

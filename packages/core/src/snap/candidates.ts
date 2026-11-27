@@ -101,8 +101,13 @@ export function snapCandidates(
   tol: number,
   from: Vec2 | null = null,
   ray?: { prevDir: number | null; orthoOnly: boolean },
+  extra: readonly SnapCandidate[] = [],
 ): SnapCandidate[] {
-  const all = [...geoms.flatMap((g) => wallCandidates(g, raw, tol, from)), ...intersections(geoms, raw, tol)];
+  const all = [
+    ...geoms.flatMap((g) => wallCandidates(g, raw, tol, from)),
+    ...intersections(geoms, raw, tol),
+    ...extra,
+  ];
   if (from && ray) {
     const priority = priorityOf('face') - 0.5;
     all.push(...rayFaceCandidates(geoms, raw, tol, { from, ...ray, priority }));

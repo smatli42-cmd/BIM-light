@@ -12,3 +12,4 @@ export * from './pair.ts';
 export * from './outline-ref.ts';
 export * from './outline-pick.ts';
 export * from './text-shift.ts';
+export * from './outline-temp.ts';
