@@ -48,6 +48,8 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 - 3D okno je volba obrazovky (jako rozvržení oken), ne data modelu – nejde přes příkaz; stav drží
   `view3d/state.ts` vedle Session.
 - 3D ukazuje všechna podlaží, styl, vrstvy a filtr rekonstrukce **aktivního okna**; F4 bez výběru = vše.
+- Barva ve 3D = barva materiálu; přepis barvy (pravidla grafiky) až po požadavku 3 níže – vlastní položka
+  „barva povrchu“, ne výplň řezu (2026-11-27, uživatel souhlasí).
 - Výběr ve 3D zvýrazní prvek barvou výběru (akcent rozhraní), ne obrysem.
 - Typ s více výškovými pásy: vrstvy ve 3D zatím podle pásu v rovině řezu přes celou výšku (viz níže).
 
@@ -58,7 +60,12 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 2. **Geometrie vrstev po výškových pásech:** `wallGeometry` vrací vrstvy jen pro pás v rovině řezu. Pro 3D
    by se hodila varianta pro zadaný pás (`wallGeometry(model, wall, cutPlane, bandIndex)` nebo
    `wallBandGeometry`), aby sokl / parapetní pás měl ve 3D svou skladbu.
-3. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
+3. **Barva povrchu ve 3D přes funkci grafiky** (základy 11, 30; jako „Override Surface“ v Archicadu /
+   filtry pohledu v Revitu): do efektu pravidla a grafiky kategorie přidat položku `surfaceColor`
+   (barva povrchu 3D, `null` = barva materiálu) s „proč“ a ve schématu balíčku stylů (`package-schema.ts`).
+   Oddělit od `fillColor` (výplň řezu je ve Studii šedá – 3D by zešedlo). Pak 3D vezme barvu z
+   `resolveGraphics(...).effect.surfaceColor ?? barva materiálu` a pravidlo „bourané žlutě“ platí i ve 3D.
+4. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
    (zatím není potřeba: 3D okno nic v modelu nemění).
 
 ## Otevřené / další kroky
