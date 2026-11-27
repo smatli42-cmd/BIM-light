@@ -1,12 +1,26 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D3 (otvory v deskách); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D4 (vršek k desce, výkaz desek, kóty k deskám); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Desky D4, 2026-11-27 (scéna `?ukazka=desky-d4`; příčky k stropu a kóta k otvoru v `?ukazka=dum`)
+
+- **Vršek stěny k desce:** druh vršku `{ kind: 'slab', slabId, offset }` ve výšce stěny (spodní líc desky +
+  odsazení), počítá se z desky – změna výšky, typu (tloušťky) i podlaží stěnu přepočítá. Příkazy
+  `wall.attachTop` (bez slabId najde desku nad stěnou) a `wall.detachTop`, dotaz `wall.topSlab`; smazaná
+  deska stěny odpojí se stejnou výškou. Info box stěny: Vršek → „Vršek k desce“.
+- **Výkaz desek** (zdroj `slabs`, migrace 21 → 22 přidá „Výkaz desek“): značka, typ, podlaží, tloušťka,
+  plocha, plocha bez otvorů (mez odečtu jako u stěn), obvod, objem; v Obsahu → Projekt → Výkazy.
+- **Kóty k deskám:** odkaz kóty `DimRef` = líc stěny NEBO hrana / roh obrysu desky či otvoru v desce
+  (`outline`, `ownerId`, `edge` / `vertex`). Nástroj Kóta se přichytí na hrany a rohy (roh má přednost);
+  kóta patří podlaží desky; změna čísla posune desku (otvor). Zaniklá hrana (smazání, jiný počet bodů) kótu smaže.
+- Testy: `wall-height/attach.test.ts`, `schedule/slabs.test.ts`, `dimension/outline.test.ts`, AI scénář
+  `ai/scenario-slabs-d4.test.ts`, e2e `desky-d4.spec.ts`.
 
 ### Obsah → Projekt: 3D pohledy a zvýraznění pracovního okna, 2026-11-27 (pokyn uživatele se screenshotem)
 
@@ -299,6 +313,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Desky D4:** vazba vršku je druh vršku ve výšce stěny (ne samostatný vztah) – jako Archicad „spojit
+  s deskou“; celá stěna končí na spodním líci (Revit by stěnu ořízl po tvaru desky, šikmé desky zatím nejsou).
+  Deska nad stěnou = obrys nad některým bodem osy, nejnižší spodní líc nad spodkem stěny (nosný strop, ne
+  podlaha). Odpojení zachová výšku jako „podlaží + 1 + odsazení“. Kopie na jiné podlaží vazbu nenese.
+  Schéma +1 (21 → 22) kvůli výchozímu výkazu desek. Roh desky se kótuje rovnoběžně s druhým lícem, dva rohy
+  vodorovně / svisle podle větší vzdálenosti (Revit). Rozdělit rovnoměrně (EQ) jen u řady ke stěnám.
+  Zámek kóty k desce brání posunu desky jako u stěn. Záložka Typ desky v info boxu nestihla → Otevřené.
+
 - **Desky D3:** otvory v deskách mají vlastní seznam (`slabOpenings`), ne společný s otvory ve stěně –
   poloha je obrys v půdorysu, ne staničení po stěně; společné je IFC (IfcOpeningElement), kategorie
   „opening“ (vrstva, grafika, filtr) a mazání. V IFC jeden otvor modelu = jeden IfcOpeningElement na každou
@@ -369,8 +391,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Desky D4 (hlavní proud):** vazba vršku stěny na desku, výkazy desek, kóty k hranám desky, záložka
-  Typ desky v editoru typů. Pak povrchy místností.
+- **Uživatel vyzkouší D4:** `?ukazka=desky-d4` – vybrat stěnu → Vršek „Vršek k desce“; v 2.NP změnit strop
+  (horní hrana, typ) a zkontrolovat výšku stěn 1.NP; D → hrana / roh desky a otvoru; Výkazy → Výkaz desek.
+- **Hlavní proud dál:** povrchy místností (návrh níže); záložka Typ desky (Otevřené).
 - **Uživatel vyzkouší D3:** `?ukazka=desky-otvory` – O → V desce, obdélník do desky; klik do otvoru,
   tažení, body, Del; posun desky s otvorem; IFC v BIMvision.
   Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
@@ -425,8 +448,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 - **STAV.md má 39,5 KB (limit ~40 KB):** návrh rozdělení – oddíly „Hotovo“ starší než desky (kóty,
   stěny Z7–Z10, editor typů, opravy z 2026-11-26) přesunout do nového `docs/STAV-archiv.md`. Čeká na souhlas.
-- **Desky – zbývá:** úprava vrstev skladby jen pro desku (příkazy vrstev jsou zatím `wallType.*`), typ
-  desky v editoru typů, výkaz desek (obecný výkaz zná jen stěny), oblouky v obrysu.
+- **Desky – zbývá:** záložka Typ desky v info boxu a typ desky v editoru typů, úprava vrstev skladby jen pro
+  desku (příkazy vrstev jsou zatím `wallType.*`), oblouky v obrysu; vršek stěny po tvaru šikmé desky;
+  délková kóta hrany desky (dnes jen vzdálenost); vazba vršku v IFC (IfcRelConnectsElements) zatím není.
 - **Z10 zbývá:** kontrola překryvu oblouků, mezery v obrysu místnosti (s místnostmi), import ze
   zaměřování a kouzelná hůlka (etapa 3).
 - **Skladby – další:** výpočty u skladby podle vzoru Arditu (U, R, plošná hmotnost, CO₂e, cena,
@@ -479,14 +503,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po deskách D2)
+## Největší soubory (po deskách D4)
 
-Výstup `npm run check:size`: varování 0, chyb 0 (624 souborů).
+Výstup `npm run check:size`: kód bez varování, varování jen STAV.md (návrh rozdělení v Otevřené).
 
 | Řádky | Soubor |
 |---|---|
-| 248 | apps/sandbox/src/render/overlay.ts |
-| 246 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
+| 250 | apps/sandbox/src/render/overlay.ts |
 | 244 | apps/sandbox/src/session/session.ts |
-| 242 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
+| 243 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |

@@ -1,9 +1,47 @@
-// Testovací scény k deskám (D1–D3; 2026-11-27). Nová scéna k deskám = nová položka nahoře.
+// Testovací scény k deskám (D1–D4; 2026-11-27). Nová scéna k deskám = nová položka nahoře.
 import { vec } from '../geometry/index.ts';
 import { rect } from './scene-helpers.ts';
 import type { Sample } from './types.ts';
 
 export const SLAB_SCENES: readonly Sample[] = [
+  {
+    key: 'desky-d4',
+    title: 'D4 – vršek stěn k desce, výkaz desek, kóty k hranám desky',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Místnost 6 × 4 m s příčkou a strop 2.NP nad ní; obvodové stěny a příčka mají vršek k desce (končí na ' +
+      'spodním líci stropu), samostatná stěna vpravo (mimo strop) má vršek podlaží + 1. Podlaha 1.NP s otvorem je okótovaná k hranám a rohům. ' +
+      'Zkus: vybrat stěnu → info box Výška → Vršek „Vršek k desce“ / „Podlaží + 1“; v 2.NP vybrat strop a ' +
+      'změnit horní hranu nebo typ – výška stěn v 1.NP se přepočítá. D (Kóta) → klik na hranu nebo roh ' +
+      'desky a další hranu. Obsah → Projekt → Výkazy → Výkaz desek.',
+    build(c) {
+      const sid = c.storeyId;
+      const walls = rect(c, 'Zdivo 300', 6000, 4000);
+      const partition = c.line(vec(3000, 0), vec(3000, 4000), { typeId: c.type('Příčka 125') });
+      c.line(vec(8000, 0), vec(8000, 4000));
+      const [s2] = c.run('storey.create', { name: '2.NP', elevation: 3000, height: 3000 });
+      const over = { a: vec(-300, -300), b: vec(6300, 4300) };
+      c.run('slab.create', { storeyId: s2, typeId: c.slabType('ŽB strop 250'), rect: over });
+      c.run('wall.attachTop', { wallIds: [...walls, partition] });
+      const [floor] = c.run('slab.create', {
+        storeyId: sid,
+        typeId: c.slabType('Podlaha anhydrit 150'),
+        rect: { a: vec(0, 0), b: vec(6000, 4000) },
+      });
+      const [hole] = c.run('slabOpening.create', {
+        storeyId: sid,
+        rect: { a: vec(500, 1000), b: vec(2000, 3000) },
+      });
+      const slab = (k: Record<string, number>) => ({ outline: 'slab', ownerId: floor, ...k });
+      const opening = (k: Record<string, number>) => ({ outline: 'slabOpening', ownerId: hole, ...k });
+      const dim = (refs: unknown[], offset: number) =>
+        c.run('dimension.create', { kind: 'linear', refs, offset, viewId: c.viewId });
+      dim([slab({ edge: 3 }), opening({ edge: 3 })], 0);
+      dim([opening({ vertex: 1 }), slab({ vertex: 2 })], 0);
+      dim([slab({ edge: 0 }), opening({ edge: 0 })], 0);
+    },
+  },
   {
     key: 'desky-otvory',
     title: 'D3 – otvory v deskách',

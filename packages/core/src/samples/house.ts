@@ -86,7 +86,27 @@ function upper(c: SampleContext) {
   if (!storeyId) return;
   slabs(c, storeyId, 'ŽB strop 250', 315);
   // Otvor pro schodiště ve stropě nad 1.NP (D3): prořízne strop i podlahu 2.NP.
-  c.run('slabOpening.create', { storeyId, rect: { a: vec(4000, 4700), b: vec(6800, 5900) } });
+  const [stair] = c.run('slabOpening.create', { storeyId, rect: { a: vec(4000, 4700), b: vec(6800, 5900) } });
+  // D4: kóta od hrany otvoru ke stropu k líci nosné zdi.
+  const bearing = Object.values(c.model.elements).find(
+    (e) => e.category === 'wall' && e.storeyId === storeyId && e.typeId === c.type('Nosná zeď 330'),
+  );
+  const edge = { outline: 'slabOpening', ownerId: stair, edge: 1 };
+  if (bearing)
+    c.run('dimension.create', {
+      kind: 'linear',
+      refs: [edge, { wallId: bearing.id, face: 'ref' }],
+      viewId: c.viewId,
+      offset: 0,
+    });
+}
+
+/** D4: nové příčky 1.NP mají vršek ke stropu nad 1.NP (spodní líc stropu 2.NP). */
+function attachPartitions(c: SampleContext) {
+  const ids = Object.values(c.model.elements)
+    .filter((e) => e.category === 'wall' && e.storeyId === c.storeyId && e.status === 'new')
+    .map((e) => e.id);
+  c.run('wall.attachTop', { wallIds: ids });
 }
 
 export const HOUSE: Sample = {
@@ -96,10 +116,12 @@ export const HOUSE: Sample = {
   date: '2026-11-26',
   description:
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
-    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy. Kóty, ' +
+    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy; ' +
+    'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
     'značky typů, výkazy; filtr rekonstrukce ve spodní liště.',
   build(c) {
     ground(c);
     upper(c);
+    attachPartitions(c);
   },
 };
