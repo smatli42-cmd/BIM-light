@@ -1,4 +1,5 @@
 // Okno do 3D náhledu pro prohlížečové testy (Playwright): co je ve scéně a kde je prvek na stránce.
+import { Box3, Vector3 } from 'three';
 import type { Session } from '../session/session.ts';
 import type { Box3D } from './clip.ts';
 import { active3d, view3d } from './state.ts';
@@ -40,12 +41,27 @@ declare global {
   }
 }
 
+/** Bod modelu (mm) v px plátna. */
+function screenOfPoint(v: Viewer, x: number, y: number, z: number): { x: number; y: number } {
+  const c = new Vector3(x, y, z).multiplyScalar(0.001).project(v.camera);
+  const r = v.canvas.getBoundingClientRect();
+  return { x: ((c.x + 1) / 2) * r.width, y: ((1 - c.y) / 2) * r.height };
+}
+
+/** Střed prvku v px plátna, nebo null. */
+function screenOf(v: Viewer, id: string): { x: number; y: number } | null {
+  const g = v.root.children.find((o) => o.userData.elementId === id);
+  if (!g) return null;
+  const c = new Box3().setFromObject(g).getCenter(new Vector3());
+  return screenOfPoint(v, c.x * 1000, c.y * 1000, c.z * 1000);
+}
+
 export function installTestHook3D(s: Session, v: Viewer): () => void {
   window.__bim3d = {
     elements: () => v.elementIds,
     only: () => view3d(s).only,
     pageOf(id) {
-      const p = v.screenOf(id);
+      const p = screenOf(v, id);
       const r = v.canvas.getBoundingClientRect();
       return p && { x: p.x + r.left, y: p.y + r.top };
     },
@@ -60,7 +76,7 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
       if (!b) return null;
       const c = { x: (b.min.x + b.max.x) / 2, y: (b.min.y + b.max.y) / 2, z: (b.min.z + b.max.z) / 2 };
       c[axis] = b[side][axis];
-      const p = v.screenOfPoint(c.x, c.y, c.z);
+      const p = screenOfPoint(v, c.x, c.y, c.z);
       const r = v.canvas.getBoundingClientRect();
       return { x: p.x + r.left, y: p.y + r.top };
     },
@@ -81,7 +97,7 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
     cutHandle() {
       const c = active3d(s).cutPlane;
       if (!c) return null;
-      const p = v.screenOfPoint(c.origin.x, c.origin.y, c.origin.z);
+      const p = screenOfPoint(v, c.origin.x, c.origin.y, c.origin.z);
       const r = v.canvas.getBoundingClientRect();
       return { x: p.x + r.left, y: p.y + r.top };
     },

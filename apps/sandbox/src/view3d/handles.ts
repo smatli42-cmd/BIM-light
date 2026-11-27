@@ -27,7 +27,7 @@ export function installHandles(v: Viewer): () => void {
       let next = cut;
       const move = (dx: number, dy: number) => {
         next = v.cut.dragged(cut, dx, dy, v.camera, r.width, r.height);
-        v.setCut(next);
+        v.setCut(next, true);
       };
       return dragFrom(e, move, () => v.onCutChange(next));
     }

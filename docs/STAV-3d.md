@@ -77,7 +77,7 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   **Materiály / Bílý model / Čárový / Skryté hrany / Skica** (kreslené hrany s přetažením), **Slunce
   a stíny**, **Procházka** (Shift+F3), **Ořez** (kvádr), **Řez** + výběr roviny, **mřížka**. Vlevo zůstal
   pohled, fáze a podlaží.
-- **Řez ve 3D:** rovina ořízne plochy i hrany (bez výplně řezu, jako Ardit), odříznutá část nevrhá stín
+- **Řez ve 3D:** rovina ořízne tělesa (od kroku 5b přesně, plná řezná plocha), odříznutá část nevrhá stín
   ani nejde vybrat; svislý podle pohledu, nebo vodorovný 1,2 m nad podlažím; modrý úchyt rovinu posouvá.
 - **Karta prvku** po podržení myši i ve 3D (stejná jako v půdorysu, `ElementCard`); „i“ vpravo dole ji
   vypne (stejné nastavení jako v půdorysu).
@@ -90,6 +90,20 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 
 - Klik ve 3D vybere prvek z libovolného podlaží a půdorys zůstane (dřív okno přeskočilo na podlaží prvku).
   Info box ukáže a mění vybraný prvek jiného podlaží. Test `e2e/nahled-3d-vyber.spec.ts`.
+
+## Hotovo (krok 5b – kvalita 3D, 2026-11-27, hlášení uživatele „zobrazuje se to špatně“)
+
+- **Hrany prvku jen na obrysu** (`view3d/element-edges.ts`): pásy všech vrstev prvku se sloučí, takže deska
+  ze tří vrstev má hrany jen dole a nahoře a stěna jen obrys – vrstvy jsou vidět barvou v řezu.
+- **Hrany uvnitř jiného tělesa se skryjí** (deska pod stěnou, styk stropu a zdi) – kontrola po kouscích
+  150 mm, hrana na povrchu jiného tělesa zůstane.
+- **Řez rovinou je přesný** (`clip-plane.ts`, jako ořezový kvádr): svislá a vodorovná rovina ořízne tělesa
+  i povrchy, řezná plocha je plná v barvách vrstev (dřív jen ořez obrazu – dovnitř těles šlo vidět a desky
+  vypadaly jako tenké pláty). Obraz se ořezává jen během tažení úchytu a u šikmé roviny; průsvitný obdélník
+  roviny jen během tažení.
+- **Skica jemněji:** přetah 2 % délky (15–60 mm), odchylka konce ±4 mm.
+- **Stíny:** výchozí vypnuté (beze změny), zapnuté měkké (PCF), menší bias a normalBias proti „akné“.
+- Přesah desky v domě (465 / 315 mm) je správně: obdélník stěn jde od zadané čáry ven, deska končí v líci.
 
 ## Hotovo (krok 6 – povrchy místností ve 3D, 2026-11-27)
 

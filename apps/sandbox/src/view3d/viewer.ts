@@ -17,6 +17,7 @@ import { BoxGizmo, type HandleRef } from './box-gizmo.ts';
 import { installHandles } from './handles.ts';
 import { CameraRig } from './camera-rig.ts';
 import type { Box3D } from './clip.ts';
+import { exactCut } from './clip-plane.ts';
 import { clipPlaneOf, CutGizmo } from './cut-gizmo.ts';
 import { makeGrid } from './grid.ts';
 import { buildMeshes, DEFAULT_LOOK, disposeGroup, highlight, Materials, type Look } from './mesh.ts';
@@ -47,6 +48,7 @@ export class Viewer {
   private readonly sun = new SunLight();
   private look: SceneLook = { ...DEFAULT_LOOK, sunDir: { x: -0.3, y: -0.6, z: 0.75 } };
   private grid: Group | null = null;
+  private liveCut = false;
   /** Po puštění úchytu ořezového kvádru: nový kvádr (mm). */
   onBoxChange: (box: Box3D) => void = () => {};
   /** Po puštění úchytu roviny řezu: nová rovina (mm). */
@@ -91,11 +93,15 @@ export class Viewer {
     this.render();
   }
 
-  /** Rovina řezu (null = bez řezu): ořízne plochy i hrany, ukáže obdélník a úchyt. */
-  setCut(plane: CutPlane3d | null) {
-    const same = JSON.stringify(plane) === JSON.stringify(this.cut.value);
+  /**
+   * Rovina řezu (null = bez řezu): obdélník a úchyt. Svislou a vodorovnou rovinu ořízne přesně okno
+   * (view3d/clip-plane.ts); obraz ji ořezává jen během tažení (`live`) a u šikmé roviny.
+   */
+  setCut(plane: CutPlane3d | null, live = false) {
+    const same = JSON.stringify(plane) === JSON.stringify(this.cut.value) && live === this.liveCut;
+    this.liveCut = live;
     const b = this.bounds();
-    this.cut.set(plane, b.isEmpty() ? 20 : b.getSize(new Vector3()).length() * 0.8);
+    this.cut.set(plane, b.isEmpty() ? 20 : b.getSize(new Vector3()).length() * 0.8, live);
     if (!same) this.rebuild();
     this.render();
   }
@@ -163,7 +169,8 @@ export class Viewer {
     disposeGroup(this.root);
     this.root.clear();
     this.mats.dispose();
-    const clip = this.cut.value ? [clipPlaneOf(this.cut.value)] : [];
+    const c = this.cut.value;
+    const clip = c && (this.liveCut || !exactCut(c)) ? [clipPlaneOf(c)] : [];
     this.mats = new Materials({ ...this.look, clip });
     this.groups = buildMeshes(this.solids, this.mats);
     for (const g of this.groups.values()) this.root.add(g);
@@ -205,23 +212,8 @@ export class Viewer {
     const plane = this.cut.value ? clipPlaneOf(this.cut.value) : null;
     const hit = this.ray(x, y)
       .intersectObjects(this.root.children, true)
-      .find((h) => h.object.userData.elementId && (!plane || plane.distanceToPoint(h.point) >= 0));
+      .find((h) => h.object.userData.elementId && (!plane || plane.distanceToPoint(h.point) >= -1e-4));
     return (hit?.object.userData.elementId as string | undefined) ?? null;
-  }
-
-  /** Bod modelu (mm) v px plátna (pro testy). */
-  screenOfPoint(x: number, y: number, z: number): { x: number; y: number } {
-    const c = new Vector3(x, y, z).multiplyScalar(0.001).project(this.camera);
-    const r = this.canvas.getBoundingClientRect();
-    return { x: ((c.x + 1) / 2) * r.width, y: ((1 - c.y) / 2) * r.height };
-  }
-
-  /** Střed prvku v px plátna (pro testy). */
-  screenOf(id: string): { x: number; y: number } | null {
-    const g = this.groups.get(id);
-    if (!g) return null;
-    const c = new Box3().setFromObject(g).getCenter(new Vector3());
-    return this.screenOfPoint(c.x * 1000, c.y * 1000, c.z * 1000);
   }
 
   render() {

@@ -11,6 +11,7 @@ import { ElementCard } from '../ui/HoverCard.tsx';
 import { Icon, IconButton } from '../ui/icons/Icon.tsx';
 import { useSession } from '../ui/use-session.ts';
 import type { DragTool } from './camera-rig.ts';
+import { cutSolids, exactCut } from './clip-plane.ts';
 import { clipSolids } from './clip.ts';
 import { Phase3DMenu, Storeys3DMenu, Views3DMenu } from './Controls3D.tsx';
 import { modelSolids, viewSheets } from './scene-model.ts';
@@ -128,10 +129,8 @@ function InfoToggle({ s }: { s: Session }) {
   );
 }
 
-export function View3DWindow({ s }: { s: Session }) {
-  useSession(s);
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const { viewer, error } = useViewer(s, canvas);
+/** Tělesa a povrchy 3D pohledu: rozsah podlaží, výběr F4, ořezový kvádr a přesný řez rovinou. */
+function useScene(s: Session) {
   const st = view3d(s);
   const v = active3d(s);
   const onlyKey = st.only?.join(',') ?? '';
@@ -141,14 +140,28 @@ export function View3DWindow({ s }: { s: Session }) {
     [s.model, v, onlyKey],
   );
   const box = v.sectionBox;
-  const solids = useMemo(() => (box ? clipSolids(raw, box) : raw), [raw, box]);
+  const cut = v.cutPlane;
+  const solids = useMemo(() => {
+    const boxed = box ? clipSolids(raw, box) : raw;
+    return cut && exactCut(cut) ? cutSolids(boxed, cut) : boxed;
+  }, [raw, box, cut]);
   const sheets = useMemo(
     () => viewSheets(s.model, v, st.only ? new Set(st.only) : null, box),
     [s.model, v, onlyKey, box],
   );
+  return { raw, solids, sheets };
+}
+
+export function View3DWindow({ s }: { s: Session }) {
+  useSession(s);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const { viewer, error } = useViewer(s, canvas);
+  const st = view3d(s);
+  const v = active3d(s);
+  const { raw, solids, sheets } = useScene(s);
   useEffect(() => viewer?.setSolids(solids, sheets), [viewer, solids, sheets]);
   useViewLook(s, viewer, solids);
-  useEffect(() => viewer?.setBox(box), [viewer, box]);
+  useEffect(() => viewer?.setBox(v.sectionBox), [viewer, v.sectionBox]);
   useEffect(() => viewer?.fit(), [viewer, st.fit]);
   const picked = [...s.selection.walls, ...s.selection.slabs];
   useEffect(() => viewer?.setSelection(picked), [viewer, solids, picked.join(',')]);

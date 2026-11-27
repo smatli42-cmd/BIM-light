@@ -36,7 +36,7 @@ export class CutGizmo {
     this.sheetMat = new MeshBasicMaterial({
       color: accent,
       transparent: true,
-      opacity: 0.05,
+      opacity: 0.08,
       side: DoubleSide,
       depthWrite: false,
     });
@@ -48,8 +48,8 @@ export class CutGizmo {
     return this.plane;
   }
 
-  /** Rovina (null = bez řezu); `size` = velikost obdélníku v m (podle obsahu). */
-  set(plane: CutPlane3d | null, size: number) {
+  /** Rovina (null = bez řezu); `size` = velikost obdélníku v m; obdélník jen během tažení (`sheet`). */
+  set(plane: CutPlane3d | null, size: number, showSheet = false) {
     this.plane = plane;
     for (const c of [...this.group.children]) {
       this.group.remove(c);
@@ -63,6 +63,7 @@ export class CutGizmo {
     const sheet = new Mesh(new PlaneGeometry(size, size), this.sheetMat);
     sheet.quaternion.copy(new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), vec(plane.normal)));
     sheet.position.copy(at);
+    sheet.visible = showSheet;
     const h = new Mesh(this.sphere, this.handleMat);
     h.scale.setScalar(Math.max(0.1, size * 0.012));
     h.position.copy(at);

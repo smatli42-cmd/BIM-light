@@ -19,7 +19,8 @@ import {
 } from 'three';
 import { mixColor, type RenderMode3d } from '@bim-light/core';
 import type { MultiPolygon, Ring } from 'polygon-clipping';
-import { slabEdges } from './edges.ts';
+import { boxed, elementEdges } from './element-edges.ts';
+import type { Slab } from './slice.ts';
 import { sketchSegments } from './sketch.ts';
 import type { Solid } from './solids.ts';
 
@@ -123,6 +124,23 @@ export class Materials {
   }
 }
 
+/** Hrany prvků: obrys celého prvku (ne vrstev), bez částí uvnitř jiných prvků; ve Skice kreslené. */
+function edgesOf(solids: readonly Solid[], sketch: boolean): Map<string, number[]> {
+  const byId = new Map<string, Slab[]>();
+  for (const s of solids) byId.set(s.elementId, [...(byId.get(s.elementId) ?? []), ...s.slabs]);
+  const all = [...byId].flatMap(([id, slabs]) => slabs.map((x) => ({ id, b: boxed(x) })));
+  const out = new Map<string, number[]>();
+  for (const [id, slabs] of byId) {
+    const others = all.filter((o) => o.id !== id).map((o) => o.b);
+    const segs = elementEdges(slabs, others);
+    out.set(
+      id,
+      (sketch ? sketchSegments(segs) : segs).map((v) => v * MM),
+    );
+  }
+  return out;
+}
+
 /** Skupina sítí jednoho prvku; `userData.elementId` = id prvku (výběr). */
 export function buildMeshes(solids: readonly Solid[], mats: Materials): Map<string, Group> {
   const groups = new Map<string, Group>();
@@ -130,7 +148,7 @@ export function buildMeshes(solids: readonly Solid[], mats: Materials): Map<stri
     let g = groups.get(s.elementId);
     if (!g) {
       g = new Group();
-      g.userData = { elementId: s.elementId };
+      g.userData = { elementId: s.elementId, color: s.color };
       groups.set(s.elementId, g);
     }
     for (const slab of s.slabs) {
@@ -145,17 +163,13 @@ export function buildMeshes(solids: readonly Solid[], mats: Materials): Map<stri
       mesh.receiveShadow = mats.look.shadows;
       g.add(mesh);
     }
+  }
+  for (const [id, segs] of edgesOf(solids, mats.look.mode === 'sketch')) {
+    const g = groups.get(id);
+    if (!g) continue;
     const edges = new BufferGeometry();
-    edges.setAttribute(
-      'position',
-      new Float32BufferAttribute(
-        (mats.look.mode === 'sketch' ? sketchSegments(slabEdges(s.slabs)) : slabEdges(s.slabs)).map(
-          (v) => v * MM,
-        ),
-        3,
-      ),
-    );
-    g.add(new LineSegments(edges, mats.line(s.color)));
+    edges.setAttribute('position', new Float32BufferAttribute(segs, 3));
+    g.add(new LineSegments(edges, mats.line(g.userData.color as string)));
   }
   return groups;
 }

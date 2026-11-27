@@ -2,13 +2,13 @@
 // a konce se nepatrně odchýlí. Odchylka je odvozená ze souřadnic (stejný model = stejná kresba, nebliká).
 import type { Segments } from './edges.ts';
 
-/** Přetažení přes konec: 4 % délky, nejméně 40 mm a nejvíc 150 mm. */
-export const overshoot = (len: number) => Math.min(150, Math.max(40, len * 0.04));
+/** Přetažení přes konec: 2 % délky, nejméně 15 mm a nejvíc 60 mm (jemně, aby nevypadalo jako chyba). */
+export const overshoot = (len: number) => Math.min(60, Math.max(15, len * 0.02));
 
-/** Odchylka konce ±12 mm podle souřadnic (deterministická). */
+/** Odchylka konce ±4 mm podle souřadnic (deterministická). */
 function wobble(x: number, y: number, z: number): number {
   const h = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
-  return (h - Math.floor(h) - 0.5) * 24;
+  return (h - Math.floor(h) - 0.5) * 8;
 }
 
 export function sketchSegments(segs: Segments): Segments {

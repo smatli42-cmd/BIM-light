@@ -20,6 +20,7 @@ import {
   type Wall,
 } from '@bim-light/core';
 import type { Box3D } from './clip.ts';
+import { cutTriangles, exactCut } from './clip-plane.ts';
 import { clipTriangles } from './clip-triangles.ts';
 import { surfaceSheets, type Sheet } from './surface-sheets.ts';
 import { patchLook, patchSolid } from './patches.ts';
@@ -118,7 +119,7 @@ export function selectionElements(
   return new Set([...walls, ...hosts, ...slabs, ...slabHosts]);
 }
 
-/** Povrchy místností pro 3D okno: na zobrazených stěnách, podle podlaží a výběru, oříznuté kvádrem. */
+/** Povrchy místností pro 3D okno: na zobrazených stěnách, podle podlaží a výběru, oříznuté kvádrem a řezem. */
 export function viewSheets(
   model: Model,
   view: View3d,
@@ -128,8 +129,11 @@ export function viewSheets(
   const walls = new Set(shownModel(model, view).walls.map((w) => w.id));
   const storeys = view.storeyIds ? new Set(view.storeyIds) : null;
   const sheets = surfaceSheets(model, view, { walls, storeys, only });
-  if (!box) return sheets;
-  return sheets
-    .map((x) => ({ ...x, positions: clipTriangles(x.positions, box) }))
-    .filter((x) => x.positions.length > 0);
+  const cut = view.cutPlane && exactCut(view.cutPlane) ? view.cutPlane : null;
+  if (!box && !cut) return sheets;
+  const clip = (p: readonly number[]) => {
+    const inBox = box ? clipTriangles(p, box) : [...p];
+    return cut ? cutTriangles(inBox, cut) : inBox;
+  };
+  return sheets.map((x) => ({ ...x, positions: clip(x.positions) })).filter((x) => x.positions.length > 0);
 }

@@ -7,6 +7,7 @@ import {
   Group,
   HemisphereLight,
   Mesh,
+  PCFSoftShadowMap,
   PlaneGeometry,
   ShadowMaterial,
   Sphere,
@@ -23,8 +24,10 @@ export class SunLight {
 
   constructor() {
     this.sun.shadow.mapSize.set(2048, 2048);
-    this.sun.shadow.bias = -0.0004;
-    this.sun.shadow.normalBias = 0.02;
+    // Měkké stíny (PCF) s posunem proti „akné“ (pruhy a trojúhelníky stínu na osvětlených stěnách).
+    this.sun.shadow.bias = -0.0002;
+    this.sun.shadow.normalBias = 0.04;
+    this.sun.shadow.radius = 3;
     this.ground.receiveShadow = true;
     this.ground.visible = false;
     this.group.add(this.sky, this.sun, this.sun.target, this.ground);
@@ -35,6 +38,7 @@ export class SunLight {
     const up = dir.z > 0.01;
     const on = shadows && up && !bounds.isEmpty();
     renderer.shadowMap.enabled = on;
+    renderer.shadowMap.type = PCFSoftShadowMap;
     this.sun.castShadow = on;
     this.ground.visible = on;
     this.sun.intensity = up ? (on ? 2.2 : 1.6) : 0.3;
