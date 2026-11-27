@@ -14,6 +14,27 @@ export interface FaceRef {
   readonly openingId?: Id;
 }
 
+/**
+ * Hrana nebo roh obrysu desky či otvoru v desce (desky D4; Revit kótuje hrany desky, Archicad i body).
+ * Hrana `edge` = úsečka bod i → bod i + 1. Roh `vertex` se kótuje přímkou jím vedenou ve směru `dir`
+ * (radiány) – rovnoběžnou s druhým kótovaným lícem, takže měří kolmou vzdálenost.
+ */
+export interface OutlineRef {
+  readonly outline: 'slab' | 'slabOpening';
+  readonly ownerId: Id;
+  readonly edge?: number;
+  readonly vertex?: number;
+  readonly dir?: number;
+}
+
+/** Odkaz vzdálenostní kóty: líc stěny (hrana otvoru ve stěně), nebo hrana / roh obrysu desky. */
+export type DimRef = FaceRef | OutlineRef;
+export const isOutlineRef = (r: DimRef): r is OutlineRef => 'outline' in r;
+/** Odkaz na stěnu (líc, čelo, hrana otvoru ve stěně), nebo null u hrany desky. */
+export const wallRefOf = (r: DimRef): FaceRef | null => (isOutlineRef(r) ? null : r);
+/** Prvek, který odkaz kóty hýbe: otvor, stěna, nebo deska / otvor v desce. */
+export const refOwnerId = (r: DimRef): Id => (isOutlineRef(r) ? r.ownerId : (r.openingId ?? r.wallId));
+
 interface DimensionBase {
   readonly id: Id;
   readonly storeyId: Id;
@@ -37,7 +58,7 @@ interface DimensionBase {
 /** Vzdálenost mezi dvěma rovnoběžnými líci (příčná kóta). */
 export interface LinearDimension extends DimensionBase {
   readonly kind: 'linear';
-  readonly refs: readonly [FaceRef, FaceRef];
+  readonly refs: readonly [DimRef, DimRef];
   /** Index odkazu, jehož stěna se hýbe, když není nic vybráno (ta, z níž kóta vznikla). */
   readonly ownerRef: 0 | 1;
   /**

@@ -52,7 +52,12 @@ export class PermDimDragMode implements Mode {
       return;
     }
     if (this.onText && !p.shift)
-      return editPerm(s, this.view, [...s.selection.walls, ...s.selection.openings]);
+      return editPerm(s, this.view, [
+        ...s.selection.walls,
+        ...s.selection.openings,
+        ...s.selection.slabs,
+        ...s.selection.slabOpenings,
+      ]);
     if (p.shift) s.selection.toggleDim(this.view.id);
     else s.selection.set([], [this.view.id]);
   }

@@ -1,6 +1,7 @@
 // Změna čísla v kótě (katalog kreslení 3.3–3.4, pravidla-interakce kóty 1, 9, 10; základ 25).
 // Pohne se vybraná stěna; u délky uchopený konec. Zámek se změnou čísla nikdy nemění.
 import {
+  refOwnerId,
   type Dimension,
   dot,
   findWall,
@@ -53,10 +54,7 @@ export function editTemp(s: Session, t: TempDimView) {
 /** Který odkaz kóty se hýbe: vybraná stěna z dvojice, jinak ta, z níž kóta vznikla (základ 25). */
 export function moverOf(d: Dimension, selected: readonly Id[]): 0 | 1 | undefined {
   if (d.kind === 'length') return undefined;
-  const ids =
-    d.kind === 'linear'
-      ? [d.refs[0].openingId ?? d.refs[0].wallId, d.refs[1].openingId ?? d.refs[1].wallId]
-      : d.wallIds;
+  const ids = d.kind === 'linear' ? [refOwnerId(d.refs[0]), refOwnerId(d.refs[1])] : d.wallIds;
   if (selected.includes(ids[1] as Id) && !selected.includes(ids[0] as Id)) return 1;
   if (selected.includes(ids[0] as Id)) return 0;
   return undefined;
@@ -67,7 +65,12 @@ export function moverOf(d: Dimension, selected: readonly Id[]): 0 | 1 | undefine
 export function editPerm(
   s: Session,
   view: PermDimView,
-  selected: readonly Id[] = [...s.selection.walls, ...s.selection.openings],
+  selected: readonly Id[] = [
+    ...s.selection.walls,
+    ...s.selection.openings,
+    ...s.selection.slabs,
+    ...s.selection.slabOpenings,
+  ],
 ) {
   const d = view.dim;
   const value = measureDimension(s.model, d);

@@ -6,6 +6,7 @@ import {
   type ArcMeasure,
   type Dimension,
   type LengthMeasure,
+  type DimRef,
   type FaceRef,
   type Id,
   type Vec2,
@@ -16,7 +17,7 @@ import type { Mode } from './mode.ts';
 import type { Overlay, PointerInfo } from './types.ts';
 
 export type DraftItem =
-  | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef: 0 | 1; arc?: ArcMeasure }
+  | { kind: 'linear'; refs: [DimRef, DimRef]; ownerRef: 0 | 1; arc?: ArcMeasure }
   | { kind: 'length'; ref: FaceRef; measure?: LengthMeasure };
 
 /** Kóta, která ještě není v modelu (náhled). */

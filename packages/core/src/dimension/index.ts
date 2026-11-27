@@ -9,4 +9,6 @@ export * from './whole-wall.ts';
 export * from './arc-dim.ts';
 export * from './migrate-v7.ts';
 export * from './pair.ts';
+export * from './outline-ref.ts';
+export * from './outline-pick.ts';
 export * from './text-shift.ts';

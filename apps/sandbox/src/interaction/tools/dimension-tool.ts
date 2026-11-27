@@ -1,11 +1,17 @@
 // Nástroj Kóta (pravidla-interakce, kóty 2, 3, 7, 11; základ 25): klikají se líce, každý jen jednou;
 // od druhého líce vzniká řada kót, která se celá nese na myši. Klik do prázdna řadu usadí a ukončí,
 // Shift+klik líc přeskočí úsek, Esc řadu nechá na místě. Kóty vzniknou až kliknutím (jeden krok Undo).
+// Desky D4: kótovat jde i hrany a rohy obrysu desky a otvoru v desce.
 import {
   dimensionPair,
+  facePath,
+  pointAt,
+  type DimRef,
   type FaceHit,
   type FaceRef,
   findWall,
+  isOutlineRef,
+  pickOutlineRef,
   pickFace,
   pickOpeningEdge,
   selectableWallGeometry,
@@ -18,8 +24,7 @@ import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types
 /** Kótovat jde líce i čela volných konců stěn (čelo = nepřipojený konec). */
 const DIM_EDGES = ['ref', 'opp', 'start', 'end'] as const;
 
-const same = (a: FaceRef, b: FaceRef) =>
-  a.wallId === b.wallId && a.face === b.face && a.openingId === b.openingId;
+const same = (a: DimRef, b: DimRef) => JSON.stringify(a) === JSON.stringify(b);
 /** Líc obloukové stěny (ne hrana otvoru): klik do volna pak dá poloměr / průměr. */
 function isArcFace(s: Session, r: FaceRef): boolean {
   const p = findWall(s.model, r.wallId)?.path;
@@ -32,22 +37,27 @@ function isArcFace(s: Session, r: FaceRef): boolean {
   );
 }
 
-const refOf = (f: FaceHit): FaceRef => ({
+type Hit = FaceHit | { readonly ref: DimRef; readonly distance: number };
+const refOf = (h: Hit): DimRef => ('ref' in h ? h.ref : faceRefOf(h));
+const faceRefOf = (f: FaceHit): FaceRef => ({
   wallId: f.wallId,
   face: f.face,
   ...(f.openingId ? { openingId: f.openingId } : {}),
 });
 
+/** Roh desky (značka křížku u kurzoru). */
+const cornerAt = (s: Session, r: DimRef) => pointAt(facePath(s.model, r), 0.5);
+
 export class DimensionTool implements Tool {
   readonly id = 'dimension';
-  private prev: FaceRef | null = null;
-  private used: FaceRef[] = [];
+  private prev: DimRef | null = null;
+  private used: DimRef[] = [];
   private items: DraftItem[] = [];
   private placed: Placed | null = null;
   /** Poloměr / průměr: první klik na oblouk, druhý do volna (hlášení uživatele 2026-11-26). */
   private radial: DraftItem | null = null;
   private readonly whole: WholeWallPick;
-  private hover: FaceHit | null = null;
+  private hover: Hit | null = null;
 
   constructor(private readonly s: Session) {
     this.whole = new WholeWallPick(s);
@@ -60,19 +70,24 @@ export class DimensionTool implements Tool {
 
   hint(): string {
     if (this.wallMode) return this.whole.hint();
-    if (!this.prev) return 'Klikni na první líc, čelo volného konce nebo hranu otvoru (tolerance 12 px).';
+    if (!this.prev)
+      return 'Klikni na první líc, čelo volného konce, hranu otvoru, nebo hranu či roh desky (tolerance 12 px).';
     if (this.radial && !this.items.length)
       return 'Klik do volna = poloměr / průměr (volba v info boxu); druhý líc nebo hrana = vzdálenost.';
     if (!this.items.length) return 'Klikni na druhý rovnoběžný líc (u obloukové stěny hranu přes stěnu).';
     return 'Další líc přidá kótu do řady, Shift+klik úsek přeskočí. Klik do prázdna řadu usadí, Esc ji nechá na místě.';
   }
 
-  /** Líc, čelo nebo hrana otvoru (i bouraného otvoru a niky) – nejbližší v toleranci. */
-  private face(p: PointerInfo): FaceHit | null {
+  /** Líc, čelo, hrana otvoru (i bouraného otvoru a niky), nebo hrana / roh desky – nejbližší v toleranci. */
+  private face(p: PointerInfo): Hit | null {
     const tol = this.s.viewport.px(FACE_PX);
     const wall = pickFace(selectableWallGeometry(this.s.model, this.s.view), p.world, tol, DIM_EDGES);
     const edge = pickOpeningEdge(this.s.model, this.s.view, p.world, tol);
-    return edge && (!wall || edge.distance <= wall.distance) ? edge : wall;
+    const own = edge && (!wall || edge.distance <= wall.distance) ? edge : wall;
+    const slab = pickOutlineRef(this.s.model, this.s.view, p.world, tol);
+    // Roh desky má přednost (bod); hrana desky jen když je blíž než líc stěny (desky leží pod stěnami).
+    if (slab && (slab.ref.vertex !== undefined || !own || slab.distance < own.distance)) return slab;
+    return own;
   }
 
   move(p: PointerInfo) {
@@ -104,7 +119,10 @@ export class DimensionTool implements Tool {
     if (!this.prev) {
       this.prev = ref;
       this.used = [ref];
-      this.radial = isArcFace(this.s, ref) ? { kind: 'length', ref, measure: this.s.options.arcDim } : null;
+      this.radial =
+        !isOutlineRef(ref) && isArcFace(this.s, ref)
+          ? { kind: 'length', ref, measure: this.s.options.arcDim }
+          : null;
       return;
     }
     if (p.shift && this.items.length) {
@@ -115,8 +133,8 @@ export class DimensionTool implements Tool {
     this.add(ref, p);
   }
 
-  private add(ref: FaceRef, p: PointerInfo) {
-    const prev = this.prev as FaceRef;
+  private add(ref: DimRef, p: PointerInfo) {
+    const prev = this.prev as DimRef;
     const pair = dimensionPair(this.s.model, prev, ref, p.world);
     if (!pair) {
       this.s.toast(
@@ -126,7 +144,7 @@ export class DimensionTool implements Tool {
       return;
     }
     this.radial = null;
-    this.items.push({ kind: 'linear', refs: [prev, ref], ownerRef: 1, ...pair });
+    this.items.push({ kind: 'linear', ownerRef: 1, ...pair });
     this.prev = ref;
     this.used.push(ref);
     const drafts = this.items.map((it, i) => draftOf(it, i, this.s.storeyId));
@@ -165,7 +183,10 @@ export class DimensionTool implements Tool {
     const faces = [...this.used];
     if (this.hover) faces.push(refOf(this.hover));
     const pl = this.placed;
-    return { faces, draftDims: pl?.drafts ?? [], guides: pl?.guide ? [pl.guide] : [] };
+    const markers = faces.flatMap((f) =>
+      isOutlineRef(f) && f.vertex !== undefined ? [cornerAt(this.s, f)] : [],
+    );
+    return { faces, markers, draftDims: pl?.drafts ?? [], guides: pl?.guide ? [pl.guide] : [] };
   }
 
   tracker(): TrackerField[] | null {

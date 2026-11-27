@@ -22,7 +22,7 @@ test('hlášení 2026-11-26: nástroj Kóta chytí hrany bouraného otvoru a nik
   const dims = Object.values((await model(page)).dimensions);
   expect(dims).toHaveLength(3);
   const refs = dims.flatMap((d) => (d.kind === 'linear' ? d.refs : []));
-  expect(refs.every((r) => r.openingId)).toBe(true);
+  expect(refs.every((r) => 'openingId' in r && r.openingId)).toBe(true);
 });
 
 test('hlášení 2026-11-26: oblouk – klik na líc a do volna = poloměr, s volbou průměr = průměr', async ({

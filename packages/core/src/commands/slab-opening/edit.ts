@@ -3,6 +3,7 @@ import { add, type Vec2 } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putSlabOpenings } from '../../model/update.ts';
+import { pruneOutlineDimensions } from '../../dimension/outline-ref.ts';
 import type { SlabOpening } from '../../slab-opening/types.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { OUTLINE_SCHEMA, validOutline } from '../slab/shared.ts';
@@ -21,7 +22,9 @@ export const slabOpeningSetOutline = defineCommand<{ openingId: Id; outline: Vec
   params: S.object({ openingId: S.id, outline: OUTLINE_SCHEMA }, ['openingId', 'outline']),
   run(model, p) {
     const o = slabOpeningOf(model, p.openingId);
-    return { model: putSlabOpenings(model, [{ ...o, outline: validOutline(p.outline) }]) };
+    return {
+      model: pruneOutlineDimensions(putSlabOpenings(model, [{ ...o, outline: validOutline(p.outline) }])),
+    };
   },
 });
 
@@ -39,7 +42,9 @@ export const slabOpeningMoveVertex = defineCommand<{ openingId: Id; index: numbe
     const o = slabOpeningOf(model, p.openingId);
     if (p.index >= o.outline.length) fail('invalid', `Obrys má jen ${o.outline.length} bodů`);
     const outline = o.outline.map((q, i) => (i === p.index ? p.point : q));
-    return { model: putSlabOpenings(model, [{ ...o, outline: validOutline(outline) }]) };
+    return {
+      model: pruneOutlineDimensions(putSlabOpenings(model, [{ ...o, outline: validOutline(outline) }])),
+    };
   },
 });
 

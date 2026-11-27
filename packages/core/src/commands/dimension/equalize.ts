@@ -5,7 +5,7 @@ import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { dimensionLine } from '../../dimension/align.ts';
 import { facePath } from '../../dimension/measure.ts';
-import type { LinearDimension } from '../../dimension/types.ts';
+import { wallRefOf, type DimRef, type LinearDimension } from '../../dimension/types.ts';
 import { dimensionOf, wallOf } from '../lookup.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -18,11 +18,15 @@ interface Span {
   readonly hiWall: Id;
 }
 
+/** Stěna odkazu; hranu desky EQ neposouvá (desky D4). */
+const wallIdOf = (r: DimRef): Id =>
+  wallRefOf(r)?.wallId ?? fail('invalid', 'Rovnoměrně jde dělit jen řadu kót ke stěnám');
+
 function spanOf(model: Model, d: LinearDimension, m: Vec2): Span {
   const [a, b] = d.refs.map((r) => dot(facePath(model, r).start, m)) as [number, number];
   return a <= b
-    ? { lo: a, hi: b, loWall: d.refs[0].wallId, hiWall: d.refs[1].wallId }
-    : { lo: b, hi: a, loWall: d.refs[1].wallId, hiWall: d.refs[0].wallId };
+    ? { lo: a, hi: b, loWall: wallIdOf(d.refs[0]), hiWall: wallIdOf(d.refs[1]) }
+    : { lo: b, hi: a, loWall: wallIdOf(d.refs[1]), hiWall: wallIdOf(d.refs[0]) };
 }
 
 /** Řada kót ve skupině zarovnání seřazená podél směru měření. */

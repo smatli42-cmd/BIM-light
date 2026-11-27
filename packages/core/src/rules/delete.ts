@@ -11,6 +11,8 @@ import {
   removeSlabOpenings,
 } from '../model/update.ts';
 import { rulesFor } from './cross-rules.ts';
+import { detachWallsFrom } from '../wall-height/attach.ts';
+import { pruneOutlineDimensions } from '../dimension/outline-ref.ts';
 
 /** Smaže otvory a s nimi kóty k jejich hranám (stěna se zacelí, protože se počítá z modelu). */
 export function deleteOpenings(model: Model, ids: readonly Id[]): Model {
@@ -47,7 +49,8 @@ export function deleteElements(model: Model, ids: readonly Id[]): Model {
       return el ? rulesFor(el.category).onDelete : [];
     }),
   );
-  let m = removeElements(model, gone);
+  // Stěny připojené vrškem k mazané desce se odpojí se stejnou výškou (desky D4, Revit).
+  let m = removeElements(detachWallsFrom(model, gone), gone);
   if (cascade.has('openings')) {
     const ops = Object.values(m.openings).filter((o) => gone.has(o.hostId));
     m = deleteOpenings(
@@ -76,5 +79,6 @@ export function deleteElements(model: Model, ids: readonly Id[]): Model {
     const wallTags = Object.fromEntries(Object.entries(m.wallTags).filter(([, t]) => !gone.has(t.wallId)));
     m = { ...m, wallTags };
   }
-  return m;
+  // Kóty k hranám smazaných desek a otvorů v deskách zaniknou (desky D4).
+  return pruneOutlineDimensions(m);
 }

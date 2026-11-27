@@ -4,6 +4,7 @@ import { add, type Vec2 } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
 import { putElements, putSlabOpenings } from '../../model/update.ts';
+import { pruneOutlineDimensions } from '../../dimension/outline-ref.ts';
 import { shiftOpenings } from '../slab-opening/edit.ts';
 import { SLAB_FUNCTIONS, type SlabFunction } from '../../slab/types.ts';
 import { S } from '../schema.ts';
@@ -54,7 +55,9 @@ export const slabSetOutline = defineCommand<{ slabId: Id; outline: Vec2[] }>({
   params: S.object({ slabId: S.id, outline: OUTLINE_SCHEMA }, ['slabId', 'outline']),
   run(model, p) {
     const s = slabOf(model, p.slabId);
-    return { model: putElements(model, [{ ...s, outline: validOutline(p.outline) }]) };
+    return {
+      model: pruneOutlineDimensions(putElements(model, [{ ...s, outline: validOutline(p.outline) }])),
+    };
   },
 });
 
@@ -72,7 +75,7 @@ export const slabMoveVertex = defineCommand<{ slabId: Id; index: number; point: 
     const s = slabOf(model, p.slabId);
     if (p.index >= s.outline.length) fail('invalid', `Obrys má jen ${s.outline.length} bodů`);
     const outline = s.outline.map((q, i) => (i === p.index ? p.point : q));
-    return { model: putElements(model, [{ ...s, outline: validOutline(outline) }]) };
+    return { model: pruneOutlineDimensions(putElements(model, [{ ...s, outline: validOutline(outline) }])) };
   },
 });
 

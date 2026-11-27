@@ -205,7 +205,9 @@ test.describe('závada: kóta délky stěny s nepřipojeným koncem', () => {
     const ds = await dims(page);
     expect(ds.length).toBe(1);
     const d = ds[0];
-    expect(d?.kind === 'linear' && d.refs.some((r) => r.wallId === b && r.face === 'end')).toBe(true);
+    expect(
+      d?.kind === 'linear' && d.refs.some((r) => 'wallId' in r && r.wallId === b && r.face === 'end'),
+    ).toBe(true);
     expect((await perms(page)).length).toBe(1);
   });
 });

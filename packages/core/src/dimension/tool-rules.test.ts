@@ -82,9 +82,11 @@ describe('hlášení uživatele 2026-11-26: kótování oblouků nástrojem Kót
     const a = f.line(vec(0, 0), vec(4000, 0));
     const b = f.line(vec(0, 2000), vec(4000, 2000));
     const c = f.line(vec(6000, 0), vec(8000, 2000));
-    expect(dimensionPair(f.model, { wallId: a, face: 'ref' }, { wallId: b, face: 'ref' }, vec(0, 0))).toEqual(
-      {},
-    );
+    const [ra, rb] = [
+      { wallId: a, face: 'ref' as const },
+      { wallId: b, face: 'ref' as const },
+    ];
+    expect(dimensionPair(f.model, ra, rb, vec(0, 0))).toEqual({ refs: [ra, rb] });
     expect(
       dimensionPair(f.model, { wallId: a, face: 'ref' }, { wallId: c, face: 'ref' }, vec(0, 0)),
     ).toBeNull();

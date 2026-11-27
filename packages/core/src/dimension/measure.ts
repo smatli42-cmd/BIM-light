@@ -21,9 +21,17 @@ import { arcDistance, measuredFace } from './arc-dim.ts';
 import { edgePath } from '../wall/edges.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { getWall } from '../wall/queries.ts';
-import type { AngularDimension, Dimension, FaceRef, LengthMeasure } from './types.ts';
+import { outlineRefPath } from './outline-ref.ts';
+import {
+  isOutlineRef,
+  type AngularDimension,
+  type Dimension,
+  type DimRef,
+  type LengthMeasure,
+} from './types.ts';
 
-export function facePath(model: Model, ref: FaceRef) {
+export function facePath(model: Model, ref: DimRef): Path {
+  if (isOutlineRef(ref)) return outlineRefPath(model, ref);
   if (ref.openingId) {
     const o = model.openings[ref.openingId];
     if (!o) throw new Error(`Otvor ${ref.openingId} neexistuje`);
@@ -33,7 +41,7 @@ export function facePath(model: Model, ref: FaceRef) {
 }
 
 /** Vzdálenost mezi dvěma líci: od středu prvního líce kolmo k nosné čáře druhého. */
-export function faceDistance(model: Model, a: FaceRef, b: FaceRef): number {
+export function faceDistance(model: Model, a: DimRef, b: DimRef): number {
   return distanceToCarrier(pointAt(facePath(model, a), 0.5), carrierOf(facePath(model, b)));
 }
 
@@ -83,14 +91,15 @@ export const isArcPath = (p: Path): p is Extract<Path, { kind: 'arc' }> =>
 
 /** Otvory, na které kóta odkazuje (hrany otvoru). */
 export function dimensionOpeningIds(d: Dimension): Id[] {
-  if (d.kind === 'linear') return d.refs.flatMap((r) => (r.openingId ? [r.openingId] : []));
+  if (d.kind === 'linear')
+    return d.refs.flatMap((r) => (!isOutlineRef(r) && r.openingId ? [r.openingId] : []));
   if (d.kind === 'length') return d.ref.openingId ? [d.ref.openingId] : [];
   return [];
 }
 
 /** Stěny, na které kóta odkazuje. */
 export function dimensionWallIds(d: Dimension): Id[] {
-  if (d.kind === 'linear') return [d.refs[0].wallId, d.refs[1].wallId];
+  if (d.kind === 'linear') return d.refs.flatMap((r) => (isOutlineRef(r) ? [] : [r.wallId]));
   if (d.kind === 'length') return [d.ref.wallId];
   return [...d.wallIds];
 }

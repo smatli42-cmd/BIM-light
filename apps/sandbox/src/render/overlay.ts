@@ -1,6 +1,7 @@
 // Pomocné značky přes výkres: světle modré [R, katalog kreslení 2] – přichycení, pomocné čáry,
 // uzly, dočasné kóty, zámky a kolečka. Jsou to prvky rozhraní, ne kresba modelu.
 import {
+  isOutlineRef,
   allWallGeometry,
   edgePath,
   facePath,
@@ -113,8 +114,8 @@ export function drawOverlay(ctx: Ctx, s: Session, o: Overlay) {
   const geoms = allWallGeometry(s.model, s.storeyId);
   ctx.lineWidth = 3;
   for (const f of o.faces ?? []) {
-    const g = geoms.get(f.wallId);
-    const path = f.openingId ? facePath(s.model, f) : g ? edgePath(g, f.face) : undefined;
+    const g = isOutlineRef(f) ? undefined : geoms.get(f.wallId);
+    const path = isOutlineRef(f) || f.openingId ? facePath(s.model, f) : g ? edgePath(g, f.face) : undefined;
     if (!path) continue;
     poly(ctx, s, tessellate(path), false);
     ctx.stroke();

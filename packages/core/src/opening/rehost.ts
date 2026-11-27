@@ -2,7 +2,7 @@
 // hostitele a polohu; kóty k jeho hranám se přepíší na nového hostitele (kóta jde s otvorem).
 import { dot, tangentAt, type Path } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
-import type { Dimension, FaceRef } from '../dimension/types.ts';
+import { isOutlineRef, type Dimension, type DimRef, type FaceRef } from '../dimension/types.ts';
 import type { Model } from '../model/types.ts';
 import { putDimensions, putOpenings } from '../model/update.ts';
 import { lengthAt, stationAt } from './along.ts';
@@ -15,8 +15,10 @@ export function offsetOn(o: Opening, from: Path, to: Path): number {
   return reversed ? lengthAt(to, p) - o.width : lengthAt(to, p);
 }
 
-function fixRef(r: FaceRef, hosts: ReadonlyMap<Id, Id>): FaceRef {
-  const h = r.openingId && hosts.get(r.openingId);
+function fixRef<R extends DimRef>(r: R, hosts: ReadonlyMap<Id, Id>): R {
+  if (isOutlineRef(r)) return r;
+  const f: FaceRef = r;
+  const h = f.openingId && hosts.get(f.openingId);
   return h ? { ...r, wallId: h } : r;
 }
 
@@ -26,7 +28,7 @@ export function rehostOpenings(model: Model, moved: readonly Opening[]): Model {
   const dims: Dimension[] = [];
   for (const d of Object.values(model.dimensions)) {
     if (d.kind === 'linear') {
-      const refs: [FaceRef, FaceRef] = [fixRef(d.refs[0], hosts), fixRef(d.refs[1], hosts)];
+      const refs: [DimRef, DimRef] = [fixRef(d.refs[0], hosts), fixRef(d.refs[1], hosts)];
       if (refs[0] !== d.refs[0] || refs[1] !== d.refs[1]) dims.push({ ...d, refs });
     } else if (d.kind === 'length') {
       const ref = fixRef(d.ref, hosts);

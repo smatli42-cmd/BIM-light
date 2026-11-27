@@ -6,7 +6,15 @@ import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
 import { facePath, isArcPath, measureDimension } from '../../dimension/measure.ts';
 import { measuredFace } from '../../dimension/arc-dim.ts';
-import type { ArcMeasure, Dimension, FaceRef, LengthMeasure } from '../../dimension/types.ts';
+import {
+  isOutlineRef,
+  type ArcMeasure,
+  type Dimension,
+  type DimRef,
+  type FaceRef,
+  type LengthMeasure,
+} from '../../dimension/types.ts';
+import { orientPair, outlineRefValid, outlineStorey } from '../../dimension/outline-ref.ts';
 import { rulesFor } from '../../rules/cross-rules.ts';
 import { isCap } from '../../wall/edges.ts';
 import { activeAnnotationLayer } from '../../view/effective.ts';
@@ -23,6 +31,19 @@ export const FACE_REF_SCHEMA: JsonSchema = S.object(
   ['wallId', 'face'],
 );
 
+/** Hrana nebo roh obrysu desky / otvoru v desce (desky D4). */
+export const OUTLINE_REF_SCHEMA: JsonSchema = S.object(
+  {
+    outline: S.enumOf(['slab', 'slabOpening'], 'obrys desky, nebo otvoru v desce'),
+    ownerId: S.id,
+    edge: { type: 'integer', minimum: 0, description: 'hrana i = úsečka bod i → bod i + 1 obrysu' },
+    vertex: { type: 'integer', minimum: 0, description: 'roh i obrysu (místo hrany)' },
+    dir: S.number('roh: směr kótované přímky (rad); chybí = doplní se podle druhého odkazu'),
+  },
+  ['outline', 'ownerId'],
+);
+export const DIM_REF_SCHEMA: JsonSchema = { oneOf: [FACE_REF_SCHEMA, OUTLINE_REF_SCHEMA] };
+
 /** Kóta po oblouku: měřený líc obloukové stěny (plán stěn Z5). */
 export const ARC_SCHEMA: JsonSchema = {
   ...S.object({ wallId: S.id, face: S.enumOf(['ref', 'opp'], 'měřený líc') }, ['wallId', 'face']),
@@ -30,7 +51,7 @@ export const ARC_SCHEMA: JsonSchema = {
 };
 
 export type DimensionCreateParams = { annotationLayerId?: Id; viewId?: Id } & (
-  | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef?: 0 | 1; offset?: number; arc?: ArcMeasure }
+  | { kind: 'linear'; refs: [DimRef, DimRef]; ownerRef?: 0 | 1; offset?: number; arc?: ArcMeasure }
   | { kind: 'length'; ref: FaceRef; offset?: number; measure?: LengthMeasure }
   | { kind: 'angular'; wallIds: [Id, Id]; ownerRef?: 0 | 1; radius?: number }
 );
@@ -38,7 +59,13 @@ export type DimensionCreateParams = { annotationLayerId?: Id; viewId?: Id } & (
 const common = { annotationLayerId: S.id, viewId: S.id, offset: S.number('poloha kótovací čáry (mm)') };
 const owner = { type: 'integer', enum: [0, 1] } as JsonSchema;
 
-function checkFace(model: Model, ref: FaceRef, capAllowed = true) {
+function checkFace(model: Model, ref: DimRef, capAllowed = true) {
+  if (isOutlineRef(ref)) {
+    if ((ref.edge === undefined) === (ref.vertex === undefined))
+      fail('invalid', 'Zadej hranu (edge), nebo roh (vertex)');
+    if (!outlineRefValid(model, ref)) fail('invalid', 'Hrana nebo roh desky neexistuje');
+    return;
+  }
   wallOf(model, ref.wallId);
   if (ref.openingId) {
     const o = model.openings[ref.openingId];
@@ -50,6 +77,12 @@ function checkFace(model: Model, ref: FaceRef, capAllowed = true) {
   if (!rulesFor('wall').dimensionFaces.includes(ref.face) || (!capAllowed && isCap(ref.face)))
     fail('invalid', `Na líc ${ref.face} nejde kótovat`);
 }
+
+/** Podlaží kóty = podlaží prvního odkazu (stěna, nebo deska / otvor v desce). */
+const refStorey = (model: Model, r: DimRef): Id =>
+  isOutlineRef(r)
+    ? (outlineStorey(model, r) ?? fail('not-found', 'Deska neexistuje'))
+    : wallOf(model, r.wallId).storeyId;
 
 export function annotationLayerFor(model: Model, p: { annotationLayerId?: Id; viewId?: Id }): Id {
   if (p.annotationLayerId) {
@@ -72,17 +105,17 @@ export function buildDimension(model: Model, p: DimensionCreateParams, id: Id, l
   };
   if (p.kind === 'linear') {
     p.refs.forEach((r) => checkFace(model, r));
-    const [a, b] = p.refs.map((r) => facePath(model, r));
+    const refs = orientPair(model, p.refs[0], p.refs[1], (r) => facePath(model, r));
+    const [a, b] = refs.map((r) => facePath(model, r));
     if (p.arc && !measuredFace(model, p.arc)) fail('invalid', 'Kóta po oblouku potřebuje obloukovou stěnu');
     if (!p.arc && a && b && Math.abs(cross(tangentAt(a, 'start'), tangentAt(b, 'start'))) > 0.01) {
       fail('invalid', 'Kótovat vzdálenost jde jen mezi rovnoběžnými líci');
     }
-    const storeyId = wallOf(model, p.refs[0].wallId).storeyId;
     return {
       ...base,
-      storeyId,
+      storeyId: refStorey(model, refs[0]),
       kind: 'linear',
-      refs: p.refs,
+      refs,
       ownerRef: p.ownerRef ?? 0,
       offset: p.offset ?? 0,
       ...(p.arc ? { arc: p.arc } : {}),
@@ -112,7 +145,8 @@ export const dimensionCreate = defineCommand<DimensionCreateParams>({
   name: 'dimension.create',
   label: 'Kóta',
   description:
-    'Vytvoří trvalou kótu: vzdálenost dvou rovnoběžných líců, délku líce stěny (u oblouku i tětivu ' +
+    'Vytvoří trvalou kótu: vzdálenost dvou rovnoběžných líců (i hran a rohů obrysu desky nebo otvoru ' +
+    'v desce, desky D4), délku líce stěny (u oblouku i tětivu ' +
     'nebo poloměr), nebo úhel dvou stěn. ' +
     'Kóta je odemčená a patří do aktivní skupiny anotací pohledu.',
   group: 'Kóta',
@@ -123,7 +157,7 @@ export const dimensionCreate = defineCommand<DimensionCreateParams>({
       S.object(
         {
           kind: S.enumOf(['linear'], ''),
-          refs: { type: 'array', items: FACE_REF_SCHEMA, minItems: 2, maxItems: 2 },
+          refs: { type: 'array', items: DIM_REF_SCHEMA, minItems: 2, maxItems: 2 },
           ownerRef: owner,
           arc: ARC_SCHEMA,
           ...common,

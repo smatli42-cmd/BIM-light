@@ -6,11 +6,11 @@ import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
 import { withLineThrough } from '../../dimension/align.ts';
 import { measureDimension } from '../../dimension/measure.ts';
-import type { ArcMeasure, Dimension, FaceRef, LengthMeasure } from '../../dimension/types.ts';
+import type { ArcMeasure, Dimension, DimRef, FaceRef, LengthMeasure } from '../../dimension/types.ts';
 import { dimensionOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
-import { annotationLayerFor, ARC_SCHEMA, buildDimension, FACE_REF_SCHEMA } from './create.ts';
+import { annotationLayerFor, ARC_SCHEMA, buildDimension, DIM_REF_SCHEMA, FACE_REF_SCHEMA } from './create.ts';
 
 const IDS = { type: 'array', items: S.id, minItems: 1 } as JsonSchema;
 
@@ -57,7 +57,7 @@ export const dimensionPlace = defineCommand<PlaceParams>({
 });
 
 type SetItem =
-  | { kind: 'linear'; refs: [FaceRef, FaceRef]; ownerRef?: 0 | 1; arc?: ArcMeasure }
+  | { kind: 'linear'; refs: [DimRef, DimRef]; ownerRef?: 0 | 1; arc?: ArcMeasure }
   | { kind: 'length'; ref: FaceRef; measure?: LengthMeasure };
 
 export interface CreateSetParams {
@@ -73,7 +73,7 @@ const ITEM_SCHEMA: JsonSchema = {
     S.object(
       {
         kind: S.enumOf(['linear'], ''),
-        refs: { type: 'array', items: FACE_REF_SCHEMA, minItems: 2, maxItems: 2 },
+        refs: { type: 'array', items: DIM_REF_SCHEMA, minItems: 2, maxItems: 2 },
         ownerRef: { type: 'integer', enum: [0, 1] },
         arc: ARC_SCHEMA,
       },

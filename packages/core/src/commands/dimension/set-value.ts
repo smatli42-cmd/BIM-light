@@ -1,12 +1,18 @@
 // Příkaz: změna čísla v kótě (základ 25; pravidla-interakce: kóty 1, 9; katalog kreslení 3.3–3.4).
 // Pohne se vybraná stěna z dvojice, jinak ta, ze které kóta vznikla. Zámek se změnou čísla nemění.
-import { arcData, pathLength, rotatePath } from '../../geometry/index.ts';
+import { arcData, leftNormal, mul, pathLength, rotatePath, tangentAt } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { putDimensions } from '../../model/update.ts';
 import { angleGeometry, facePath, isArcPath, measureDimension } from '../../dimension/measure.ts';
 import { isCap } from '../../wall/edges.ts';
-import type { Dimension, LengthDimension, LinearDimension } from '../../dimension/types.ts';
+import {
+  isOutlineRef,
+  type Dimension,
+  type LengthDimension,
+  type LinearDimension,
+} from '../../dimension/types.ts';
+import { translateOutlineOwner } from '../../dimension/outline-ref.ts';
 import { putOpenings } from '../../model/update.ts';
 import type { Opening } from '../../opening/types.ts';
 import { assertOpenings } from '../opening/shared.ts';
@@ -50,13 +56,14 @@ function closest(d: Dimension, value: number, tries: (() => Model)[]): Model {
  */
 function moveOpeningEdge(model: Model, d: LinearDimension, value: number, mover: 0 | 1): Model {
   const ref = d.refs[mover];
+  if (isOutlineRef(ref)) return fail('invalid', 'Hrana desky není hrana otvoru ve stěně');
   const other = d.refs[mover === 0 ? 1 : 0];
   const o = model.openings[ref.openingId as Id] ?? fail('not-found', 'Otvor neexistuje');
   // Kóta po oblouku měří na líci; posun po referenční čáře je o poměr poloměrů jiný (Z5).
   const k = arcScale(model, d);
   const delta = (value - measureDimension(model, d)) * k;
   const put = (x: Opening) => () => assertOpenings(putOpenings(model, [x]), [x.id]);
-  if (other.openingId === o.id) {
+  if (!isOutlineRef(other) && other.openingId === o.id) {
     const w = value * k;
     const width =
       ref.face === 'end' ? { ...o, width: w } : { ...o, width: w, offset: o.offset + o.width - w };
@@ -66,6 +73,19 @@ function moveOpeningEdge(model: Model, d: LinearDimension, value: number, mover:
     put({ ...o, offset: o.offset + delta }),
     put({ ...o, offset: o.offset - delta }),
   ]);
+}
+
+/** Kóta k hraně / rohu desky (D4): posune se celá deska (i s otvory jen v ní), nebo otvor v desce. */
+function moveOutline(model: Model, d: LinearDimension, value: number, mover: 0 | 1): Model {
+  const ref = d.refs[mover];
+  const other = d.refs[mover === 0 ? 1 : 0];
+  if (!isOutlineRef(ref)) return fail('invalid', 'Odkaz není hrana desky');
+  if (isOutlineRef(other) && other.ownerId === ref.ownerId)
+    fail('invalid', 'Rozměr desky se mění body obrysu (posunout bod)');
+  const n = leftNormal(tangentAt(facePath(model, other), 'start'));
+  const delta = value - measureDimension(model, d);
+  const at = (k: number) => () => translateOutlineOwner(model, ref, mul(n, k));
+  return closest(d, value, [at(delta), at(-delta)]);
 }
 
 /** Délka líce, tětiva (konec klouže po kružnici), nebo poloměr líce (Z5). */
@@ -95,7 +115,9 @@ function applyValue(model: Model, d: Dimension, p: SetValueParams): Model {
   const mover = p.moveRef ?? d.ownerRef;
   if (d.kind === 'linear') {
     const ref = d.refs[mover];
+    if (isOutlineRef(ref)) return moveOutline(model, d, p.value, mover);
     if (ref.openingId) return moveOpeningEdge(model, d, p.value, mover);
+    const twin = d.refs[mover === 0 ? 1 : 0];
     const cap = ref.face;
     if (isCap(cap)) {
       // Čelo volného konce: změna čísla prodlouží / zkrátí stěnu na tomto konci.
@@ -104,7 +126,7 @@ function applyValue(model: Model, d: Dimension, p: SetValueParams): Model {
       const at = (l: number) => () => setWallLength(model, { wallId: ref.wallId, end: cap, length: l });
       return closest(d, p.value, [at(length + dl), at(length - dl)]);
     }
-    if (ref.wallId === d.refs[mover === 0 ? 1 : 0].wallId) {
+    if (!isOutlineRef(twin) && ref.wallId === twin.wallId) {
       fail('invalid', 'Tloušťka stěny se mění v typu nebo příkazem Tloušťka stěny');
     }
     return closest(d, p.value, [
