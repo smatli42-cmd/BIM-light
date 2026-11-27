@@ -19,6 +19,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   desky / otvoru. Při kreslení i u vybrané desky a otvoru; klik na číslo posune. Příkaz `outline.setDistance`,
   dotaz `outline.tempDimensions`; kolečko udělá trvalou kótu. Dům: schodiště 100 mm od líce.
 - Testy: `outline-temp.test.ts`, `outline-snap.test.ts`, AI `scenario-slab-dims.test.ts`, e2e `desky-koty.spec.ts`.
+- Oprava (hlášení uživatele): kříž v otvoru tvaru L vedl mimo otvor. Teď `slab-opening/cross.ts`: konvexní
+  beze změny, pravoúhlý obrys = kříž v každém obdélníku rozkladu, obecný = úhlopříčky obálky jen uvnitř.
+  Test `cross.test.ts`, scéna `?ukazka=desky-otvory`.
 
 ### Desky D4, 2026-11-27 (scéna `?ukazka=desky-d4`; příčky k stropu a kóta k otvoru v `?ukazka=dum`)
 

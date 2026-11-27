@@ -74,7 +74,8 @@ export const SLAB_SCENES: readonly Sample[] = [
     date: '2026-11-27',
     description:
       'Místnost 6 × 4 m se stropem a podlahou: otvor pro schodiště (prořízne obě desky, v půdorysu křížem), ' +
-      'prostup tvaru L a vpravo deska nad rovinou řezu s otvorem (čárkovaně). Zkus: O (Otvor) → V desce, ' +
+      'prostup tvaru L (kříž v každém obdélníku zvlášť, žádná čára mimo otvor) a vpravo deska nad rovinou ' +
+      'řezu s otvorem (čárkovaně). Zkus: O (Otvor) → V desce, ' +
       'obdélník dvěma kliky do desky; Esc, klik do otvoru, tažení, čtverečky v rozích, Del. Posun desky ' +
       'vezme její otvory s sebou. Exportovat IFC: IfcOpeningElement u stropu i podlahy.',
     build(c) {
