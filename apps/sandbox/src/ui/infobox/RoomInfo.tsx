@@ -1,10 +1,13 @@
 // Info box místnosti (prvky stavby 9; podle principu Arditu, koncepce rozhraní 2 D): nástroj Místnost =
 // stav nových místností a nápověda; vybraná místnost = číslo a název (úprava Enterem), plocha podle
-// ČSN 73 4301, obvod, výška a objem jen ke čtení (počítají se ze stěn), kontrola, započítané výklenky.
+// ČSN 73 4301, obvod, výška a objem jen ke čtení (počítají se ze stěn), kontrola, započítané výklenky;
+// zadávané údaje (RoomFields) a obsah razítka stylu (RoomStamp).
 import { roomInfo, type Room } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { NumberInput } from '../NumberInput.tsx';
 import { NewStatusField } from './NewStatus.tsx';
+import { RoomFields, TextField } from './RoomFields.tsx';
+import { RoomStampSection } from './RoomStamp.tsx';
 import { Section } from './Section.tsx';
 
 const dec = (v: number, d: number) => v.toFixed(d).replace('.', ',');
@@ -23,21 +26,6 @@ function Row({ label, value, testid }: { label: string; value: string; testid?: 
   );
 }
 
-function TextField(p: { label: string; testid: string; value: string; onSet: (v: string) => void }) {
-  return (
-    <label>
-      {p.label}
-      <input
-        data-testid={p.testid}
-        key={p.value}
-        defaultValue={p.value}
-        onKeyDown={(e) => e.key === 'Enter' && p.onSet(e.currentTarget.value)}
-        onBlur={(e) => e.currentTarget.value !== p.value && p.onSet(e.currentTarget.value)}
-      />
-    </label>
-  );
-}
-
 /** Nástroj Místnost: stav nových místností (fáze). */
 export function NewRoomInfo({ s }: { s: Session }) {
   return (
@@ -47,6 +35,16 @@ export function NewRoomInfo({ s }: { s: Session }) {
     >
       <NewStatusField s={s} />
     </Section>
+  );
+}
+
+/** Nástroj Místnost: stav nových místností a obsah razítka stylu. */
+export function NewRoomPanel({ s }: { s: Session }) {
+  return (
+    <>
+      <NewRoomInfo s={s} />
+      <RoomStampSection s={s} />
+    </>
   );
 }
 
@@ -85,6 +83,7 @@ function OneRoom({ s, r }: { s: Session; r: Room }) {
           Razítko zpět do místnosti
         </button>
       )}
+      <RoomFields s={s} r={r} />
     </>
   );
 }
@@ -109,6 +108,7 @@ export function SelectedRoomsInfo({ s }: { s: Session }) {
       >
         Smazat <kbd>Del</kbd>
       </button>
+      <RoomStampSection s={s} />
     </section>
   );
 }

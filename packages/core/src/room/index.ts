@@ -6,3 +6,5 @@ export * from './arrangement.ts';
 export * from './draw.ts';
 export * from './draw-view.ts';
 export * from './pick.ts';
+export * from './stamp.ts';
+export * from './category.ts';

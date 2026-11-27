@@ -1,21 +1,26 @@
 // Kresba místnosti v půdorysu (prvky stavby 9, katalog pohledů: číslo, název, plocha; výplň volitelně).
-// Razítko = řádky textu podle stylu pohledu (labels.roomNumber / roomName / roomArea), velikost písma
-// pevná na papíře (základ 29), barva, pero a výplň vždy z funkce grafiky (základy 11, 30): výchozí
-// grafika výplň nemá, barevnou výplň zapne pravidlo nebo styl. Neuzavřená místnost ukáže varování.
+// Razítko = řádky textu podle údajů razítka stylu pohledu (`stamp.ts`), velikost písma pevná na papíře
+// (základ 29), barva, pero a výplň vždy z funkce grafiky (základy 11, 30): výplň dá barva kategorie
+// (patro 1), styl, pravidlo nebo přepis místnosti. Neuzavřená místnost ukáže varování místo ploch.
 import type { Primitive } from '../drawing/primitives.ts';
 import { add, type Vec2 } from '../geometry/index.ts';
 import type { ElementFacts } from '../style/conditions.ts';
 import { variantKey } from '../style/conditions.ts';
 import type { PaperSizes, ResolvedEffect } from '../style/types.ts';
 import type { RoomGeometry } from './geometry.ts';
-import { areaText } from './queries.ts';
+import type { Model } from '../model/types.ts';
+import { stampValue, type RoomStampField } from './stamp.ts';
 import type { Room } from './types.ts';
 
 /** Řádkování razítka vůči výšce písma. */
 const LINE = 1.6;
 
-export function roomFacts(r: Room): ElementFacts {
+/** Fakta o místnosti pro funkci grafiky; barva kategorie je výchozí výplň (patro 1). */
+export function roomFacts(model: Model, r: Room): ElementFacts {
+  const cat = model.roomCategories[r.categoryId ?? ''];
   const f = {
+    roomCategory: r.categoryId ?? '',
+    ...(cat && { ownDefault: { fillColor: cat.color } }),
     id: r.id,
     category: 'room' as const,
     discipline: r.discipline,
@@ -34,15 +39,22 @@ const STATE_TEXT: Readonly<Record<RoomGeometry['state'], string | null>> = {
   redundant: 'nadbytečná',
 };
 
-/** Řádky razítka podle voleb stylu (chybějící volba = zapnuto). */
-export function stampLines(r: Room, g: RoomGeometry, labels: Readonly<Record<string, boolean>>): string[] {
-  const on = (k: string) => labels[k] !== false;
+/** Údaje spočítané z obrysu – u neuzavřené místnosti je nahradí varování. */
+const MEASURED: readonly RoomStampField[] = ['area', 'livingArea', 'utilityArea', 'perimeter', 'volume'];
+
+/** Řádky razítka podle údajů razítka stylu (v pořadí, prázdné vynechá). */
+export function stampLines(
+  model: Model,
+  r: Room,
+  g: RoomGeometry,
+  fields: readonly RoomStampField[],
+): string[] {
   const warn = STATE_TEXT[g.state];
-  return [
-    ...(on('roomNumber') ? [r.number] : []),
-    ...(on('roomName') && r.name ? [r.name] : []),
-    ...(warn ? [warn] : on('roomArea') ? [areaText(g.area)] : []),
-  ];
+  const lines = fields
+    .filter((f) => !warn || !MEASURED.includes(f))
+    .map((f) => stampValue(model, r, g, f))
+    .filter((t): t is string => !!t);
+  return warn ? [...lines, warn] : lines;
 }
 
 /** Střed razítka (mm modelu). */
@@ -56,13 +68,14 @@ export function stampBox(lines: readonly string[], scale: number, paper: PaperSi
 }
 
 export function drawRoom(
+  model: Model,
   r: Room,
   g: RoomGeometry,
   scale: number,
-  paper: PaperSizes,
-  labels: Readonly<Record<string, boolean>>,
+  fields: readonly RoomStampField[],
   eff: ResolvedEffect,
 ): Primitive[] {
+  const paper = model.display.paperSizes;
   if (!eff.visible) return [];
   const source = (role: string) => ({ elementId: r.id, role });
   const out: Primitive[] = [];
@@ -76,7 +89,7 @@ export function drawRoom(
       source: source('výplň místnosti'),
     });
   }
-  const lines = stampLines(r, g, labels);
+  const lines = stampLines(model, r, g, fields);
   const step = paper.labelText * scale * LINE;
   const c = stampCenter(r);
   lines.forEach((text, i) => {

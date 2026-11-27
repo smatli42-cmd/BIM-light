@@ -8,6 +8,21 @@ import type { HeightTop } from '../model/height.ts';
 import type { Status, VariantRef } from '../model/types.ts';
 import type { GraphicEffect } from '../style/types.ts';
 
+/** Zadávané údaje místnosti; povrchy zatím jako text (později z povrchů místnosti). */
+export interface RoomProps {
+  readonly floorFinish?: string;
+  readonly wallFinish?: string;
+  readonly ceilingFinish?: string;
+  readonly note?: string;
+  /** Počet osob. */
+  readonly occupants?: number;
+  /** Výpočtová vnitřní teplota (°C). */
+  readonly temperature?: number;
+}
+
+export const ROOM_TEXT_PROPS = ['floorFinish', 'wallFinish', 'ceilingFinish', 'note'] as const;
+export const ROOM_NUMBER_PROPS = ['occupants', 'temperature'] as const;
+
 export interface Room {
   readonly id: Id;
   readonly ifcClass: 'IfcSpace';
@@ -28,6 +43,12 @@ export interface Room {
   readonly stampAt?: Vec2;
   /** Ruční obrys (zamčený, základ 16): nepočítá se ze stěn. */
   readonly manualOutline?: readonly Vec2[];
+  /** Kategorie (funkce) místnosti – barva a druh plochy (obytná / užitková). */
+  readonly categoryId?: Id;
+  /** Výška podlahy (čisté podlahy) nad úrovní podlaží (mm); spodek místnosti. */
+  readonly floorOffset?: number;
+  /** Údaje, které program nespočítá (zadává uživatel nebo AI). */
+  readonly props?: RoomProps;
   /** Přepis grafiky „ve všech pohledech“ (patro 5). */
   readonly graphicOverride?: GraphicEffect;
 }

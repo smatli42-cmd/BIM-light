@@ -130,6 +130,8 @@ export interface Style {
   readonly categoryGraphics: CategoryGraphics;
   /** Popisky: co se popisuje (čísla místností, plochy…). */
   readonly labels: Readonly<Record<string, boolean>>;
+  /** Údaje razítka místnosti v pořadí (room/stamp.ts); chybí = číslo, název, plocha. */
+  readonly roomStamp?: readonly string[];
   readonly defaultScale: number;
   /** Měřítko šraf: násobí všechny rozměry šraf (0,5–3, výchozí 1). Mění velikost, ne tvar. */
   readonly hatchScale: number;

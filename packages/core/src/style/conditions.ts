@@ -14,6 +14,8 @@ export const RULE_PROPERTIES = [
   'variant',
   'typeId',
   'materialId',
+  /** Kategorie (funkce) místnosti – id z `model.roomCategories`. */
+  'roomCategory',
 ] as const;
 export type RuleProperty = (typeof RULE_PROPERTIES)[number];
 
@@ -28,6 +30,10 @@ export interface ElementFacts {
   readonly typeId: Id;
   readonly materialIds: readonly Id[];
   readonly graphicOverride?: GraphicEffect;
+  /** Kategorie místnosti (jen místnosti). */
+  readonly roomCategory?: Id;
+  /** Vlastní výchozí grafika prvku (barva kategorie místnosti), patro 1 nad grafikou kategorie. */
+  readonly ownDefault?: GraphicEffect;
 }
 
 export const variantKey = (v: VariantRef): string =>
@@ -52,7 +58,8 @@ export const isKnownProperty = (p: string): p is RuleProperty =>
   (RULE_PROPERTIES as readonly string[]).includes(p);
 
 function valuesOf(facts: ElementFacts, property: RuleProperty): (string | number)[] {
-  return property === 'materialId' ? [...facts.materialIds] : [facts[property]];
+  if (property === 'materialId') return [...facts.materialIds];
+  return [facts[property] ?? ''];
 }
 
 /** Platí podmínka pro prvek? Neznámá vlastnost = neplatí. */

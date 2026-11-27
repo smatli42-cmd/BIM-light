@@ -62,7 +62,16 @@ function ground(c: SampleContext) {
 
 /** Místnosti podlaží (prvky stavby 9): bod uvnitř a název; obrys a plocha se spočítají ze stěn. */
 function rooms(c: SampleContext, storeyId: Id, list: readonly (readonly [number, number, string])[]) {
-  for (const [x, y, name] of list) c.run('room.create', { storeyId, point: vec(x, y), name });
+  const cat = (n: string) => Object.values(c.model.roomCategories).find((k) => k.name === n)?.id;
+  const category: Record<string, string> = {
+    Koupelna: 'Hygienické',
+    Kuchyně: 'Kuchyně a stravování',
+    Šatna: 'Skladové',
+  };
+  for (const [x, y, name] of list) {
+    const [id] = c.run('room.create', { storeyId, point: vec(x, y), name });
+    c.run('room.update', { roomId: id, categoryId: cat(category[name] ?? 'Obytné') });
+  }
 }
 
 /** Desky podlaží (D1): nosná deska pod obvodovými stěnami (`under` = přesah pod stěny) a podlaha v místnostech. */

@@ -16,9 +16,10 @@ import type { ScheduleDef } from '../schedule/types.ts';
 import type { WallTag } from '../tag/types.ts';
 import type { Slab, SlabType } from '../slab/types.ts';
 import type { Room } from '../room/types.ts';
+import type { RoomCategory } from '../room/category.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 23;
+export const SCHEMA_VERSION = 24;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -117,6 +118,8 @@ export interface Model {
   readonly slabOpenings: Readonly<Record<Id, SlabOpening>>;
   /** Místnosti (IfcSpace, prvky stavby 9): bod uvnitř, číslo, název; obrys se počítá ze stěn. */
   readonly rooms: Readonly<Record<Id, Room>>;
+  /** Kategorie (funkce) místností: barva a druh plochy (Archicad Zone Category). */
+  readonly roomCategories: Readonly<Record<Id, RoomCategory>>;
   /** Vztahy jako samostatné objekty (základ 1, 24). */
   readonly relations: Readonly<Record<Id, Relation>>;
   /** Kóty patří podlaží a mají skupinu anotací (základ 28). */

@@ -22,7 +22,7 @@ import { projectV18toV19 } from '../slab-opening/migrate-v18.ts';
 import { projectV19toV20 } from '../style/migrate-v6.ts';
 import { projectV20toV21 } from '../view-3d/migrate-v20.ts';
 import { projectV21toV22 } from '../schedule/migrate-v21.ts';
-import { projectV22toV23 } from '../room/migrate-v22.ts';
+import { projectV22toV23, projectV23toV24 } from '../room/migrate-v22.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -38,7 +38,8 @@ export const PROJECT_EXTENSION = '.bim';
  * 13 → 14: značky typů a výkazy (Z8); 14 → 15: značky typu stěn v půdorysu (Z8);
  * 15 → 16: skladby; 16 → 17: typy desek (D1); 17 → 18: barva povrchu ve 3D v grafice;
  * 18 → 19: otvory v deskách (D3); 19 → 20: sytá žlutá povrchu bouraných ve 3D;
- * 20 → 21: průhlednost povrchu ve 3D a 3D pohledy; 21 → 22: výkaz desek; 22 → 23: místnosti.
+ * 20 → 21: průhlednost povrchu ve 3D a 3D pohledy; 21 → 22: výkaz desek;
+ * 22 → 23: místnosti; 23 → 24: kategorie místností.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -63,6 +64,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   20: projectV20toV21,
   21: projectV21toV22,
   22: projectV22toV23,
+  23: projectV23toV24,
 };
 
 export function serializeProject(model: Model): string {

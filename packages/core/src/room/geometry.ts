@@ -85,7 +85,7 @@ const onLoop = (p: Vec2, loop: readonly Vec2[]) => loop.some((q) => Math.hypot(q
 /** Výška místnosti (mm): od úrovně podlaží k vršku; chyba ve vazbě = konstrukční výška podlaží. */
 export function roomHeight(model: Model, r: Room): number {
   try {
-    const h = resolveHeight(model, { baseStoreyId: r.storeyId, baseOffset: 0, top: r.top });
+    const h = resolveHeight(model, { baseStoreyId: r.storeyId, baseOffset: r.floorOffset ?? 0, top: r.top });
     return h.top - h.bottom;
   } catch {
     return model.storeys[r.storeyId]?.height ?? 0;

@@ -1,5 +1,6 @@
 // Nový prázdný projekt: budova, podlaží 1.NP, knihovní materiály, výchozí typy stěn,
 // nastavení zobrazení (Studie, Projekt) s kopiemi použitých šraf a pohled. Ukázková data jsou vymyšlená.
+import { defaultRoomCategories } from '../room/category.ts';
 import { newView3d } from '../view-3d/types.ts';
 import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
@@ -74,6 +75,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     openings: {},
     slabOpenings: {},
     rooms: {},
+    roomCategories: defaultRoomCategories(),
     relations: {},
     dimensions: {},
     variantSets: {},

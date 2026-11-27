@@ -92,12 +92,14 @@ export function writeSpaces(
     const st = storeys.get(r.storeyId);
     const g = geo.get(r.id);
     if (!st || !g || r.variant.kind !== 'main') continue;
+    // ObjectType = kategorie (funkce) místnosti.
+    const cat = m.roomCategories[r.categoryId ?? '']?.name;
     const entity = c.w.add('IfcSpace', [
       str(modelGlobalId(r.id)),
       null,
       str(r.number),
       null,
-      null,
+      cat ? str(cat) : null,
       placement(c, st.placement, { x: 0, y: 0, z: 0 }),
       body(c, g),
       str(r.name),

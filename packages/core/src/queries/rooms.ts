@@ -4,6 +4,7 @@ import { S } from '../commands/schema.ts';
 import type { Vec2 } from '../geometry/index.ts';
 import { roomGeometry } from '../room/geometry.ts';
 import { allRoomGeometry, areaM2 } from '../room/queries.ts';
+import { areaSplit } from '../room/stamp.ts';
 import { defineQuery } from './types.ts';
 
 const r1 = (v: number) => Math.round(v * 10) / 10;
@@ -16,7 +17,9 @@ export const roomList = defineQuery<{ storeyId?: string }, unknown>({
     'Místnosti: number, name, area (m² podle ČSN 73 4301 – mezi líci stěn včetně omítek, bez sloupů a ' +
     'komínů, s výklenky ≥ 0,30 m), perimeter (mm), height (mm), volume (m³), outline a holes (mm), ' +
     'niches (id započítaných výklenků), manual (ruční obrys), state: ok / not-enclosed (neuzavřená) / ' +
-    'in-wall (bod ve stěně) / redundant (nadbytečná – v prostoru je už jiná místnost).',
+    'in-wall (bod ve stěně) / redundant (nadbytečná – v prostoru je už jiná místnost); category, ' +
+    'livingArea / utilityArea (m² podle druhu plochy kategorie), floorOffset (mm), color (vlastní barva), ' +
+    'props (povrchy, poznámka, počet osob, teplota).',
   group: 'Místnost',
   params: S.object({ storeyId: S.id }, []),
   run: (m, p) => {
@@ -42,7 +45,29 @@ export const roomList = defineQuery<{ storeyId?: string }, unknown>({
           outline: pts(g.outline),
           holes: g.holes.map(pts),
           niches: g.niches,
+          categoryId: r.categoryId ?? null,
+          category: m.roomCategories[r.categoryId ?? '']?.name ?? null,
+          livingArea: areaM2(areaSplit(m, r, g.area).living),
+          utilityArea: areaM2(areaSplit(m, r, g.area).utility),
+          floorOffset: r.floorOffset ?? 0,
+          color: r.graphicOverride?.fillColor ?? null,
+          props: r.props ?? {},
         };
       });
   },
+});
+
+export const roomCategoryList = defineQuery<Record<string, never>, unknown>({
+  name: 'roomCategory.list',
+  label: 'Kategorie místností',
+  description:
+    'Kategorie (funkce) místností: id, name, color (výplň v půdorysu), areaKind (living = obytná plocha, ' +
+    'utility = užitková) a počet místností.',
+  group: 'Místnost',
+  params: S.object({}, []),
+  run: (m) =>
+    Object.values(m.roomCategories).map((c) => ({
+      ...c,
+      rooms: Object.values(m.rooms).filter((r) => r.categoryId === c.id).length,
+    })),
 });

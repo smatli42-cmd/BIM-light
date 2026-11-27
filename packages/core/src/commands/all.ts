@@ -84,7 +84,7 @@ import { wallTypeLoad } from './wall-type/load.ts';
 import { slabCreate } from './slab/create.ts';
 import { slabMove, slabMoveVertex, slabSetOutline, slabUpdate } from './slab/edit.ts';
 import { slabOpeningCreate } from './slab-opening/create.ts';
-import { roomCreate, roomDelete, roomUpdate } from './room/room.ts';
+import { ROOM_COMMANDS } from './room/all.ts';
 import { outlineSetDistance } from './slab/distance.ts';
 import {
   view3dCreate,
@@ -145,9 +145,7 @@ export const CORE_COMMANDS = [
   slabOpeningSetOutline,
   slabOpeningMoveVertex,
   slabOpeningMove,
-  roomCreate,
-  roomUpdate,
-  roomDelete,
+  ...ROOM_COMMANDS,
   outlineSetDistance,
   view3dCreate,
   view3dRename,

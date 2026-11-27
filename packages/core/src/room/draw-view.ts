@@ -7,16 +7,17 @@ import { categoryState, styleOfView } from '../view/effective.ts';
 import type { View } from '../view/types.ts';
 import { drawRoom, roomFacts } from './draw.ts';
 import { allRoomGeometry } from './queries.ts';
+import { stampFields } from './stamp.ts';
 
 export function drawRooms(model: Model, view: View): Primitive[] {
   if (!categoryState(model.display, view, 'room').visible) return [];
-  const labels = styleOfView(model.display, view).labels ?? {};
+  const fields = stampFields(styleOfView(model.display, view));
   const geo = allRoomGeometry(model, view.storeyId);
   return Object.values(model.rooms)
     .filter((r) => r.storeyId === view.storeyId && r.variant.kind === 'main')
     .flatMap((r) => {
       const g = geo.get(r.id);
-      const eff = resolveGraphics(model.display, view, roomFacts(r)).effect;
-      return g ? drawRoom(r, g, view.scale, model.display.paperSizes, labels, eff) : [];
+      const eff = resolveGraphics(model.display, view, roomFacts(model, r)).effect;
+      return g ? drawRoom(model, r, g, view.scale, fields, eff) : [];
     });
 }

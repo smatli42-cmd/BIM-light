@@ -92,6 +92,7 @@ export const STYLE_SCHEMA: JsonSchema = {
     overrideCombinationId: str,
     categoryGraphics: { type: 'object' },
     labels: { type: 'object' },
+    roomStamp: { type: 'array', items: str },
     defaultScale: { type: 'number', exclusiveMinimum: 0 },
     hatchScale: { type: 'number', minimum: 0.5, maximum: 3, description: 'měřítko šraf' },
     defaultAnnotationLayerId: str,

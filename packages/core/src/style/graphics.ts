@@ -55,6 +55,7 @@ function layersFor(display: DisplaySettings, view: GraphicView, facts: ElementFa
   const comboId = view.local.overrideCombinationId ?? style?.overrideCombinationId ?? '';
   return [
     { level: 1, source: `kategorie ${cat}`, effect: display.categoryGraphics[cat] },
+    { level: 1, source: 'kategorie místnosti', effect: facts.ownDefault },
     { level: 2, source: `styl ${style?.name ?? '?'}`, effect: style?.categoryGraphics[cat] },
     ...ruleLayers(display, comboId, facts),
     // Filtr rekonstrukce (fáze) má přednost před grafickými přepisy, oba jsou patro pravidel.

@@ -74,4 +74,41 @@ describe('AI scénář: místnosti', () => {
     expect(must(c.ai.call<RoomRow[]>('room.list')[0]).state).toBe('not-enclosed');
     expect(() => c.ai.call('room.create', { storeyId: c.storeyId, point: { x: -100, y: 2000 } })).toThrow();
   });
+
+  it('kategorie, barva, vlastnosti a obsah razítka jen JSON voláními', () => {
+    const c = start();
+    room(c);
+    const [id] = c.ai.call<string[]>('room.create', { storeyId: c.storeyId, point: { x: 1000, y: 2000 } });
+    const cats = c.ai.call<{ id: string; name: string; areaKind: string }[]>('roomCategory.list');
+    const living = must(cats.find((x) => x.areaKind === 'living')).id;
+    const [mine] = c.ai.call<string[]>('roomCategory.create', {
+      name: 'Ateliér',
+      color: '#ffd0a0',
+      areaKind: 'living',
+    });
+    c.ai.call('room.update', {
+      roomId: id,
+      categoryId: mine,
+      color: '#a0d0ff',
+      floorFinish: 'keramická dlažba',
+      occupants: 3,
+      temperature: 22,
+      note: 'vymyšlená poznámka',
+    });
+    const row = must(c.ai.call<(RoomRow & Record<string, unknown>)[]>('room.list')[0]);
+    expect(row).toMatchObject({ category: 'Ateliér', livingArea: 24, utilityArea: 0, color: '#a0d0ff' });
+    expect(row['props']).toMatchObject({ floorFinish: 'keramická dlažba', occupants: 3, temperature: 22 });
+    const view = c.ai.call<{ style: { id: string } }>('view.info', { viewId: c.viewId });
+    c.ai.call('style.setRoomStamp', {
+      styleId: view.style.id,
+      fields: ['number', 'category', 'area', 'occupants'],
+    });
+    expect(() => c.ai.call('style.setRoomStamp', { styleId: view.style.id, fields: ['barva'] })).toThrow();
+    c.ai.call('room.update', { roomId: id, categoryId: living, color: null, occupants: null });
+    const after = must(c.ai.call<(RoomRow & Record<string, unknown>)[]>('room.list')[0]);
+    expect([after['color'], after['props']]).toEqual([
+      null,
+      { floorFinish: 'keramická dlažba', temperature: 22, note: 'vymyšlená poznámka' },
+    ]);
+  });
 });

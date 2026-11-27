@@ -48,4 +48,32 @@ test.describe('místnosti v sandboxu', () => {
     await expect(page.getByTestId('schedule-dialog')).toBeVisible();
     await expect(page.getByTestId('schedule-dialog')).toContainText('12,00');
   });
+
+  test('prvky stavby 9: info box – kategorie, vlastnosti a razítko stylu (zapnout, pořadí)', async ({
+    page,
+  }) => {
+    await room(page);
+    await page.keyboard.press('n');
+    await clickAt(page, 2000, 1500);
+    await page.keyboard.press('Escape');
+    await clickAt(page, 1000, 800);
+    const cats = Object.values((await model(page)).roomCategories);
+    const obytne = cats.find((c) => c.name === 'Obytné')!;
+    await page.getByTestId('room-category').selectOption(obytne.id);
+    await page.getByTestId('room-occupants').fill('3');
+    await page.getByTestId('room-occupants').press('Enter');
+    await page.getByTestId('room-floorFinish').fill('parkety');
+    await page.getByTestId('room-floorFinish').press('Enter');
+    await expect
+      .poll(async () => Object.values((await model(page)).rooms)[0])
+      .toMatchObject({ categoryId: obytne.id, props: { occupants: 3, floorFinish: 'parkety' } });
+    await page.getByTestId('stamp-on-occupants').check();
+    await page.getByTestId('stamp-up-occupants').click();
+    const style = async () => {
+      const m = await model(page);
+      const v = Object.values(m.views)[0]!;
+      return m.display.styles[v.styleId]!.roomStamp;
+    };
+    await expect.poll(style).toEqual(['number', 'name', 'occupants', 'area']);
+  });
 });

@@ -22,6 +22,12 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - Sandbox: nástroj Místnost (náhled obrysu a plochy pod kurzorem), výběr klikem do místnosti / na razítko,
   rámečkem, filtr „Vybírat místnosti“, info box (číslo, název, plocha jen ke čtení, výška, varování), tažení
   razítka, Del. E2E `mistnosti.spec.ts`.
+- Doplnění (pokyn uživatele): kategorie místností `model.roomCategories` (knihovna 6 vymyšlených, barva +
+  obytná / užitková plocha; migrace 23 → 24), barva kategorie = výchozí výplň (patro 1), vlastní barva =
+  přepis prvku (patro 5), pravidla umí `roomCategory`. Obsah razítka = `Style.roomStamp` (18 údajů v pořadí,
+  přenáší se s nastavením zobrazení), příkaz `style.setRoomStamp`, sekce Razítko v info boxu. Zadávané údaje
+  (povrchy textem, poznámka, osoby, teplota, výška podlahy) v `room.update`, info boxu i Výpisu místností.
+  Příkazy `roomCategory.*`, dotaz `roomCategory.list`. Testy přepočtu: délka, tloušťka, smazání, výklenek.
 
 ### Přesný otvor v desce: vodítka, dočasné kóty, tracker, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-presny-otvor`)
 
@@ -358,7 +364,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   místnost vidí stávající + nové stěny, stávající stávající + bourané. Výchozí výška = podlaží nad. Ve stejném
   prostoru je nadbytečná druhá místnost (Revit). Klik do místnosti má přednost před deskou, u hrany desky (6 px)
   deska. Číslo „podlaží.pořadí“ (1.01, 2.01, 0.01 pro 1.PP). Zkratka N (P je Pole). Dělicí čáry místností
-  nejsou (dokumenty je nemají) – přijdou s 2D kresbou. Bez výplně ve výchozí grafice; barvu dá pravidlo.
+  nejsou (dokumenty je nemají) – přijdou s 2D kresbou. Bez kategorie bez výplně; barvu dá kategorie (patro 1
+  jako Archicad Zone Category), styl, pravidlo nebo přepis. Bez kategorie = užitková plocha. Razítko je
+  v datech stylu (ne typ razítka), starší styl bez seznamu bere `labels`; v IFC kategorie = ObjectType.
 
 - **Přesný otvor:** kóty při kreslení před 1. klikem jdou od kurzoru (jen informace), po 1. kliku od položených
   bodů (stojí, klik na číslo je posune; velikost pak trackerem) – Revit u náčrtu edituje jen položené.
@@ -572,5 +580,5 @@ Výstup `npm run check:size`: kód bez varování, varování jen STAV.md (návr
 | 248 | apps/sandbox/src/session/session.ts |
 | 246 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 240 | packages/core/src/commands/all.ts |
+| 238 | packages/core/src/commands/all.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |
