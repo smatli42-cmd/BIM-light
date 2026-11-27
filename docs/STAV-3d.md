@@ -71,6 +71,9 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 (otevřený 2026-11-27, če
 ## Otevřené / další kroky
 
 - Desky (hlavní proud) – jakmile budou v jádře, přidat jejich tělesa (stejný mechanismus `sliceLayer`).
+- Povrchy místností (malby, obklady, spárořezy; návrh poslán hlavní session 2026-11-27, uživatel souhlasí):
+  jádro spočítá plochy povrchů (obrys v rovině líce + transformace do 3D + spáry), 3D je jen zobrazí
+  tenkou plochou před lícem a spáry čarami – stejná data jako rozvinutý pohled a výkaz.
 - Řezová rovina / ořez 3D (3D výřez), skrýt podlaží, průsvitnost výběru.
 - Kamery a scény, slunce podle polohy, materiály s texturou, export glTF/USD (rozhodnutí 14).
 - Bundle sandboxu narostl o three.js (~600 kB); později načítat 3D okno až při otevření (dynamický import).
