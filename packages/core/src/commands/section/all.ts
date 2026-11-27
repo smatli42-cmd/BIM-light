@@ -5,6 +5,7 @@ import { sectionPresetCreate, sectionPresetDelete, sectionPresetUpdate } from '.
 import { levelDimCreate, levelDimDelete, levelDimMove, levelDimUpdate } from '../level-dim/level-dim.ts';
 import { styleSetLevelMarkFill } from '../level-dim/style.ts';
 import { styleSetTerrainLabels } from '../level-dim/terrain-style.ts';
+import { sectionDimCreate, sectionDimUpdate } from '../section-dim/section-dim.ts';
 import { planLevelDimCreate, planLevelDimMove, planLevelDimUpdate } from '../level-dim/plan.ts';
 
 export const SECTION_COMMANDS = [
@@ -26,4 +27,6 @@ export const SECTION_COMMANDS = [
   planLevelDimMove,
   planLevelDimUpdate,
   styleSetTerrainLabels,
+  sectionDimCreate,
+  sectionDimUpdate,
 ] as const;

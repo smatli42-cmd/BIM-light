@@ -5,6 +5,8 @@ import { sectionOf } from '../commands/section/section.ts';
 import { levelTargets } from '../level-dim/targets.ts';
 import { absoluteText, elevationText, levelZ } from '../level-dim/value.ts';
 import { planLevelPoint, planLevelTexts } from '../level-dim/plan.ts';
+import { sectionDimPoints } from '../section-dim/draw.ts';
+import { sideTargets } from '../section-dim/value.ts';
 import { defineQuery } from './types.ts';
 
 export const levelDimList = defineQuery<{ sectionId?: string }, unknown>({
@@ -62,4 +64,34 @@ export const planLevelDimList = defineQuery<{ storeyId?: string }, unknown>({
         const z = d.marker === 'box' ? levelZ(m, d.ref) : null;
         return { ...d, point: planLevelPoint(m, d), z, lines, text: lines?.[0] ?? null };
       }),
+});
+
+export const sectionDimList = defineQuery<{ sectionId?: string }, unknown>({
+  name: 'sectionDim.list',
+  label: 'Kóty v řezu',
+  description:
+    'Délkové kóty v řezech (volitelně jen sectionId): id, řez, orientation (vertical / horizontal), odkazy a, b, ' +
+    'offset, value = kótovaná délka v mm spočítaná z modelu (null = odkaz neplatí), locked.',
+  group: 'Kóta',
+  params: S.object({ sectionId: S.id }, []),
+  run: (m, p) =>
+    Object.values(m.sectionDims)
+      .filter((d) => !p.sectionId || d.sectionId === p.sectionId)
+      .map((d) => {
+        const s = m.sections[d.sectionId];
+        const pts = s ? sectionDimPoints(m, s, d) : null;
+        const value = pts ? Math.round(Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y)) : null;
+        return { ...d, value };
+      }),
+});
+
+export const sectionDimSides = defineQuery<{ sectionId: string }, unknown>({
+  name: 'sectionDim.sides',
+  label: 'Boky prvků v řezu',
+  description:
+    'Levé a pravé okraje stěn a desek na výkrese řezu: ref (pro sectionDim.create, vodorovná kóta), u (mm po ' +
+    'výkrese), výškový rozsah prvku z0–z1.',
+  group: 'Kóta',
+  params: S.object({ sectionId: S.id }, ['sectionId']),
+  run: (m, p) => sideTargets(m, sectionOf(m, p.sectionId)),
 });

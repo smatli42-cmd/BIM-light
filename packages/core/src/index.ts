@@ -19,6 +19,7 @@ export * from './covering/index.ts';
 export * from './view-3d/types.ts';
 export * from './section/index.ts';
 export * from './level-dim/index.ts';
+export * from './section-dim/index.ts';
 export * from './sun/position.ts';
 export * from './sun/krovak.ts';
 export * from './relation/index.ts';

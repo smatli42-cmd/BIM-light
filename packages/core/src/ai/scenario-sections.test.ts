@@ -153,4 +153,43 @@ describe('AI scénář: řezy a pohledy', () => {
     row = must(c.ai.call<Row[]>('planLevelDim.list', {}).find((r) => r.id === id));
     expect(row).toMatchObject({ text: 'RT=-0,150', marker: 'circle', lines: ['RT=-0,150', 'UT=-0,100'] });
   });
+
+  it('kóta v řezu: AI najde boky stěny a okótuje tloušťku, pak výšku podlaží ke stropu', () => {
+    const c = start();
+    const [left] = room(c);
+    const rc = must(
+      c.ai.call<{ id: string; name: string }[]>('slabType.list').find((t) => t.name === 'ŽB strop 250'),
+    );
+    const rect = { a: { x: 0, y: 0 }, b: { x: 6000, y: 4000 } };
+    const [slab] = c.ai.call<string[]>('slab.create', {
+      storeyId: c.storeyId,
+      typeId: rc.id,
+      rect,
+      topOffset: 3000,
+    });
+    const [sec] = c.ai.call<string[]>('section.create', {
+      start: { x: -2000, y: 2000 },
+      end: { x: 8000, y: 2000 },
+    });
+    type Side = { ref: { elementId: string; side: string }; u: number };
+    const sides = c.ai
+      .call<Side[]>('sectionDim.sides', { sectionId: sec })
+      .filter((x) => x.ref.elementId === left);
+    expect(sides).toHaveLength(2);
+    const [w] = c.ai.call<string[]>('sectionDim.create', {
+      sectionId: sec,
+      a: must(sides[0]).ref,
+      b: must(sides[1]).ref,
+      offset: 3500,
+    });
+    const [h] = c.ai.call<string[]>('sectionDim.create', {
+      sectionId: sec,
+      a: { kind: 'storey', storeyId: c.storeyId },
+      b: { kind: 'edge', elementId: slab, edge: 'bottom' },
+      offset: -1000,
+    });
+    const rows = c.ai.call<{ id: string; value: number }[]>('sectionDim.list', { sectionId: sec });
+    expect(must(rows.find((r) => r.id === w)).value).toBe(300);
+    expect(must(rows.find((r) => r.id === h)).value).toBeGreaterThan(2000);
+  });
 });

@@ -21,9 +21,10 @@ import type { CoveringType } from '../covering/types.ts';
 import type { Section, SectionPreset } from '../section/types.ts';
 import type { LevelDimension } from '../level-dim/types.ts';
 import type { PlanLevelDimension } from '../level-dim/plan.ts';
+import type { SectionDimension } from '../section-dim/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 35;
+export const SCHEMA_VERSION = 36;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -144,6 +145,8 @@ export interface Model {
   readonly levelDims: Readonly<Record<Id, LevelDimension>>;
   /** Výškové kóty v půdorysu (anotace podlaží): hodnota horního líce podlahy v rámečku nebo s kroužkem. */
   readonly planLevelDims: Readonly<Record<Id, PlanLevelDimension>>;
+  /** Délkové kóty v řezech (svislé mezi úrovněmi, vodorovné mezi boky prvků), asociativní. */
+  readonly sectionDims: Readonly<Record<Id, SectionDimension>>;
   /** Výkazy a legendy (základ 8, plán stěn Z8): definice tabulek z modelu. */
   readonly schedules: Readonly<Record<Id, ScheduleDef>>;
   /** Značky typu stěn v půdorysu (plán stěn Z8): popisky podlaží se skupinou anotací (základ 28). */

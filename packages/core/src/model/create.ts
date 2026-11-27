@@ -38,6 +38,9 @@ function wallTypes(mats: Material[], newId: IdGenerator): WallType[] {
   }));
 }
 
+/** Model bez 3D pohledu a dat řezů (ta se doplní na konci, aby se id ostatních položek neposunula). */
+type BaseModel = Omit<Model, 'views3d' | keyof ReturnType<typeof emptySectionData>>;
+
 export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): Model {
   return ensureCompositions(emptyProject(newId, name));
 }
@@ -65,7 +68,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     saved: false,
     phaseFilterId: null,
   };
-  const model: Omit<Model, 'views3d' | 'sections' | 'sectionPresets' | 'levelDims' | 'planLevelDims'> = {
+  const model: BaseModel = {
     schemaVersion: SCHEMA_VERSION,
     project: { id: newId(), name, georef: { sjtskY: 0, sjtskX: 0, rotationDeg: 0, elevationBpv: 0 } },
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },

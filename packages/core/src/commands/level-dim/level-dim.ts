@@ -34,7 +34,10 @@ export const levelDimOf = (m: Model, id: Id): LevelDimension =>
 
 /** Výšková kóta v řezu nebo v půdorysu (mazání bere obě). */
 export const anyLevelDimOf = (m: Model, id: Id): unknown =>
-  m.levelDims[id] ?? m.planLevelDims[id] ?? fail('not-found', `Výšková kóta ${id} neexistuje`);
+  m.levelDims[id] ??
+  m.planLevelDims[id] ??
+  m.sectionDims[id] ??
+  fail('not-found', `Výšková kóta ${id} neexistuje`);
 const put = (m: Model, d: LevelDimension): Model => ({ ...m, levelDims: { ...m.levelDims, [d.id]: d } });
 
 function check(m: Model, d: LevelDimension): LevelDimension {
@@ -123,7 +126,12 @@ export const levelDimUpdate = defineCommand<Fields & { levelDimId: Id; ref?: Lev
 /** Smaže výškové kóty (i zamčené – zámek brání změně, ne smazání). */
 export const removeLevelDims = (m: Model, ids: readonly Id[]): Model =>
   ids.length
-    ? { ...m, levelDims: omitIds(m.levelDims, ids), planLevelDims: omitIds(m.planLevelDims, ids) }
+    ? {
+        ...m,
+        levelDims: omitIds(m.levelDims, ids),
+        planLevelDims: omitIds(m.planLevelDims, ids),
+        sectionDims: omitIds(m.sectionDims, ids),
+      }
     : m;
 
 export const levelDimDelete = defineCommand<{ levelDimIds: Id[] }>({

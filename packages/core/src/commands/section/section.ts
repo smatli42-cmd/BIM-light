@@ -103,6 +103,9 @@ export const sectionDelete = defineCommand<{ sectionId: Id }>({
           m.levelDims,
           dims.map((d) => d.id),
         ),
+        sectionDims: Object.fromEntries(
+          Object.entries(m.sectionDims).filter(([, d]) => d.sectionId !== p.sectionId),
+        ),
       },
     };
   },

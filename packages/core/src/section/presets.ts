@@ -19,4 +19,5 @@ export const emptySectionData = () => ({
   sectionPresets: defaultSectionPresets(),
   levelDims: {},
   planLevelDims: {},
+  sectionDims: {},
 });
