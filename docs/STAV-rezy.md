@@ -4,6 +4,17 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Oprava: bourací práce ve 3D, napojení podle fáze, 2026-11-27 (hlášení uživatele se screenshotem 3D)
+
+- Přepínač **Fáze ve spodní liště** při aktivním 3D okně měnil fázi půdorysu a 3D zůstalo na „Vše“ (bourání
+  jen poloprůhledné). Nově lišta patří aktivnímu oknu: 3D okno → `view3d.setPhaseFilter`, jinak půdorys
+  (`ui/bottom/phase.tsx`). E2E `nahled-3d-rozsah.spec.ts`.
+- **Deska ořízla zbouranou stěnu:** napojení deska × stěna (uložení stropu) a pravidlo spodku / vršku stěny
+  na nosné desce teď platí jen pro prvky, které spolu stojí – zbouraný a nový prvek se neovlivňují (stejné
+  pravidlo `canJoinStatus` jako u napojení stěn). Platí pro řez, 3D i výkazy. Test `slab-wall.test.ts`.
+- Ukázkový dům: základová deska a strop nad 1.NP mají stav „stávající“ (patří stávajícímu domu, nástavba
+  na nich stojí); podlahy a 2.NP zůstávají nové.
+
 ### Opravy: stěna stojí na nosné desce, výběr stěny po celé ploše, 2026-11-27 (hlášení uživatele; `?ukazka=rezy`)
 
 - **Příčky nešly spodkem k nosné desce:** spodek stěny vázaný na podlaží ležel na čisté podlaze (±0) a pod
@@ -201,6 +212,9 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Rozhodl Code (k potvrzení)
 
+- **Fáze a napojení (k potvrzení):** zbouraný a nový prvek se nenapojují ani deska × stěna (Revit / Archicad
+  nespojují bourání s novým); stávající se napojuje s oběma. Spodní lišta (Fáze) řídí aktivní okno, 3D má
+  i dál vlastní fázi v záhlaví (je to totéž nastavení). Strop nad 1.NP v ukázce je „stávající“.
 - **Stěna na nosné desce (k potvrzení):** spodek stěny se počítá, neukládá – stěna na skladbě podlahy
   (nosná deska do 300 mm pod vázaným spodkem, osa stěny nad deskou) sahá k hornímu líci nosné desky
   (česká praxe; Revit „Připojit spodek“ / základní odsazení −skladba, Archicad spodek k desce). Zvolil jsem

@@ -6,6 +6,7 @@
 //   Stěna, pod kterou v té výšce stojí jiná stěna (obvodová 1.NP přes čelo stropu), sjede jen k jejímu vršku.
 // - Vršek: stěna „do podlaží + 1“, jejíž vršek leží ve skladbě podlahy nad nosnou deskou, končí na horním
 //   líci desky (deska ji ve své výšce prořízne) – kromě míst, kde na ní stojí stěna z patra.
+// - Jen prvky, které spolu stojí (fáze): zbouraný a nový prvek se neovlivňují.
 import { offsetPath, pointAt, type Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import { resolveHeight, type ResolvedHeight } from '../model/height.ts';
@@ -15,6 +16,7 @@ import { slabLevels } from '../slab/geometry.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { Slab } from '../slab/types.ts';
 import { wallGeometry } from '../wall/geometry.ts';
+import { canJoinStatus } from '../wall/auto-connect.ts';
 import { allWalls, wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
 
@@ -86,11 +88,15 @@ const slabsUnder = (c: Ctx, w: Wall) =>
   c.slabs.filter(
     ({ slab }) =>
       slab.variant.kind === w.variant.kind &&
+      canJoinStatus(slab.status, w.status) &&
       building(c.m, slab.storeyId) === building(c.m, w.storeyId) &&
       axisPoints(c, w).some((p) => pointInPolygon(p, slab.outline)),
   );
 
-const others = (c: Ctx, w: Wall) => c.walls.filter((o) => o.id !== w.id && o.variant.kind === w.variant.kind);
+const others = (c: Ctx, w: Wall) =>
+  c.walls.filter(
+    (o) => o.id !== w.id && o.variant.kind === w.variant.kind && canJoinStatus(o.status, w.status),
+  );
 
 /** Skutečný vršek stěny (mm nad ±0,000). */
 export function wallTop(m: Model, w: Wall): number {

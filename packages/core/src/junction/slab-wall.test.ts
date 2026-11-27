@@ -111,4 +111,21 @@ describe('napojení desky na stěnu podle priority materiálů (Archicad priorit
       expect(b.z1 <= lv.bottom + 1e-6).toBe(true);
     }
   });
+  it('hlášení uživatele / fáze: zbouraná stěna a nová deska spolu nikdy nestojí – deska ji neořízne, stávající ano', () => {
+    const f = fixture();
+    const wall = f.line(v(0, 0), v(6000, 0), { typeId: f.type('Nosná zeď 330'), status: 'demolished' });
+    const typeId = Object.values(f.model.slabTypes).find((t) => t.name === 'ŽB strop 250')?.id;
+    const top = wallHeight(f.model, f.wall(wall)).top;
+    const [id] = f.run('slab.create', {
+      storeyId: f.storeyId,
+      typeId,
+      rect: { a: v(-1000, -2000), b: v(7000, 2000) },
+      topOffset: top,
+    });
+    const full = (m: typeof f.model) =>
+      wallCut(m, f.wall(wall), frame, null).some((p) => bounds(p.shapes).z1 >= top - 1e-6);
+    expect(full(f.model)).toBe(true);
+    f.run('slab.update', { slabIds: [id], status: 'existing' });
+    expect(full(f.model)).toBe(false);
+  });
 });

@@ -106,10 +106,13 @@ function coverings(c: SampleContext, roomId: Id, name: string) {
   if (name === 'Kuchyně') c.run('covering.setOrigin', { roomId, place: 'floor', offset: { x: 300, y: 0 } });
 }
 
-/** Nosná deska podlaží (D1) pod obvodovými stěnami (`under` = přesah); podlahy jsou po místnostech (`rooms`). */
+/**
+ * Nosná deska podlaží (D1) pod obvodovými stěnami (`under` = přesah); podlahy jsou po místnostech (`rooms`).
+ * Základová deska i strop nad 1.NP patří stávajícímu domu (stav „stávající“; nástavba stojí na stropu).
+ */
 function slabs(c: SampleContext, storeyId: Id, structure: string, under: number) {
   const r = (d: number) => ({ a: vec(-d, -d), b: vec(W + d, H + d) });
-  c.run('slab.create', { storeyId, typeId: c.slabType(structure), rect: r(under) });
+  c.run('slab.create', { storeyId, typeId: c.slabType(structure), rect: r(under), status: 'existing' });
 }
 
 /** 2.NP: nová nástavba (obvodové stěny, příčky, okna). */

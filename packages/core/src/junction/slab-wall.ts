@@ -6,6 +6,7 @@
 //   a desku samy ořízne (deska končí na vnějším líci jádra).
 // - Deska s nižší prioritou (dřevo na ŽB stěně) a podlaha (skladba podlahy) do stěny nezasahují – stěna je ořízne.
 // Stejný materiál (beton × beton) se v řezu slije bez čáry. Nic se neukládá, počítá se z modelu.
+// Fáze: zbouraný a nový prvek spolu nikdy nestojí, proto se nenapojují (hlášení uživatele 2026-11-27).
 import { clipRect, planePolygon, polygonsArea, type PlanePolygon } from '../covering/polygon.ts';
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
@@ -16,6 +17,7 @@ import { signedArea, slabLevels } from '../slab/geometry.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { Slab } from '../slab/types.ts';
 import { wallGeometry, type LayerGeometry } from '../wall/geometry.ts';
+import { canJoinStatus } from '../wall/auto-connect.ts';
 import { allWalls } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
 import { wallHeight } from '../wall-height/resolve.ts';
@@ -79,6 +81,7 @@ function layerSides(layers: readonly LayerGeometry[], plan: readonly PlanePolygo
 }
 
 function pairCuts(m: Model, w: Wall, s: Slab, out: { wall: Map<number, PlanCut[]>; slab: PlanCut[] }) {
+  if (!canJoinStatus(w.status, s.status)) return;
   const h = wallHeight(m, w);
   const lv = slabLevels(m, s);
   if (lv.bottom >= h.top || lv.top <= h.bottom) return;

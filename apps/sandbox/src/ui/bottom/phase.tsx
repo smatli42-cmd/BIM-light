@@ -7,6 +7,7 @@ import type { Session } from '../../session/session.ts';
 import type { ScreenOptions } from '../../session/screen.ts';
 import { BarMenu } from './BarMenu.tsx';
 import { setScreen } from './groups.tsx';
+import { active3d, is3DFocused } from '../../view3d/state.ts';
 
 /** Předvolby fází projektu: id a krátký název (bez „Fáze – “), první písmeno velké. */
 export function phaseFilters(model: Model): { id: Id; label: string }[] {
@@ -21,9 +22,15 @@ export function phaseFilters(model: Model): { id: Id; label: string }[] {
 export const phaseLabel = (model: Model, view: View): string =>
   phaseFilters(model).find((f) => f.id === view.phaseFilterId)?.label ?? 'Vše';
 
+/**
+ * Fáze aktivního okna (hlášení uživatele 2026-11-27: přepnutí v liště při aktivním 3D okně měnilo půdorys,
+ * 3D zůstalo na „Vše“). Lišta patří aktivnímu oknu: 3D okno → view3d.setPhaseFilter, jinak view.setPhaseFilter.
+ */
 export function PhaseMenu({ s }: { s: Session }) {
-  const v = s.view;
-  const set = (filterId: Id | null) => s.run('view.setPhaseFilter', { viewId: v.id, filterId });
+  const in3d = is3DFocused(s);
+  const v = in3d ? active3d(s) : s.view;
+  const command = in3d ? 'view3d.setPhaseFilter' : 'view.setPhaseFilter';
+  const set = (filterId: Id | null) => s.run(command, { viewId: v.id, filterId });
   const items = [
     ...phaseFilters(s.model).map((f) => ({
       label: f.label,
@@ -33,11 +40,12 @@ export function PhaseMenu({ s }: { s: Session }) {
     })),
     { label: 'Vše', checked: v.phaseFilterId === null, testid: 'phase-Vše', onPick: () => set(null) },
   ];
+  const label = phaseFilters(s.model).find((f) => f.id === v.phaseFilterId)?.label;
   return (
     <BarMenu
       icon="phase"
-      label={v.phaseFilterId ? phaseLabel(s.model, v) : 'Fáze'}
-      title="Filtr rekonstrukce (fáze) okna"
+      label={label ?? 'Fáze'}
+      title={in3d ? 'Filtr rekonstrukce (fáze) 3D okna' : 'Filtr rekonstrukce (fáze) okna'}
       testid="phase-menu"
       sections={[{ items }]}
     />
