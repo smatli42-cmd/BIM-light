@@ -8,3 +8,4 @@ export * from './surfaces.ts';
 export * from './zones.ts';
 export * from './color.ts';
 export * from './finish.ts';
+export * from './pick.ts';

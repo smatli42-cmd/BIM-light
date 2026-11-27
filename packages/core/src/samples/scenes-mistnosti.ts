@@ -5,6 +5,62 @@ import type { Sample } from './types.ts';
 
 export const ROOM_SCENES: readonly Sample[] = [
   {
+    key: 'povrchy',
+    title: 'Povrchy místností – zóny, obklad, dlažba, ostění, výkaz',
+    kind: 'scena',
+    date: '2026-11-27',
+    description:
+      'Koupelna: obklad do 1,50 m a nad ním malba, stěna s oknem má vlastní obklad do 2,10 m, dlažba a ' +
+      'podhled; pokoj: sokl 80 mm, béžová malba, vinyl. Razítko ukazuje povrchy z přiřazení. Zkus: klik do ' +
+      'koupelny → info box, sekce Povrchy (zóny, podlaha, strop, plochy po typech); klik kousek od líce ' +
+      'stěny uvnitř místnosti vybere stěnu → Vlastní zóny této stěny; posuň okno nebo příčku – plochy se ' +
+      'přepočítají a přiřazení zůstane. Obsah → Výkazy → Výkaz povrchů (otvory do 4 m² se neodečítají).',
+    build(c) {
+      const sid = c.storeyId;
+      const [top, , , left] = rect(c, 'Obvodová zateplená 465', 7000, 4000);
+      const partition = c.line(vec(3000, 0), vec(3000, 4000), {
+        typeId: c.type('Příčka 125'),
+        referenceLine: 'axis',
+      });
+      c.run('opening.create', { wallId: partition, offset: 600, width: 800, height: 2000, sill: 0 });
+      c.run('opening.create', { wallId: top, offset: 1000, width: 900, height: 600, sill: 1500 });
+      c.run('opening.create', { wallId: top, offset: 4200, width: 1800, height: 1500, sill: 900 });
+      c.run('opening.create', { wallId: left, offset: 1200, width: 1200, height: 1500, sill: 900 });
+      const [bath] = c.run('room.create', { storeyId: sid, point: vec(1500, 2000), name: 'Koupelna' });
+      const [living] = c.run('room.create', { storeyId: sid, point: vec(5000, 2000), name: 'Pokoj' });
+      c.run('covering.setZones', {
+        roomId: bath,
+        zones: [
+          { typeId: 'cov-tiling-300x600', top: 1500 },
+          { typeId: 'cov-paint-white', top: null },
+        ],
+      });
+      c.run('covering.setZones', {
+        roomId: bath,
+        wallId: top,
+        side: 'ref',
+        zones: [
+          { typeId: 'cov-tiling-300x600', top: 2100 },
+          { typeId: 'cov-paint-white', top: null },
+        ],
+      });
+      c.run('covering.assign', { roomId: bath, place: 'floor', typeId: 'cov-floor-tiles-600' });
+      c.run('covering.assign', { roomId: bath, place: 'ceiling', typeId: 'cov-ceiling-sdk' });
+      c.run('covering.setZones', {
+        roomId: living,
+        zones: [
+          { typeId: 'cov-skirting-tiles', top: 80 },
+          { typeId: 'cov-paint-beige', top: null },
+        ],
+      });
+      c.run('covering.assign', { roomId: living, place: 'floor', typeId: 'cov-vinyl-oak' });
+      c.run('covering.assign', { roomId: living, place: 'ceiling', typeId: 'cov-paint-white' });
+      const styleId = c.model.views[c.viewId]?.styleId;
+      const fields = ['number', 'name', 'area', 'floorFinish', 'wallFinish', 'ceilingFinish'];
+      if (styleId) c.run('style.setRoomStamp', { styleId, fields });
+    },
+  },
+  {
     key: 'mistnosti',
     title: 'Místnosti – plocha podle ČSN 73 4301, razítko, výpis',
     kind: 'scena',

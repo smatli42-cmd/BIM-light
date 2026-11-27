@@ -1,5 +1,12 @@
 // Výběr stěn, otvorů (ve stěnách i deskách), desek, místností a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
-import type { Id, Model } from '@bim-light/core';
+import type { FaceSide, Id, Model } from '@bim-light/core';
+
+/** Vybraný líc stěny v místnosti (přepis zón povrchů jedné stěny). */
+export interface FacePick {
+  readonly roomId: Id;
+  readonly wallId: Id;
+  readonly side: FaceSide;
+}
 
 export class Selection {
   walls: Id[] = [];
@@ -12,6 +19,8 @@ export class Selection {
   slabOpenings: Id[] = [];
   /** Vybrané místnosti. */
   rooms: Id[] = [];
+  /** Vybraný líc stěny ve vybrané místnosti (klik u líce). */
+  face: FacePick | null = null;
 
   get empty(): boolean {
     return this.count === 0;
@@ -61,6 +70,7 @@ export class Selection {
     this.slabs = [...new Set(slabs)];
     this.slabOpenings = [...new Set(slabOpenings)];
     this.rooms = [...new Set(rooms)];
+    if (this.face && !this.rooms.includes(this.face.roomId)) this.face = null;
   }
 
   clear() {
@@ -121,5 +131,6 @@ export class Selection {
     this.slabs = this.slabs.filter((id) => model.elements[id]?.category === 'slab');
     this.slabOpenings = this.slabOpenings.filter((id) => model.slabOpenings[id]);
     this.rooms = this.rooms.filter((id) => model.rooms[id]);
+    if (this.face && (!model.rooms[this.face.roomId] || !model.elements[this.face.wallId])) this.face = null;
   }
 }

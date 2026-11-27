@@ -1,12 +1,29 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, místnosti (první část povrchů místností); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, povrchy místností (část 2: typy úprav, zóny, plochy, výkaz); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Povrchy místností, část 2, 2026-11-27 (scéna `?ukazka=povrchy`, povrchy i v `?ukazka=dum`)
+
+- Jádro `covering/`: typ úpravy (IfcCovering) = název, druh (malba, omítka, obklad, dlažba, podlahovina,
+  podhled, sokl), materiál projektu, u obkladu / dlažby / soklu formát, spára, barva spáry, zarovnání (zatím
+  jen uloženo). Knihovna 8 vymyšlených typů + 5 materiálů úprav (stabilní id `cov-…`, `mat-cov-…`), migrace
+  26 → 27 (+ Výkaz povrchů). Přiřazení v místnosti: zóny stěn celé místnosti, přepis `wallId:strana`,
+  podlaha, strop (základ 14 – posun stěny ho nezničí).
+- Jedna spočítaná plocha (`roomSurfaces`): hrany obrysu místnosti → stěna a strana (bod 1 mm za hranou),
+  úseky líce rozvinuté (u po líci, v výška; oblouk = válec), minus otvory (polygon-clipping v jádře),
+  zóny, ostění (boky, nadpraží, parapet, dno niky), podlaha a strop z obrysu; každá s transformací do 3D.
+- Výkaz povrchů (zdroj `coverings`): m² po místnostech, povrchu a typu, odečtené otvory, ostění, délka soklu
+  bez dveří; pravidlo `minOpeningArea` + `jambRule`. Razítko a Výpis místností berou povrchy z přiřazení.
+- Příkazy `coveringType.create / update / duplicate / delete`, `covering.setZones`, `covering.assign`;
+  dotazy `covering.surfaces` (pro 3D okno), `covering.room`, `coveringType.list`; AI `scenario-coverings`.
+- Sandbox: info box místnosti, sekce Povrchy (podlaha, zóny stěn, strop, plochy po typech); klik u líce
+  ve vybrané místnosti vybere stěnu → Vlastní zóny této stěny. E2E `povrchy.spec.ts`.
 
 ### Místnosti, 2026-11-27 (povrchy místností, část 1; scéna `?ukazka=mistnosti`, místnosti i v `?ukazka=dum`)
 
@@ -152,6 +169,13 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Povrchy:** ve výkazu výchozí pravidlo podle rozpočtové praxe – otvory do 4 m² se neodečítají a jejich
+  ostění se nepřičítá, větší se odečtou a ostění přičte (nastavitelné u výkazu). Ostění průchozího otvoru
+  do poloviny tloušťky stěny (okna zatím nejsou), nika celá + dno. Strop ve výšce vršku místnosti, stěny do
+  vršku stěny nebo místnosti (nižší). Zóny odspodu, poslední „ke stropu“; přidaná zóna nahoře dědí typ.
+  Typ bez materiálu = šedá. Výběr líce klikem do 12 px od líce uvnitř vybrané místnosti (stěna má přednost
+  těsně u čáry). Druh soklu přidán k zadaným šesti (kvůli délkám soklů).
+
 - **Místnosti:** místnost je zvlášť (`model.rooms`), ne mezi prvky – IfcSpace nemá typ ani skladbu.
   Hranice = stěny protínající 1200 mm nad podlahou (Revit „Computation Height“), i z podlaží pod; nová
   místnost vidí stávající + nové stěny, stávající stávající + bourané. Výchozí výška = podlaží nad. Ve stejném
@@ -247,6 +271,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
+- **Uživatel vyzkouší povrchy:** `?ukazka=povrchy` – klik do koupelny → Povrchy (zóny, podlaha, strop,
+  plochy); klik kousek od líce stěny → Vlastní zóny; posuň okno / příčku; Výkazy → Výkaz povrchů.
+- **3D proud:** povrchy ve 3D z dotazu `covering.surfaces` (tvar v poznámkách koordinátora).
+- **Hlavní proud dál:** spárořez (mřížka dlaždic oříznutá na plochu, odřezy, výchozí bod) → podlahy a stropy.
+
 - **Uživatel vyzkouší D4:** `?ukazka=desky-d4` – vybrat stěnu → Vršek „Vršek k desce“; v 2.NP změnit strop
   (horní hrana, typ) a zkontrolovat výšku stěn 1.NP; D → hrana / roh desky a otvoru; Výkazy → Výkaz desek.
 - **Uživatel vyzkouší místnosti:** `?ukazka=mistnosti` – N a klik do chodby; klik do místnosti / na razítko,
@@ -305,6 +334,10 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Otevřené
 
+- **Povrchy – zbývá:** okno typů úprav (dnes jen příkazy / AI a výběr v info boxu), rozvinutý pohled
+  stěny, IfcCovering v exportu IFC, ostění u otvoru s obecným obrysem, plochy nad započítaným výklenkem,
+  povrchy ve 3D (3D proud).
+
 - **Místnosti – zbývá:** šikmé stropy (< 1,30 m, ČSN 73 4301) po střechách; volba 1 desetinného místa v nastavení
   projektu (funkce `areaM2` ji umí); úprava ručního obrysu myší (příkaz je); místnosti ve variantách v kresbě.
 - **Desky – zbývá:** záložka Typ desky v info boxu a typ desky v editoru typů, úprava vrstev skladby jen pro
@@ -362,14 +395,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po místnostech)
+## Největší soubory (po povrchách)
 
-Výstup `npm run check:size`: kód bez varování, varování jen STAV.md (návrh rozdělení v Otevřené).
+Výstup `npm run check:size`: bez varování (`commands/all.ts` po rozdělení registru 209).
 
 | Řádky | Soubor |
 |---|---|
 | 248 | apps/sandbox/src/session/session.ts |
+| 248 | apps/sandbox/src/view3d/viewer.ts |
 | 246 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 238 | packages/core/src/commands/all.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |

@@ -23,9 +23,9 @@ export function TextField(p: { label: string; testid: string; value: string; onS
 }
 
 const TEXTS: readonly ['floorFinish' | 'wallFinish' | 'ceilingFinish' | 'note', string][] = [
-  ['floorFinish', 'Podlaha (druh)'],
-  ['wallFinish', 'Stěny (povrch)'],
-  ['ceilingFinish', 'Strop (povrch)'],
+  ['floorFinish', 'Podlaha – ruční text (jinak z Povrchů)'],
+  ['wallFinish', 'Stěny – ruční text (jinak z Povrchů)'],
+  ['ceilingFinish', 'Strop – ruční text (jinak z Povrchů)'],
   ['note', 'Poznámka'],
 ];
 const NUMBERS: readonly ['occupants' | 'temperature', string][] = [

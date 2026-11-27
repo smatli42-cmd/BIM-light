@@ -3,6 +3,8 @@
 // Plocha místnosti ustoupí desce, když je klik u hrany desky (hrana zůstane dosažitelná).
 import {
   add,
+  faceAt,
+  roomFaces,
   roomsAt,
   roomStampsAt,
   roundTo,
@@ -96,12 +98,30 @@ export class PressRoomMode implements Mode {
   }
 }
 
-/** Vybere místnost (Shift = přidat / ubrat) a vrátí režim tažení razítka. */
+/**
+ * Vybere místnost (Shift = přidat / ubrat) a vrátí režim tažení razítka. Klik u líce stěny ve vybrané
+ * místnosti vybere líc (přepis zón povrchů jedné stěny, prvky stavby 9).
+ */
 export function pressRoom(s: Session, id: Id, p: PointerInfo): Mode | null {
   if (p.shift) {
     s.selection.toggleRoom(id);
     return null;
   }
+  const room = s.model.rooms[id];
+  const face =
+    room && s.selection.singleRoom === id ? faceAt(s.model, room, p.world, s.viewport.px(12)) : null;
   if (!s.selection.rooms.includes(id)) s.selection.set([], [], [], [], [], [id]);
-  return new PressRoomMode(s, id, p);
+  s.selection.face = face ? { roomId: id, wallId: face.wallId, side: face.side } : null;
+  return face ? null : new PressRoomMode(s, id, p);
+}
+
+/** Zvýraznění vybraného líce stěny v místnosti. */
+export function faceOverlay(s: Session): Overlay {
+  const f = s.selection.face;
+  const room = f && s.model.rooms[f.roomId];
+  if (!f || !room) return {};
+  const lines = roomFaces(s.model, room)
+    .filter((x) => x.wallId === f.wallId && x.side === f.side)
+    .flatMap((x) => x.points.slice(1).map((b, i) => [x.points[i] as Vec2, b] as const));
+  return { lines, markers: lines.flatMap(([a, b]) => [a, b]) };
 }

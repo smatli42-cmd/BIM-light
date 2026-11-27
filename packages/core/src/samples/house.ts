@@ -71,7 +71,27 @@ function rooms(c: SampleContext, storeyId: Id, list: readonly (readonly [number,
   for (const [x, y, name] of list) {
     const [id] = c.run('room.create', { storeyId, point: vec(x, y), name });
     c.run('room.update', { roomId: id, categoryId: cat(category[name] ?? 'Obytné') });
+    if (id) coverings(c, id, name);
   }
+}
+
+/** Povrchy místnosti (prvky stavby 9): koupelna obklad do 1,50 m, kuchyně dlažba, pokoje sokl a vinyl. */
+function coverings(c: SampleContext, roomId: Id, name: string) {
+  const wet = name === 'Koupelna';
+  const tiled = wet || name === 'Kuchyně';
+  const zones = wet
+    ? [
+        { typeId: 'cov-tiling-300x600', top: 1500 },
+        { typeId: 'cov-paint-white', top: null },
+      ]
+    : [
+        { typeId: 'cov-skirting-tiles', top: 80 },
+        { typeId: 'cov-paint-white', top: null },
+      ];
+  c.run('covering.setZones', { roomId, zones });
+  const floor = tiled ? 'cov-floor-tiles-600' : 'cov-vinyl-oak';
+  c.run('covering.assign', { roomId, place: 'floor', typeId: floor });
+  c.run('covering.assign', { roomId, place: 'ceiling', typeId: wet ? 'cov-ceiling-sdk' : 'cov-paint-white' });
 }
 
 /** Desky podlaží (D1): nosná deska pod obvodovými stěnami (`under` = přesah pod stěny) a podlaha v místnostech. */
@@ -147,7 +167,8 @@ export const HOUSE: Sample = {
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
     'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy; ' +
     'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
-    'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301 a Výpis místností; filtr rekonstrukce ' +
+    'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301, Výpis místností, povrchy (obklad, ' +
+    'dlažba, sokl, malba) a Výkaz povrchů; filtr rekonstrukce ' +
     've spodní liště.',
   build(c) {
     ground(c);

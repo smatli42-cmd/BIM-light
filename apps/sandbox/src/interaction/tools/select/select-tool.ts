@@ -25,7 +25,7 @@ import { NodeMode } from './node-mode.ts';
 import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
 import { OutlineVertexMode, outlineUnder, pickOutline, PressOutlineMode } from './slab-modes.ts';
-import { flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
+import { faceOverlay, flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
@@ -237,7 +237,7 @@ export class SelectTool implements Tool {
 
   overlay(): Overlay {
     if (this.mode?.active) return this.mode.overlay();
-    return this.hover ? { hover: [this.hover] } : {};
+    return { ...faceOverlay(this.s), ...(this.hover && { hover: [this.hover] }) };
   }
 
   tracker(): readonly TrackerField[] | null {

@@ -171,3 +171,41 @@
   width: 100%;
   text-align: left;
 }
+
+/* Povrchy místnosti: zóny stěn (prvky stavby 9). */
+.ib-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.ib-zone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.4rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--line);
+}
+.ib-zone select {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.ib-zone > button {
+  margin-left: auto;
+}
+.ib-zone-top {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.ib-zone-top input {
+  width: 4.5rem;
+}
+.ib-face {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}

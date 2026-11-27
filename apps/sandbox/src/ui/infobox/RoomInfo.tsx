@@ -1,11 +1,12 @@
 // Info box místnosti (prvky stavby 9; podle principu Arditu, koncepce rozhraní 2 D): nástroj Místnost =
 // stav nových místností a nápověda; vybraná místnost = číslo a název (úprava Enterem), plocha podle
 // ČSN 73 4301, obvod, výška a objem jen ke čtení (počítají se ze stěn), kontrola, započítané výklenky;
-// zadávané údaje (RoomFields) a obsah razítka stylu (RoomStamp).
+// povrchy (CoveringSection), zadávané údaje (RoomFields) a obsah razítka stylu (RoomStamp).
 import { roomInfo, type Room } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { NumberInput } from '../NumberInput.tsx';
 import { NewStatusField } from './NewStatus.tsx';
+import { CoveringSection } from './CoveringSection.tsx';
 import { RoomFields, TextField } from './RoomFields.tsx';
 import { RoomStampSection } from './RoomStamp.tsx';
 import { Section } from './Section.tsx';
@@ -83,6 +84,7 @@ function OneRoom({ s, r }: { s: Session; r: Room }) {
           Razítko zpět do místnosti
         </button>
       )}
+      <CoveringSection s={s} r={r} />
       <RoomFields s={s} r={r} />
     </>
   );

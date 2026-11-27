@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { vec } from '../geometry/index.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { finishText } from './finish.ts';
+import { faceAt, roomFaces } from './pick.ts';
 import { roomSurfaces } from './surfaces.ts';
 
 /** Obdélník stěn 4000 × 3000 po vnitřním líci; vrací [horní, pravá, spodní, levá]. */
@@ -167,5 +168,17 @@ describe('prvky stavby 9: povrchy v razítku a výpisu místností z přiřazen�
     expect(finishText(f.model, r(), 'ceilingFinish')).toBeNull();
     f.run('room.update', { roomId: id, floorFinish: 'stávající parkety' });
     expect(finishText(f.model, r(), 'floorFinish')).toBe('stávající parkety');
+  });
+});
+
+describe('prvky stavby 9: výběr líce stěny v místnosti', () => {
+  it('prvky stavby 9: klik u líce najde stěnu a stranu, daleko od líce nic', () => {
+    const f = fixture();
+    const [top] = rect(f);
+    const id = addRoom(f);
+    const room = f.model.rooms[id]!;
+    expect(roomFaces(f.model, room)).toHaveLength(4);
+    expect(faceAt(f.model, room, vec(2000, 2950), 100)).toMatchObject({ wallId: top, side: 'ref' });
+    expect(faceAt(f.model, room, vec(2000, 1500), 100)).toBeNull();
   });
 });
