@@ -151,9 +151,17 @@ body,
 .windows > .splitter + .window {
   border-left: 1px solid var(--line);
 }
-.windows:has(.splitter) .window.active,
-.windows:has(.window-3d) .window.active {
-  outline-color: var(--accent);
+/* Rámeček okna, ve kterém se pracuje: vrstva nad obsahem okna, aby ho nepřekryla hlavička ani plátno. */
+.window {
+  position: relative;
+}
+.windows:has(.splitter) .window.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  z-index: 5;
 }
 .window-head {
   height: 36px;

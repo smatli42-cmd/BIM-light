@@ -88,7 +88,8 @@ function drawSnap(ctx: Ctx, s: Session, o: Overlay) {
 
 export function drawOverlay(ctx: Ctx, s: Session, o: Overlay) {
   const v = s.viewport;
-  if (o.hover?.length) drawWallOutlines(ctx, s, o.hover, AUX_LIGHT, 1.5);
+  // Předzvýraznění jen pod kurzorem v okně (po odjetí myši, např. do 3D okna, zmizí).
+  if (o.hover?.length && s.cursor.inside) drawWallOutlines(ctx, s, o.hover, AUX_LIGHT, 1.5);
   if (o.selected?.length) drawWallOutlines(ctx, s, o.selected, SELECT, 2);
   ctx.strokeStyle = AUX;
   ctx.lineWidth = 1;

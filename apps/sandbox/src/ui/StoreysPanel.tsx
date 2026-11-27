@@ -1,5 +1,6 @@
 // Záložka Podlaží (základ 12, plán stěn Z3): úroveň a konstrukční výška, nové a smazání podlaží.
 // Změna výšky posune podlaží nad ním a přepočítá vázané výšky stěn. Vše přes příkazy jádra.
+import { openInActive } from '../session/windows.ts';
 import { storeysOf, workingViewOf, type Storey } from '@bim-light/core';
 import type { Session } from '../session/session.ts';
 import { NumberInput } from './NumberInput.tsx';
@@ -31,7 +32,7 @@ function Row({ s, st, i }: { s: Session; st: Storey; i: number }) {
         <button
           data-testid={`storey-open-${i}`}
           disabled={s.storeyId === st.id}
-          onClick={() => s.setView(view.id)}
+          onClick={() => openInActive(s, view.id)}
         >
           Otevřít
         </button>

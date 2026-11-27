@@ -13,6 +13,9 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 - Skupina „3D“ s 3D pohledy projektu (klik otevře 3D okno s tím pohledem). Zvýrazněné je okno, ve kterém
   se pracuje (rámeček, i vedle 3D okna) a jeho položka v Obsahu (podlaží, nebo 3D pohled); klik do okna
   zvýraznění přepne. e2e `obsah-3d.spec.ts`.
+- Oprava (hlášení uživatele se screenshoty): Obsah otevírá do okna, ve kterém se pracuje – pracuje-li se
+  ve 3D, podlaží / pohled nahradí 3D okno vpravo (levé se nemění). Rámeček aktivního okna je vrstva nad
+  obsahem (dřív ho hlavička a plátno překrývaly). Předzvýraznění prvku zmizí, když myš opustí okno.
 
 ### 3D pohled jako data a průhlednost povrchu, 2026-11-27 (požadavky 3D proudu)
 

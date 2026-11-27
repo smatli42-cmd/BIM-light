@@ -1,5 +1,6 @@
 // Obsah → Pohledy (koncepce rozhraní, část 4): uložené pohledy aktuální sady s měřítkem, „+ Uložit
 // pohled“ z aktivního okna a nastavení vybraného pohledu. Uložený pohled jde na výkresy (etapa 7).
+import { openInActive } from '../../session/windows.ts';
 import { savedViews, type Id } from '@bim-light/core';
 import { useState } from 'preact/hooks';
 import type { Session } from '../../session/session.ts';
@@ -26,7 +27,7 @@ export function ViewsTab({ s }: { s: Session }) {
               class={v.id === sel ? 'active' : ''}
               onClick={() => {
                 setPicked(v.id);
-                s.setView(v.id);
+                openInActive(s, v.id);
               }}
             >
               <Icon name="plan" size={16} />
