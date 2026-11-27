@@ -65,6 +65,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     phaseFilterId: null,
   };
   const model: Omit<Model, 'views3d'> = {
+    sections: {},
     schemaVersion: SCHEMA_VERSION,
     project: { id: newId(), name, georef: { sjtskY: 0, sjtskX: 0, rotationDeg: 0, elevationBpv: 0 } },
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },

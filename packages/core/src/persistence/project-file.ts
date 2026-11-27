@@ -29,6 +29,7 @@ import { projectV26toV27 } from '../covering/migrate-v26.ts';
 import { projectV27toV28 } from '../covering/migrate-v27.ts';
 import { projectV28toV29 } from '../slab/migrate-v28.ts';
 import { projectV29toV30 } from '../opening/migrate-v29.ts';
+import { projectV30toV31 } from '../section/migrate-v30.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -48,7 +49,8 @@ export const PROJECT_EXTENSION = '.bim';
  * 22 → 23: místnosti; 23 → 24: kategorie místností;
  * 24 → 25: velikosti razítka místnosti; 25 → 26: vzhled 3D pohledu (projekce, režim, slunce, řez, mřížka);
  * 26 → 27: úpravy povrchů a výkaz povrchů; 27 → 28: výkaz dlaždic (spárořez);
- * 28 → 29: vazba obrysu desky (místnost / stěny); 29 → 30: podlaha v otvoru (floorSplit).
+ * 28 → 29: vazba obrysu desky (místnost / stěny); 29 → 30: podlaha v otvoru (floorSplit);
+ * 30 → 31: řezy a pohledy (fasády), šrafa materiálu desek v řezu.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -80,6 +82,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   27: projectV27toV28,
   28: projectV28toV29,
   29: projectV29toV30,
+  30: projectV30toV31,
 };
 
 export function serializeProject(model: Model): string {

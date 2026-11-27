@@ -27,6 +27,7 @@ import { drawSlabs } from '../slab/draw-view.ts';
 import { drawSlabOpenings } from '../slab-opening/draw-view.ts';
 import { drawRooms } from '../room/draw-view.ts';
 import { drawTileJoints } from '../covering/draw-joints.ts';
+import { drawSectionMarks } from '../section/mark.ts';
 
 /** Fakta o kótě pro funkci grafiky (anotace má kategorii „dimension“). */
 export function dimensionFacts(d: Dimension): ElementFacts {
@@ -137,6 +138,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
     out.push(...drawDimension(model, d, view.scale, model.display.paperSizes, g));
   }
   out.push(...drawTags(model, view));
+  out.push(...drawSectionMarks(model, view));
   return { scale: view.scale, primitives: out };
 }
 
