@@ -23,7 +23,23 @@ export class CameraRig {
     this.controls.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.PAN, RIGHT: MOUSE.PAN };
     this.controls.zoomToCursor = true;
     this.controls.screenSpacePanning = true;
-    this.controls.addEventListener('change', onChange);
+    this.controls.addEventListener('change', () => {
+      this.fitNear();
+      onChange();
+    });
+  }
+
+  /**
+   * Blízká rovina perspektivy podle vzdálenosti k cíli (1/300): hloubka má pak dost přesnosti, aby se
+   * blízké plochy (povrch 1 mm před lícem, vrstvy) nebily, a přiblížení k detailu ho neořízne.
+   */
+  private fitNear() {
+    const c = this.persp;
+    if (this.controls.object !== c) return;
+    const near = Math.max(0.01, c.position.distanceTo(this.controls.target) / 300);
+    if (Math.abs(near - c.near) / c.near < 0.2) return;
+    c.near = near;
+    c.updateProjectionMatrix();
   }
 
   get camera(): PerspectiveCamera | OrthographicCamera {
@@ -73,7 +89,7 @@ export class CameraRig {
     } else {
       const dist = h / (2 * Math.tan((this.persp.fov * Math.PI) / 360));
       to.position.copy(this.controls.target).addScaledVector(dir, dist);
-      this.persp.near = Math.max(0.01, dist / 1000);
+      this.persp.near = Math.max(0.01, dist / 300);
       this.persp.far = dist * 20;
       this.persp.updateProjectionMatrix();
     }
@@ -109,7 +125,7 @@ export class CameraRig {
       c.far = sphere.radius * 40;
     } else {
       c.position.copy(sphere.center).addScaledVector(VIEW_DIR, dist);
-      c.near = Math.max(0.01, dist / 1000);
+      c.near = Math.max(0.01, dist / 300);
       c.far = dist * 20;
     }
     c.updateProjectionMatrix();

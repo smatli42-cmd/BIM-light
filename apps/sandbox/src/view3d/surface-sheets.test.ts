@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildSample, findSample, sequentialIds, type Model } from '@bim-light/core';
+import { buildSample, findSample, gridCount, sequentialIds, type Model } from '@bim-light/core';
 import { fixture } from '../../../../packages/core/src/testing/fixture.ts';
 import { clipTriangles } from './clip-triangles.ts';
-import { SHEET_OFFSET, surfaceSheets } from './surface-sheets.ts';
+import { SHEET_OFFSET, stripCuts, surfaceSheets } from './surface-sheets.ts';
 
 /** Plocha trojúhelníků (mm²). */
 function area(p: readonly number[]): number {
@@ -89,5 +89,25 @@ describe('3D náhled / povrchy místností (prvky stavby 9): tenké plochy z já
     );
     const sheets = surfaceSheets(m, view, { walls, storeys: null, only: null });
     expect(new Set(sheets.map((s) => s.color)).size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('oblouk: pruhy povrchu končí na úhlech mřížky jádra jako tělesa stěny (tětivy se nestřídají)', () => {
+    const f = {
+      kind: 'cylinder' as const,
+      center: { x: 0, y: 0, z: 0 },
+      radius: 2000,
+      angle0: 0.3,
+      dir: -1 as const,
+      facing: 'inward' as const,
+    };
+    const n = gridCount(2000);
+    const cuts = stripCuts(f, 0, 1500);
+    expect(cuts[0]).toBe(0);
+    expect(cuts.at(-1)).toBe(1500);
+    for (const u of cuts.slice(1, -1)) {
+      const k = ((f.angle0 + (f.dir * u) / f.radius) / (2 * Math.PI)) * n;
+      expect(Math.abs(k - Math.round(k))).toBeLessThan(1e-6);
+    }
+    expect(cuts.length).toBeGreaterThan(5);
   });
 });

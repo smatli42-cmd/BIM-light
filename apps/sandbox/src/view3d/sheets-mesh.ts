@@ -18,7 +18,7 @@ export function buildSheets(sheets: readonly Sheet[], mats: Materials): Group {
       ),
     );
     geo.computeVertexNormals();
-    const mesh = new Mesh(geo, mats.face(s.color, s.opacity));
+    const mesh = new Mesh(geo, mats.face(s.color, s.opacity, true));
     mesh.userData = { sheet: s.id, roomId: s.roomId };
     mesh.receiveShadow = mats.look.shadows;
     g.add(mesh);

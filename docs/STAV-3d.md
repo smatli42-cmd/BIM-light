@@ -118,6 +118,10 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   (povrchy vybraných stěn), ořezový kvádr (přesný ořez trojúhelníků, `clip-triangles.ts`), rovina řezu.
 - Jen v režimu **Materiály**; Bílý model, Skica, Skryté hrany a Čárový povrchy nekreslí. Plochy nejdou
   vybrat kliknutím (klik trefí stěnu za nimi).
+- **Bez prolínání povrchů** (hlášení uživatele 2026-11-27): povrchy se kreslí s polygon offsetem dopředu
+  (1 mm samotný na dálku nestačil – šum na lících příček), blízká rovina perspektivy se drží na 1/300
+  vzdálenosti k cíli (přesnější hloubka); povrch obloukové stěny má pruhy po úhlech mřížky jádra
+  (`gridCount`), stejně jako těleso stěny – tětivy se už nestřídají před lícem a za ním.
 - Scéna `?ukazka=3d-povrchy`: dům, koupelna obklad do 1,5 m + dlažba, kuchyně béžová + dlažba, jinde bílá
   malba + vinyl.
 

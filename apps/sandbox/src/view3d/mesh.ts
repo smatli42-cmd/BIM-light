@@ -71,7 +71,7 @@ export class Materials {
 
   constructor(readonly look: Look = DEFAULT_LOOK) {}
 
-  private makeFace(color: string, opacity: number) {
+  private makeFace(color: string, opacity: number, front: boolean) {
     const { mode, background } = this.look;
     const transparent = opacity < 1;
     const m =
@@ -83,20 +83,21 @@ export class Materials {
     // Čárový režim: plochy se nekreslí, ale výběr kliknutím na ně dál funguje.
     m.visible = mode !== 'wireframe';
     m.depthWrite = !transparent;
-    // Hrany se kreslí přes plochy bez „cik-cak“ (polygonOffset odsune plochy dozadu).
+    // Hrany se kreslí přes plochy bez „cik-cak“ (polygonOffset odsune plochy dozadu); povrchy místností
+    // (`front`) naopak dopředu, aby vždy vyhrály nad lícem stěny i na dálku.
     m.polygonOffset = true;
-    m.polygonOffsetFactor = 1;
-    m.polygonOffsetUnits = 1;
+    m.polygonOffsetFactor = front ? -2 : 1;
+    m.polygonOffsetUnits = front ? -8 : 1;
     m.clippingPlanes = [...this.look.clip];
     // Odříznutá část nevrhá stín.
     m.clipShadows = true;
     return m;
   }
 
-  face(color: string, opacity: number): MeshLambertMaterial | MeshBasicMaterial {
-    const key = `${color}|${opacity}`;
+  face(color: string, opacity: number, front = false): MeshLambertMaterial | MeshBasicMaterial {
+    const key = `${color}|${opacity}|${front}`;
     let m = this.faces.get(key);
-    if (!m) this.faces.set(key, (m = this.makeFace(color, opacity)));
+    if (!m) this.faces.set(key, (m = this.makeFace(color, opacity, front)));
     return m;
   }
 
