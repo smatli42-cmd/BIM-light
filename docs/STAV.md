@@ -1,12 +1,29 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, řezy a pohledy z modelu (jádro a okno řezu); typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Nástroj Řez a info box řezu (podle Arditu), 2026-11-27 (scéna `?ukazka=rezy`, zalomený Řez C i v `?ukazka=dum`)
+
+- Jádro (migrace 31 → 32): čára řezu je seznam bodů – **zalomený řez** (úseky rovnoběžné s prvním řežou
+  každý ve své hloubce, kolmé jsou zalomení); **vzdálená oblast od** (`farClip`, prvky dál tence šedě –
+  grafika `display.farArea`, patro 4 funkce grafiky); **styly řezu** (`model.sectionPresets`, výchozí
+  „Řez – celá hloubka“ a „Řez – 6 m, vzdálená oblast od 3 m“); skupina anotací **Řezy a pohledy** (stálé
+  id, viditelná ve všech stylech) jako výchozí vrstva značky. Příkazy `section.move`,
+  `sectionPreset.create / update / delete`, `selection.delete` umí `sectionIds`; dotaz `sectionPreset.list`.
+- Sandbox: nástroj **Řez** v paletě – rovný řez: klik začátek, konec, klik na stranu pohledu (šipky jdou
+  za myší); zalomený: kliky po úsecích (srovnají se kolmo / rovnoběžně), Enter / dvojklik / pravé tlačítko
+  ukončí, pak strana. Info box „Výchozí nastavení nových prvků“: Instance / Styl, styl řezu („– bez
+  stylu –“), Vrstva, Geometrická metoda (rovný / zalomený), Řez: Hloubka (prázdné = neomezená), Vzdálená
+  oblast od (prázdné = vyp.); se stylem jsou hodnoty jen ke čtení, záložka Styl je upravuje.
+- Výběr značky nástrojem Výběr: klik na čáru (Shift přidá), tažení posune celý řez, úchyty na koncích,
+  dvojklik otevře okno řezu, Del smaže. Info box vybraného řezu: název, vrstva, hloubka, vzdálená oblast,
+  měřítko, Otočit směr, Otevřít řez, Smazat. E2E `rezy-nastroj.spec.ts`, AI krok v `scenario-sections`.
 
 ### Řezy a pohledy z modelu – jádro a kresba, 2026-11-27 (scéna `?ukazka=rezy`, řezy A, B a 4 pohledy i v `?ukazka=dum`)
 
@@ -147,9 +164,19 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Nástroj Řez (podle Arditu):** výchozí hloubka nového řezu je teď **neomezená** (prázdné pole jako
+  v Arditu; dřív 15 m) a výchozí vrstva značky je nová skupina anotací „Řezy a pohledy“ (dřív „Kresba 2D“).
+  Strana pohledu třetím klikem (Archicad; Revit dává směr hned a otáčí se šipkami – to umí „Otočit směr“).
+  Zalomení jen kolmá, první a poslední úsek řeže (Revit); hloubka se měří od roviny každého úseku.
+  Vzdálená oblast = celý prvek, jehož nejbližší bod je dál než hranice (Archicad dělí i prvek); grafika
+  tenké pero + šedá z nastavení zobrazení, přebije styl i pravidla, přepis prvku ji může změnit. Styl
+  řezu přebije hloubku a vzdálenou oblast instance (pole jsou pak jen ke čtení); smazaný styl nechá
+  hodnoty v řezech. Ardit „Styl“ chápu jako pojmenovanou předvolbu řezu (ne styl zobrazení). Metoda
+  vybraného řezu je jen ke čtení (změna rovný ↔ zalomený = nový řez). Dvojklik se pozná podle času dvou
+  stisků (400 ms). Vrstva nabízí jen skupiny anotací (značka je anotace, základ 28).
 - **Řezy a pohledy:** řez i pohled jsou jeden druh dat (`kind`), jako Revit Section / Elevation. Směr pohledu
   = doleva / doprava od čáry start → end (výchozí doleva); na výkrese je vpravo pravá ruka pozorovatele.
-  Výchozí hloubka řezu 15 m, pohledu bez omezení; výchozí styl = styl prvního půdorysu, měřítko 1:100.
+  Hloubka pohledu bez omezení (viz Nástroj Řez); výchozí styl = styl prvního půdorysu, měřítko 1:100.
   Šířka výkresu = délka čáry (Revit ořízne pohled šířkou čáry). Vícepásové typy stěn se v řezu kreslí
   celou výškou podle vrstev pásu v rovině řezu (jako 3D). Pohledové hrany: obrys části prvku v pásmu pohledu
   (stěna = šířka × výška minus otvory, deska = šířka × tloušťka), zakrytí podle nejbližšího bodu prvku;
@@ -293,10 +320,8 @@ Stav k 2026-11-27 večer (přechod na jiný počítač): vše je v `main`, CI ze
 Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou
 v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
 
-1. **Řezy a pohledy – rozhraní** (jádro hotové, čeká na screenshot z Arditu): nástroj Řez (kreslení čáry,
-   směr, hloubka), info box řezu (směr, hloubka, rozsah, měřítko, styl, fáze), výběr a tažení značky řezu,
-   řez jako okno vedle půdorysu (ne dialog), „Řez A / Řez B“ v rozbalovači 3D okna (data: `section.list` →
-   `cutPlane3d`). Dál v jádře: popis skladeb u řezu, okna a dveře v řezu (etapa 4), terén, zalomený řez.
+1. **Řezy – dál:** okno řezu vedle půdorysu (dnes dialog), „Řez A / Řez B“ v rozbalovači 3D okna (data:
+   `section.list` → `cutPlane3d`), popis skladeb u řezu, okna a dveře v řezu (etapa 4), terén.
 2. **Spáry ve 3D** (3D okno) z dotazu `covering.joints` (tvar ve `docs/STAV-3d.md` / popis dotazu v registru).
 3. **Podlahy a stropy** (poslední část povrchů místností) a rozvinutý pohled stěny se spárořezem (Otevřené).
 4. Body „Rozhodl Code (k potvrzení)“ projít s uživatelem.
@@ -307,8 +332,9 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 
 ## Otevřené
 
-- **Řezy – zbývá:** rozhraní (viz Další krok), popis skladeb (odkaz se skladbou vrstev), materiály a terén
-  ve fasádě, okolní zástavba, šikmé střechy a schodiště (až budou prvky), zalomený řez, hrany prvků za
+- **Řezy – zbývá:** okno řezu vedle půdorysu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
+  řezu, úchyty hloubky pohledu v půdorysu, popis skladeb (odkaz se skladbou vrstev), materiály a terén
+  ve fasádě, okolní zástavba, šikmé střechy a schodiště (až budou prvky), hrany prvků za
   rovinou podrobněji (rohy šikmo viděných stěn, ostění u fasády), místnosti a kóty v řezu, výškové kóty
   parapetů a nadpraží na fasádě, uložení vlastní polohy výškových kót.
 
@@ -380,7 +406,7 @@ Výstup `npm run check:size`: bez varování (STAV.md 35 KB).
 
 | Řádky | Soubor |
 |---|---|
-| 248 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
+| 250 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 248 | apps/sandbox/src/session/session.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
 | 241 | apps/sandbox/src/view3d/viewer.ts |
