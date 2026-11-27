@@ -18,7 +18,7 @@ import { storeyOf, viewOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 import { REF } from './level-dim.ts';
-import { cornerAt } from '../../level-dim/terrain.ts';
+import { cornerAt, terrainTextAt } from '../../level-dim/terrain.ts';
 
 const planOf = (m: Model, id: Id): PlanLevelDimension =>
   m.planLevelDims[id] ?? fail('not-found', `Výšková kóta ${id} neexistuje`);
@@ -53,6 +53,9 @@ type Fields = {
   ut?: number | null;
 };
 
+/** Měřítko pohledu (velikost výchozího odsazení textu kóty terénu na papíře); bez pohledu 1:100. */
+const scaleOf = (m: Model, viewId?: Id) => (viewId ? (m.views[viewId]?.scale ?? 100) : 100);
+
 /** Kóta terénu se naváže na roh stěny do 100 mm od bodu (posune se s ním). */
 const ANCHOR_TOL = 100;
 
@@ -73,7 +76,8 @@ export const planLevelDimCreate = defineCommand<
     'Vloží výškovou kótu do půdorysu podlaží: point = kótovaný bod (mm), textAt = poloha hodnoty (výchozí ' +
     'v bodě). Kótuje horní líc nejvyšší desky / podlahy pod bodem, jinak úroveň podlaží (ref jde zadat). ' +
     'marker = box (výška podlahy v rámečku) / circle (kóta terénu u nároží: rt = rostlý, ut = upravený ' +
-    'terén v mm k ±0,000; naváže se na roh stěny do 100 mm od bodu a posune se s ním), ' +
+    'terén v mm k ±0,000; naváže se na roh stěny do 100 mm od bodu a posune se s ním; bez textAt je text ' +
+    'šikmo ven od budovy), ' +
     'viewId = pohled (skupina anotací = jeho aktivní).',
   group: 'Kóta',
   params: S.object({ storeyId: S.id, point: S.point, textAt: S.point, ref: REF, viewId: S.id, ...FIELDS }, [
@@ -87,7 +91,9 @@ export const planLevelDimCreate = defineCommand<
       storeyId: p.storeyId,
       ref: p.ref ?? planLevelRef(model, p.storeyId, p.point),
       point: p.point,
-      textAt: p.textAt ?? p.point,
+      textAt:
+        p.textAt ??
+        (p.marker === 'circle' ? terrainTextAt(model, p.point, scaleOf(model, p.viewId)) : p.point),
       marker: p.marker ?? 'box',
       absolute: p.absolute ?? false,
       annotationLayerId: layerFor(model, p.storeyId, p.viewId, p.annotationLayerId),

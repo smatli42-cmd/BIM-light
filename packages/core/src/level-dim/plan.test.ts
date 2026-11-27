@@ -95,6 +95,7 @@ describe('výšková kóta v půdorysu (české zvyklosti, Ardit)', () => {
       storeyId: f.storeyId,
       point: v(0, 0),
       marker: 'circle',
+      textAt: v(0, 0),
       viewId: f.viewId,
     });
     // Hlášení uživatele: skupina „Výškové kóty“ je ve všech stylech (Studie i Projekt).
@@ -109,5 +110,34 @@ describe('výšková kóta v půdorysu (české zvyklosti, Ardit)', () => {
 
   it('základ 9: migrace 33 → 34 přidá prázdné výškové kóty v půdorysu', () => {
     expect(projectV33toV34({})).toEqual({ planLevelDims: {} });
+  });
+
+  it('pokyn uživatele / jeden klik: kóta terénu bez polohy textu má text šikmo ven od budovy', () => {
+    const f = fixture();
+    f.line(v(0, 0), v(5000, 0));
+    f.line(v(5000, 0), v(5000, 4000));
+    const [id] = f.run('planLevelDim.create', {
+      storeyId: f.storeyId,
+      point: v(5000, 0),
+      marker: 'circle',
+      viewId: f.viewId,
+    });
+    const d = f.model.planLevelDims[id as string];
+    expect(d && d.textAt.x).toBeGreaterThan(5000);
+    expect(d && d.textAt.y).toBeLessThan(0);
+  });
+
+  it('Revit Spot Elevation „Leader“: rámeček mimo kótovaný bod má odkazovou čáru od bodu k rámečku', () => {
+    const f = fixture();
+    floor(f);
+    const [on] = f.run('planLevelDim.create', { storeyId: f.storeyId, point: v(2000, 1500) });
+    const [off] = f.run('planLevelDim.create', {
+      storeyId: f.storeyId,
+      point: v(2000, 1500),
+      textAt: v(3500, 2500),
+    });
+    const open = (id: string) => prims(f, id).filter((p) => p.kind === 'line' && !p.closed);
+    expect(open(on as string)).toHaveLength(0);
+    expect(open(off as string)).toHaveLength(1);
   });
 });

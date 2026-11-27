@@ -10,6 +10,7 @@ import type { Model } from '../model/types.ts';
 import type { ResolvedEffect, Style, TerrainLabels } from '../style/types.ts';
 import { wallGeometry } from '../wall/geometry.ts';
 import { allWalls } from '../wall/queries.ts';
+import { modelEnvelope } from '../section/elevations.ts';
 import { absoluteText, elevationText } from './value.ts';
 
 /** Roh stěny: líc (ref / opp) u konce stěny. */
@@ -112,4 +113,16 @@ export function drawTerrainMark(
   if (top) out.push(p.text({ x: mid, y: m.textAt.y + th * 0.8 }, top));
   if (bottom) out.push(p.text({ x: mid, y: m.textAt.y - th * 0.8 }, bottom));
   return out;
+}
+
+/** Výchozí odsazení textu kóty terénu na papíře (mm): šikmo ven od budovy (od středu obálky modelu). */
+export const TERRAIN_OFFSET = 12;
+
+export function terrainTextAt(model: Model, point: Vec2, scale: number): Vec2 {
+  const env = modelEnvelope(model);
+  const c = env ? { x: (env.min.x + env.max.x) / 2, y: (env.min.y + env.max.y) / 2 } : { x: 0, y: 0 };
+  const sx = point.x >= c.x ? 1 : -1;
+  const sy = point.y >= c.y ? 1 : -1;
+  const k = TERRAIN_OFFSET * scale;
+  return { x: point.x + sx * k, y: point.y + sy * k * 0.6 };
 }

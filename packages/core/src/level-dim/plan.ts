@@ -71,7 +71,7 @@ export function planLevelTexts(model: Model, d: PlanLevelDimension, style?: Styl
 }
 
 /** Rámeček kolem hodnoty (tenká čára). */
-function boxMark(at: Vec2, text: string, th: number, p: Painter): Primitive[] {
+function boxMark(at: Vec2, point: Vec2, text: string, th: number, p: Painter): Primitive[] {
   const w = textWidth(text, th) / 2 + th * 0.4;
   const h = th * 0.9;
   const box = [
@@ -80,7 +80,15 @@ function boxMark(at: Vec2, text: string, th: number, p: Painter): Primitive[] {
     { x: at.x + w, y: at.y + h },
     { x: at.x - w, y: at.y + h },
   ];
-  return [p.line(box, true), p.text(at, text)];
+  const out = [p.line(box, true), p.text(at, text)];
+  // Odkazová čára (Revit „Leader“): hodnota je mimo kótovaný bod → čára od bodu k bližší straně rámečku.
+  const dx = point.x - at.x;
+  const dy = point.y - at.y;
+  if (Math.abs(dx) > w || Math.abs(dy) > h) {
+    const k = Math.min(w / Math.abs(dx || 1e-9), h / Math.abs(dy || 1e-9));
+    out.push(p.line([point, { x: at.x + dx * k, y: at.y + dy * k }]));
+  }
+  return out;
 }
 
 /** Kresba kóty; `point` = kótovaný bod z modelu (u rohu stěny se s ním posune i hodnota). */
@@ -96,7 +104,7 @@ export function drawPlanLevel(
   const p = painter(d.id, g, levelTextSize(sizes));
   const shift = { x: point.x - d.point.x, y: point.y - d.point.y };
   const textAt = { x: d.textAt.x + shift.x, y: d.textAt.y + shift.y };
-  if (d.marker === 'box') return boxMark(textAt, lines[0] ?? '', th, p);
+  if (d.marker === 'box') return boxMark(textAt, point, lines[0] ?? '', th, p);
   const r = (levelMarkSize(sizes) / 2) * scale;
   return drawTerrainMark({ point, textAt, lines }, r, th, p);
 }

@@ -55,3 +55,32 @@ export function levelTargetAt(
   }
   return best;
 }
+
+/**
+ * Cíl výškové kóty pro jeden klik (Revit Spot Elevation): hrana nebo úroveň do `tol`, jinak – když klik padl
+ * do plochy prvku v řezu – bližší z jeho horní a spodní hrany. Null = klik mimo prvky i úrovně.
+ */
+export function levelTargetPick(
+  targets: readonly LevelTarget[],
+  u: number,
+  z: number,
+  tol: number,
+): LevelTarget | null {
+  const near = levelTargetAt(targets, u, z, tol);
+  if (near) return near;
+  let best: LevelTarget | null = null;
+  let bestD = Number.POSITIVE_INFINITY;
+  for (const top of targets) {
+    if (top.ref.kind !== 'edge' || top.ref.edge !== 'top' || u < top.u0 || u > top.u1) continue;
+    const id = top.ref.elementId;
+    const bottom = targets.find(
+      (t) => t.ref.kind === 'edge' && t.ref.elementId === id && t.ref.edge === 'bottom',
+    );
+    if (!bottom || z > top.z || z < bottom.z) continue;
+    for (const t of [top, bottom]) {
+      const d = Math.abs(t.z - z);
+      if (d < bestD) [best, bestD] = [t, d];
+    }
+  }
+  return best;
+}

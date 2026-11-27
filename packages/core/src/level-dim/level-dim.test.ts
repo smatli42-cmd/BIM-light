@@ -4,6 +4,7 @@ import { drawSection } from '../section/draw.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { projectV32toV33 } from './migrate-v32.ts';
 import { slabLevels } from '../slab/geometry.ts';
+import { levelTargetPick, levelTargets } from './targets.ts';
 import type { Slab } from '../slab/types.ts';
 import { drawLevelSymbol } from './symbol.ts';
 import { absoluteText, elevationText, zeroToBpv } from './value.ts';
@@ -174,5 +175,17 @@ describe('ČSN 01 3420: výškové kóty v řezu', () => {
       labelText: 2.5,
       levelMark: 2.5,
     });
+  });
+
+  it('hlášení uživatele / jeden klik: klik do plochy stropu v řezu vybere jeho bližší hranu (horní / spodní)', () => {
+    const f = fixture();
+    const { slab, sec } = scene(f);
+    const targets = levelTargets(f.model, sec);
+    const lv = slabLevels(f.model, f.model.elements[slab] as Slab);
+    const nearTop = levelTargetPick(targets, 3000, lv.top - 20, 1);
+    expect(nearTop?.ref).toEqual({ kind: 'edge', elementId: slab, edge: 'top' });
+    const nearBottom = levelTargetPick(targets, 3000, lv.bottom + 20, 1);
+    expect(nearBottom?.ref).toEqual({ kind: 'edge', elementId: slab, edge: 'bottom' });
+    expect(levelTargetPick(targets, 3000, 1500, 1)).toBeNull();
   });
 });
