@@ -105,7 +105,8 @@ export function modelSolids(
       ]),
     ...slabs.flatMap((d) => surfaced(model, view, d, slabSolids(model, d, slabHoles(model, view, d.id)))),
   ];
-  // Překryvy stěna × deska: stěna má přednost, deska se v ní vyřízne (bez prolínání ploch).
+  // Uložení stropu řeší jádro (junction/slab-wall.ts, priorita materiálů); zbylé překryvy (pojistka proti
+  // prolínání ploch): stěna má přednost, deska se v ní vyřízne.
   return resolveOverlaps(all, (id) => (model.elements[id]?.category === 'wall' ? 2 : 1));
 }
 

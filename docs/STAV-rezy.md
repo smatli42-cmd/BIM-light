@@ -4,6 +4,22 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Napojení desky na stěnu podle priority materiálů (uložení stropu), 2026-11-27 (krok schválený uživatelem)
+
+- Jedno pravidlo v jádře `junction/slab-wall.ts` (základ 7) pro řez, 3D a výkazy: nosná deska s prioritou
+  jádra ≥ priorita jádra stěny (ŽB 70 × zdivo 50) prořízne ve své výšce jádro stěny a vrstvy na straně desky
+  (vnitřní omítku); vrstvy za vnějším lícem jádra (strana se zateplením – ETICS, vnější omítka) jdou přes
+  čelo desky souvisle a desku samy ořízly (deska končí na vnějším líci jádra, Revit „k jádru“). Vnitřní
+  nosná stěna s deskou po obou stranách: deska prořízne všechny vrstvy. Deska s nižší prioritou (dřevo na ŽB
+  stěně) a podlaha (skladba podlahy) do stěny nezasahují – stěna je ořízne. Stejný materiál se v řezu slije.
+- Řez: kusy vrstev stěny pod a nad deskou, deska končí na líci jádra. 3D: stejné výřezy ve stěnách i deskách
+  (stávající řešení překryvů zůstává jen jako pojistka). Výkazy: objem vrstev stěny bez uložených stropů,
+  objem nosné desky bez pásu zateplení (nic se nezapočítá dvakrát).
+- Dotaz `section.elements` vrací u řezaných prvků `pieces` (kusy po vrstvách s materiálem a rozsahem) – AI
+  i test vidí uložení. Ukázka: Řez A v `?ukazka=rezy` / `dum` – strop nad 1.NP uložený na obvodových
+  stěnách, zateplení přes čelo. Testy `junction/slab-wall.test.ts`, 3D `view3d/slab-wall-3d.test.ts`,
+  AI krok, e2e `rezy-ulozeni.spec.ts`.
+
 ### Oprava: přepnutí stylu u otevřeného řezu, 2026-11-27 (hlášení uživatele)
 
 - Co se dělo: přepínač sady nahoře (Studie / Projekt) vždy otevřel pracovní okno podlaží – u otevřeného řezu
@@ -154,6 +170,14 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Uložení stropu:** vnější strana stěny = strana s vrstvou funkce „izolace“; bez izolace rozhodne, nad
+  kterými vrstvami deska z větší části neleží (obě strany zakryté = vnitřní stěna, žádná vnější strana).
+  Při stejné prioritě vyhrává deska. Vazba vršku stěny na spodní líc desky (D4) zůstává beze změny – celá
+  stěna končí pod deskou (pro příčky); obvodová nosná stěna se nechává do výšky podlaží a deska se do ní
+  uloží podle priority (Archicad: stěna k desce + priorita – zateplení přes čelo u vázané stěny zatím ne).
+  Půdorys: deska v rovině řezu půdorysu se kreslí dál jen obrysem (uložení v půdorysu zatím ne). Otvor
+  v desce u stěny se respektuje (výřez jen tam, kde deska je).
 
 - **Výšková kóta jedním klikem:** volba „S odkazovou čarou“ platí v půdorysu (rámeček); v řezu je praporek
   vždy hrotem na hraně (poloha a „pod hranou“ se mění tažením). Klik do plochy prvku bere bližší z jeho

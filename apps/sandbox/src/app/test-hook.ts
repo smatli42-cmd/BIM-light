@@ -24,6 +24,8 @@ export interface TestHook {
   lenEnd(): string;
   scale(): number;
   run(name: string, params: unknown): readonly string[];
+  /** Dotaz z registru (jen čtení), jako AI. */
+  query(name: string, params: unknown): unknown;
   selection(): {
     walls: string[];
     dims: string[];
@@ -96,6 +98,11 @@ export function installTestHook(s: Session) {
     grips: () => gripViews(s).map((g) => ({ end: g.end, at: page(g.at) })),
     lenEnd: () => s.lenEnd,
     scale: () => s.viewport.s,
+    query(name, params) {
+      const r = s.editor.query(name, params);
+      if (!r.ok) throw new Error(r.error.message);
+      return r.data;
+    },
     run(name, params) {
       const r = s.run(name, params);
       if (!r.ok) throw new Error(r.error.message);

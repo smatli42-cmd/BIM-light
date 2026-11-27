@@ -2,7 +2,13 @@
 // samostatné těleso s barvou svého materiálu, vrstvy jdou od spodního líce nahoru (skladba desky je od spodu),
 // horní líc = úroveň podlaží + odsazení (slabLevels z jádra). Půdorys = obrys desky minus otvory v desce
 // (D3, svislý řez přes celou tloušťku). Jádro se jen čte.
-import { slabLevels, type Model, type Slab as SlabElement, type Vec2 } from '@bim-light/core';
+import {
+  slabCutsByWalls,
+  slabLevels,
+  type Model,
+  type Slab as SlabElement,
+  type Vec2,
+} from '@bim-light/core';
 import { sliceLayer, type Cutter } from './slice.ts';
 import { materialOpacity, type Solid } from './solids.ts';
 
@@ -19,11 +25,19 @@ export function slabSolids(
   if (!comp) return [];
   const lv = slabLevels(model, slab);
   // Ostrovy podlahy (sloup v místnosti) prořízne stejně jako otvor v desce.
-  const cutters: Cutter[] = [...holes, ...(slab.holes ?? [])].map((footprint) => ({
-    footprint,
-    bottom: lv.bottom - 1,
-    top: lv.top + 1,
-  }));
+  const cutters: Cutter[] = [
+    ...[...holes, ...(slab.holes ?? [])].map((footprint) => ({
+      footprint,
+      bottom: lv.bottom - 1,
+      top: lv.top + 1,
+    })),
+    // Vrstvy stěn s předností (zateplení přes čelo desky) desku ořízly – pravidlo z jádra.
+    ...slabCutsByWalls(model, slab.id).map((c) => ({
+      footprint: c.footprint,
+      bottom: lv.bottom - 1,
+      top: lv.top + 1,
+    })),
+  ];
   let z = lv.bottom;
   return comp.layers.flatMap((layer) => {
     const z0 = z;

@@ -125,6 +125,13 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 - Scéna `?ukazka=3d-povrchy`: dům, koupelna obklad do 1,5 m + dlažba, kuchyně béžová + dlažba, jinde bílá
   malba + vinyl.
 
+## Hotovo (uložení stropu podle priority materiálů, 2026-11-27)
+
+- Stěny a desky ve 3D berou výřezy z jádra (`junction/slab-wall.ts`, stejné pravidlo jako řez a výkazy):
+  nosná ŽB deska prořízne jádro a vnitřní omítku stěny ve své výšce, zateplení jde přes čelo desky a desku
+  ořízne. Dřívější „stěna má přednost“ (overlaps.ts) zůstává jen jako pojistka proti prolínání ploch.
+  Podrobnosti v `docs/STAV-rezy.md`.
+
 ## Co zkusit
 
 - `?ukazka=3d-povrchy&3d` → Řez › Vodorovný (nad podlažím): podlahy vinyl a dlažba, malby, obklad koupelny

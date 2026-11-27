@@ -8,6 +8,7 @@ import {
   openingsOf,
   wallGeometry,
   wallHeight,
+  wallLayerSlabCuts,
   type Id,
   type Model,
   type Wall,
@@ -61,7 +62,9 @@ export function wallSolids(model: Model, wall: Wall): Solid[] {
   const lv = layerLevels(model, wall, g.layers.length);
   return g.layers.flatMap((layer, i) => {
     const { bottom, top } = lv[i] as { bottom: number; top: number };
-    const slabs = sliceLayer(layer.polygons, bottom, top, cutters);
+    // Uložení stropu (jádro, junction/slab-wall.ts): deska vyřízne jádro a vrstvy na své straně.
+    const slabCuts = wallLayerSlabCuts(model, wall.id, i);
+    const slabs = sliceLayer(layer.polygons, bottom, top, [...cutters, ...slabCuts]);
     if (!slabs.length) return [];
     const materialId = layer.span.layer.materialId ?? null;
     const mat = materialId ? model.materials[materialId] : undefined;

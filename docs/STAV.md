@@ -273,6 +273,10 @@ v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelený
 
 ## Otevřené
 
+- **Detail napojení 1:5–1:10** (pokyn uživatele): kreslí se zvlášť jako 2D detail nad výřezem řezu (Revit
+  Callout + 2D kresba, základ 22); model dává základní napojení pro 1:50 a 1:100. Zatím nedělat.
+- **Uložení stropu – zbývá:** zateplení přes čelo u stěny s vazbou vršku na desku (D4), uložení v půdorysu,
+  věnec / pozednice jako samostatný prvek, atika (přesah stěny nad deskou jiného podlaží).
 - **Terén:** zatím není v modelu – RT / UT u kóty terénu a výška terénu v řezu jsou čísla zadaná u značky;
   až bude terén (situace, etapa), vezmou se z něj.
 - **Řezy – zbývá:** výběr prvků v okně řezu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
