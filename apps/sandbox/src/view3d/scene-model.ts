@@ -2,6 +2,7 @@
 // aktivního pohledu – skrytá vrstva (kategorie), filtr fáze i pravidlo „skrýt“ prvek ve 3D vynechají,
 // otvor skrytý filtrem stěnu nevyřízne (stejně jako v půdorysu, plán stěn Z10). Jen čtení jádra.
 import {
+  allSlabOpenings,
   allSlabs,
   allWalls,
   categoryState,
@@ -11,6 +12,8 @@ import {
   type Id,
   type Model,
   type Element,
+  slabOpeningFacts,
+  type Vec2,
   type View,
   type Wall,
 } from '@bim-light/core';
@@ -63,6 +66,18 @@ function withSurface(model: Model, view: View, el: Element, solids: Solid[]): So
   return color ? solids.map((x) => ({ ...x, color })) : solids;
 }
 
+/** Obrysy viditelných otvorů v desce (filtr rekonstrukce: skrytý otvor desku neprořízne, jako u stěn). */
+function slabHoles(model: Model, view: View, slabId: Id): Vec2[][] {
+  return allSlabOpenings(model)
+    .filter(
+      (o) =>
+        o.hostIds.includes(slabId) &&
+        o.variant.kind === 'main' &&
+        resolveGraphics(model.display, onStorey(view, o.storeyId), slabOpeningFacts(o)).effect.visible,
+    )
+    .map((o) => [...o.outline]);
+}
+
 /** Záplaty rekonstrukce u otvorů stěny (probourání, zazdívka) jako barevné bloky. */
 function patchesOf(model: Model, view: View, w: Wall): Solid[] {
   const v = onStorey(view, w.storeyId);
@@ -88,17 +103,19 @@ export function modelSolids(model: Model, view: View, only: ReadonlySet<Id> | nu
         ...withSurface(model, view, w, wallSolids(shown.model, w)),
         ...patchesOf(shown.model, view, w),
       ]),
-    ...slabs.flatMap((d) => withSurface(model, view, d, slabSolids(model, d))),
+    ...slabs.flatMap((d) => withSurface(model, view, d, slabSolids(model, d, slabHoles(model, view, d.id)))),
   ];
 }
 
-/** Prvky pro „Zobrazit výběr ve 3D“: vybrané stěny a desky a hostitelé vybraných otvorů. */
+/** Prvky pro „Zobrazit výběr ve 3D“: vybrané stěny a desky a hostitelé vybraných otvorů (i v deskách). */
 export function selectionElements(
   model: Model,
   walls: readonly Id[],
   openings: readonly Id[],
   slabs: readonly Id[] = [],
+  slabOpenings: readonly Id[] = [],
 ): Set<Id> {
   const hosts = openings.map((id) => model.openings[id]?.hostId).filter((x): x is Id => !!x);
-  return new Set([...walls, ...hosts, ...slabs]);
+  const slabHosts = slabOpenings.flatMap((id) => model.slabOpenings[id]?.hostIds ?? []);
+  return new Set([...walls, ...hosts, ...slabs, ...slabHosts]);
 }

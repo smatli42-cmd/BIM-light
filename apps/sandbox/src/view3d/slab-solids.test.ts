@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getSlab, slabLevels, type View } from '@bim-light/core';
+import { getSlab, slabLevels, vec, type View } from '@bim-light/core';
 import { fixture, type Fixture } from '../../../../packages/core/src/testing/fixture.ts';
 import { modelSolids, selectionElements } from './scene-model.ts';
 import { shapeArea } from './slice.ts';
@@ -11,6 +11,9 @@ const rect = { a: { x: 0, y: 0 }, b: { x: 4000, y: 3000 } };
 const make = (f: Fixture, name: string) =>
   f.run('slab.create', { storeyId: f.storeyId, typeId: typeId(f, name), rect })[0]!;
 const view = (f: Fixture): View => f.model.views[f.viewId] as View;
+const volume = (
+  solids: readonly { slabs: readonly { z0: number; z1: number; shape: Parameters<typeof shapeArea>[0] }[] }[],
+) => solids.reduce((v, s) => v + s.slabs.reduce((a, b) => a + shapeArea(b.shape) * (b.z1 - b.z0), 0), 0);
 
 describe('3D náhled / desky (rozhodnutí sekce 5, D1)', () => {
   it('3D náhled / deska: vrstvy skladby zdola od spodního líce po horní líc, objem = plocha × tloušťka', () => {
@@ -45,5 +48,20 @@ describe('3D náhled / desky (rozhodnutí sekce 5, D1)', () => {
     for (const layerId of Object.keys(f.model.display.layers))
       f.run('view.setLayerState', { viewId: f.viewId, layerId, visible: false });
     expect(ids().has(id)).toBe(false);
+  });
+
+  it('základ 19 / D3 / 3D náhled: otvor v desce prořízne všechny vrstvy po celé tloušťce', () => {
+    const f = fixture();
+    const id = make(f, 'ŽB strop 250');
+    const vol = () => volume(modelSolids(f.model, view(f)).filter((s) => s.elementId === id));
+    const full = vol();
+    const [hole] = f.run('slabOpening.create', {
+      storeyId: f.storeyId,
+      rect: { a: vec(1000, 1000), b: vec(2000, 3000) },
+    });
+    const t = slabLevels(f.model, getSlab(f.model, id)).thickness;
+    expect(full - vol()).toBeCloseTo(1000 * 2000 * t, -3);
+    // F4 na otvor ukáže desky, které prořízne.
+    expect(selectionElements(f.model, [], [], [], [hole!])).toEqual(new Set([id]));
   });
 });

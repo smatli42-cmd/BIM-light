@@ -42,8 +42,13 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   stávajícím stavu celá stěna. Zazdívka se obarví, jen když pravidlo „nový“ dává barvu povrchu.
   Oprava 2026-11-27 po připomínce uživatele (v bouracích pracích byla vidět jen příčka).
 
+- **Otvory v deskách ve 3D** (D3): viditelný otvor prořízne všechny vrstvy desek v `hostIds` po celé
+  tloušťce (stejný `sliceLayer`); otvor skrytý filtrem rekonstrukce desku neprořízne. F4 na vybraný otvor
+  v desce ukáže desky, které prořízne.
+
 ## Co zkusit
 
+- `?ukazka=desky-otvory&3d` – otvory v deskách (prostup, schodiště) proříznou strop i podlahu.
 - `?ukazka=dum&3d` → spodní lišta **Přepisy** (kombinace) → *Fáze – bourací práce*: bouraná příčka zežloutne
   v půdorysu i ve 3D a v nosné zdi je žlutě probourání dveří 900 × 2100.
 
@@ -93,7 +98,6 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 
 ## Otevřené / další kroky
 
-- Otvory v deskách (základ 19) – až je jádro bude mít, vyříznout stejně jako u stěn (`sliceLayer`).
 - Povrchy místností (malby, obklady, spárořezy; návrh poslán hlavní session 2026-11-27, uživatel souhlasí):
   jádro spočítá plochy povrchů (obrys v rovině líce + transformace do 3D + spáry), 3D je jen zobrazí
   tenkou plochou před lícem a spáry čarami – stejná data jako rozvinutý pohled a výkaz.

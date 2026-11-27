@@ -34,7 +34,15 @@ export function view3d(s: Session): View3DState {
 export function show3D(s: Session, selection: boolean) {
   const st = view3d(s);
   const ids = selection
-    ? [...selectionElements(s.model, s.selection.walls, s.selection.openings, s.selection.slabs)]
+    ? [
+        ...selectionElements(
+          s.model,
+          s.selection.walls,
+          s.selection.openings,
+          s.selection.slabs,
+          s.selection.slabOpenings,
+        ),
+      ]
     : [];
   st.open = true;
   st.only = ids.length ? ids : null;
