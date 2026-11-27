@@ -3,6 +3,7 @@
 import { defaultRoomCategories } from '../room/category.ts';
 import { coveringLibraryFor } from '../covering/library.ts';
 import { newView3d } from '../view-3d/types.ts';
+import { defaultSectionPresets } from '../section/presets.ts';
 import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
 import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
@@ -64,8 +65,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     saved: false,
     phaseFilterId: null,
   };
-  const model: Omit<Model, 'views3d'> = {
-    sections: {},
+  const model: Omit<Model, 'views3d' | 'sections' | 'sectionPresets'> = {
     schemaVersion: SCHEMA_VERSION,
     project: { id: newId(), name, georef: { sjtskY: 0, sjtskX: 0, rotationDeg: 0, elevationBpv: 0 } },
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },
@@ -90,5 +90,6 @@ function emptyProject(newId: IdGenerator, name: string): Model {
   };
   // Výchozí 3D pohled (jako {3D} v Revitu); id se bere až na konci, ostatní id se neposunou.
   const view3d = newView3d(newId(), '3D', study.id);
-  return { ...model, views3d: { [view3d.id]: view3d } };
+  const sections = { sections: {}, sectionPresets: defaultSectionPresets() };
+  return { ...model, ...sections, views3d: { [view3d.id]: view3d } };
 }

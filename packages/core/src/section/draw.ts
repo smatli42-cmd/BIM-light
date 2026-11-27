@@ -15,12 +15,14 @@ import { annotationFacts } from './facts.ts';
 import { drawCutLines, type CutLineItem, type CutLinePiece } from '../wall/cut-lines.ts';
 import { materialHatch, type DrawLookup } from '../wall/draw-hatch.ts';
 import { slabCut, wallCut, type CutPiece } from './cut.ts';
-import { sectionFrame } from './frame.ts';
+import { effectiveFrame } from './frame.ts';
 import { drawLevels } from './levels.ts';
 import { occluder, visibleParts, type Occluder } from './occlude.ts';
 import { ringsOf, simplePieces } from './pieces.ts';
 import { slabProjection, wallProjection, type Projected } from './projection.ts';
-import type { Section } from './types.ts';
+import { sectionLimits, type Section } from './types.ts';
+import type { Element } from '../model/types.ts';
+import { elementFacts } from '../style/conditions.ts';
 import { sectionElements } from './visible.ts';
 
 interface CutItem {
@@ -109,10 +111,24 @@ function extent(cut: readonly CutItem[], proj: readonly ProjItem[], length: numb
   return { u0: Math.min(...xs), u1: Math.max(...xs), top: Math.max(...pts.map((p) => p.y)) };
 }
 
+/**
+ * Grafika vzdálené oblasti (Archicad „Distant Area“): prvek, jehož nejbližší bod je dál než „vzdálená
+ * oblast od“, dostane grafiku vzdálené oblasti z nastavení zobrazení (patro 4, úprava pohledu – přebije
+ * styl a pravidla, přepis prvku ji dál může změnit). Vrací null, když prvek do vzdálené oblasti nepatří.
+ */
+function farGraphics(model: Model, s: Section) {
+  const { farClip } = sectionLimits(model.sectionPresets, s);
+  const effect = model.display.farArea;
+  return (el: Element, depth: number): ResolvedEffect | null => {
+    if (farClip === null || !effect || depth < farClip) return null;
+    return resolveGraphics(model.display, s, { ...elementFacts(model, el), zoneEffect: effect }).effect;
+  };
+}
+
 export function drawSection(model: Model, sectionId: Id): Drawing {
   const s = model.sections[sectionId];
   if (!s) throw new Error(`Řez ${sectionId} neexistuje`);
-  const f = sectionFrame(s);
+  const f = effectiveFrame(model.sectionPresets, s);
   const els = sectionElements(model, s);
   const m = els.model;
   const cut: CutItem[] = [];
@@ -122,10 +138,11 @@ export function drawSection(model: Model, sectionId: Id): Drawing {
     for (const { slab, g } of els.slabs)
       cut.push({ elementId: slab.id, g, pieces: slabCut(m, slab, f, s.range) });
   }
+  const far = farGraphics(model, s);
   const proj: ProjItem[] = [
-    ...els.walls.map(({ wall, g }) => ({ p: wallProjection(m, wall, f, s.range), g })),
-    ...els.slabs.map(({ slab, g }) => ({ p: slabProjection(m, slab, f, s.range), g })),
-  ].flatMap(({ p, g }) => (p ? [{ ...p, g }] : []));
+    ...els.walls.map(({ wall, g }) => ({ el: wall, p: wallProjection(m, wall, f, s.range), g })),
+    ...els.slabs.map(({ slab, g }) => ({ el: slab, p: slabProjection(m, slab, f, s.range), g })),
+  ].flatMap(({ el, p, g }) => (p ? [{ ...p, g: far(el, p.depth) ?? g }] : []));
   const cutItems = cut.filter((c) => c.pieces.length);
   const ext = extent(cutItems, proj, f.length);
   const g = resolveGraphics(model.display, s, annotationFacts(s.id, 'dimension')).effect;

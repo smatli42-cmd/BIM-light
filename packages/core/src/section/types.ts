@@ -26,12 +26,18 @@ export interface Section extends GraphicView {
   readonly name: string;
   /** Označení ve značce řezu (A, B…) nebo číslo pohledu (1–4). */
   readonly mark: string;
-  /** Čára řezu v půdorysu (mm modelu). */
-  readonly start: Vec2;
-  readonly end: Vec2;
+  /**
+   * Čára řezu v půdorysu (mm modelu): 2 body = rovný řez, víc bodů = zalomený řez (úseky rovnoběžné
+   * s prvním řežou, kolmé jsou zalomení; první i poslední úsek řeže).
+   */
+  readonly points: readonly Vec2[];
   readonly direction: SectionDirection;
-  /** Hloubka pohledu za rovinou (mm); null = bez omezení (do konce modelu). */
+  /** Hloubka pohledu za rovinou (mm); null = bez omezení (do konce modelu). Styl řezu ji přepíše. */
   readonly depth: number | null;
+  /** Vzdálená oblast od (mm za rovinou): dál se kreslí grafikou vzdálené oblasti; null = vypnuto. */
+  readonly farClip: number | null;
+  /** Styl řezu (pojmenovaná předvolba hloubky a vzdálené oblasti); null = vlastní hodnoty. */
+  readonly presetId: Id | null;
   readonly range: SectionRange | null;
   /** Měřítko (jmenovatel); mění jen tloušťky čar (základ 29). */
   readonly scale: number;
@@ -39,8 +45,28 @@ export interface Section extends GraphicView {
   readonly annotationLayerId: Id;
 }
 
-/** Výchozí hloubka pohledu řezu (mm): běžný rodinný dům celý. */
-export const DEFAULT_SECTION_DEPTH = 15000;
+/** Styl řezu (Ardit „Styl“ u nástroje Řez): nastavení sdílené více řezy. */
+export interface SectionPreset {
+  readonly id: Id;
+  readonly name: string;
+  readonly depth: number | null;
+  readonly farClip: number | null;
+}
+
+/** Hloubka a vzdálená oblast řezu: ze stylu řezu, nebo vlastní. */
+export function sectionLimits(
+  presets: Readonly<Record<Id, SectionPreset>>,
+  s: Pick<Section, 'presetId' | 'depth' | 'farClip'>,
+): { depth: number | null; farClip: number | null } {
+  const p = s.presetId ? presets[s.presetId] : undefined;
+  return p ? { depth: p.depth, farClip: p.farClip } : { depth: s.depth, farClip: s.farClip };
+}
+
+/** Výchozí styly řezu nového projektu (vymyšlené předvolby). */
+export const SECTION_PRESET_LIBRARY: readonly Omit<SectionPreset, 'id'>[] = [
+  { name: 'Řez – celá hloubka', depth: null, farClip: null },
+  { name: 'Řez – 6 m, vzdálená oblast od 3 m', depth: 6000, farClip: 3000 },
+];
 /** Výchozí měřítko řezu a pohledu (DPS 1:100). */
 export const DEFAULT_SECTION_SCALE = 100;
 

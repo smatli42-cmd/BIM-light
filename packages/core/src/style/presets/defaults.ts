@@ -1,7 +1,7 @@
 // Výchozí grafika projektu (patro 1) a velikosti na papíře. Data, ne kód generátoru (základy 11, 29, 32).
 // Přiřazení per podle katalogu pohledů: řez 5 (0,5), pohled 3 (0,25), značky 2, tenké 1 (kóty, šrafy).
 // Obrys řezu stěny a sloupu = pero 6 (0,7), velmi tlustá podle ČSN 01 3420 (pokyn uživatele 2026-11-24).
-import type { CategoryGraphics, PaperSizes, ResolvedEffect } from '../types.ts';
+import type { CategoryGraphics, GraphicEffect, PaperSizes, ResolvedEffect } from '../types.ts';
 
 export const BASE_GRAPHICS: ResolvedEffect = {
   visible: true,
@@ -30,6 +30,12 @@ export const CATEGORY_GRAPHICS: CategoryGraphics = {
   label: { projectionPen: 1 },
   'drawing-2d': { projectionPen: 1 },
 };
+
+/** Vzdálená oblast řezu: tenké pero a šedá čára (katalog pohledů: pohled tence). */
+export const FAR_AREA_GRAPHICS: GraphicEffect = { projectionPen: 1, lineColor: '#808080' };
+
+/** Skupina anotací pro značky řezů a pohledů (stálé id, viditelná ve všech stylech). */
+export const SECTION_LAYER = { id: 'ann-sections', name: 'Řezy a pohledy' } as const;
 
 /** Razítko místnosti (ČSN 01 3420, výkresy 1:50 / 1:100): číslo 2,5 mm tučně, ostatní 1,8 mm, řádkování 1,3. */
 export const ROOM_PAPER_SIZES = { roomNumberText: 2.5, roomText: 1.8, roomLineSpacing: 1.3 } as const;

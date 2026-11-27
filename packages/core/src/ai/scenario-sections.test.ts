@@ -35,7 +35,7 @@ describe('AI scénář: řezy a pohledy', () => {
       end: { x: 3000, y: 6000 },
     });
     const row = must(c.ai.call<SectionRow[]>('section.list').find((s) => s.id === id));
-    expect(row).toMatchObject({ kind: 'section', name: 'Řez A', mark: 'A', depth: 15000 });
+    expect(row).toMatchObject({ kind: 'section', name: 'Řez A', mark: 'A', depth: null });
     expect(row.cutPlane3d.normal.x).toBe(-1);
     const content = c.ai.call<Content>('section.elements', { sectionId: id });
     const cutIds = content.cut.map((r) => r.elementId);
@@ -67,5 +67,30 @@ describe('AI scénář: řezy a pohledy', () => {
     c.ai.call('section.delete', { sectionId: ids[3] });
     const after = c.ai.call<SectionRow[]>('section.list');
     expect(after.map((r) => r.name)).toEqual(['Pohled jižní – vstup', 'Pohled východní', 'Pohled severní']);
+  });
+
+  it('zalomený řez se stylem řezu: posun, změna stylu, smazání stylu nechá hodnoty v řezu', () => {
+    const c = start();
+    room(c);
+    const [pid] = c.ai.call<string[]>('sectionPreset.create', { name: 'Blízko', depth: 2000, farClip: 1000 });
+    const points = [
+      { x: 1000, y: -1000 },
+      { x: 1000, y: 2000 },
+      { x: 4000, y: 2000 },
+      { x: 4000, y: 5000 },
+    ];
+    const [id] = c.ai.call<string[]>('section.create', { points, presetId: pid });
+    let row = must(
+      c.ai.call<(SectionRow & Record<string, unknown>)[]>('section.list').find((s) => s.id === id),
+    );
+    expect(row).toMatchObject({ jogged: true, presetName: 'Blízko', depth: 2000, farClip: 1000 });
+    c.ai.call('section.move', { sectionId: id, delta: { x: 500, y: 0 } });
+    c.ai.call('sectionPreset.update', { presetId: pid, depth: 8000 });
+    c.ai.call('sectionPreset.delete', { presetId: pid });
+    row = must(c.ai.call<(SectionRow & Record<string, unknown>)[]>('section.list').find((s) => s.id === id));
+    expect(row).toMatchObject({ presetId: null, depth: 8000, farClip: 1000 });
+    expect((row['points'] as { x: number }[])[0]?.x).toBe(1500);
+    const presets = c.ai.call<{ name: string }[]>('sectionPreset.list');
+    expect(presets.map((p) => p.name)).toContain('Řez – celá hloubka');
   });
 });

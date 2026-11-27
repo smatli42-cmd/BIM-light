@@ -34,6 +34,8 @@ export interface ElementFacts {
   readonly roomCategory?: Id;
   /** Vlastní výchozí grafika prvku (barva kategorie místnosti), patro 1 nad grafikou kategorie. */
   readonly ownDefault?: GraphicEffect;
+  /** Grafika oblasti pohledu (vzdálená oblast řezu), patro 4 před úpravou pohledu podle kategorie. */
+  readonly zoneEffect?: GraphicEffect;
 }
 
 export const variantKey = (v: VariantRef): string =>

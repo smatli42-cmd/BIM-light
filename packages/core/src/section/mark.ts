@@ -49,20 +49,28 @@ export function drawSectionMark(
   if (!g.visible) return [];
   const h = labelText * scale;
   const f = sectionFrame(s);
-  const d = norm(sub(s.end, s.start));
-  const len = dist(s.start, s.end);
-  const endLen = Math.min(MARK_SIZES.end * h, len / 3);
+  const pts = s.points;
   const thick: Stroke = { pen: g.cutPen, color: g.lineColor, lineType: 'solid' };
   const thin: Stroke = { pen: g.projectionPen, color: g.lineColor, lineType: 'dash-dot' };
-  const a1 = add(s.start, mul(d, endLen));
-  const b1 = sub(s.end, mul(d, endLen));
   const src = { elementId: s.id, role: 'značka řezu' };
-  const out: Primitive[] = [
-    { kind: 'line', points: [s.start, a1], closed: false, stroke: thick, source: src },
-    { kind: 'line', points: [b1, s.end], closed: false, stroke: thick, source: src },
-    { kind: 'line', points: [a1, b1], closed: false, stroke: thin, source: src },
-  ];
-  for (const p of [s.start, s.end]) {
+  const out: Primitive[] = [{ kind: 'line', points: pts, closed: false, stroke: thin, source: src }];
+  // Tlusté úsečky na koncích a u každého zalomení (do obou směrů), česky „zalomení vyznačit tlustě“.
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i] as Vec2;
+    for (const q of [pts[i - 1], pts[i + 1]]) {
+      if (!q) continue;
+      const len = Math.min(MARK_SIZES.end * h * (i === 0 || i === pts.length - 1 ? 1 : 0.5), dist(p, q) / 3);
+      out.push({
+        kind: 'line',
+        points: [p, add(p, mul(norm(sub(q, p)), len))],
+        closed: false,
+        stroke: thick,
+        source: src,
+      });
+    }
+  }
+  const ends = [pts[0] as Vec2, pts[pts.length - 1] as Vec2];
+  for (const p of ends) {
     out.push(...arrow(p, f.look, h, g, { ...thin, lineType: 'solid' }));
     const at = add(p, mul(f.look, (MARK_SIZES.arrow + MARK_SIZES.letter * 0.7) * h));
     out.push({

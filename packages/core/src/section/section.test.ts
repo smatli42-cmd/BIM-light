@@ -6,13 +6,14 @@ import { nextSectionMark, type Section } from './types.ts';
 import { compassSide } from './elevations.ts';
 
 const line = { start: { x: 3000, y: -2000 }, end: { x: 3000, y: 2000 } };
+const pts = [line.start, line.end];
 
 describe('rozhodnutí 19: řez jako druh pohledu', () => {
   it('rozhodnutí 19: pohled doleva – osa výkresu jde od startu, doprava od konce (pravá ruka pozorovatele)', () => {
-    const left = sectionFrame({ ...line, direction: 'left', depth: null });
+    const left = sectionFrame({ points: pts, direction: 'left', depth: null });
     expect(left.look).toEqual({ x: -1, y: 0 });
     expect(left.origin).toEqual(line.start);
-    const right = sectionFrame({ ...line, direction: 'right', depth: 5000 });
+    const right = sectionFrame({ points: pts, direction: 'right', depth: 5000 });
     expect(right.look.x).toBeCloseTo(1);
     expect(right.origin).toEqual(line.end);
     expect(right.right.y).toBeCloseTo(-1);
@@ -20,7 +21,14 @@ describe('rozhodnutí 19: řez jako druh pohledu', () => {
   });
 
   it('rozhodnutí 19: úseky přímky řezu v obrysu se odečtou o díry a oříznou na délku čáry', () => {
-    const f = sectionFrame({ start: { x: 0, y: 0 }, end: { x: 1000, y: 0 }, direction: 'left', depth: null });
+    const f = sectionFrame({
+      points: [
+        { x: 0, y: 0 },
+        { x: 1000, y: 0 },
+      ],
+      direction: 'left',
+      depth: null,
+    });
     const outer = [
       { x: -500, y: -10 },
       { x: 800, y: -10 },
@@ -40,7 +48,7 @@ describe('rozhodnutí 19: řez jako druh pohledu', () => {
   });
 
   it('STAV-3d „Řez A ve 3D“: rovina řezu pro 3D okno = bod čáry a směr pohledu', () => {
-    const s = { ...line, direction: 'left', depth: null } as unknown as Section;
+    const s = { points: pts, direction: 'left', depth: null } as unknown as Section;
     expect(sectionCutPlane3d(s)).toEqual({
       origin: { x: 3000, y: -2000, z: 0 },
       normal: { x: -1, y: 0, z: 0 },
@@ -85,7 +93,10 @@ describe('rozhodnutí 19: příkazy řezů', () => {
       kind: 'section',
       name: 'Řez A',
       mark: 'A',
-      depth: 15000,
+      depth: null,
+      farClip: null,
+      presetId: null,
+      annotationLayerId: 'ann-sections',
       scale: 100,
       range: null,
     });
@@ -123,7 +134,7 @@ describe('rozhodnutí 19: příkazy řezů', () => {
     expect(els.every((s) => s.kind === 'elevation' && s.depth === null)).toBe(true);
     const south = sectionFrame(els[0] as Section);
     expect(south.look).toEqual({ x: -0, y: 1 });
-    expect((els[0] as Section).start.y).toBeLessThanOrEqual(-3000);
+    expect((els[0] as Section).points[0]?.y).toBeLessThanOrEqual(-3000);
   });
 
   it('rozhodnutí 19: elevation.create v prázdném modelu odmítne', () => {

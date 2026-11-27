@@ -2,7 +2,8 @@
 import { sectionOf } from '../commands/section/section.ts';
 import { S } from '../commands/schema.ts';
 import { sectionContent } from '../section/content.ts';
-import { sectionCutPlane3d, sectionFrame } from '../section/frame.ts';
+import { effectiveFrame, sectionCutPlane3d } from '../section/frame.ts';
+import { sectionLimits } from '../section/types.ts';
 import { defineQuery } from './types.ts';
 
 export const sectionList = defineQuery<Record<string, never>, unknown>({
@@ -10,25 +11,30 @@ export const sectionList = defineQuery<Record<string, never>, unknown>({
   label: 'Řezy a pohledy',
   description:
     'Řezy a pohledy (fasády) projektu: id, druh (section = řez, elevation = pohled), název, označení, ' +
-    'čára (start, end v mm), směr pohledu (left / right od start → end) a jednotkový vektor look, délka ' +
-    'čáry, hloubka (mm, null = bez omezení), rozsah výšky (null = celá budova), měřítko, styl (id a název), ' +
+    'čára (points v mm, jogged = zalomený), směr pohledu (left / right od směru čáry) a vektor look, ' +
+    'šířka výkresu, styl řezu (presetId, presetName), účinná hloubka depth a vzdálená oblast farClip ' +
+    '(mm, null = neomezená / vypnuto), vrstva značky, rozsah výšky (null = celá budova), měřítko, styl ' +
+    'zobrazení (id a název), ' +
     'filtr rekonstrukce a cutPlane3d (rovina řezu pro 3D: origin, normal = směr pohledu).',
   group: 'Řezy a pohledy',
   params: S.object({}, []),
   run: (m) =>
     Object.values(m.sections).map((s) => {
-      const f = sectionFrame(s);
+      const f = effectiveFrame(m.sectionPresets, s);
       return {
         id: s.id,
         kind: s.kind,
         name: s.name,
         mark: s.mark,
-        start: s.start,
-        end: s.end,
+        points: s.points,
+        jogged: s.points.length > 2,
+        presetId: s.presetId,
+        presetName: s.presetId ? (m.sectionPresets[s.presetId]?.name ?? '') : null,
+        ...sectionLimits(m.sectionPresets, s),
+        annotationLayerId: s.annotationLayerId,
         direction: s.direction,
         look: f.look,
         length: Math.round(f.length),
-        depth: s.depth,
         range: s.range,
         scale: s.scale,
         styleId: s.styleId,
@@ -50,4 +56,18 @@ export const sectionElementsQuery = defineQuery<{ sectionId: string }, unknown>(
   group: 'Řezy a pohledy',
   params: S.object({ sectionId: S.id }, ['sectionId']),
   run: (m, p) => sectionContent(m, sectionOf(m, p.sectionId)),
+});
+
+export const sectionPresetList = defineQuery<Record<string, never>, unknown>({
+  name: 'sectionPreset.list',
+  label: 'Styly řezu',
+  description:
+    'Styly řezu: id, název, hloubka a vzdálená oblast (mm, null = neomezená / vypnuto), počet řezů.',
+  group: 'Řezy a pohledy',
+  params: S.object({}, []),
+  run: (m) =>
+    Object.values(m.sectionPresets).map((p) => ({
+      ...p,
+      used: Object.values(m.sections).filter((s) => s.presetId === p.id).length,
+    })),
 });

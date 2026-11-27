@@ -169,10 +169,14 @@ function attachPartitions(c: SampleContext) {
   c.run('wall.attachTop', { wallIds: ids });
 }
 
-/** Řezy a pohledy (rozhodnutí 19): Řez A přes okna obou podlaží, Řez B napříč, 4 pohledy kolem domu. */
+/** Řezy a pohledy (rozhodnutí 19): Řez A přes okna, Řez B napříč, zalomený Řez C, 4 pohledy kolem domu. */
 export function houseSections(c: SampleContext) {
   c.run('section.create', { start: vec(2250, -2500), end: vec(2250, H + 2500), styleId: projectStyle(c) });
   c.run('section.create', { start: vec(-2500, 3000), end: vec(W + 2500, 3000), styleId: projectStyle(c) });
+  // Zalomený řez se stylem řezu (hloubka 6 m, vzdálená oblast od 3 m): přes obývák a koupelnu.
+  const preset = Object.values(c.model.sectionPresets).find((p) => p.depth === 6000)?.id ?? null;
+  const points = [vec(-2500, 6500), vec(5000, 6500), vec(5000, 8000), vec(W + 2500, 8000)];
+  c.run('section.create', { points, direction: 'right', presetId: preset, styleId: projectStyle(c) });
   c.run('elevation.create', {});
 }
 

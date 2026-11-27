@@ -2,7 +2,13 @@
 import type { Id, IdGenerator } from '../../ids/index.ts';
 import { defaultPenTable } from '../pens.ts';
 import type { DisplaySettings, Layer, LayerCombination, OverrideCombination, Rule, Style } from '../types.ts';
-import { BASE_GRAPHICS, CATEGORY_GRAPHICS, PAPER_SIZES } from './defaults.ts';
+import {
+  BASE_GRAPHICS,
+  CATEGORY_GRAPHICS,
+  FAR_AREA_GRAPHICS,
+  PAPER_SIZES,
+  SECTION_LAYER,
+} from './defaults.ts';
 import { LAYER_PRESETS } from './layers.ts';
 import { COMBO_PRESETS, RULE_PRESETS } from './rules.ts';
 import { STYLE_PRESETS, type StylePreset } from './styles.ts';
@@ -85,7 +91,7 @@ export function createDefaultDisplay(newId: IdGenerator): DisplaySettings {
     ...(c.phase ? { phase: true } : {}),
   }));
   const { styles, layerCombos } = buildStyles(layers, layerId, comboId, newId);
-  return {
+  return withSectionLayer({
     schemaVersion: DISPLAY_SCHEMA_VERSION,
     layers: byId(layers),
     layerCombinations: byId(layerCombos),
@@ -96,8 +102,25 @@ export function createDefaultDisplay(newId: IdGenerator): DisplaySettings {
     baseGraphics: BASE_GRAPHICS,
     categoryGraphics: CATEGORY_GRAPHICS,
     paperSizes: PAPER_SIZES,
+    farArea: FAR_AREA_GRAPHICS,
     hatches: {},
-  };
+  });
+}
+
+/**
+ * Doplní skupinu anotací „Řezy a pohledy“ (stálé id, aby se nové id ostatních položek neposunula),
+ * viditelnou ve všech stylech; i pro migraci starších projektů.
+ */
+export function withSectionLayer(d: DisplaySettings): DisplaySettings {
+  if (d.layers[SECTION_LAYER.id]) return d;
+  const layer: Layer = { ...SECTION_LAYER, kind: 'annotation', categories: [] };
+  const combos = Object.fromEntries(
+    Object.values(d.layerCombinations).map((c) => [
+      c.id,
+      { ...c, states: { ...c.states, [layer.id]: { visible: true, locked: false } } },
+    ]),
+  );
+  return { ...d, layers: { ...d.layers, [layer.id]: layer }, layerCombinations: combos };
 }
 
 function withoutKey<T extends { key: string }>(item: T): Omit<T, 'key'> {

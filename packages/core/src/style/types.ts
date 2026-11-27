@@ -166,6 +166,11 @@ export interface DisplaySettings {
   readonly baseGraphics: ResolvedEffect;
   readonly categoryGraphics: CategoryGraphics;
   readonly paperSizes: PaperSizes;
+  /**
+   * Grafika vzdálené oblasti řezu (Archicad „Distant Area“): prvky dál než „vzdálená oblast od“ dostanou
+   * tento efekt jako úpravu pohledu (patro 4); chybí = beze změny.
+   */
+  readonly farArea?: GraphicEffect;
   /** Kopie šraf použitých v projektu s odkazem na původ (základy 21, 34); jsou součástí balíčku. */
   readonly hatches: Readonly<Record<string, Hatch>>;
 }

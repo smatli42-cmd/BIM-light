@@ -12,14 +12,17 @@ import { HOUSE } from './house.ts';
 export const SCENES: readonly Sample[] = [
   {
     key: 'rezy',
-    title: 'Řezy a pohledy z modelu',
+    title: 'Řezy a pohledy z modelu, nástroj Řez',
     kind: 'scena',
     date: '2026-11-27',
     description:
       'Ukázkový dům s řezy A, B a čtyřmi pohledy. V půdorysu je značka řezu (tlusté konce, šipky, písmeno). ' +
       'Zkus: Obsah → Projekt → Řezy → Řez A: stěny a desky proříznuté po vrstvách se šrafami, za rovinou ' +
       'tenké pohledové hrany, úrovně podlaží s výškovými kótami. Kolečko přibližuje, tažení posouvá. ' +
-      'Pohledy → Pohled jižní (fasáda). Uprav v půdorysu stěnu nebo otvor – řez se přepočítá.',
+      'Pohledy → Pohled jižní (fasáda). Řez C je zalomený se stylem „6 m, vzdálená oblast od 3 m“ (vzdálené ' +
+      'prvky tence šedě). Nástroj Řez v paletě: klik začátek, konec, klik na stranu pohledu; v info boxu ' +
+      'styl, vrstva, rovný / zalomený, hloubka, vzdálená oblast. Výběr: klik na čáru řezu, úchyty na koncích, ' +
+      'tažení čáry posune, dvojklik otevře řez, Del smaže.',
     build(c) {
       HOUSE.build(c);
     },

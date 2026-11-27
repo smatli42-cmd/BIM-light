@@ -4,7 +4,7 @@
 import type { Id } from '../ids/index.ts';
 import type { Model } from '../model/types.ts';
 import { slabCut, wallCut, type CutPiece } from './cut.ts';
-import { sectionFrame } from './frame.ts';
+import { effectiveFrame } from './frame.ts';
 import { ringsOf } from './pieces.ts';
 import { slabProjection, wallProjection, type Projected } from './projection.ts';
 import type { Section } from './types.ts';
@@ -56,7 +56,7 @@ function seenRow(category: string, p: Projected | null): SeenRow[] {
 }
 
 export function sectionContent(model: Model, s: Section): { cut: CutRow[]; seen: SeenRow[] } {
-  const f = sectionFrame(s);
+  const f = effectiveFrame(model.sectionPresets, s);
   const els = sectionElements(model, s);
   const m = els.model;
   const cut =

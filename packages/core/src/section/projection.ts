@@ -14,7 +14,7 @@ import { wallGeometry } from '../wall/geometry.ts';
 import type { Wall } from '../wall/types.ts';
 import { wallHeight } from '../wall-height/resolve.ts';
 import { cropToRange, slabPlan } from './cut.ts';
-import { toFrame, viewZone, type SectionFrame } from './frame.ts';
+import { partZone, toFrame, type SectionFrame } from './frame.ts';
 import type { SectionRange } from './types.ts';
 
 export interface Projected {
@@ -32,8 +32,15 @@ interface Extent {
 
 /** Rozsah u a nejbližší hloubka části půdorysu v pásmu pohledu; null = mimo pásmo. */
 export function extentInZone(f: SectionFrame, plan: readonly PlanePolygon[]): Extent | null {
-  const inZone = clipRect(plan, viewZone(f));
-  const pts = inZone.flatMap((p) => p.outer).map((p) => toFrame(f, p));
+  // Zalomený řez: každý úsek má své pásmo od své roviny; hloubka se měří od roviny úseku.
+  const pts = f.parts.flatMap((part) =>
+    clipRect(plan, partZone(f, part))
+      .flatMap((p) => p.outer)
+      .map((p) => {
+        const q = toFrame(f, p);
+        return { u: q.u, d: q.d - part.d0 };
+      }),
+  );
   if (!pts.length) return null;
   const us = pts.map((p) => p.u);
   const u0 = Math.min(...us);

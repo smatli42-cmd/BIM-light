@@ -60,6 +60,7 @@ function layersFor(display: DisplaySettings, view: GraphicView, facts: ElementFa
     ...ruleLayers(display, comboId, facts),
     // Filtr rekonstrukce (fáze) má přednost před grafickými přepisy, oba jsou patro pravidel.
     ...ruleLayers(display, view.phaseFilterId ?? '', facts),
+    { level: 4, source: 'vzdálená oblast řezu', effect: facts.zoneEffect },
     { level: 4, source: `pohled ${view.name}`, effect: view.local.categoryGraphics?.[cat] },
     { level: 5, source: 'přepis prvku', effect: facts.graphicOverride },
     { level: 6, source: `přepis prvku v pohledu ${view.name}`, effect: view.elementOverrides[facts.id] },

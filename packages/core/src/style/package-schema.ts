@@ -142,6 +142,7 @@ export const DISPLAY_SETTINGS_SCHEMA: JsonSchema = {
       ['scales', 'pens'],
     ),
     baseGraphics: effect,
+    farArea: effect,
     categoryGraphics: { type: 'object' },
     paperSizes: {
       type: 'object',

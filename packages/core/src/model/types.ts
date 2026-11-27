@@ -18,10 +18,10 @@ import type { Slab, SlabType } from '../slab/types.ts';
 import type { Room } from '../room/types.ts';
 import type { RoomCategory } from '../room/category.ts';
 import type { CoveringType } from '../covering/types.ts';
-import type { Section } from '../section/types.ts';
+import type { Section, SectionPreset } from '../section/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 31;
+export const SCHEMA_VERSION = 32;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -136,6 +136,8 @@ export interface Model {
   readonly views3d: Readonly<Record<Id, View3d>>;
   /** Řezy a pohledy (fasády) generované z modelu (rozhodnutí 19); značka řezu je anotace v půdorysu. */
   readonly sections: Readonly<Record<Id, Section>>;
+  /** Styly řezu: pojmenované předvolby hloubky a vzdálené oblasti (Ardit „Styl“ u nástroje Řez). */
+  readonly sectionPresets: Readonly<Record<Id, SectionPreset>>;
   /** Výkazy a legendy (základ 8, plán stěn Z8): definice tabulek z modelu. */
   readonly schedules: Readonly<Record<Id, ScheduleDef>>;
   /** Značky typu stěn v půdorysu (plán stěn Z8): popisky podlaží se skupinou anotací (základ 28). */

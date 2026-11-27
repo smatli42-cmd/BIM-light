@@ -2,7 +2,8 @@
 import { elevationsAround, ELEVATION_MARGIN } from '../../section/elevations.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
-import { newSection, putSection } from './section.ts';
+import { putSection } from './section.ts';
+import { newSection } from './shape.ts';
 
 export const elevationCreate = defineCommand<{ margin?: number; scale?: number }>({
   name: 'elevation.create',

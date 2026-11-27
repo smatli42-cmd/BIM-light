@@ -14,7 +14,7 @@ import { modelCheck } from './check.ts';
 import { wallPropertiesQuery } from './wall-properties.ts';
 import { scheduleFields, scheduleList, scheduleTable } from './schedules.ts';
 import { wallTagList } from './tags.ts';
-import { sectionElementsQuery, sectionList } from './sections.ts';
+import { sectionElementsQuery, sectionList, sectionPresetList } from './sections.ts';
 import { compositionList } from './compositions.ts';
 import { slabList, slabOpeningList, slabTypeList } from './slabs.ts';
 import { outlineTempDimensionList } from './outline-dims.ts';
@@ -61,5 +61,6 @@ export const CORE_QUERIES = [
   wallTagList,
   sectionList,
   sectionElementsQuery,
+  sectionPresetList,
   compositionList,
 ];

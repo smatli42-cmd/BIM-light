@@ -1,6 +1,7 @@
 // Příkaz: smazat výběr najednou (pravidla-interakce, kóty 12): vybrané stěny, otvory i kóty jedním krokem.
 import type { Id } from '../../ids/index.ts';
-import { removeDimensions, removeRooms, removeSlabOpenings } from '../../model/update.ts';
+import { omitIds, removeDimensions, removeRooms, removeSlabOpenings } from '../../model/update.ts';
+import { sectionOf } from '../section/section.ts';
 import { roomOf } from '../room/room.ts';
 import { slabOpeningOf } from '../slab-opening/edit.ts';
 import { deleteElements, deleteOpenings } from '../../rules/delete.ts';
@@ -19,17 +20,26 @@ export const selectionDelete = defineCommand<{
   slabIds?: Id[];
   slabOpeningIds?: Id[];
   roomIds?: Id[];
+  sectionIds?: Id[];
 }>({
   name: 'selection.delete',
   label: 'Smazat vybrané',
   description:
     'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), ' +
-    'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds), místnosti (roomIds) a kóty ' +
-    'jedním krokem.',
+    'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds), místnosti (roomIds), řezy ' +
+    '(sectionIds) a kóty jedním krokem.',
   group: 'Úpravy',
   shortcut: 'Delete',
   params: S.object(
-    { wallIds: IDS, dimensionIds: IDS, openingIds: IDS, slabIds: IDS, slabOpeningIds: IDS, roomIds: IDS },
+    {
+      wallIds: IDS,
+      dimensionIds: IDS,
+      openingIds: IDS,
+      slabIds: IDS,
+      slabOpeningIds: IDS,
+      roomIds: IDS,
+      sectionIds: IDS,
+    },
     [],
   ),
   run(model, p) {
@@ -39,7 +49,16 @@ export const selectionDelete = defineCommand<{
     const slabs = p.slabIds ?? [];
     const holes = p.slabOpeningIds ?? [];
     const rooms = p.roomIds ?? [];
-    if (!walls.length && !dims.length && !ops.length && !slabs.length && !holes.length && !rooms.length)
+    const secs = p.sectionIds ?? [];
+    if (
+      !walls.length &&
+      !dims.length &&
+      !ops.length &&
+      !slabs.length &&
+      !holes.length &&
+      !rooms.length &&
+      !secs.length
+    )
       fail('invalid', 'Nic není vybráno');
     holes.forEach((id) => slabOpeningOf(model, id));
     walls.forEach((id) => wallOf(model, id));
@@ -47,10 +66,12 @@ export const selectionDelete = defineCommand<{
     ops.forEach((id) => openingOf(model, id));
     slabs.forEach((id) => slabOf(model, id));
     rooms.forEach((id) => roomOf(model, id));
+    secs.forEach((id) => sectionOf(model, id));
     const m = deleteOpenings(
       removeSlabOpenings(removeDimensions(removeRooms(model, rooms), dims), holes),
       ops.filter((id) => model.openings[id]),
     );
-    return { model: deleteElements(m, [...walls, ...slabs]) };
+    const done = deleteElements(m, [...walls, ...slabs]);
+    return { model: secs.length ? { ...done, sections: omitIds(done.sections, secs) } : done };
   },
 });
