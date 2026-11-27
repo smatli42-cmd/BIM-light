@@ -111,112 +111,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   řádky 1,8 mm, řádkování 1,3 × výška; velikosti v `display.paperSizes` (`roomNumberText`, `roomText`,
   `roomLineSpacing`; migrace zobrazení 8 → 9, projektu 24 → 25). Ověřeno v 1:100 i 1:50 (`?ukazka=mistnosti`).
 
-### Přesný otvor v desce: vodítka, dočasné kóty, tracker, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-presny-otvor`)
-
-- Přichytávání (základ 20, jádro `snap/outline-snap.ts`): roh, střed hrany, hrana, kolmo k hraně a průsečík
-  hran desek / otvorů v deskách mezi sebou i s lícem stěny; pomocné čáry i z rohů obrysů a z už položených
-  bodů (`guidePoints`). Platí pro všechny nástroje (stěna, kóta, posun bodu obrysu).
-- Tracker: obdélník Šířka / Hloubka (Tab, Enter, znaménko podle strany kurzoru), natočený délka + úhel hrany
-  a pak Šířka (`snap/rect-tracker.ts`); mnohoúhelník beze změny.
-- Dočasné kóty obrysu (`dimension/outline-temp.ts`): X a Y na obě strany k nejbližšímu líci stěny / hraně
-  desky / otvoru. Při kreslení i u vybrané desky a otvoru; klik na číslo posune. Příkaz `outline.setDistance`,
-  dotaz `outline.tempDimensions`; kolečko udělá trvalou kótu. Dům: schodiště 100 mm od líce.
-- Testy: `outline-temp.test.ts`, `outline-snap.test.ts`, AI `scenario-slab-dims.test.ts`, e2e `desky-koty.spec.ts`.
-- Oprava (hlášení uživatele): kříž v otvoru tvaru L vedl mimo otvor. Teď `slab-opening/cross.ts`: konvexní
-  beze změny, pravoúhlý obrys = kříž v každém obdélníku rozkladu, obecný = úhlopříčky obálky jen uvnitř.
-  Test `cross.test.ts`, scéna `?ukazka=desky-otvory`.
-
-### Velikost rozhraní, 2026-11-27 (pokyn uživatele: rozhraní a ikony jsou malé)
-
-- Horní lišta vpravo vedle motivu: volba **Aa Malé / Střední / Velké / Největší** (85 / 100 / 115 / 130 %),
-  pamatuje se jako motiv (`ui/theme.ts`). Výchozí Střední = o 20 % větší než dřív (úroveň Arditu).
-- CSS v rem (1 rem = 10 px × `--ui-k`, `styles/theme.css`, `session/ui-scale.ts`), rámečky a stíny v px;
-  ikony v rem, šířky panelů rostou s velikostí (nejvýš 25 % okna). Lišty se v úzkém okně zalomí.
-- Texty u kurzoru kreslené do plátna (přichycení, dočasné kóty) rostou s volbou; výkres z jádra se nemění.
-  Ctrl + / Ctrl − přibližují jen výkres (dřív zvětšoval prohlížeč celou stránku).
-- Testy: `session/ui-scale.test.ts`, e2e `velikost-ui.spec.ts`.
-
-### Desky D4, 2026-11-27 (scéna `?ukazka=desky-d4`; příčky k stropu a kóta k otvoru v `?ukazka=dum`)
-
-- **Vršek stěny k desce:** druh vršku `{ kind: 'slab', slabId, offset }` ve výšce stěny (spodní líc desky +
-  odsazení), počítá se z desky – změna výšky, typu (tloušťky) i podlaží stěnu přepočítá. Příkazy
-  `wall.attachTop` (bez slabId najde desku nad stěnou) a `wall.detachTop`, dotaz `wall.topSlab`; smazaná
-  deska stěny odpojí se stejnou výškou. Info box stěny: Vršek → „Vršek k desce“.
-- **Výkaz desek** (zdroj `slabs`, migrace 21 → 22 přidá „Výkaz desek“): značka, typ, podlaží, tloušťka,
-  plocha, plocha bez otvorů (mez odečtu jako u stěn), obvod, objem; v Obsahu → Projekt → Výkazy.
-- **Kóty k deskám:** odkaz kóty `DimRef` = líc stěny NEBO hrana / roh obrysu desky či otvoru v desce
-  (`outline`, `ownerId`, `edge` / `vertex`). Nástroj Kóta se přichytí na hrany a rohy (roh má přednost);
-  kóta patří podlaží desky; změna čísla posune desku (otvor). Zaniklá hrana (smazání, jiný počet bodů) kótu smaže.
-- Testy: `wall-height/attach.test.ts`, `schedule/slabs.test.ts`, `dimension/outline.test.ts`, AI scénář
-  `ai/scenario-slabs-d4.test.ts`, e2e `desky-d4.spec.ts`.
-
-### Obsah → Projekt: 3D pohledy a zvýraznění pracovního okna, 2026-11-27 (pokyn uživatele se screenshotem)
-
-- Skupina „3D“ s 3D pohledy projektu (klik otevře 3D okno s tím pohledem). Zvýrazněné je okno, ve kterém
-  se pracuje (rámeček, i vedle 3D okna) a jeho položka v Obsahu (podlaží, nebo 3D pohled); klik do okna
-  zvýraznění přepne. e2e `obsah-3d.spec.ts`.
-- Oprava (hlášení uživatele se screenshoty): Obsah otevírá do okna, ve kterém se pracuje – pracuje-li se
-  ve 3D, podlaží / pohled nahradí 3D okno vpravo (levé se nemění). Rámeček aktivního okna je vrstva nad
-  obsahem (dřív ho hlavička a plátno překrývaly). Předzvýraznění prvku zmizí, když myš opustí okno.
-- Pokyn uživatele: 3D z Obsahu nahradí aktivní okno půdorysu (u dvou oken to aktivní, druhé zůstane;
-  u jediného okna se ukáže jen 3D a podlaží z Obsahu ho vrátí). F4 a tlačítko 3D dál otevírají 3D vedle.
-
-### 3D pohled jako data a průhlednost povrchu, 2026-11-27 (požadavky 3D proudu)
-
-- `views3d` (migrace 20 → 21): 3D pohled s názvem, víc instancí; styl, vrstvy, filtr rekonstrukce a
-  přepisy jako u půdorysu (funkce grafiky bere `GraphicView`), `storeyIds` (null = všechna) a
-  `sectionBox` (kvádr v mm, osy modelu). Nový projekt i migrace mají výchozí „3D“. Příkazy `view3d.create /
-  rename / delete / setStoreys / setSectionBox / setStyle / setPhaseFilter / setLayerState`, dotaz
-  `view3d.list`, AI scénář. Grafika: `surfaceTransparency` (null = materiál), bourání 50 %.
-
-### Desky D3: otvory v deskách, 2026-11-27 (scéna `?ukazka=desky-otvory`; otvor pro schodiště v `?ukazka=dum`)
-
-- Jádro: `slabOpenings` (migrace 18 → 19) – svislý otvor, obrys v půdorysu, hostitelé `hostIds` = desky
-  podlaží pod obrysem (strop i podlaha najednou). Příkazy `slabOpening.create / setOutline / moveVertex /
-  move`, mazání `selection.delete` (`slabOpeningIds`); smazaná deska zmizí z hostitelů, otvor bez desky
-  zanikne; posun desky vezme otvory, které jsou jen v ní. Dotaz `slabOpening.list`, `slab.list` má
-  `netArea` a počet otvorů. Půdorys: obrys + úhlopříčky, v deskách nad řezem čárkovaně (grafika „opening“).
-  IFC: IfcOpeningElement + IfcRelVoidsElement ke každé desce (ověřeno web-ifc).
-- Sandbox: nástroj Otvor → „V desce“ (mnohoúhelník / obdélník / natočený), výběr klikem i rámečkem,
-  tažení, body obrysu, Del; info box s plochou a deskami.
-
-### Barva povrchu ve 3D v grafice, 2026-11-27 (požadavek 3 z 3D proudu, `docs/STAV-3d.md`)
-
-- Efekt grafiky má `surfaceColor` (null = barva materiálu; Archicad Override Surface), odděleně od výplně
-  řezu. Výchozí null, pravidlo „Bourání žlutě čárkovaně“ ho nastaví sytě žlutě (#f2c200; světlá #fff3b0
-  ve 3D splývala s omítkou, migrace 19 → 20); „proč“ v `resolveGraphics`,
-  schéma balíčku. Migrace projektu 17 → 18 a balíčku zobrazení 5 → 6.
-
-### Desky D2: nástroj Deska, 2026-11-27 (hlavní proud; scéna `?ukazka=desky-kresleni`; screenshot Arditu)
-
-- Jádro: `slab.create` umí obrys i ze stěn (`walls: { wallIds, boundary: face | core }`) – stěny se seřadí do
-  smyčky podle konců, vnitřní líc (nebo líc nosného jádra) sousedních stěn se protne; oblouková stěna dá
-  oblouk rozložený na body. Výběr desky: `slabsAt` (klik do obrysu / na hranu, výš položená první),
-  rámeček (`boxSelect` vrací `slabIds`, filtr „Vybírat desky“), karta prvku a dotaz `element.info` u desky.
-- Sandbox: nástroj **Deska (S)** v paletě; metody v info boxu: mnohoúhelník (tracker délka / úhel, klik na
-  první bod, dvojklik nebo pravé tlačítko uzavře, Backspace vrátí bod), obdélník, natočený obdélník, podle
-  stěn (klik na stěny, Enter). Info box podle Arditu: typ, metoda, konstrukce (skladba, tloušťka, vrstvy
-  shora), ref. rovina, horní hrana k podlaží, nosný, stav nových prvků.
-- Výběr desky: klik, Shift, rámeček, Ctrl+A; tažení posune (`slab.move`), čtverečky v bodech obrysu se
-  táhnou nebo klikají (`slab.moveVertex`), Del smaže. Info box vybraných: typ, horní hrana, funkce, horní a
-  spodní líc, plocha, obvod, skladba.
-- Testy: obrys ze stěn (obdélník, pořadí, jádro, oblouk), výběr, karta, AI scénář krok D2, e2e `desky.spec.ts`.
-
-### Desky D1: jádro, 2026-11-27 (hlavní proud; scéna `?ukazka=desky`, desky i v `?ukazka=dum`)
-- **Data:** deska je prvek `Element = Wall | Slab` (`slab/`), kategorie `slab`, obrys = mnohoúhelník,
-  `topOffset` = horní líc nad úrovní podlaží, tloušťka dolů podle skladby typu. `slabFunction`: nosná
-  deska / skladba podlahy (rozhodnutí sekce 5: dvě samostatné desky). Typy desek `slabTypes` (název,
-  značka D1/P1, skladba „pro desku“ ze společných skladeb, nosná); knihovna 4 typů. Migrace 16 → 17.
-- **Příkazy:** `slab.create` (outline / rect), `slab.update`, `slab.setOutline`, `slab.moveVertex`,
-  `slab.move` (i kopie), `slabType.duplicate / update / delete`, `selection.delete` s `slabIds`. Dotazy
-  `slab.list` (výšky líců, plocha m², obvod) a `slabType.list`; AI scénář `ai/scenario-slabs.test.ts`.
-- **Kresba v půdorysu:** pod rovinou řezu plný obrys perem pohledu (2), nad řezem čárkovaně, v řezu perem
-  řezu; vrstva Desky, filtr rekonstrukce a pravidla přes funkci grafiky; kreslí se pod stěnami.
-- **IFC:** strop = IfcSlab FLOOR + IfcSlabType, podlaha = IfcCovering FLOORING + IfcCoveringType;
-  tělo vytažené z obrysu, IfcMaterialLayerSetUsage AXIS3, Pset_SlabCommon / Pset_CoveringCommon
-  (ověřeno web-ifc). Materiál ve skladbě desky se počítá do použití materiálu; podlaží s deskou nejde smazat.
-- Prvky se v jádru i sandboxu čtou přes `findWall` / `allWalls` (stěnové nástroje desky ignorují).
-  `check:size` přeskakuje `.claude` (worktree druhého proudu).
+### Desky D1–D4, přesný otvor, velikost rozhraní, 3D pohledy (2026-11-27) – v `docs/STAV-archiv.md`
 
 ### Starší kroky (kóty, stěny Z7–Z10, editor typů, opravy 2026-11-26) – v `docs/STAV-archiv.md`
 
@@ -358,84 +253,26 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-- **Uživatel vyzkouší podlahu pod dveřmi:** `?ukazka=podlaha-dvere` – klik na otvor v příčce → Podlaha
-  v otvoru; posun otvoru / příčky; klik na podlahu → plocha; 3D (F4).
-- **Uživatel vyzkouší typy desek:** `?ukazka=typy-desek` – levý panel → Editor typů → Desky; změnit tloušťku
-  vrstvy, přidat vrstvu navrch, Duplikovat a přejmenovat, Smazat; vybrat desku → Upravit v editoru typů.
-- **Uživatel vyzkouší vazbu desky:** `?ukazka=desky-vazba` – M a posun příčky / pravé stěny (podlahy
-  i strop se přepočítají, ve 2.NP ruční podlaha ne); klik na podlahu u hrany → Vazba obrysu; tažení rohu →
-  „zamčeno“ → Obnovit vazbu; S → Podle místnosti a klik do místnosti; Výkazy → Výkaz desek.
-- **Uživatel vyzkouší spárořez:** `?ukazka=sparorez` – klik do koupelny → Povrchy → Spárořez (úzké řezy),
-  táhni křížek počátku dlažby, nebo X 0 / Y 200; posuň příčku; Výkazy → Výkaz dlaždic (prořez 10 %).
-- **3D proud:** spáry ve 3D z dotazu `covering.joints` (tvar v poznámkách koordinátora).
-- **Hlavní proud dál:** podlahy a stropy (pořadí povrchů).
+Stav k 2026-11-27 večer (přechod na jiný počítač): vše je v `main`, CI zelené, žádná rozdělaná práce.
+Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou
+v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
 
-- **Uživatel vyzkouší povrchy:** `?ukazka=povrchy` – klik do koupelny → Povrchy (zóny, podlaha, strop,
-  plochy); klik kousek od líce stěny → Vlastní zóny; posuň okno / příčku; Výkazy → Výkaz povrchů.
-- **3D proud:** povrchy ve 3D z dotazu `covering.surfaces` (tvar v poznámkách koordinátora).
-- **Hlavní proud dál:** spárořez (mřížka dlaždic oříznutá na plochu, odřezy, výchozí bod) → podlahy a stropy.
+1. **Řezy a pohledy z modelu** (rozhodnuto uživatelem jako další krok; `docs/rozhodnuti-platforma-ui-vystupy.md`,
+   `docs/checklist-dps-bim-light.md`): řez jako druh pohledu (`core/src/section/` – čára řezu, směr, hloubka,
+   Řez A/B, styl, měřítko, fáze), Pohled 1–4 (fasády); kresba z modelu – stěny a desky po vrstvách se šrafami
+   přes funkci grafiky, prvky za rovinou tenčím perem, podrobnost, výškové kóty a úrovně podlaží; značka řezu
+   v půdorysu (ČSN, anotace podlaží); příkazy `section.*`, `elevation.create`, dotaz `section.list`, AI
+   scénář; nástroj Řez, Obsah → Projekt skupiny Řezy a Pohledy; data řezu použitelná pro 3D „Řez A / Řez B“
+   (rozbalovač v liště 3D okna). Před rozhraním si vyžádat screenshot z Arditu.
+2. **Spáry ve 3D** (3D okno) z dotazu `covering.joints` (tvar ve `docs/STAV-3d.md` / popis dotazu v registru).
+3. **Podlahy a stropy** (poslední část povrchů místností) a rozvinutý pohled stěny se spárořezem (Otevřené).
+4. Body „Rozhodl Code (k potvrzení)“ projít s uživatelem.
 
-- **Uživatel vyzkouší D4:** `?ukazka=desky-d4` – vybrat stěnu → Vršek „Vršek k desce“; v 2.NP změnit strop
-  (horní hrana, typ) a zkontrolovat výšku stěn 1.NP; D → hrana / roh desky a otvoru; Výkazy → Výkaz desek.
-- **Uživatel vyzkouší místnosti:** `?ukazka=mistnosti` – N a klik do chodby; klik do místnosti / na razítko,
-  info box, tažení razítka; posun příčky; Výkazy → Výpis místností; Exportovat IFC (IfcSpace).
-- **Hlavní proud dál:** povrchy místností část 2 – plochy povrchů, typy úprav, zóny, výkaz (návrh níže);
-  místnosti ve 3D předá koordinátor 3D proudu; záložka Typ desky (Otevřené).
-- **Uživatel vyzkouší D3:** `?ukazka=desky-otvory` – O → V desce, obdélník do desky; klik do otvoru,
-  tažení, body, Del; posun desky s otvorem; IFC v BIMvision.
-  Deska v 3D: druhý proud po sloučení `main` do své větve (desky už v `main` jsou).
-- **Povrchy místností (návrh 3D proudu; uživatel 2026-11-27 potvrdil: hned po deskách D3–D4):** základ 14, rozhodnutí
-  prvky-stavby sekce 9. Jedna spočítaná plocha povrchu v jádře = zdroj pro 3D, rozvinutý pohled i výkaz.
-  Pořadí: místnosti z líců stěn (ČSN 73 4301) → plochy povrchů (líc v místnosti rozvinutý do roviny, minus
-  otvory, plus ostění, s transformací do 3D) + typy úprav (IfcCovering: materiál, formát, spára,
-  zarovnání) + výškové zóny + výkaz m² → spárořez (mřížka oříznutá na obrys, odřezy) → podlahy a stropy.
-  Příkazy `covering.assign`, `covering.setOrigin`; dotaz pro 3D vrátí plochy (obrys, transformace,
-  surfaceColor, spáry jako úsečky).
-- **Uživatel vyzkouší D2:** `?ukazka=desky-kresleni` – S → metoda Podle stěn: klik na stěny L a Enter (líc /
-  líc jádra); Mnohoúhelník, Obdélník, Natočený obdélník; pak Esc, klik do desky, tažení, čtverečky v rozích,
-  info box (horní hrana, typ), Del.
-- **Uživatel vyzkouší D1:** `?ukazka=desky` – obrysy desek, čárkovaná podesta, Obsah → vrstva Desky
-  skrýt / zobrazit; Exportovat IFC a v BIMvision IfcSlab a IfcCovering se skladbou; `?ukazka=dum` desky ve
-  1.NP i 2.NP.
-- **Druhý proud běží:** 3D náhled ve vlastním worktree (větev `nahled-3d`), stav v `docs/STAV-3d.md`.
-- **Dohoda 2026-11-27: dva paralelní proudy** podle
-  `docs/postup-etapy-bim-light.md` (Předplatné a paralelní práce):
-  - **Hlavní proud (tato session, jádro):** desky D1–D4 (data, kresba, IFC; kreslení obdélník /
-    mnohoúhelník / podle stěn; otvory v desce; vazba vršku stěny, výkazy). Před rozhraním vyžádat
-    screenshoty z Arditu (kreslení desky, info box desky, deska v půdorysu).
-  - **Druhý proud (samostatná session, vlastní worktree a větev):** 3D náhled modelu – nový modul, jádro jen
-    čte (3D geometrie stěn a otvorů), okno vedle půdorysu. Stav do `docs/STAV-3d.md`, scény do vlastního
-    souboru scén; jádro nemění (potřebuje-li změnu jádra, požádá hlavní session). Sloučení do `main` až po
-    zelených testech a souhlasu uživatele.
-- **Uživatel vyzkouší skladby (krok 3):** Editor typů → u typu pole Skladba – vybrat jinou skladbu (typ
-  ji pak sdílí), upravit vrstvu a zkontrolovat druhý typ, Použít pro.
-- **Uživatel vyzkouší Z9:** vybrat stěnu → Úpravy → Nasát vlastnosti, vybrat jinou → Přenést; Úpravy →
-  Vybrat stejné; nástroj Rozdělit s mezerou (Volby příkazu → mezera).
-- **Uživatel vyzkouší Z10:** stávající stěna s novým otvorem (Otvor, stav nových prvků „Nový“) a filtr
-  rekonstrukce Stávající / Nový stav; Kontrola v info boxu (dvě překrývající se stěny, příčka 5 cm od zdi).
-- **Další:** podle `docs/postup-etapy-bim-light.md` (stěny Z1–Z10 hotové kromě importu ze zaměřování
-  a kouzelné hůlky, které čekají na etapu 3) – navrhnu další etapu, nebo desky (otázka E plánu stěn).
-- Uživatel posoudí šrafy po opravě velikosti a novou tepelnou izolaci (typ Obvodová zateplená 465, styl
-  Projekt) a řekne, které doladit.
-- Uživatel vyzkouší stěny Z5 (nástroj Oblouková stěna, tažení kolečka zakřivení, kruh ze dvou oblouků
-  s otvorem, Okótovat celou stěnu u oblouku, galerie oblouků, IFC obloukové stěny v BIMvision) a potvrdí
-  body „Rozhodl Code“ u Z4 a Z5.
-- Uživatel vyzkouší UI2–UI4 (info box, Obsah a pohledy, Najít a vybrat, spodní lišta, dvě okna,
-  trasování, vrstvy, izolovat / odhalit, pera).
-- UI5, stěny Z6 a rekonstrukce (filtr rekonstrukce, stav nových prvků) uživatel vyzkoušel 2026-11-26:
-  „vše funguje“ (po opravě mezery v plánovaném stavu).
-- **Uživatel vyzkouší Z8:** Obsah → Projekt → Výkazy → Výkaz stěn (přepočítá se po změně stěn), Výkaz
-  materiálů, Legenda skladeb, + Nový výkaz, Exportovat CSV a otevřít v Excelu; vybrat stěnu → Popis →
-  Značka typu v půdorysu; Výběr bez výběru → Označit všechny stěny; přepočet výkazu ručně na pilotním projektu.
-- **Uživatel vyzkouší Z7:** vybrat stěnu → info box Vlastnosti (nosná, požární odolnost), záložka Typ →
-  Vlastnosti typu, spodní lišta → Jen jádro nosných, Exportovat IFC a otevřít v BIMvision (Pset_WallCommon
-  u stěny i typu, skladba).
+**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `podlaha-dvere`, `typy-desek`, `desky-vazba`,
+`sparorez`, `povrchy`, `mistnosti`, `desky-d4`, `desky-presny-otvor`, `desky-otvory`, `desky-kresleni`,
+`desky`, `dum` (i s `&3d`). Starší seznam „vyzkouší“ je v `docs/STAV-archiv.md`.
 
 ## Otevřené
-
-- **STAV.md má 41 KB (limit ~40 KB) – návrh rozdělení (k potvrzení):** hotové kroky desek D1–D4, přesný otvor
-  a vazbu desky přesunout do `docs/STAV-desky.md`, místnosti a povrchy (části 1–3) do `docs/STAV-mistnosti.md`;
-  v STAV.md nechat odkazy, Rozhodl Code, Další krok a Otevřené.
 
 - **Povrchy – zbývá:** okno typů úprav (dnes jen příkazy / AI a výběr v info boxu), rozvinutý pohled
   stěny se spárořezem (dotaz `covering.joints` ho umí), spárořez stropu (podhledu) v pohledu nahoru, vazba

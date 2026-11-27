@@ -111,7 +111,7 @@ piš česky, stručně, odborný pojem vysvětli jednou větou. Na začátku ka�
 
 ## Začátek na jiném počítači („pokračujeme“)
 
-Když uživatel napíše „pokračujeme“ (nebo začíná na počítači, kde ještě nic není), udělej sám:
+Když uživatel napíše „pokračujeme“ nebo „pokračuj“ (nebo začíná na počítači, kde ještě nic není), udělej sám:
 
 1. Repo: když chybí, `git clone https://github.com/smatli42-cmd/BIM-light.git`; jinak `git pull` na `main`.
    Ověř `git status` (čisto) a že poslední commit odpovídá GitHubu.
