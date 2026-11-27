@@ -48,5 +48,6 @@ export const PAPER_SIZES: PaperSizes = {
   dimensionTextGap: 0.8,
   extensionGap: 1,
   extensionOvershoot: 1.5,
+  levelMark: 2.5,
   ...ROOM_PAPER_SIZES,
 };

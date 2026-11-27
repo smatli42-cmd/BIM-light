@@ -93,4 +93,36 @@ describe('AI scénář: řezy a pohledy', () => {
     const presets = c.ai.call<{ name: string }[]>('sectionPreset.list');
     expect(presets.map((p) => p.name)).toContain('Řez – celá hloubka');
   });
+
+  it('výšková kóta (ČSN 01 3420): AI najde hranu stropu v řezu, okótuje ji a po změně stropu vidí novou hodnotu', () => {
+    const c = start();
+    room(c);
+    const rc = must(
+      c.ai.call<{ id: string; name: string }[]>('slabType.list').find((t) => t.name === 'ŽB strop 250'),
+    );
+    const rect = { a: { x: 0, y: 0 }, b: { x: 6000, y: 4000 } };
+    const [slab] = c.ai.call<string[]>('slab.create', {
+      storeyId: c.storeyId,
+      typeId: rc.id,
+      rect,
+      topOffset: 3000,
+    });
+    const [sec] = c.ai.call<string[]>('section.create', {
+      start: { x: 3000, y: -2000 },
+      end: { x: 3000, y: 6000 },
+    });
+    const targets = c.ai.call<{ ref: { kind: string; elementId?: string; edge?: string }; z: number }[]>(
+      'levelDim.targets',
+      { sectionId: sec },
+    );
+    const top = must(targets.find((t) => t.ref.elementId === slab && t.ref.edge === 'top'));
+    expect(top.z).toBe(3000);
+    const [id] = c.ai.call<string[]>('levelDim.create', { sectionId: sec, ref: top.ref, at: 1500 });
+    c.ai.call('slab.update', { slabIds: [slab], topOffset: 3200 });
+    const rows = c.ai.call<{ id: string; text: string; z: number }[]>('levelDim.list', { sectionId: sec });
+    expect(must(rows.find((r) => r.id === id))).toMatchObject({ z: 3200, text: '+3,200' });
+    c.ai.call('levelDim.move', { levelDimId: id, at: 2500, below: true });
+    c.ai.call('levelDim.delete', { levelDimIds: [id] });
+    expect(c.ai.call<unknown[]>('levelDim.list', {})).toHaveLength(0);
+  });
 });

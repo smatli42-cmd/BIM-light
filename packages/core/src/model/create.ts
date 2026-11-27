@@ -65,7 +65,7 @@ function emptyProject(newId: IdGenerator, name: string): Model {
     saved: false,
     phaseFilterId: null,
   };
-  const model: Omit<Model, 'views3d' | 'sections' | 'sectionPresets'> = {
+  const model: Omit<Model, 'views3d' | 'sections' | 'sectionPresets' | 'levelDims'> = {
     schemaVersion: SCHEMA_VERSION,
     project: { id: newId(), name, georef: { sjtskY: 0, sjtskX: 0, rotationDeg: 0, elevationBpv: 0 } },
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },
@@ -90,6 +90,6 @@ function emptyProject(newId: IdGenerator, name: string): Model {
   };
   // Výchozí 3D pohled (jako {3D} v Revitu); id se bere až na konci, ostatní id se neposunou.
   const view3d = newView3d(newId(), '3D', study.id);
-  const sections = { sections: {}, sectionPresets: defaultSectionPresets() };
+  const sections = { sections: {}, sectionPresets: defaultSectionPresets(), levelDims: {} };
   return { ...model, ...sections, views3d: { [view3d.id]: view3d } };
 }

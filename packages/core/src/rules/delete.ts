@@ -41,8 +41,15 @@ function unhostSlabOpenings(model: Model, gone: ReadonlySet<Id>): Model {
 }
 
 /** Smaže prvky a vše, co s nimi podle tabulky zaniká. */
-export function deleteElements(model: Model, ids: readonly Id[]): Model {
+export function deleteElements(input: Model, ids: readonly Id[]): Model {
   const gone = new Set(ids);
+  // Výškové kóty k hranám smazaných prvků zaniknou (jako kóty k jejich lícům).
+  const levelDims = Object.fromEntries(
+    Object.entries(input.levelDims ?? {}).filter(
+      ([, d]) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId),
+    ),
+  );
+  const model = { ...input, levelDims };
   const cascade = new Set(
     ids.flatMap((id) => {
       const el = model.elements[id];

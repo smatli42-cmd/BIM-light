@@ -2,6 +2,7 @@
 import type { Id } from '../../ids/index.ts';
 import { omitIds, removeDimensions, removeRooms, removeSlabOpenings } from '../../model/update.ts';
 import { sectionOf } from '../section/section.ts';
+import { levelDimOf, removeLevelDims } from '../level-dim/level-dim.ts';
 import { roomOf } from '../room/room.ts';
 import { slabOpeningOf } from '../slab-opening/edit.ts';
 import { deleteElements, deleteOpenings } from '../../rules/delete.ts';
@@ -21,13 +22,14 @@ export const selectionDelete = defineCommand<{
   slabOpeningIds?: Id[];
   roomIds?: Id[];
   sectionIds?: Id[];
+  levelDimIds?: Id[];
 }>({
   name: 'selection.delete',
   label: 'Smazat vybrané',
   description:
     'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), ' +
     'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds), místnosti (roomIds), řezy ' +
-    '(sectionIds) a kóty jedním krokem.',
+    '(sectionIds), výškové kóty v řezech (levelDimIds) a kóty jedním krokem.',
   group: 'Úpravy',
   shortcut: 'Delete',
   params: S.object(
@@ -39,6 +41,7 @@ export const selectionDelete = defineCommand<{
       slabOpeningIds: IDS,
       roomIds: IDS,
       sectionIds: IDS,
+      levelDimIds: IDS,
     },
     [],
   ),
@@ -50,6 +53,7 @@ export const selectionDelete = defineCommand<{
     const holes = p.slabOpeningIds ?? [];
     const rooms = p.roomIds ?? [];
     const secs = p.sectionIds ?? [];
+    const lds = p.levelDimIds ?? [];
     if (
       !walls.length &&
       !dims.length &&
@@ -57,7 +61,8 @@ export const selectionDelete = defineCommand<{
       !slabs.length &&
       !holes.length &&
       !rooms.length &&
-      !secs.length
+      !secs.length &&
+      !lds.length
     )
       fail('invalid', 'Nic není vybráno');
     holes.forEach((id) => slabOpeningOf(model, id));
@@ -67,11 +72,13 @@ export const selectionDelete = defineCommand<{
     slabs.forEach((id) => slabOf(model, id));
     rooms.forEach((id) => roomOf(model, id));
     secs.forEach((id) => sectionOf(model, id));
+    lds.forEach((id) => levelDimOf(model, id));
     const m = deleteOpenings(
       removeSlabOpenings(removeDimensions(removeRooms(model, rooms), dims), holes),
       ops.filter((id) => model.openings[id]),
     );
     const done = deleteElements(m, [...walls, ...slabs]);
-    return { model: secs.length ? { ...done, sections: omitIds(done.sections, secs) } : done };
+    const out = removeLevelDims(done, lds);
+    return { model: secs.length ? { ...out, sections: omitIds(out.sections, secs) } : out };
   },
 });

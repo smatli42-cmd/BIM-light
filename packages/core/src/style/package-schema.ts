@@ -165,6 +165,7 @@ export const DISPLAY_SETTINGS_SCHEMA: JsonSchema = {
           'roomNumberText',
           'roomText',
           'roomLineSpacing',
+          'levelMark',
         ].map((k) => [k, num]),
       ),
     },

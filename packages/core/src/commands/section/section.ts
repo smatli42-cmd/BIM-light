@@ -89,11 +89,21 @@ export const sectionRename = defineCommand<{ sectionId: Id; name: string }>({
 export const sectionDelete = defineCommand<{ sectionId: Id }>({
   name: 'section.delete',
   label: 'Smazat řez',
-  description: 'Smaže řez nebo pohled i se značkou v půdorysu (model se nemění).',
+  description: 'Smaže řez nebo pohled i se značkou v půdorysu a jeho výškovými kótami (model se nemění).',
   group: 'Řezy a pohledy',
   params: S.object({ sectionId: S.id }, ['sectionId']),
   run(model, p) {
     sectionOf(model, p.sectionId);
-    return { model: { ...model, sections: omitIds(model.sections, [p.sectionId]) } };
+    const dims = Object.values(model.levelDims).filter((d) => d.sectionId === p.sectionId);
+    const m = { ...model, sections: omitIds(model.sections, [p.sectionId]) };
+    return {
+      model: {
+        ...m,
+        levelDims: omitIds(
+          m.levelDims,
+          dims.map((d) => d.id),
+        ),
+      },
+    };
   },
 });

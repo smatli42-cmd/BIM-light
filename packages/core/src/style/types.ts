@@ -119,6 +119,8 @@ export interface PaperSizes {
   readonly roomNumberText: number;
   readonly roomText: number;
   readonly roomLineSpacing: number;
+  /** Výška trojúhelníku výškové kóty (ČSN 01 3420: 2,5–3,5 mm, 1:50 obvykle 2,5); chybí = výška popisu. */
+  readonly levelMark?: number;
 }
 
 export type CategoryGraphics = Partial<Readonly<Record<Category, GraphicEffect>>>;
@@ -138,6 +140,11 @@ export interface Style {
   readonly roomStamp?: readonly string[];
   /** Spárořez dlažby v půdorysu (prvky stavby 9); chybí = jen při střední a jemné podrobnosti (Projekt). */
   readonly tileJoints?: boolean;
+  /**
+   * Výšková kóta vždy s plným trojúhelníkem (vzor Arditu); chybí / false = podle ČSN 01 3420: relativní
+   * nevyplněná, absolutní (Bpv) plná.
+   */
+  readonly levelMarkFilled?: boolean;
   readonly defaultScale: number;
   /** Měřítko šraf: násobí všechny rozměry šraf (0,5–3, výchozí 1). Mění velikost, ne tvar. */
   readonly hatchScale: number;

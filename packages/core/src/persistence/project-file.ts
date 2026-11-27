@@ -31,6 +31,7 @@ import { projectV28toV29 } from '../slab/migrate-v28.ts';
 import { projectV29toV30 } from '../opening/migrate-v29.ts';
 import { projectV30toV31 } from '../section/migrate-v30.ts';
 import { projectV31toV32 } from '../section/migrate-v31.ts';
+import { projectV32toV33 } from '../level-dim/migrate-v32.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -52,7 +53,8 @@ export const PROJECT_EXTENSION = '.bim';
  * 26 → 27: úpravy povrchů a výkaz povrchů; 27 → 28: výkaz dlaždic (spárořez);
  * 28 → 29: vazba obrysu desky (místnost / stěny); 29 → 30: podlaha v otvoru (floorSplit);
  * 30 → 31: řezy a pohledy (fasády), šrafa materiálu desek v řezu;
- * 31 → 32: zalomený řez (body čáry), vzdálená oblast, styly řezu, skupina anotací Řezy a pohledy.
+ * 31 → 32: zalomený řez (body čáry), vzdálená oblast, styly řezu, skupina anotací Řezy a pohledy;
+ * 32 → 33: výškové kóty v řezech (ČSN 01 3420), velikost praporku na papíře.
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -86,6 +88,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   29: projectV29toV30,
   30: projectV30toV31,
   31: projectV31toV32,
+  32: projectV32toV33,
 };
 
 export function serializeProject(model: Model): string {

@@ -17,6 +17,7 @@ import { materialHatch, type DrawLookup } from '../wall/draw-hatch.ts';
 import { slabCut, wallCut, type CutPiece } from './cut.ts';
 import { effectiveFrame } from './frame.ts';
 import { drawLevels } from './levels.ts';
+import { drawLevelDims } from '../level-dim/draw.ts';
 import { occluder, visibleParts, type Occluder } from './occlude.ts';
 import { ringsOf, simplePieces } from './pieces.ts';
 import { slabProjection, wallProjection, type Projected } from './projection.ts';
@@ -151,7 +152,15 @@ export function drawSection(model: Model, sectionId: Id): Drawing {
     primitives: [
       ...drawProjection(proj, cutItems),
       ...drawCut(cutItems, detailOf(model.display, s), lookup(model, s)),
-      ...drawLevels(model, { ...ext, range: s.range, scale: s.scale, sizes: model.display.paperSizes, g }),
+      ...drawLevels(model, {
+        ...ext,
+        range: s.range,
+        scale: s.scale,
+        sizes: model.display.paperSizes,
+        g,
+        filled: styleOfView(model.display, s).levelMarkFilled === true,
+      }),
+      ...drawLevelDims(model, s),
     ],
   };
 }

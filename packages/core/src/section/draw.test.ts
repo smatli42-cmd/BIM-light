@@ -3,7 +3,7 @@ import type { Primitive } from '../drawing/primitives.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { drawView } from '../view/draw-view.ts';
 import { drawSection } from './draw.ts';
-import { elevationText } from './levels.ts';
+import { elevationText } from '../level-dim/value.ts';
 
 /** Stěna Zdivo 300 po ose x 0 → 6000 a řez napříč v x = 3000 s pohledem doleva (k −x). */
 function across(f: Fixture, extra: Record<string, unknown> = {}) {
@@ -133,7 +133,7 @@ describe('rozhodnutí 19: kresba řezu z modelu', () => {
     const texts = ps.flatMap((p) => (p.kind === 'text' ? [p.text] : []));
     expect(texts).toContain('±0,000');
     expect(texts).toContain('1.NP');
-    expect(elevationText(-150)).toBe('−0,150');
+    expect(elevationText(-150)).toBe('-0,150');
     expect(elevationText(3000)).toBe('+3,000');
   });
 
