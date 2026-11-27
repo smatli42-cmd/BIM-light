@@ -1,5 +1,6 @@
 // Společné typy interakce sandboxu (základ 20: přichytávání, tracker, kóty a výběr jsou jedna služba).
 import type { Dimension, DimRef, Id, Model, Vec2 } from '@bim-light/core';
+import type { TempDimView } from './temp-layout.ts';
 
 /** Událost myši: bod na obrazovce (px) i v modelu (mm) a modifikátory. */
 export interface PointerInfo {
@@ -66,6 +67,8 @@ export interface Overlay {
   readonly selected?: readonly Id[];
   /** Model po rozpracované změně (tažení uzlu): kreslí se místo skutečného, nic se neukládá. */
   readonly previewModel?: Model | null;
+  /** Dočasné kóty nástroje (rozpracovaný obrys desky / otvoru v desce). */
+  readonly tempDims?: readonly TempDimView[];
   /** Rámeček výběru v px. */
   readonly box?: { readonly a: Vec2; readonly b: Vec2; readonly crossing: boolean } | null;
 }

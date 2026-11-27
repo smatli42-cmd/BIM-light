@@ -13,7 +13,11 @@ import {
   wallOutward,
   openingEdgePath,
   openingTempDimensions,
+  elementOutlineTempDimensions,
+  outlineTempDimensions,
   type Opening,
+  type OutlineSelf,
+  type OutlineTempDimension,
   type Id,
   type Model,
   type TempDimension,
@@ -24,7 +28,8 @@ import { screenText, type ScreenRect } from './screen.ts';
 
 export interface TempDimView {
   readonly key: string;
-  readonly temp: TempDimension;
+  /** Kóta stěny / otvoru ve stěně, nebo obrysu desky / otvoru v desce. */
+  readonly temp: TempDimension | OutlineTempDimension;
   /** Kótovací čára v px. */
   readonly a: Vec2;
   readonly b: Vec2;
@@ -42,16 +47,29 @@ export interface TempDimView {
   readonly shiftDir: Vec2;
 }
 
-export const tempKey = (t: TempDimension) =>
-  t.kind === 'length' ? 'len' : `x-${t.own.openingId ? 'o-' : ''}${t.own.face}`;
+export const tempKey = (t: TempDimension | OutlineTempDimension) => {
+  if (t.kind === 'outline') return `ol-${t.side}`;
+  return t.kind === 'length' ? 'len' : `x-${t.own.openingId ? 'o-' : ''}${t.own.face}`;
+};
 
-function crossView(s: Session, t: Extract<TempDimension, { kind: 'cross' }>, face: Vec2): TempDimView {
+type CrossLike = Extract<TempDimension, { kind: 'cross' }> | OutlineTempDimension;
+
+function crossView(s: Session, t: CrossLike, face: Vec2): TempDimView {
   const key = tempKey(t);
   const off = s.tempOffsets[key] ?? 0;
   const A = add(t.from, mul(face, off));
   const B = add(t.to, mul(face, off));
-  return finish(s, key, t, A, B, [t.from, t.to], face, t.parallel);
+  const pinned = t.parallel && (t.kind !== 'outline' || t.own !== null);
+  return finish(s, key, t, A, B, [t.from, t.to], face, pinned);
 }
+
+/** Kóty obrysu: posouvají se kolmo ke směru měření (katalog kreslení 3, tažení čáry). */
+const outlineViews = (s: Session, temps: readonly OutlineTempDimension[]): TempDimView[] =>
+  temps.map((t) => crossView(s, t, { x: -t.dir.y, y: t.dir.x }));
+
+/** Dočasné kóty rozpracovaného obrysu při kreslení desky / otvoru v desce (bez vlastníka). */
+export const draftOutlineViews = (s: Session, points: readonly Vec2[], self: OutlineSelf | null = null) =>
+  outlineViews(s, outlineTempDimensions(s.model, s.storeyId, points, self));
 
 function lengthView(s: Session, m: Model, t: TempDimension, wallId: Id): TempDimView | null {
   const g = allWallGeometry(m, s.storeyId).get(wallId);
@@ -67,7 +85,7 @@ function lengthView(s: Session, m: Model, t: TempDimension, wallId: Id): TempDim
 function finish(
   s: Session,
   key: string,
-  temp: TempDimension,
+  temp: TempDimension | OutlineTempDimension,
   A: Vec2,
   B: Vec2,
   feet: [Vec2, Vec2],
@@ -125,6 +143,8 @@ export function tempDimViews(s: Session, model: Model = s.model): TempDimView[] 
   if (s.tool.id !== 'select') return [];
   const op = s.selection.singleOpening;
   if (op && model.openings[op]) return openingTempViews(s, model, op);
+  const ol = s.selection.singleSlab ?? s.selection.singleSlabOpening;
+  if (ol) return outlineViews(s, elementOutlineTempDimensions(model, ol));
   const id = s.selection.single;
   if (!id) return [];
   const geoms = allWallGeometry(model, s.storeyId);

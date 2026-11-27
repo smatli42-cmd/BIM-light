@@ -65,6 +65,19 @@ function permsOf(s: Session, page: (p: Px) => Px) {
   });
 }
 
+/** Dočasné kóty nástroje (rozpracovaný obrys) a výběru v px stránky. */
+function tempsOf(s: Session, page: (p: Px) => Px) {
+  const o = s.tool.overlay();
+  return [...(o.tempDims ?? []), ...tempDimViews(s, o.previewModel ?? s.model)].map((t) => ({
+    key: t.key,
+    value: t.temp.value,
+    text: page(centre(t.textRect)),
+    pin: t.pin && page(t.pin),
+    lenEnd: t.lenEnd && page(t.lenEnd),
+    line: page({ x: (t.a.x * 3 + t.b.x) / 4, y: (t.a.y * 3 + t.b.y) / 4 }),
+  }));
+}
+
 export function installTestHook(s: Session) {
   if (typeof window === 'undefined') return;
   const page = (p: Px): Px => {
@@ -75,15 +88,7 @@ export function installTestHook(s: Session) {
     model: () => s.model,
     toPage: (x, y) => page(s.viewport.toScreen({ x, y })),
     overlay: () => s.tool.overlay(),
-    temps: () =>
-      tempDimViews(s, s.tool.overlay().previewModel ?? s.model).map((t) => ({
-        key: t.key,
-        value: t.temp.value,
-        text: page(centre(t.textRect)),
-        pin: t.pin && page(t.pin),
-        lenEnd: t.lenEnd && page(t.lenEnd),
-        line: page({ x: (t.a.x * 3 + t.b.x) / 4, y: (t.a.y * 3 + t.b.y) / 4 }),
-      })),
+    temps: () => tempsOf(s, page),
     perms: () => permsOf(s, page),
     grips: () => gripViews(s).map((g) => ({ end: g.end, at: page(g.at) })),
     lenEnd: () => s.lenEnd,

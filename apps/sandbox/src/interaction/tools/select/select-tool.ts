@@ -28,9 +28,9 @@ import { OutlineVertexMode, outlineUnder, pickOutline, PressOutlineMode } from '
 
 function itemFromTemp(t: TempDimView): DraftItem {
   const temp = t.temp;
-  return temp.kind === 'cross'
-    ? { kind: 'linear', refs: [temp.own, temp.other], ownerRef: 0 }
-    : { kind: 'length', ref: temp.own };
+  if (temp.kind === 'length') return { kind: 'length', ref: temp.own };
+  // Kolečko je jen u obrysu s vlastníkem (temp-layout), own tedy existuje.
+  return { kind: 'linear', refs: [temp.own ?? temp.other, temp.other], ownerRef: 0 };
 }
 
 export class SelectTool implements Tool {

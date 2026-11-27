@@ -1,33 +1,32 @@
 // Nástroj Deska (D2; Ardit „Deska“, Revit „Podlaha – hranice“) a obrys otvoru v desce (D3): mnohoúhelník,
-// obdélník a natočený obdélník. Body se přichytávají jako u stěny; u mnohoúhelníku tracker délky a úhlu
-// (Tab, Enter), klik na první bod / dvojklik / pravé tlačítko obrys uzavře, Backspace vrátí bod.
+// obdélník a natočený obdélník. Body se přichytávají jako u stěny (i k hranám a rohům desek a otvorů),
+// pomocné čáry vedou i z už položených bodů. Tracker: mnohoúhelník délka / úhel, obdélník šířka / hloubka,
+// natočený délka / úhel hrany a šířka (Tab, Enter). Dočasné kóty k nejbližším lícům a hranám: před prvním
+// klikem od kurzoru, potom od položených bodů – klik na číslo je posune (katalog kreslení 3.3).
 import {
   add,
   dist,
-  dot,
-  leftNormal,
-  mul,
-  norm,
-  sub,
+  outlineShift,
+  rectTrackerPoint,
+  rotatedWidthPoint,
   trackerPoint,
+  type OutlineTempDimension,
   type SnapResult,
   type Vec2,
 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { slabCreateParams } from '../../session/slab-defaults.ts';
 import { clearTyped, editTyped } from '../../session/ui-state.ts';
-import { deltaFields, trackerMm } from '../tracker-fields.ts';
+import { draftOutlineViews, type TempDimView } from '../temp-layout.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
+import { editOutline } from '../value-edit.ts';
+import { axisRect, lengthAngleFields, rectFields, rotatedRect, slabHint } from './slab-tool-parts.ts';
 import { snapLabel } from './wall-chain.ts';
 
-/** Obdélník s hranou a–b a protější stranou procházející bodem c (natočený obdélník). */
-export function rotatedRect(a: Vec2, b: Vec2, c: Vec2): Vec2[] {
-  const n = leftNormal(norm(sub(b, a)));
-  const h = mul(n, dot(sub(c, a), n));
-  return [a, b, add(b, h), add(a, h)];
-}
+export { rotatedRect } from './slab-tool-parts.ts';
 
-const axisRect = (a: Vec2, b: Vec2): Vec2[] => [a, { x: b.x, y: a.y }, b, { x: a.x, y: b.y }];
+const inRect = (p: Vec2, r: { x: number; y: number; w: number; h: number }) =>
+  p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
 
 export class SlabTool implements Tool {
   readonly id: 'slab' | 'opening';
@@ -37,6 +36,7 @@ export class SlabTool implements Tool {
   private last: PointerInfo | null = null;
   private length = 0;
   private angle = 0;
+  private width = 0;
 
   /** `opening` = stejné kreslení obrysu pro otvor v desce (nástroj Otvor, volba „v desce“, D3). */
   constructor(
@@ -51,20 +51,8 @@ export class SlabTool implements Tool {
   }
 
   hint(): string {
-    const h = this.rawHint();
+    const h = slabHint(this.method, this.pts.length);
     return this.target === 'slab' ? h : h.replaceAll('desky', 'otvoru v desce');
-  }
-
-  private rawHint(): string {
-    const n = this.pts.length;
-    if (this.method === 'rect')
-      return n ? 'Klikni protější roh obdélníku. Esc zruší.' : 'Klikni první roh desky (přichytává se).';
-    if (this.method === 'rotated')
-      return (
-        ['Klikni začátek první hrany desky.', 'Klikni konec první hrany.', 'Klikni šířku desky.'][n] ?? ''
-      );
-    if (!n) return 'Klikni první bod obrysu desky (přichytává se; Alt vypne).';
-    return 'Klikni další bod, nebo napiš délku (Tab = úhel) a Enter. Klik na první bod, dvojklik nebo pravé tlačítko obrys uzavře; Backspace vrátí bod.';
   }
 
   /** Obrys, který by vznikl dalším klikem (náhled). */
@@ -83,27 +71,47 @@ export class SlabTool implements Tool {
     return a && b ? Math.atan2(b.y - a.y, b.x - a.x) : null;
   }
 
+  /** Počítá se délka a úhel od posledního bodu (mnohoúhelník, první hrana natočeného). */
+  private get chain(): boolean {
+    return this.method === 'polygon' || (this.method === 'rotated' && this.pts.length === 1);
+  }
+
   move(p: PointerInfo) {
     this.last = p;
-    const from = this.pts[this.pts.length - 1] ?? null;
-    this.snapRes = this.s.snap(p.world, { from, orthoOnly: p.shift, alt: p.alt });
-    let end = this.snapRes.point;
-    if (from && this.method === 'polygon') {
-      const t = this.s.typed;
-      const tr = trackerPoint(from, end, this.prevDir(), { length: t.len, angle: t.ang });
-      end = tr.point;
-      const first = this.pts[0] as Vec2;
-      if (!tr.typed && this.pts.length >= 3 && dist(end, first) < this.s.viewport.px(10)) end = first;
-      if (tr.typed) this.snapRes = { ...this.snapRes, snap: null, guides: [] };
-      this.length = tr.length;
-      this.angle = tr.angleDeg;
+    const n = this.pts.length;
+    const from = this.chain ? (this.pts[n - 1] ?? null) : null;
+    this.snapRes = this.s.snap(p.world, { from, orthoOnly: p.shift, alt: p.alt, guidePoints: this.pts });
+    const typed = this.applyTyped(this.snapRes.point);
+    if (typed.typed) this.snapRes = { ...this.snapRes, snap: null, guides: [] };
+    this.end = typed.point;
+  }
+
+  /** Napsaná čísla trackeru (přednost před přichycením, katalog kreslení 2.5). */
+  private applyTyped(mouse: Vec2): { point: Vec2; typed: boolean } {
+    const t = this.s.typed;
+    const [a, b] = this.pts;
+    if (!a) return { point: mouse, typed: false };
+    if (this.method === 'rect') return rectTrackerPoint(a, mouse, { width: t.len, depth: t.ang });
+    if (this.method === 'rotated' && b) {
+      const r = rotatedWidthPoint(a, b, mouse, t.len);
+      this.width = r.width;
+      return r;
     }
-    this.end = end;
+    const from = this.pts[this.pts.length - 1] as Vec2;
+    const tr = trackerPoint(from, mouse, this.prevDir(), { length: t.len, angle: t.ang });
+    this.length = tr.length;
+    this.angle = tr.angleDeg;
+    const first = this.pts[0] as Vec2;
+    const close = this.method === 'polygon' && !tr.typed && this.pts.length >= 3;
+    if (close && dist(tr.point, first) < this.s.viewport.px(10)) return { point: first, typed: false };
+    return tr;
   }
 
   down(p: PointerInfo) {
     if (p.button === 2) return this.finishPolygon();
     if (p.button !== 0) return;
+    const dim = this.dimAt(p.screen);
+    if (dim) return this.editDim(dim);
     this.move(p);
     this.place();
   }
@@ -141,6 +149,27 @@ export class SlabTool implements Tool {
     clearTyped(this.s.typed);
   }
 
+  /** Dočasné kóty: od položených bodů, před prvním klikem od bodu pod kurzorem. */
+  private dimViews(): TempDimView[] {
+    const base = this.pts.length ? this.pts : this.end ? [this.end] : [];
+    return draftOutlineViews(this.s, base);
+  }
+
+  /** Číslo kóty pod kurzorem (jen když už jsou položené body, jinak by kóta ujížděla s myší). */
+  private dimAt(screen: Vec2): TempDimView | null {
+    if (!this.pts.length) return null;
+    return this.dimViews().find((v) => inRect(screen, v.textRect)) ?? null;
+  }
+
+  /** Nové číslo kóty posune položené body; druhý prvek stojí (základ 25). */
+  private editDim(v: TempDimView) {
+    editOutline(this.s, v, (value) => {
+      const shift = outlineShift(v.temp as OutlineTempDimension, value);
+      this.pts = this.pts.map((q) => add(q, shift));
+      if (this.last) this.move(this.last);
+    });
+  }
+
   up() {}
 
   dblclick() {
@@ -160,7 +189,9 @@ export class SlabTool implements Tool {
       this.pts.pop();
       return true;
     }
-    if (this.method === 'polygon' && editTyped(s.typed, k.key, true)) {
+    const tab = this.method !== 'rotated' || this.pts.length === 1;
+    if (!tab && s.typed.field !== 'len') s.typed.field = 'len';
+    if (editTyped(s.typed, k.key, tab)) {
       if (this.last) this.move(this.last);
       return true;
     }
@@ -183,6 +214,7 @@ export class SlabTool implements Tool {
       ghosts: ghost.length >= 3 ? [ghost] : [],
       lines: ghost.length === 2 ? [[ghost[0] as Vec2, ghost[1] as Vec2]] : [],
       markers: this.pts,
+      tempDims: this.s.cursor.inside || this.pts.length ? this.dimViews() : [],
     };
   }
 
@@ -190,25 +222,7 @@ export class SlabTool implements Tool {
     const from = this.pts[this.pts.length - 1];
     const e = this.end;
     if (!from || !e) return null;
-    if (this.method === 'rect') {
-      const a = this.pts[0] as Vec2;
-      return [
-        { label: 'Šířka', value: trackerMm(Math.abs(e.x - a.x)), active: false },
-        { label: 'Hloubka', value: trackerMm(Math.abs(e.y - a.y)), active: false },
-      ];
-    }
-    if (this.method !== 'polygon')
-      return [{ label: 'Délka', value: trackerMm(dist(from, e)), active: false }];
-    const t = this.s.typed;
-    const ang = String(Math.round(this.angle * 10) / 10).replace('.', ',');
-    return [
-      {
-        label: 'Délka',
-        value: t.len !== '' ? `${t.len}▏` : trackerMm(this.length),
-        active: t.field === 'len',
-      },
-      { label: 'Úhel', value: t.ang !== '' ? `${t.ang}▏` : `${ang}°`, active: t.field === 'ang' },
-      ...deltaFields(from, e),
-    ];
+    if (!this.chain) return rectFields(this.method, this.pts, e, this.s.typed, this.width);
+    return lengthAngleFields(from, e, this.s.typed, this.length, this.angle);
   }
 }

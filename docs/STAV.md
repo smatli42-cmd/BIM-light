@@ -1,12 +1,24 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, desky D4 (vršek k desce, výkaz desek, kóty k deskám); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, přesný otvor v desce (vodítka, kóty, tracker); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
 Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` (hotovo i rozhodnutí k potvrzení).
 
 ## Hotovo
+
+### Přesný otvor v desce: vodítka, dočasné kóty, tracker, 2026-11-27 (pokyn uživatele; scéna `?ukazka=desky-presny-otvor`)
+
+- Přichytávání (základ 20, jádro `snap/outline-snap.ts`): roh, střed hrany, hrana, kolmo k hraně a průsečík
+  hran desek / otvorů v deskách mezi sebou i s lícem stěny; pomocné čáry i z rohů obrysů a z už položených
+  bodů (`guidePoints`). Platí pro všechny nástroje (stěna, kóta, posun bodu obrysu).
+- Tracker: obdélník Šířka / Hloubka (Tab, Enter, znaménko podle strany kurzoru), natočený délka + úhel hrany
+  a pak Šířka (`snap/rect-tracker.ts`); mnohoúhelník beze změny.
+- Dočasné kóty obrysu (`dimension/outline-temp.ts`): X a Y na obě strany k nejbližšímu líci stěny / hraně
+  desky / otvoru. Při kreslení i u vybrané desky a otvoru; klik na číslo posune. Příkaz `outline.setDistance`,
+  dotaz `outline.tempDimensions`; kolečko udělá trvalou kótu. Dům: schodiště 100 mm od líce.
+- Testy: `outline-temp.test.ts`, `outline-snap.test.ts`, AI `scenario-slab-dims.test.ts`, e2e `desky-koty.spec.ts`.
 
 ### Desky D4, 2026-11-27 (scéna `?ukazka=desky-d4`; příčky k stropu a kóta k otvoru v `?ukazka=dum`)
 
@@ -313,6 +325,11 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Rozhodl Code (k potvrzení)
 
+- **Přesný otvor:** kóty při kreslení před 1. klikem jdou od kurzoru (jen informace), po 1. kliku od položených
+  bodů (stojí, klik na číslo je posune; velikost pak trackerem) – Revit u náčrtu edituje jen položené.
+  Měří se od krajní hrany (nebo krajního rohu) obrysu ve směru X / Y; líc stěny má přednost před hranou desky
+  na něm; hrana desky ležící na líci = vzdálenost 0 se přeskočí (měří se k dalšímu prvku).
+
 - **Desky D4:** vazba vršku je druh vršku ve výšce stěny (ne samostatný vztah) – jako Archicad „spojit
   s deskou“; celá stěna končí na spodním líci (Revit by stěnu ořízl po tvaru desky, šikmé desky zatím nejsou).
   Deska nad stěnou = obrys nad některým bodem osy, nejnižší spodní líc nad spodkem stěny (nosný strop, ne
@@ -503,14 +520,14 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
   **Výšková kóta** (parapet) v půdorysu zatím neexistuje. **Řez a 3D** – otvor je v datech celý (výška,
   parapet), kresba jen v půdorysu.
 
-## Největší soubory (po deskách D4)
+## Největší soubory (po přesném otvoru v desce)
 
 Výstup `npm run check:size`: kód bez varování, varování jen STAV.md (návrh rozdělení v Otevřené).
 
 | Řádky | Soubor |
 |---|---|
 | 250 | apps/sandbox/src/render/overlay.ts |
-| 244 | apps/sandbox/src/session/session.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
 | 243 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
+| 242 | apps/sandbox/src/session/session.ts |
 | 235 | apps/sandbox/src/interaction/tools/wall-tool.ts |

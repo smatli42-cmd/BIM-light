@@ -150,7 +150,10 @@ export class OutlineVertexMode extends ClickOrDrag {
     this.last = p;
     const o = OPS[this.kind].outline(this.s.model, this.id);
     const from = o[(this.index - 1 + o.length) % o.length] ?? null;
-    this.point = this.s.snap(p.world, { alt: p.alt, orthoOnly: p.shift, from }).point;
+    // K vlastnímu (původnímu) obrysu se nepřichytává; pomocné čáry vedou z jeho ostatních bodů.
+    const exclude = new Set([this.id]);
+    const guidePoints = o.filter((_, i) => i !== this.index);
+    this.point = this.s.snap(p.world, { alt: p.alt, orthoOnly: p.shift, from, exclude, guidePoints }).point;
     this.preview =
       this.moved || !this.dragging
         ? OPS[this.kind].vertex(this.s, this.id, this.index, this.point, true)

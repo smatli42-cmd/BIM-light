@@ -77,6 +77,7 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
     for (const p of drawDimension(s.model, d, s.view.scale, s.model.display.paperSizes, g))
       drawPrimitive(r, p, AUX);
   }
+  for (const t of o.tempDims ?? []) drawTempDim(ctx, t);
   if (s.tool.id === 'select') {
     const flash = new Set(s.flashDims);
     // Zámeček jen u vybrané kóty (jako Revit) a u kóty, která právě brání změně (pokyn uživatele 2026-11-27).

@@ -5,7 +5,6 @@ import {
   createEmptyProject,
   createGlobalId,
   Editor,
-  snapGeometry,
   resolveSnap,
   ALL_CATEGORIES,
   type ExecuteResult,
@@ -27,6 +26,7 @@ import { createTool } from '../interaction/tools/index.ts';
 import type { Tool, ToolId } from '../interaction/types.ts';
 import { methodOfTool, wallToolFor, type WallMethod } from '../interaction/tools/wall-method.ts';
 import { Selection } from './selection.ts';
+import { SnapCache } from './snap-cache.ts';
 import { keepNewTypes, newSlabDefaults, type SlabDefaults } from './slab-defaults.ts';
 import { OPENING_DEFAULTS, TOOL_OPTIONS, type OpeningDefaults } from './opening-defaults.ts';
 import type { Paper } from '../render/paper.ts';
@@ -98,7 +98,7 @@ export class Session {
   paper: Paper;
   private toastSeq = 0;
   private readonly listeners = new Set<() => void>();
-  private geomCache: { model: Model; key: string; geoms: WallGeometry[] } | null = null;
+  private readonly snapCache = new SnapCache();
 
   constructor(model?: Model) {
     const newId = () => createGlobalId();
@@ -222,16 +222,14 @@ export class Session {
 
   /** Geometrie stěn podlaží pro přichytávání (mezipaměť podle modelu). */
   geometry(exclude?: ReadonlySet<Id>): WallGeometry[] {
-    const key = exclude ? [...exclude].sort().join(',') : '';
-    if (!this.geomCache || this.geomCache.model !== this.model || this.geomCache.key !== key) {
-      this.geomCache = { model: this.model, key, geoms: snapGeometry(this.model, this.storeyId, exclude) };
-    }
-    return this.geomCache.geoms;
+    return this.snapCache.get(this.model, this.storeyId, exclude).geoms;
   }
 
   /** Přichytí bod (základ 20); tolerance z px, Alt vypne, C střídá kandidáty. */
   snap(raw: Vec2, o: Partial<SnapOptions> & { alt?: boolean } = {}): SnapResult {
-    const r = resolveSnap(this.geometry(o.exclude), raw, {
+    const c = this.snapCache.get(this.model, this.storeyId, o.exclude);
+    const r = resolveSnap(c.geoms, raw, {
+      outlines: c.outlines,
       grid: this.options.grid || this.screen.step || null,
       ...o,
       tolerance: this.viewport.px(SNAP_PX),
