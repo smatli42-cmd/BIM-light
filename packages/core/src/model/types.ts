@@ -16,7 +16,7 @@ import type { WallTag } from '../tag/types.ts';
 import type { Slab, SlabType } from '../slab/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
