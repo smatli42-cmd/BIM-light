@@ -131,16 +131,21 @@ function useRestingHover(s: Session): { id: string; at: Vec2 } | null {
 
 export function HoverCard({ s }: { s: Session }) {
   const shown = useRestingHover(s);
-  const ref = useKeepInside<HTMLDivElement>(shown?.at ?? null, { x: 18, y: 18 });
-  const info = shown ? elementInfo(s.model, shown.id) : null;
-  if (!shown || !info) return null;
+  return shown ? <ElementCard s={s} id={shown.id} at={shown.at} /> : null;
+}
+
+/** Karta prvku `id` u bodu `at` (px v rodiči); i ve 3D okně. */
+export function ElementCard({ s, id, at }: { s: Session; id: string; at: Vec2 }) {
+  const ref = useKeepInside<HTMLDivElement>(at, { x: 18, y: 18 });
+  const info = elementInfo(s.model, id);
+  if (!info) return null;
   const c = card(info);
   return (
     <div
       ref={ref}
       class="hover-card"
       data-testid="hover-card"
-      style={{ left: `${shown.at.x + 18}px`, top: `${shown.at.y + 18}px` }}
+      style={{ left: `${at.x + 18}px`, top: `${at.y + 18}px` }}
     >
       <div class="hc-title">
         <Icon name={c.icon} size={16} />
