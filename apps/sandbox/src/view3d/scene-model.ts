@@ -89,16 +89,21 @@ function patchesOf(model: Model, view: View, w: Wall): Solid[] {
 }
 
 /**
- * Tělesa modelu pro 3D okno; `only` = jen tyto prvky (Zobrazit výběr ve 3D), null = vše.
- * Napojení se počítá jen mezi zobrazenými stěnami (jako v půdorysu).
+ * Tělesa modelu pro 3D okno; `only` = jen tyto prvky (Zobrazit výběr ve 3D), null = vše; `storeys` = jen
+ * prvky těchto podlaží (rozsah podlaží), null = všechna. Napojení jen mezi zobrazenými stěnami (jako v půdorysu).
  */
-export function modelSolids(model: Model, view: View, only: ReadonlySet<Id> | null = null): Solid[] {
+export function modelSolids(
+  model: Model,
+  view: View,
+  only: ReadonlySet<Id> | null = null,
+  storeys: ReadonlySet<Id> | null = null,
+): Solid[] {
   const shown = shownModel(model, view);
-  const want = (id: Id) => !only || only.has(id);
-  const slabs = allSlabs(model).filter((d) => want(d.id) && isShown(model, view, d));
+  const want = (e: Element) => (!only || only.has(e.id)) && (!storeys || storeys.has(e.storeyId));
+  const slabs = allSlabs(model).filter((d) => want(d) && isShown(model, view, d));
   return [
     ...shown.walls
-      .filter((w) => want(w.id))
+      .filter(want)
       .flatMap((w) => [
         ...withSurface(model, view, w, wallSolids(shown.model, w)),
         ...patchesOf(shown.model, view, w),

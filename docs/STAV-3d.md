@@ -46,8 +46,23 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   tloušťce (stejný `sliceLayer`); otvor skrytý filtrem rekonstrukce desku neprořízne. F4 na vybraný otvor
   v desce ukáže desky, které prořízne.
 
+## Hotovo (krok 3 – rozsah 3D, 2026-11-27, krok a) dohody s uživatelem)
+
+- **Rozsah podlaží** (nabídka v hlavičce 3D okna, jako Filter and Cut Elements in 3D v Archicadu):
+  zaškrtávání podlaží (nejvyšší nahoře, nabídka zůstane otevřená, poslední podlaží nejde odškrtnout),
+  rychlé volby Všechna podlaží / Jen aktivní / Aktivní a níž.
+- **Ořezový kvádr** (tlačítko v hlavičce, jako Section Box v Revitu): zapne se kolem výběru (BX v Revitu),
+  bez výběru kolem všeho + 300 mm; úchyty na středech stěn kvádru se táhnou myší (po ose stěny), po puštění
+  se tělesa oříznou. Řez je **plný** (`view3d/clip.ts` ořízne hranoly přesně: výška + 2D průnik), barva
+  materiálu jako řez v Archicadu – žádná dutá skořápka.
+- Obojí je zatím volba 3D okna (`view3d/state.ts`), ne data modelu; v jádře se čeká na 3D pohled (níže).
+- Testy: `view3d/clip.test.ts`, e2e `nahled-3d-rozsah.spec.ts`.
+
 ## Co zkusit
 
+- `?ukazka=dum&3d` → v hlavičce 3D okna **Všechna podlaží ›**: odškrtni 2.NP; **ořezový kvádr** (ikona
+  krychle s tečkami): táhni horní modrý úchyt dolů – řez domem ve výšce parapetů. Vybraná stěna + kvádr =
+  kvádr jen kolem ní.
 - `?ukazka=desky-otvory&3d` – otvory v deskách (prostup, schodiště) proříznou strop i podlahu.
 - `?ukazka=dum&3d` → spodní lišta **Přepisy** (kombinace) → *Fáze – bourací práce*: bouraná příčka zežloutne
   v půdorysu i ve 3D a v nosné zdi je žlutě probourání dveří 900 × 2100.
@@ -93,7 +108,12 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 4. ~~**Sytější žlutá bourání ve 3D:**~~ hotovo (main 850f562, `#f2c200`, ve 3D ověřeno). `surfaceColor` pravidla „Bourání žlutě čárkovaně“ `#fff3b0` splývá
    s omítkou `#d8cfc0` – probourání ani bouraná příčka ve 3D nejsou vidět (uživatel 2026-11-27). Návrh
    `#f2c200`, výplň řezu v půdorysu nechat světlou. Posláno hlavní session.
-5. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
+5. **Průhlednost povrchu ve 3D** (`surfaceTransparency` v efektu pravidla, bourání 50 %, jako Revit) –
+   posláno 2026-11-27.
+6. **3D pohled v jádře** (druh pohledu: styl, filtr, vrstvy, `storeyIds`, `sectionBox`; příkazy
+   `view3d.create / setStoreys / setSectionBox / rename`, dotaz, scénář AI) – posláno 2026-11-27. Pak 3D okno
+   přepojit z `view3d/state.ts` na data pohledu.
+7. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
    (zatím není potřeba: 3D okno nic v modelu nemění).
 
 ## Otevřené / další kroky

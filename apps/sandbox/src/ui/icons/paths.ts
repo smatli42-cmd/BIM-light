@@ -117,6 +117,15 @@ export const ICONS = {
   card: ['M4 5h16v14H4z', 'M7 9h6', 'M7 13h10', 'M7 16h7'],
   table: ['M4 5h16v14H4z', 'M4 10h16', 'M4 14.5h16', 'M10 5v14'],
   // 3D okno: krychle (Zobrazit ve 3D), krychle s rámečkem výběru (Zobrazit výběr ve 3D).
+  // Ořezový kvádr: krychle s úchyty na stěnách.
+  'section-box': [
+    'M4 8l8-4 8 4v8l-8 4-8-4z',
+    'M4 8l8 4 8-4',
+    'M12 12v8',
+    'M7 13h.01',
+    'M17 13h.01',
+    'M12 6h.01',
+  ],
   cube: ['M12 3l8 4.5v9L12 21l-8-4.5v-9z', 'M4 7.5l8 4.5 8-4.5', 'M12 12v9'],
   'cube-selection': [
     'M12 6l5 2.8v5.6L12 17.2l-5-2.8V8.8z',

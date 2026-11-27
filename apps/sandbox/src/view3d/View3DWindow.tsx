@@ -6,8 +6,11 @@ import type { Session } from '../session/session.ts';
 import { openStorey } from '../session/sets.ts';
 import { Icon, IconButton } from '../ui/icons/Icon.tsx';
 import { useSession } from '../ui/use-session.ts';
+import { clipSolids } from './clip.ts';
+import { SectionBoxButton, Storeys3DMenu } from './Controls3D.tsx';
 import { modelSolids } from './scene-model.ts';
-import { close3D, show3D, view3d } from './state.ts';
+import type { Solid } from './solids.ts';
+import { close3D, setBox3D, show3D, view3d } from './state.ts';
 import { installTestHook3D } from './test-hook-3d.ts';
 import { Viewer } from './viewer.ts';
 import './view3d.css';
@@ -58,6 +61,7 @@ function useViewer(s: Session, canvas: { current: HTMLCanvasElement | null }) {
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(el);
+    v.onBoxChange = (box) => setBox3D(s, box);
     const offPick = clickPick(s, v);
     const offHook = installTestHook3D(s, v);
     setViewer(v);
@@ -71,17 +75,67 @@ function useViewer(s: Session, canvas: { current: HTMLCanvasElement | null }) {
   return { viewer, error };
 }
 
+/** Hlavička 3D okna: název, rozsah (podlaží, kvádr) a tlačítka zobrazení. */
+function Head3D({
+  s,
+  raw,
+  title,
+  onFit,
+}: {
+  s: Session;
+  raw: readonly Solid[];
+  title: string;
+  onFit: () => void;
+}) {
+  return (
+    <div class="window-head">
+      <span class="window-tab" data-testid="window-3d-title">
+        <Icon name="cube" size={16} />
+        {title}
+      </span>
+      <span class="spacer" />
+      <Storeys3DMenu s={s} />
+      <SectionBoxButton s={s} solids={raw} />
+      <IconButton
+        icon="cube"
+        label="Zobrazit vše ve 3D"
+        shortcut="Ctrl+F4 / Shift+F4"
+        testid="view3d-all"
+        onClick={() => show3D(s, false)}
+      />
+      <IconButton
+        icon="cube-selection"
+        label="Zobrazit výběr ve 3D"
+        shortcut="F4"
+        testid="view3d-selection"
+        onClick={() => show3D(s, true)}
+      />
+      <IconButton icon="zoom-all" label="Přizpůsobit" testid="view3d-fit" onClick={onFit} />
+      <IconButton icon="close" label="Zavřít 3D okno" testid="view3d-close" onClick={() => close3D(s)} />
+    </div>
+  );
+}
+
 export function View3DWindow({ s }: { s: Session }) {
   useSession(s);
   const canvas = useRef<HTMLCanvasElement>(null);
   const { viewer, error } = useViewer(s, canvas);
   const st = view3d(s);
   const onlyKey = st.only?.join(',') ?? '';
-  const solids = useMemo(
-    () => modelSolids(s.model, s.view, st.only ? new Set(st.only) : null),
-    [s.model, s.view, onlyKey],
+  const storeysKey = st.storeys?.join(',') ?? '';
+  const raw = useMemo(
+    () =>
+      modelSolids(
+        s.model,
+        s.view,
+        st.only ? new Set(st.only) : null,
+        st.storeys ? new Set(st.storeys) : null,
+      ),
+    [s.model, s.view, onlyKey, storeysKey],
   );
+  const solids = useMemo(() => (st.box ? clipSolids(raw, st.box) : raw), [raw, st.box]);
   useEffect(() => viewer?.setSolids(solids), [viewer, solids]);
+  useEffect(() => viewer?.setBox(st.box), [viewer, st.box]);
   useEffect(() => viewer?.fit(), [viewer, st.fit]);
   const picked = [...s.selection.walls, ...s.selection.slabs];
   useEffect(() => viewer?.setSelection(picked), [viewer, solids, picked.join(',')]);
@@ -89,29 +143,7 @@ export function View3DWindow({ s }: { s: Session }) {
   const title = st.only ? `3D · Výběr (${st.only.length})` : '3D · Celý model';
   return (
     <section class="window window-3d" data-testid="window-3d">
-      <div class="window-head">
-        <span class="window-tab" data-testid="window-3d-title">
-          <Icon name="cube" size={16} />
-          {title}
-        </span>
-        <span class="spacer" />
-        <IconButton
-          icon="cube"
-          label="Zobrazit vše ve 3D"
-          shortcut="Ctrl+F4 / Shift+F4"
-          testid="view3d-all"
-          onClick={() => show3D(s, false)}
-        />
-        <IconButton
-          icon="cube-selection"
-          label="Zobrazit výběr ve 3D"
-          shortcut="F4"
-          testid="view3d-selection"
-          onClick={() => show3D(s, true)}
-        />
-        <IconButton icon="zoom-all" label="Přizpůsobit" testid="view3d-fit" onClick={() => viewer?.fit()} />
-        <IconButton icon="close" label="Zavřít 3D okno" testid="view3d-close" onClick={() => close3D(s)} />
-      </div>
+      <Head3D s={s} raw={raw} title={title} onFit={() => viewer?.fit()} />
       <main class="workspace">
         <span class="view-label">Levé tlačítko otáčí, pravé posouvá, kolečko přibližuje</span>
         <canvas ref={canvas} class="drawing" data-testid="canvas-3d" />

@@ -18,6 +18,8 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { BoxGizmo, type HandleRef } from './box-gizmo.ts';
+import type { Box3D } from './clip.ts';
 import { buildMeshes, disposeGroup, highlight, Materials } from './mesh.ts';
 import type { Solid } from './solids.ts';
 
@@ -34,6 +36,9 @@ export class Viewer {
   private groups = new Map<string, Group>();
   private readonly selectedMat: MeshLambertMaterial;
   private frame = 0;
+  private readonly gizmo: BoxGizmo;
+  /** Po puštění úchytu ořezového kvádru: nový kvádr (mm). */
+  onBoxChange: (box: Box3D) => void = () => {};
 
   constructor(
     readonly canvas: HTMLCanvasElement,
@@ -53,8 +58,59 @@ export class Viewer {
     this.controls.addEventListener('change', () => this.render());
     const sun = new DirectionalLight(0xffffff, 1.6);
     sun.position.set(-0.5, -1, 1.6);
-    this.scene.add(new HemisphereLight(0xffffff, 0x8a8f99, 1.4), sun, this.root);
+    this.gizmo = new BoxGizmo(colors.selection);
+    this.scene.add(new HemisphereLight(0xffffff, 0x8a8f99, 1.4), sun, this.root, this.gizmo.group);
+    // Zachycení dřív než OrbitControls: tažení úchytu kvádru kameru neotáčí.
+    canvas.addEventListener('pointerdown', this.onHandleDown, { capture: true });
   }
+
+  /** Ořezový kvádr: obrys a úchyty (null = vypnutý). */
+  setBox(box: Box3D | null) {
+    this.gizmo.set(box);
+    this.render();
+  }
+
+  private ndc(x: number, y: number): Vector2 {
+    const r = this.canvas.getBoundingClientRect();
+    return new Vector2((x / r.width) * 2 - 1, -(y / r.height) * 2 + 1);
+  }
+
+  /** Úchyt kvádru pod bodem plátna (px), nebo null. */
+  handleAt(x: number, y: number): HandleRef | null {
+    const ray = new Raycaster();
+    ray.setFromCamera(this.ndc(x, y), this.camera);
+    const hit = ray.intersectObjects(this.gizmo.handles, false)[0];
+    return (hit?.object.userData as HandleRef | undefined) ?? null;
+  }
+
+  private readonly onHandleDown = (e: PointerEvent) => {
+    const start = this.gizmo.value;
+    const h = e.button === 0 && start ? this.handleAt(e.offsetX, e.offsetY) : null;
+    if (!h || !start) return;
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    const r = this.canvas.getBoundingClientRect();
+    let box = start;
+    const move = (m: PointerEvent) => {
+      box = this.gizmo.dragged(
+        start,
+        h,
+        m.clientX - e.clientX,
+        m.clientY - e.clientY,
+        this.camera,
+        r.width,
+        r.height,
+      );
+      this.setBox(box);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      this.onBoxChange(box);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
 
   setBackground(color: string) {
     this.scene.background = new Color(color);
@@ -107,12 +163,17 @@ export class Viewer {
 
   /** Prvek pod bodem okna (px od levého horního rohu plátna), nebo null. */
   pick(x: number, y: number): string | null {
-    const r = this.canvas.getBoundingClientRect();
-    const ndc = new Vector2((x / r.width) * 2 - 1, -(y / r.height) * 2 + 1);
     const ray = new Raycaster();
-    ray.setFromCamera(ndc, this.camera);
+    ray.setFromCamera(this.ndc(x, y), this.camera);
     const hit = ray.intersectObjects(this.root.children, true).find((h) => h.object.type === 'Mesh');
     return (hit?.object.userData.elementId as string | undefined) ?? null;
+  }
+
+  /** Bod modelu (mm) v px plátna (pro testy). */
+  screenOfPoint(x: number, y: number, z: number): { x: number; y: number } {
+    const c = new Vector3(x, y, z).multiplyScalar(0.001).project(this.camera);
+    const r = this.canvas.getBoundingClientRect();
+    return { x: ((c.x + 1) / 2) * r.width, y: ((1 - c.y) / 2) * r.height };
   }
 
   /** Střed prvku v px plátna (pro testy). */
@@ -134,6 +195,8 @@ export class Viewer {
 
   dispose() {
     cancelAnimationFrame(this.frame);
+    this.canvas.removeEventListener('pointerdown', this.onHandleDown, { capture: true });
+    this.gizmo.dispose();
     for (const g of this.groups.values()) disposeGroup(g);
     this.mats.dispose();
     this.selectedMat.dispose();

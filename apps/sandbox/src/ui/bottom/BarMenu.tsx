@@ -9,6 +9,8 @@ export interface MenuItem {
   readonly checked?: boolean;
   readonly disabled?: boolean;
   readonly testid?: string;
+  /** Po výběru nechat nabídku otevřenou (zaškrtávání více položek, např. podlaží ve 3D). */
+  readonly keepOpen?: boolean;
   readonly onPick: () => void;
 }
 
@@ -53,7 +55,7 @@ export function BarMenu(props: {
                   class={it.checked ? 'on' : ''}
                   onClick={() => {
                     it.onPick();
-                    setOpen(false);
+                    if (!it.keepOpen) setOpen(false);
                   }}
                 >
                   <span class="check-mark">{it.checked ? '✓' : ''}</span>

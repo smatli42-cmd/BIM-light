@@ -11,3 +11,15 @@
   text-align: center;
   color: var(--muted, #666);
 }
+/* Nabídka v hlavičce 3D okna se otevírá dolů (ve spodní liště nahoru). */
+.window-3d .window-head .bar-pop {
+  top: 30px;
+  bottom: auto;
+  right: 0;
+  left: auto;
+}
+.window-3d .window-head .bar-pop button {
+  justify-content: flex-start;
+  text-align: left;
+  white-space: nowrap;
+}

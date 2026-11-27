@@ -1,5 +1,6 @@
 // Okno do 3D náhledu pro prohlížečové testy (Playwright): co je ve scéně a kde je prvek na stránce.
 import type { Session } from '../session/session.ts';
+import type { Box3D } from './clip.ts';
 import { view3d } from './state.ts';
 import type { Viewer } from './viewer.ts';
 
@@ -12,6 +13,12 @@ export interface TestHook3D {
   pageOf(id: string): { x: number; y: number } | null;
   /** Scéna se opravdu vykreslila (poslední snímek měl trojúhelníky). */
   drawn(): boolean;
+  /** Ořezový kvádr (mm), nebo null. */
+  box(): Box3D | null;
+  /** Rozsah podlaží, nebo null = všechna. */
+  storeys(): string[] | null;
+  /** Úchyt ořezového kvádru v px stránky. */
+  handleOf(axis: 'x' | 'y' | 'z', side: 'min' | 'max'): { x: number; y: number } | null;
 }
 
 declare global {
@@ -30,6 +37,17 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
       return p && { x: p.x + r.left, y: p.y + r.top };
     },
     drawn: () => v.renderer.info.render.triangles > 0,
+    box: () => view3d(s).box,
+    storeys: () => view3d(s).storeys,
+    handleOf(axis, side) {
+      const b = view3d(s).box;
+      if (!b) return null;
+      const c = { x: (b.min.x + b.max.x) / 2, y: (b.min.y + b.max.y) / 2, z: (b.min.z + b.max.z) / 2 };
+      c[axis] = b[side][axis];
+      const p = v.screenOfPoint(c.x, c.y, c.z);
+      const r = v.canvas.getBoundingClientRect();
+      return { x: p.x + r.left, y: p.y + r.top };
+    },
   };
   return () => {
     delete window.__bim3d;
