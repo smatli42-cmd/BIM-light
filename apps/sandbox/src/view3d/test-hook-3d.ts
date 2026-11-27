@@ -1,7 +1,7 @@
 // Okno do 3D náhledu pro prohlížečové testy (Playwright): co je ve scéně a kde je prvek na stránce.
 import type { Session } from '../session/session.ts';
 import type { Box3D } from './clip.ts';
-import { view3d } from './state.ts';
+import { active3d, view3d } from './state.ts';
 import type { Viewer } from './viewer.ts';
 
 export interface TestHook3D {
@@ -37,10 +37,13 @@ export function installTestHook3D(s: Session, v: Viewer): () => void {
       return p && { x: p.x + r.left, y: p.y + r.top };
     },
     drawn: () => v.renderer.info.render.triangles > 0,
-    box: () => view3d(s).box,
-    storeys: () => view3d(s).storeys,
+    box: () => active3d(s).sectionBox,
+    storeys: () => {
+      const ids = active3d(s).storeyIds;
+      return ids ? [...ids] : null;
+    },
     handleOf(axis, side) {
-      const b = view3d(s).box;
+      const b = active3d(s).sectionBox;
       if (!b) return null;
       const c = { x: (b.min.x + b.max.x) / 2, y: (b.min.y + b.max.y) / 2, z: (b.min.z + b.max.z) / 2 };
       c[axis] = b[side][axis];

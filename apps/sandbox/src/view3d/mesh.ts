@@ -41,11 +41,12 @@ export class Materials {
   private readonly faces = new Map<string, MeshLambertMaterial>();
   private readonly lines = new Map<string, LineBasicMaterial>();
 
-  face(color: string, transparent: boolean): MeshLambertMaterial {
-    const key = `${color}|${transparent}`;
+  face(color: string, opacity: number): MeshLambertMaterial {
+    const key = `${color}|${opacity}`;
+    const transparent = opacity < 1;
     let m = this.faces.get(key);
     if (!m) {
-      m = new MeshLambertMaterial({ color, transparent, opacity: transparent ? 0.35 : 1 });
+      m = new MeshLambertMaterial({ color, transparent, opacity });
       m.depthWrite = !transparent;
       // Hrany se kreslí přes plochy bez „cik-cak“ (polygonOffset odsune plochy dozadu).
       m.polygonOffset = true;
@@ -86,7 +87,7 @@ export function buildMeshes(solids: readonly Solid[], mats: Materials): Map<stri
         bevelEnabled: false,
       });
       geo.translate(0, 0, slab.z0 * MM);
-      const mesh = new Mesh(geo, mats.face(s.color, s.transparent));
+      const mesh = new Mesh(geo, mats.face(s.color, s.opacity));
       mesh.userData = { elementId: s.elementId, base: mesh.material };
       g.add(mesh);
     }

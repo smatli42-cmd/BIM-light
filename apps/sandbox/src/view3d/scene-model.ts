@@ -1,6 +1,7 @@
-// Co se ve 3D ukáže: stěny a desky všech podlaží (nebo jen vybrané, F4) podle stylu a filtru rekonstrukce
-// aktivního pohledu – skrytá vrstva (kategorie), filtr fáze i pravidlo „skrýt“ prvek ve 3D vynechají,
-// otvor skrytý filtrem stěnu nevyřízne (stejně jako v půdorysu, plán stěn Z10). Jen čtení jádra.
+// Co se ve 3D ukáže: stěny a desky podle 3D pohledu (View3d z jádra: styl, vrstvy, filtr rekonstrukce,
+// pravidla) – skrytá vrstva, filtr fáze i pravidlo „skrýt“ prvek vynechají, otvor skrytý filtrem stěnu
+// nevyřízne (stejně jako v půdorysu, plán stěn Z10). Barva a průhlednost povrchu přes funkci grafiky.
+// Jen čtení jádra.
 import {
   allSlabOpenings,
   allSlabs,
@@ -9,31 +10,27 @@ import {
   elementFacts,
   openingFacts,
   resolveGraphics,
+  slabOpeningFacts,
+  type Element,
+  type GraphicView,
   type Id,
   type Model,
-  type Element,
-  slabOpeningFacts,
   type Vec2,
-  type View,
   type Wall,
 } from '@bim-light/core';
-import { patchColor, patchSolid } from './patches.ts';
+import { patchLook, patchSolid } from './patches.ts';
 import { slabSolids } from './slab-solids.ts';
 import { wallSolids, type Solid } from './solids.ts';
+import { lookOf, withLook } from './surface.ts';
 
-/** Pohled aktivního okna přenesený na jiné podlaží (styl, vrstvy a filtr zůstávají). */
-const onStorey = (view: View, storeyId: Id): View =>
-  storeyId === view.storeyId ? view : { ...view, id: `${view.id}@3d@${storeyId}`, storeyId };
-
-function isShown(model: Model, view: View, w: Element): boolean {
-  if (w.variant.kind !== 'main') return false;
-  const v = onStorey(view, w.storeyId);
-  if (!categoryState(model.display, v, w.category).visible) return false;
-  return resolveGraphics(model.display, v, elementFacts(model, w)).effect.visible;
+function isShown(model: Model, view: GraphicView, el: Element): boolean {
+  if (el.variant.kind !== 'main') return false;
+  if (!categoryState(model.display, view, el.category).visible) return false;
+  return resolveGraphics(model.display, view, elementFacts(model, el)).effect.visible;
 }
 
 /** Kopie modelu jen se zobrazenými stěnami, jejich napojeními a viditelnými otvory (model se nemění). */
-export function shownModel(model: Model, view: View): { model: Model; walls: Wall[] } {
+export function shownModel(model: Model, view: GraphicView): { model: Model; walls: Wall[] } {
   const walls = allWalls(model).filter((w) => isShown(model, view, w));
   const keep = new Set(walls.map((w) => w.id));
   const pick = <T>(rec: Readonly<Record<Id, T>>, ok: (x: T) => boolean) =>
@@ -47,43 +44,35 @@ export function shownModel(model: Model, view: View): { model: Model; walls: Wal
   const openings = pick(model.openings, (o) => {
     const host = model.elements[o.hostId];
     if (!keep.has(o.hostId) || host?.category !== 'wall') return false;
-    const v = onStorey(view, o.storeyId);
     return (
-      resolveGraphics(model.display, v, openingFacts(o)).effect.visible ||
-      patchColor(model, v, o, host) !== null
+      resolveGraphics(model.display, view, openingFacts(o)).effect.visible ||
+      patchLook(model, view, o, host) !== null
     );
   });
   return { model: { ...model, elements, relations, openings }, walls };
 }
 
-/**
- * Barva povrchu ve 3D přes funkci grafiky (základy 11, 30): pravidlo nebo styl s `surfaceColor` přebarví
- * všechny vrstvy prvku (např. bourání žlutě), jinak zůstane barva materiálu.
- */
-function withSurface(model: Model, view: View, el: Element, solids: Solid[]): Solid[] {
-  const v = onStorey(view, el.storeyId);
-  const color = resolveGraphics(model.display, v, elementFacts(model, el)).effect.surfaceColor;
-  return color ? solids.map((x) => ({ ...x, color })) : solids;
-}
+/** Barva a průhlednost povrchu prvku z funkce grafiky (pravidlo / styl), jinak materiál. */
+const surfaced = (model: Model, view: GraphicView, el: Element, solids: Solid[]): Solid[] =>
+  withLook(solids, lookOf(resolveGraphics(model.display, view, elementFacts(model, el)).effect));
 
 /** Obrysy viditelných otvorů v desce (filtr rekonstrukce: skrytý otvor desku neprořízne, jako u stěn). */
-function slabHoles(model: Model, view: View, slabId: Id): Vec2[][] {
+function slabHoles(model: Model, view: GraphicView, slabId: Id): Vec2[][] {
   return allSlabOpenings(model)
     .filter(
       (o) =>
         o.hostIds.includes(slabId) &&
         o.variant.kind === 'main' &&
-        resolveGraphics(model.display, onStorey(view, o.storeyId), slabOpeningFacts(o)).effect.visible,
+        resolveGraphics(model.display, view, slabOpeningFacts(o)).effect.visible,
     )
     .map((o) => [...o.outline]);
 }
 
 /** Záplaty rekonstrukce u otvorů stěny (probourání, zazdívka) jako barevné bloky. */
-function patchesOf(model: Model, view: View, w: Wall): Solid[] {
-  const v = onStorey(view, w.storeyId);
+function patchesOf(model: Model, view: GraphicView, w: Wall): Solid[] {
   return Object.values(model.openings).flatMap((o) => {
-    const color = o.hostId === w.id ? patchColor(model, v, o, w) : null;
-    const solid = color ? patchSolid(model, o, w, color) : null;
+    const look = o.hostId === w.id ? patchLook(model, view, o, w) : null;
+    const solid = look ? patchSolid(model, o, w, look) : null;
     return solid ? [solid] : [];
   });
 }
@@ -94,7 +83,7 @@ function patchesOf(model: Model, view: View, w: Wall): Solid[] {
  */
 export function modelSolids(
   model: Model,
-  view: View,
+  view: GraphicView,
   only: ReadonlySet<Id> | null = null,
   storeys: ReadonlySet<Id> | null = null,
 ): Solid[] {
@@ -105,10 +94,10 @@ export function modelSolids(
     ...shown.walls
       .filter(want)
       .flatMap((w) => [
-        ...withSurface(model, view, w, wallSolids(shown.model, w)),
+        ...surfaced(model, view, w, wallSolids(shown.model, w)),
         ...patchesOf(shown.model, view, w),
       ]),
-    ...slabs.flatMap((d) => withSurface(model, view, d, slabSolids(model, d, slabHoles(model, view, d.id)))),
+    ...slabs.flatMap((d) => surfaced(model, view, d, slabSolids(model, d, slabHoles(model, view, d.id)))),
   ];
 }
 

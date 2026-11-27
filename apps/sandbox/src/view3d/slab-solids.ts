@@ -4,7 +4,7 @@
 // (D3, svislý řez přes celou tloušťku). Jádro se jen čte.
 import { slabLevels, type Model, type Slab as SlabElement, type Vec2 } from '@bim-light/core';
 import { sliceLayer, type Cutter } from './slice.ts';
-import type { Solid } from './solids.ts';
+import { materialOpacity, type Solid } from './solids.ts';
 
 const FALLBACK_COLOR = '#c8c8c8';
 
@@ -32,7 +32,7 @@ export function slabSolids(
         elementId: slab.id,
         materialId,
         color: mat?.color ?? FALLBACK_COLOR,
-        transparent: mat?.transparent3D ?? false,
+        opacity: materialOpacity(mat),
         slabs,
       },
     ];

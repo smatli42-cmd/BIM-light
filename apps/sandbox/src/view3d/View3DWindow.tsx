@@ -1,5 +1,5 @@
 // E – 3D okno vedle půdorysu (koncepce rozhraní, část 2 E; rozhodnutí 14): hlavička s názvem a tlačítky,
-// pod ní 3D model. Ukazuje stěny a desky podle stylu a filtru rekonstrukce aktivního pohledu; klik vybere prvek
+// pod ní 3D model. Ukazuje uložený 3D pohled (View3d) – stěny a desky podle jeho stylu a filtru rekonstrukce aktivního pohledu; klik vybere prvek
 // (výběr je společný s půdorysem), Shift+klik přidá / odebere.
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
@@ -7,10 +7,10 @@ import { openStorey } from '../session/sets.ts';
 import { Icon, IconButton } from '../ui/icons/Icon.tsx';
 import { useSession } from '../ui/use-session.ts';
 import { clipSolids } from './clip.ts';
-import { SectionBoxButton, Storeys3DMenu } from './Controls3D.tsx';
+import { Phase3DMenu, SectionBoxButton, Storeys3DMenu, Views3DMenu } from './Controls3D.tsx';
 import { modelSolids } from './scene-model.ts';
 import type { Solid } from './solids.ts';
-import { close3D, setBox3D, show3D, view3d } from './state.ts';
+import { active3d, close3D, setBox3D, show3D, view3d } from './state.ts';
 import { installTestHook3D } from './test-hook-3d.ts';
 import { Viewer } from './viewer.ts';
 import './view3d.css';
@@ -75,18 +75,8 @@ function useViewer(s: Session, canvas: { current: HTMLCanvasElement | null }) {
   return { viewer, error };
 }
 
-/** Hlavička 3D okna: název, rozsah (podlaží, kvádr) a tlačítka zobrazení. */
-function Head3D({
-  s,
-  raw,
-  title,
-  onFit,
-}: {
-  s: Session;
-  raw: readonly Solid[];
-  title: string;
-  onFit: () => void;
-}) {
+/** Hlavička 3D okna: název a tlačítka zobrazení. */
+function Head3D({ s, title, onFit }: { s: Session; title: string; onFit: () => void }) {
   return (
     <div class="window-head">
       <span class="window-tab" data-testid="window-3d-title">
@@ -94,8 +84,6 @@ function Head3D({
         {title}
       </span>
       <span class="spacer" />
-      <Storeys3DMenu s={s} />
-      <SectionBoxButton s={s} solids={raw} />
       <IconButton
         icon="cube"
         label="Zobrazit vše ve 3D"
@@ -116,26 +104,34 @@ function Head3D({
   );
 }
 
+/** Lišta 3D pohledu pod hlavičkou: který pohled, fáze, podlaží, ořezový kvádr (vše data 3D pohledu). */
+function Bar3D({ s, raw }: { s: Session; raw: readonly Solid[] }) {
+  return (
+    <div class="window-3d-bar" data-testid="view3d-bar">
+      <Views3DMenu s={s} />
+      <Phase3DMenu s={s} />
+      <Storeys3DMenu s={s} />
+      <SectionBoxButton s={s} solids={raw} />
+    </div>
+  );
+}
+
 export function View3DWindow({ s }: { s: Session }) {
   useSession(s);
   const canvas = useRef<HTMLCanvasElement>(null);
   const { viewer, error } = useViewer(s, canvas);
   const st = view3d(s);
+  const v = active3d(s);
   const onlyKey = st.only?.join(',') ?? '';
-  const storeysKey = st.storeys?.join(',') ?? '';
   const raw = useMemo(
     () =>
-      modelSolids(
-        s.model,
-        s.view,
-        st.only ? new Set(st.only) : null,
-        st.storeys ? new Set(st.storeys) : null,
-      ),
-    [s.model, s.view, onlyKey, storeysKey],
+      modelSolids(s.model, v, st.only ? new Set(st.only) : null, v.storeyIds ? new Set(v.storeyIds) : null),
+    [s.model, v, onlyKey],
   );
-  const solids = useMemo(() => (st.box ? clipSolids(raw, st.box) : raw), [raw, st.box]);
+  const box = v.sectionBox;
+  const solids = useMemo(() => (box ? clipSolids(raw, box) : raw), [raw, box]);
   useEffect(() => viewer?.setSolids(solids), [viewer, solids]);
-  useEffect(() => viewer?.setBox(st.box), [viewer, st.box]);
+  useEffect(() => viewer?.setBox(box), [viewer, box]);
   useEffect(() => viewer?.fit(), [viewer, st.fit]);
   const picked = [...s.selection.walls, ...s.selection.slabs];
   useEffect(() => viewer?.setSelection(picked), [viewer, solids, picked.join(',')]);
@@ -143,7 +139,8 @@ export function View3DWindow({ s }: { s: Session }) {
   const title = st.only ? `3D · Výběr (${st.only.length})` : '3D · Celý model';
   return (
     <section class="window window-3d" data-testid="window-3d">
-      <Head3D s={s} raw={raw} title={title} onFit={() => viewer?.fit()} />
+      <Head3D s={s} title={title} onFit={() => viewer?.fit()} />
+      <Bar3D s={s} raw={raw} />
       <main class="workspace">
         <span class="view-label">Levé tlačítko otáčí, pravé posouvá, kolečko přibližuje</span>
         <canvas ref={canvas} class="drawing" data-testid="canvas-3d" />

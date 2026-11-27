@@ -1,7 +1,8 @@
-// Stav 3D okna (koncepce rozhraní, část 2 E a G, řádek 10): otevřené / zavřené a co ukazuje – celý model
-// (Zobrazit vše ve 3D, Ctrl+F4) nebo jen výběr (Zobrazit výběr ve 3D, F4). Volba obrazovky, ne data modelu,
-// proto nejde přes příkaz (jako rozvržení oken). Drží se vedle Session, aby se Session neměnila.
-import type { Id } from '@bim-light/core';
+// Stav 3D okna (koncepce rozhraní, část 2 E a G, řádek 10). Okno ukazuje uložený 3D pohled z modelu
+// (View3d: styl, filtr, vrstvy, rozsah podlaží, ořezový kvádr – mění se příkazy view3d.*, jdou přes AI
+// i Undo). Volba obrazovky (jako rozvržení oken) je jen: otevřené / zavřené, který 3D pohled a dočasné
+// „jen výběr“ (Zobrazit výběr ve 3D, F4). Drží se vedle Session, aby se Session neměnila.
+import type { Id, View3d } from '@bim-light/core';
 import type { Box3D } from './clip.ts';
 import type { Session } from '../session/session.ts';
 import { selectionElements } from './scene-model.ts';
@@ -12,10 +13,8 @@ export interface View3DState {
   only: Id[] | null;
   /** Zvýší se při každém „zobrazit“: okno pak přiblíží kameru na obsah. */
   fit: number;
-  /** Rozsah podlaží (jako Filter and Cut Elements in 3D v Archicadu); null = všechna. */
-  storeys: Id[] | null;
-  /** Ořezový kvádr (Section Box v Revitu, mm); null = vypnutý. */
-  box: Box3D | null;
+  /** Zobrazený 3D pohled; null nebo smazaný = první v projektu. */
+  viewId: Id | null;
 }
 
 const states = new WeakMap<Session, View3DState>();
@@ -26,7 +25,7 @@ const openFromUrl = () => typeof location !== 'undefined' && new URLSearchParams
 export function view3d(s: Session): View3DState {
   let st = states.get(s);
   if (!st) {
-    st = { open: openFromUrl(), only: null, fit: 0, storeys: null, box: null };
+    st = { open: openFromUrl(), only: null, fit: 0, viewId: null };
     states.set(s, st);
   }
   return st;
@@ -60,15 +59,28 @@ export function close3D(s: Session) {
   s.changed();
 }
 
-/** Rozsah podlaží ve 3D; null nebo všechna = vše. */
-export function setStoreys3D(s: Session, ids: readonly Id[] | null) {
-  const all = Object.keys(s.model.storeys);
-  view3d(s).storeys = ids && ids.length < all.length ? [...ids] : null;
+/** 3D pohled, který okno ukazuje (vybraný, jinak první v projektu – projekt má vždy aspoň jeden). */
+export function active3d(s: Session): View3d {
+  const id = view3d(s).viewId;
+  const v = (id && s.model.views3d[id]) || Object.values(s.model.views3d)[0];
+  if (!v) throw new Error('Projekt nemá 3D pohled');
+  return v;
+}
+
+export function pick3d(s: Session, viewId: Id) {
+  view3d(s).viewId = viewId;
+  view3d(s).fit++;
   s.changed();
 }
 
-/** Zapne ořezový kvádr (na `box`, typicky obal zobrazeného modelu) nebo ho vypne (null). */
+/** Rozsah podlaží 3D pohledu (příkaz view3d.setStoreys); null nebo všechna = vše. */
+export function setStoreys3D(s: Session, ids: readonly Id[] | null) {
+  const all = Object.keys(s.model.storeys);
+  const storeyIds = ids && ids.length < all.length ? [...ids] : null;
+  s.run('view3d.setStoreys', { viewId: active3d(s).id, storeyIds });
+}
+
+/** Ořezový kvádr 3D pohledu (příkaz view3d.setSectionBox); null = vypnout. */
 export function setBox3D(s: Session, box: Box3D | null) {
-  view3d(s).box = box;
-  s.changed();
+  s.run('view3d.setSectionBox', { viewId: active3d(s).id, sectionBox: box });
 }

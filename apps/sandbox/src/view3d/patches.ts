@@ -8,12 +8,13 @@ import {
   resolveGraphics,
   type Model,
   type Opening,
+  type GraphicView,
   type Status,
-  type View,
   type Wall,
 } from '@bim-light/core';
 import { sliceLayer } from './slice.ts';
 import { openingFootprint, type Solid } from './solids.ts';
+import { lookOf } from './surface.ts';
 
 /** Stav záplaty: probourání = bourání, zazdívka = nový; otvor ve stěně stejného stavu nic. */
 function patchStatus(o: Opening, host: Wall): Status | null {
@@ -22,19 +23,25 @@ function patchStatus(o: Opening, host: Wall): Status | null {
   return null;
 }
 
-/** Barva záplaty otvoru v pohledu `view` (už na podlaží otvoru), nebo null = bez záplaty. */
-export function patchColor(model: Model, view: View, o: Opening, host: Wall): string | null {
+export interface PatchLook {
+  readonly color: string;
+  readonly opacity: number;
+}
+
+/** Vzhled záplaty otvoru v pohledu `view`, nebo null = bez záplaty (barva povrchu stejná jako stěna). */
+export function patchLook(model: Model, view: GraphicView, o: Opening, host: Wall): PatchLook | null {
   const status = patchStatus(o, host);
   if (!status || o.variant.kind !== 'main') return null;
   const facts = elementFacts(model, host);
   const g = resolveGraphics(model.display, view, { ...facts, status }).effect;
   const hostColor = resolveGraphics(model.display, view, facts).effect.surfaceColor;
-  return g.visible && g.surfaceColor && g.surfaceColor !== hostColor ? g.surfaceColor : null;
+  if (!g.visible || !g.surfaceColor || g.surfaceColor === hostColor) return null;
+  return { color: g.surfaceColor, opacity: lookOf(g).opacity ?? 1 };
 }
 
 /** Blok záplaty přes celou tloušťku stěny (u niky do hloubky), výška otvoru. */
-export function patchSolid(model: Model, o: Opening, host: Wall, color: string): Solid | null {
+export function patchSolid(model: Model, o: Opening, host: Wall, look: PatchLook): Solid | null {
   const { bottom, top } = openingLevels(model, o, host);
   const slabs = sliceLayer([openingFootprint(model, o, host, 0)], bottom, top, []);
-  return slabs.length ? { elementId: host.id, materialId: null, color, transparent: false, slabs } : null;
+  return slabs.length ? { elementId: host.id, materialId: null, ...look, slabs } : null;
 }

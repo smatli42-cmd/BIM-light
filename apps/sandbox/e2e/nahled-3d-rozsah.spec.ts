@@ -56,3 +56,35 @@ test('koncepce-rozhrani / G 10: ořezový kvádr – zapnout, stáhnout horní s
   await expect.poll(() => page.evaluate(() => window.__bim3d!.box())).toBeNull();
   await expect.poll(() => storeysIn3d(page)).toEqual(new Set(['1.NP', '2.NP']));
 });
+
+test('koncepce-rozhrani / G 10: 3D pohled je uložený – vlastní fáze, nový pohled, Undo kvádru', async ({
+  page,
+}) => {
+  const m0 = await model(page);
+  const statuses = async () => {
+    const m = await model(page);
+    const ids = await page.evaluate(() => window.__bim3d?.elements() ?? []);
+    return new Set(ids.map((id) => (m.elements[id] as { status: string }).status));
+  };
+  // Fáze 3D pohledu: Bourací práce skryje nové prvky jen ve 3D, půdorys se nemění.
+  await page.getByTestId('view3d-phase').click();
+  await page.getByTestId('view3d-phase-Bourací práce').click();
+  await expect.poll(statuses).not.toContain('new');
+  const m1 = await model(page);
+  expect(Object.values(m1.views).map((v) => v.phaseFilterId)).toEqual(
+    Object.values(m0.views).map((v) => v.phaseFilterId),
+  );
+  // Ořezový kvádr je příkaz: Ctrl+Z ho vrátí.
+  await page.getByTestId('view3d-box').click();
+  await expect.poll(() => page.evaluate(() => window.__bim3d!.box())).not.toBeNull();
+  await page.keyboard.press('Control+z');
+  await expect.poll(() => page.evaluate(() => window.__bim3d!.box())).toBeNull();
+  // Nový 3D pohled začíná se všemi podlažími a bez filtru; původní si nastavení drží.
+  await page.getByTestId('view3d-views').click();
+  await page.getByTestId('view3d-new').click();
+  await expect.poll(async () => Object.keys((await model(page)).views3d).length).toBe(2);
+  await expect.poll(statuses).toContain('new');
+  await page.getByTestId('view3d-views').click();
+  await page.getByTestId('view3d-view-3D').click();
+  await expect.poll(statuses).not.toContain('new');
+});

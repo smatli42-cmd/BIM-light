@@ -21,13 +21,18 @@ import { sliceLayer, type Cutter, type Slab } from './slice.ts';
 /** Přesah půdorysu otvoru přes líc, aby výřez nenechal tenkou blánu (jako v IFC). */
 const OVER = 1;
 const FALLBACK_COLOR = '#c8c8c8';
+/** Krytí průhledného materiálu (sklo) ve 3D. */
+export const GLASS_OPACITY = 0.35;
+export const materialOpacity = (mat: { transparent3D: boolean } | undefined): number =>
+  mat?.transparent3D ? GLASS_OPACITY : 1;
 
 export interface Solid {
   /** Prvek, ke kterému těleso patří (výběr ve 3D = výběr prvku). */
   readonly elementId: Id;
   readonly materialId: Id | null;
   readonly color: string;
-  readonly transparent: boolean;
+  /** Krytí 0–1 (1 = plné); průhledný materiál (sklo) 0,35, pravidlo grafiky může přepsat. */
+  readonly opacity: number;
   readonly slabs: readonly Slab[];
 }
 
@@ -87,7 +92,7 @@ export function wallSolids(model: Model, wall: Wall): Solid[] {
         elementId: wall.id,
         materialId,
         color: mat?.color ?? FALLBACK_COLOR,
-        transparent: mat?.transparent3D ?? false,
+        opacity: materialOpacity(mat),
         slabs,
       },
     ];

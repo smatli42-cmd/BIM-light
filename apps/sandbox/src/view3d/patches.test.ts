@@ -47,4 +47,17 @@ describe('plán stěn Z10 / 3D náhled: rekonstrukce u otvorů (probourání, za
     expect(solids.some((s) => s.color === YELLOW)).toBe(false);
     expect(volume(solids)).toBeCloseTo(full, -3);
   });
+
+  it('základ 11 / 3D: bourání je ve 3D lehce průhledné (pravidlo 50 %), stávající zeď plná', () => {
+    const { f, id } = probourani();
+    const old = f.line(vec(0, 3000), vec(5000, 3000), { status: 'demolished' });
+    f.run('view.setPhaseFilter', { viewId: f.viewId, filterId: phase(f, 'Fáze – bourací práce') });
+    const solids = modelSolids(f.model, view(f));
+    const of = (eid: string) => new Set(solids.filter((s) => s.elementId === eid).map((s) => s.opacity));
+    expect(of(old)).toEqual(new Set([0.5]));
+    // Stěna s probouráním: vrstvy plné, žlutá záplata průhledná.
+    const wall = solids.filter((s) => s.elementId === id);
+    expect(new Set(wall.filter((s) => s.color !== YELLOW).map((s) => s.opacity))).toEqual(new Set([1]));
+    expect(new Set(wall.filter((s) => s.color === YELLOW).map((s) => s.opacity))).toEqual(new Set([0.5]));
+  });
 });

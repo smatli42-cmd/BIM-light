@@ -55,12 +55,23 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   bez výběru kolem všeho + 300 mm; úchyty na středech stěn kvádru se táhnou myší (po ose stěny), po puštění
   se tělesa oříznou. Řez je **plný** (`view3d/clip.ts` ořízne hranoly přesně: výška + 2D průnik), barva
   materiálu jako řez v Archicadu – žádná dutá skořápka.
-- Obojí je zatím volba 3D okna (`view3d/state.ts`), ne data modelu; v jádře se čeká na 3D pohled (níže).
+- Obojí je od kroku 4 nastavení uloženého 3D pohledu (viz níže).
 - Testy: `view3d/clip.test.ts`, e2e `nahled-3d-rozsah.spec.ts`.
+
+## Hotovo (krok 4 – uložený 3D pohled a průhlednost, 2026-11-27)
+
+- 3D okno ukazuje **3D pohled z modelu** (`model.views3d`, View3d z jádra): styl, vrstvy, **vlastní filtr
+  rekonstrukce**, rozsah podlaží a ořezový kvádr se mění příkazy `view3d.*` – jde to přes AI i Undo.
+- **Lišta 3D pohledu** pod hlavičkou okna: výběr pohledu + Nový 3D pohled, Fáze 3D pohledu, Podlaží,
+  Ořezový kvádr. Volba obrazovky zůstává jen: otevřené okno, který 3D pohled, F4 „jen výběr“.
+- **Průhlednost povrchu** přes funkci grafiky (`surfaceTransparency`): bourání 50 % jako v Revitu, včetně
+  záplaty probourání; sklo dál 35 % krytí z materiálu (`view3d/surface.ts`).
 
 ## Co zkusit
 
-- `?ukazka=dum&3d` → v hlavičce 3D okna **Všechna podlaží ›**: odškrtni 2.NP; **ořezový kvádr** (ikona
+- `?ukazka=dum&3d` → v liště 3D okna **Fáze ›** Bourací práce: bourané žlutě a poloprůhledně, půdorys
+  beze změny; **3D ›** Nový 3D pohled – má vlastní nastavení; Ctrl+Z vrátí změnu kvádru.
+- `?ukazka=dum&3d` → v liště 3D okna **Všechna podlaží ›**: odškrtni 2.NP; **ořezový kvádr** (ikona
   krychle s tečkami): táhni horní modrý úchyt dolů – řez domem ve výšce parapetů. Vybraná stěna + kvádr =
   kvádr jen kolem ní.
 - `?ukazka=desky-otvory&3d` – otvory v deskách (prostup, schodiště) proříznou strop i podlahu.
@@ -87,7 +98,11 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
   otáčení – lze přepnout podle přání).
 - 3D okno je volba obrazovky (jako rozvržení oken), ne data modelu – nejde přes příkaz; stav drží
   `view3d/state.ts` vedle Session.
-- 3D ukazuje všechna podlaží, styl, vrstvy a filtr rekonstrukce **aktivního okna**; F4 bez výběru = vše.
+- 3D pohled má **vlastní** styl, vrstvy a filtr rekonstrukce (jako každý pohled v Revitu, 3D okno
+  v Archicadu); dřív bral filtr aktivního okna. F4 bez výběru = vše.
+- Ovládání rozsahu je v **liště pod hlavičkou 3D okna** (v hlavičce se nevešlo a nabídky by se ořízly).
+- Vrstvy 3D pohledu zatím nejdou přepnout z panelu Vrstvy (ten mění aktivní půdorys); příkaz
+  `view3d.setLayerState` je – UI doplnit.
 - Barva ve 3D = barva materiálu, přepíše ji jen pravidlo / styl s „barvou povrchu“ (ne výplň řezu);
   uživatel souhlasí 2026-11-27.
 - Výběr ve 3D zvýrazní prvek barvou výběru (akcent rozhraní), ne obrysem.
@@ -108,9 +123,9 @@ PR: https://github.com/smatli42-cmd/BIM-light/pull/1 – sloučen do `main` 2026
 4. ~~**Sytější žlutá bourání ve 3D:**~~ hotovo (main 850f562, `#f2c200`, ve 3D ověřeno). `surfaceColor` pravidla „Bourání žlutě čárkovaně“ `#fff3b0` splývá
    s omítkou `#d8cfc0` – probourání ani bouraná příčka ve 3D nejsou vidět (uživatel 2026-11-27). Návrh
    `#f2c200`, výplň řezu v půdorysu nechat světlou. Posláno hlavní session.
-5. **Průhlednost povrchu ve 3D** (`surfaceTransparency` v efektu pravidla, bourání 50 %, jako Revit) –
+5. ~~**Průhlednost povrchu ve 3D**~~ hotovo (main 6ec4101) (`surfaceTransparency` v efektu pravidla, bourání 50 %, jako Revit) –
    posláno 2026-11-27.
-6. **3D pohled v jádře** (druh pohledu: styl, filtr, vrstvy, `storeyIds`, `sectionBox`; příkazy
+6. ~~**3D pohled v jádře**~~ hotovo (main 6ec4101), 3D okno přepojeno (druh pohledu: styl, filtr, vrstvy, `storeyIds`, `sectionBox`; příkazy
    `view3d.create / setStoreys / setSectionBox / rename`, dotaz, scénář AI) – posláno 2026-11-27. Pak 3D okno
    přepojit z `view3d/state.ts` na data pohledu.
 7. **Dotaz pro AI** (základ 15) `queries/` – např. `model.solids` / `view3d.bounds`, až bude 3D potřebovat AI
