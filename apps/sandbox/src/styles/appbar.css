@@ -1,0 +1,47 @@
+/* Horní lišta A (koncepce rozhraní, část 2): výška a zkracování v úzkém okně. Rozděleno z layout.css. */
+.appbar {
+  min-height: 4.4rem;
+  flex-wrap: nowrap;
+}
+/* Úzké okno nebo širší písmo (jiný systém): lišta nikdy nepřeteče. Nejdřív se zkrátí popisky projektu
+   (…), pak tlačítka s textem; ikony, výběr velikosti a název programu zůstanou celé. */
+.appbar > *,
+.appbar .tool-group > :not(.icon-btn) {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.appbar > .brand,
+.appbar .icon-btn,
+.appbar .tool-group > .ui-size,
+.appbar > .tool-group:has(> .ui-size),
+.appbar > .tool-group:not(:has(> :not(.icon-btn))),
+.appbar .seg {
+  flex: none;
+}
+/* Přepínač sad: kapsle a popisek „styl: …“ jsou v liště samostatně, zkrátí se jen popisek. */
+.appbar > .style-switch {
+  display: contents;
+}
+.appbar > .project,
+.appbar > .muted,
+.appbar .style-switch > .muted {
+  flex-shrink: 20;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.appbar button:not(.icon-btn) {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.appbar > .spacer {
+  flex: 1 1 0;
+}
+.appbar .brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--heading);
+}
+.appbar .project {
+  color: var(--muted);
+}

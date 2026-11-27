@@ -40,13 +40,16 @@ test('velikost-ui / úzké okno 1280 px s Největší: lišty a panely nepřete�
   await open(page);
   await page.getByTestId('ui-size').selectOption('xlarge');
   await page.setViewportSize({ width: 1280, height: 800 });
-  const out = await page.evaluate(
-    () =>
-      [...document.querySelectorAll('.appbar *, .commandbar *, .bottombar *, .panel *, .palette *')]
-        .map((e) => e.getBoundingClientRect())
-        .filter((r) => r.width > 0 && (r.right > innerWidth + 0.5 || r.left < -0.5)).length,
+  // Výpis přetékajících prvků (značka, třída, test id), aby chyba v CI (jiná písma) řekla, co přeteklo.
+  const out = await page.evaluate(() =>
+    [...document.querySelectorAll('.appbar *, .commandbar *, .bottombar *, .panel *, .palette *')]
+      .filter((e) => {
+        const r = e.getBoundingClientRect();
+        return r.width > 0 && (r.right > innerWidth + 0.5 || r.left < -0.5);
+      })
+      .map((e) => `${e.tagName}.${e.getAttribute('class') ?? ''} [${e.getAttribute('data-testid') ?? ''}]`),
   );
-  expect(out).toBe(0);
+  expect(out).toEqual([]);
   const canvas = await page.getByTestId('drawing-canvas').boundingBox();
   expect(canvas?.width ?? 0).toBeGreaterThan(400);
 });

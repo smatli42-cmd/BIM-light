@@ -3,6 +3,7 @@ import { App } from './app/App.tsx';
 import { Gallery } from './gallery/Gallery.tsx';
 import './styles/theme.css';
 import './styles/layout.css';
+import './styles/appbar.css';
 import './styles/controls.css';
 import './styles/panels.css';
 import './styles/floating.css';

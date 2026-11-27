@@ -43,33 +43,6 @@ body,
   flex: none;
 }
 /* Úzké okno nebo velké rozhraní: lišty se zalomí do dalšího řádku, nic nepřeteče. */
-.appbar {
-  min-height: 4.4rem;
-  flex-wrap: nowrap;
-}
-.appbar > * {
-  flex: none;
-}
-/* Popisky projektu se v úzkém okně zkrátí, tlačítka zůstanou celá. */
-.appbar > .project,
-.appbar > .muted {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.appbar > .spacer {
-  flex: 1;
-}
-.appbar .brand {
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--heading);
-}
-.appbar .project {
-  color: var(--muted);
-}
 .commandbar {
   min-height: 3.8rem;
 }
