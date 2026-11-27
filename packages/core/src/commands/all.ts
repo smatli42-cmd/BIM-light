@@ -54,6 +54,7 @@ import {
   wallTypeSetComposition,
 } from './composition/composition.ts';
 import { wallSetHeight, wallSetTopProfile } from './wall/height.ts';
+import { wallAttachTop, wallDetachTop } from './wall/attach.ts';
 import { wallSplit } from './wall/split.ts';
 import { wallMatchProperties } from './wall/match.ts';
 import { wallDemolishPart } from './wall/demolish.ts';
@@ -116,6 +117,8 @@ export const CORE_COMMANDS = [
   wallSetReferenceLine,
   wallSetHeight,
   wallSetTopProfile,
+  wallAttachTop,
+  wallDetachTop,
   wallSetProperties,
   wallSplit,
   wallMatchProperties,

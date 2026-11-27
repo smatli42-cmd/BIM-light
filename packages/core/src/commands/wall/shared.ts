@@ -7,6 +7,7 @@ import type { Model } from '../../model/types.ts';
 import { putElements } from '../../model/update.ts';
 import { propagateConnections, type WallMotion } from '../../wall/propagate.ts';
 import type { Wall } from '../../wall/types.ts';
+import { detachedTop } from '../../wall-height/attach.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { fail } from '../types.ts';
 
@@ -34,6 +35,14 @@ export const HEIGHT_SCHEMA: JsonSchema = S.object(
             offset: S.number('odsazení vršku od úrovně podlaží + N (mm)'),
           },
           ['kind', 'storeys', 'offset'],
+        ),
+        S.object(
+          {
+            kind: S.enumOf(['slab'], 'vršek k desce (spodní líc desky, desky D4)'),
+            slabId: S.id,
+            offset: S.number('odsazení vršku od spodního líce desky (mm, záporné = pod deskou)'),
+          },
+          ['kind', 'slabId', 'offset'],
         ),
       ],
     },
@@ -73,10 +82,15 @@ export function applyWallChanges(
   return next;
 }
 
-/** Výška vložené stěny: vazba se přenese na cílové podlaží (odsazení i N zůstanou, jako Archicad). */
+/**
+ * Výška vložené stěny: vazba se přenese na cílové podlaží (odsazení i N zůstanou, jako Archicad).
+ * Vršek k desce se na jiném podlaží změní na podlaží + 1 se stejnou výškou (deska tam není).
+ */
 export function placedHeight(model: Model, storeyId: Id, h?: HeightBinding): HeightBinding {
-  const out: HeightBinding = h
-    ? { ...h, baseStoreyId: storeyId }
+  const moved = h && h.top.kind === 'slab' && h.baseStoreyId !== storeyId;
+  const own = moved && model.storeys[h.baseStoreyId] ? { ...h, top: detachedTop(model, h) } : h;
+  const out: HeightBinding = own
+    ? { ...own, baseStoreyId: storeyId }
     : { baseStoreyId: storeyId, baseOffset: 0, top: { kind: 'storey', storeys: 1, offset: 0 } };
   const err = heightError(model, out);
   if (err) fail('invalid', err);
