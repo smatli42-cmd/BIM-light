@@ -3,6 +3,8 @@
 // s hloubkou za rovinou řezu (nejbližší bod prvku); řezané konstrukce mají hloubku −1 a zakryjí vše.
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
+import type { FrontDepth } from './front.ts';
+import { FACE_TOL } from './projection.ts';
 
 export interface Occluder {
   readonly elementId: Id;
@@ -10,12 +12,36 @@ export interface Occluder {
   /** Smyčky plochy (vnější obrys i díry; uvnitř = pravidlo sudé-liché). */
   readonly rings: readonly (readonly Vec2[])[];
   readonly box: { readonly min: Vec2; readonly max: Vec2 };
+  /** Hloubka předního líce v místě u (svislé prvky); bez ní všude `depth`. */
+  readonly front?: FrontDepth;
+}
+
+/** Kreslený prvek: id, nejbližší hloubka a případně hloubka předního líce po šířce. */
+export type Drawn = Pick<Occluder, 'elementId' | 'depth' | 'front'>;
+
+const depthAt = (o: Drawn, u: number) => (o.front ? o.front(u) : o.depth);
+
+/**
+ * Zakryje plocha `o` bod prvku `e` v místě u? Bližší líc zakryje vždy; dva svislé prvky ve stejném líci
+ * (napojené stěny, čelo stěny viděné z boku v líci fasády) zakrývají vnitřní hrany jeden druhému – líc je
+ * jedna plocha (Revit / Archicad spojené konstrukce, hlášení uživatele 2026-11-28).
+ */
+function covers(o: Occluder, e: Drawn, u: number): boolean {
+  const dO = depthAt(o, u);
+  const dE = depthAt(e, u);
+  if (o.front && e.front) return dO <= dE + FACE_TOL;
+  return dO < dE;
 }
 
 /** Tolerance (mm): bod na hraně plochy není zakrytý (sdílené hrany zůstanou vidět). */
 const EDGE = 0.5;
 
-export function occluder(elementId: Id, depth: number, rings: readonly (readonly Vec2[])[]): Occluder {
+export function occluder(
+  elementId: Id,
+  depth: number,
+  rings: readonly (readonly Vec2[])[],
+  front?: FrontDepth,
+): Occluder {
   const pts = rings.flat();
   const xs = pts.map((p) => p.x);
   const ys = pts.map((p) => p.y);
@@ -24,6 +50,7 @@ export function occluder(elementId: Id, depth: number, rings: readonly (readonly
     depth,
     rings,
     box: { min: { x: Math.min(...xs), y: Math.min(...ys) }, max: { x: Math.max(...xs), y: Math.max(...ys) } },
+    ...(front ? { front } : {}),
   };
 }
 
@@ -72,15 +99,11 @@ const overlaps = (a: Vec2, b: Vec2, o: Occluder) =>
   Math.max(a.y, b.y) >= o.box.min.y &&
   Math.min(a.y, b.y) <= o.box.max.y;
 
-/** Viditelné části úsečky prvku `elementId` v hloubce `depth`. */
-export function visibleParts(
-  a: Vec2,
-  b: Vec2,
-  elementId: Id,
-  depth: number,
-  occluders: readonly Occluder[],
-): [Vec2, Vec2][] {
-  const near = occluders.filter((o) => o.elementId !== elementId && o.depth < depth && overlaps(a, b, o));
+/** Viditelné části úsečky kresleného prvku `e`. */
+export function visibleParts(a: Vec2, b: Vec2, e: Drawn, occluders: readonly Occluder[]): [Vec2, Vec2][] {
+  const near = occluders.filter(
+    (o) => o.elementId !== e.elementId && (o.front || o.depth < e.depth || e.front) && overlaps(a, b, o),
+  );
   if (!near.length) return [[a, b]];
   const ts = [0, 1, ...near.flatMap((o) => crossings(a, b, o))].sort((x, y) => x - y);
   const at = (t: number): Vec2 => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
@@ -90,7 +113,8 @@ export function visibleParts(
     const t0 = ts[i] as number;
     const t1 = ts[i + 1] as number;
     if (t1 - t0 < 1e-9) continue;
-    const hidden = near.some((o) => inside(o, at((t0 + t1) / 2)));
+    const m = at((t0 + t1) / 2);
+    const hidden = near.some((o) => inside(o, m) && covers(o, e, m.x));
     if (!hidden && open === null) open = t0;
     if (hidden && open !== null) {
       out.push([at(open), at(t0)]);

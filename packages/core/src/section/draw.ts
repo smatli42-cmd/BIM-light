@@ -110,7 +110,7 @@ function drawProjectionFills(items: readonly ProjItem[], cut: readonly CutItem[]
 function drawProjection(items: readonly ProjItem[], cut: readonly CutItem[]): Primitive[] {
   const occ: Occluder[] = [
     ...cut.flatMap((c) => c.pieces.map((p) => occluder(`řez:${c.elementId}`, -1, ringsOf(p.shapes)))),
-    ...items.map((p) => occluder(p.elementId, p.depth, ringsOf(p.shapes))),
+    ...items.map((p) => occluder(p.elementId, p.depth, ringsOf(p.shapes), p.front)),
   ];
   const out: Primitive[] = [];
   for (const p of items) {
@@ -118,7 +118,7 @@ function drawProjection(items: readonly ProjItem[], cut: readonly CutItem[]): Pr
     for (const ring of ringsOf(p.shapes))
       ring.forEach((a, i) => {
         const b = ring[(i + 1) % ring.length] as typeof a;
-        for (const [x, y] of visibleParts(a, b, p.elementId, p.depth, occ))
+        for (const [x, y] of visibleParts(a, b, p, occ))
           out.push({
             kind: 'line',
             points: [x, y],

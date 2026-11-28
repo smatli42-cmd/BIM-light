@@ -4,6 +4,16 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Oprava: skryté hrany v pohledu (fasádě), 2026-11-28 (hlášení uživatele se screenshotem; scéna `?ukazka=pohledy`)
+
+- **Pohled byl vidět „skrz stěnu“:** okno ve stěně viděné z boku prořízlo její čelo (obdélníky u nároží)
+  a byla vidět tloušťka stěn napojených kolmo k fasádě. Příčina: zakrývání porovnávalo jen nejbližší bod
+  prvku – kolmá stěna začíná v líci fasády, takže ji fasáda nezakryla. Nově `section/front.ts`: hloubka
+  předního líce svislého prvku (stěna, deska) v každém místě výkresu; bližší líc zakryje, dva prvky v jednom
+  líci (napojené stěny) skryjí vnitřní hrany jeden druhému (`occlude.ts`). Otvor se vyřízne jen tam, kde
+  prorazí přední líc stěny (`projection.ts`). Platí pro pohled i pro hrany za rovinou řezu; střechy beze
+  změny (hloubka nejbližšího bodu). Test `section/hidden-lines.test.ts` (pohledy domu do L).
+
 ### Automatické pohledy 1–4, 2026-11-28 (pokyny uživatele se screenshoty Obsahu z Arditu; scéna `?ukazka=pohledy`)
 
 - **Pohledy jsou v projektu samy** (jako Revit, kde jsou v šabloně projektu): 4 pohledy kolem budovy vzniknou
