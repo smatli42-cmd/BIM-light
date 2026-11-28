@@ -125,12 +125,7 @@ describe('rozhodnutí 19: příkazy řezů', () => {
     f.line({ x: 6000, y: 0 }, { x: 6000, y: 4000 });
     const ids = f.run('elevation.create', {});
     const els = ids.map((id) => f.model.sections[id] as Section);
-    expect(els.map((s) => s.name)).toEqual([
-      'Pohled jižní',
-      'Pohled východní',
-      'Pohled severní',
-      'Pohled západní',
-    ]);
+    expect(els.map((s) => s.name)).toEqual(['Jižní', 'Východní', 'Severní', 'Západní']);
     expect(els.every((s) => s.kind === 'elevation' && s.depth === null)).toBe(true);
     const south = sectionFrame(els[0] as Section);
     expect(south.look).toEqual({ x: -0, y: 1 });

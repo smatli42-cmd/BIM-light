@@ -124,9 +124,13 @@
   color: var(--muted);
   font-weight: 600;
 }
-.panel .content-list button span.content-mark + span {
+.panel .content-list button span.content-name {
   flex: 1;
+  min-width: 0;
   text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .content-rename {
   width: 100%;
@@ -147,7 +151,7 @@
   font-weight: 400;
   padding: 0.5rem 0.8rem;
 }
-.panel .content-list button span:nth-child(2) {
+.panel .content-list button span:nth-child(2):not(.content-mark) {
   flex: 1;
   text-align: left;
 }

@@ -12,7 +12,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ### Elektro, krok 1: knihovna typů a půdorysné značky (2026-11-27) – v `docs/STAV-elektro.md`, katalog `docs/katalog-elektro.md`
 
-### Pohledy 1–4 z Obsahu (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=pohledy`
+### Automatické pohledy 1–4, Obsah podle Arditu (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=pohledy`
 
 ### Popis skladby v řezu (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=popis-skladeb`
 

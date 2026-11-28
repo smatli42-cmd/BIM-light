@@ -40,6 +40,7 @@ import { projectV37toV38 } from '../electro/migrate-v37.ts';
 import { projectV38toV39 } from '../composition-tag/migrate-v38.ts';
 import { projectV39toV40, projectV40toV41 } from '../composition-tag/migrate-v39.ts';
 import { projectV41toV42 } from '../roof/project.ts';
+import { projectV42toV43 } from '../section/migrate-v42.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -66,7 +67,8 @@ export const PROJECT_EXTENSION = '.bim';
  * 33 → 34: výškové kóty v půdorysu; 34 → 35: skupina anotací Výškové kóty (ve všech stylech), text kóty;
  * 35 → 36: délkové kóty v řezech; 36 → 37: elektro (skupiny, knihovna typů, prvky, sada Elektro);
  * 37 → 38: elektro podle legendy uživatele (skupina Stínění, knihovna verze 2).
- * 41 → 42: střechy (typy střech, skladby a materiály z knihovny).
+ * 41 → 42: střechy (typy střech, skladby a materiály z knihovny);
+ * 42 → 43: automatické pohledy 1–4 kolem budovy, názvy pohledů jen světová strana („Jižní“).
  */
 export const PROJECT_MIGRATIONS: Migrations = {
   1: projectV1toV2,
@@ -110,6 +112,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   39: projectV39toV40,
   40: projectV40toV41,
   41: projectV41toV42,
+  42: projectV42toV43,
 };
 
 export function serializeProject(model: Model): string {

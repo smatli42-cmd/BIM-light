@@ -43,6 +43,19 @@ export interface Section extends GraphicView {
   readonly scale: number;
   /** Skupina anotací značky řezu v půdorysu (základ 28). */
   readonly annotationLayerId: Id;
+  /**
+   * Automatický pohled kolem budovy (základ 16): čáru po každém příkazu přepočítá obálka budovy;
+   * `locked` = uživatel čáru posunul, přepočet ji nechá být. Chybí = ruční řez / pohled.
+   */
+  readonly auto?: { readonly locked: boolean };
+}
+
+/** Automatické pohledy kolem budovy (Revit: 4 pohledy v šabloně projektu). */
+export interface ElevationsAround {
+  /** Odstup čar od obálky budovy (mm). */
+  readonly margin: number;
+  /** Označení smazaných automatických pohledů – znovu se samy nevytvoří (elevation.create je obnoví). */
+  readonly removed: readonly string[];
 }
 
 /** Styl řezu (Ardit „Styl“ u nástroje Řez): nastavení sdílené více řezy. */

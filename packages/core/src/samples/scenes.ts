@@ -66,7 +66,7 @@ export const SCENES: readonly Sample[] = [
       'Ukázkový dům s řezy A, B a čtyřmi pohledy. V půdorysu je značka řezu (tlusté konce, šipky, písmeno). ' +
       'Zkus: Obsah → Projekt → Řezy → Řez A: stěny a desky proříznuté po vrstvách se šrafami, za rovinou ' +
       'tenké pohledové hrany, úrovně podlaží s výškovými kótami. Kolečko přibližuje, tažení posouvá. ' +
-      'Pohledy → Pohled jižní (fasáda). Řez C je zalomený se stylem „6 m, vzdálená oblast od 3 m“ (vzdálené ' +
+      'Pohledy → 1 Jižní (fasáda). Řez C je zalomený se stylem „6 m, vzdálená oblast od 3 m“ (vzdálené ' +
       'prvky tence šedě). Nástroj Řez v paletě: klik začátek, konec, klik na stranu pohledu; v info boxu ' +
       'styl, vrstva, rovný / zalomený, hloubka, vzdálená oblast. Výběr: klik na čáru řezu, úchyty na koncích, ' +
       'tažení čáry posune, dvojklik otevře řez, Del smaže. V Řezu A jsou výškové kóty podle ČSN 01 3420; ' +

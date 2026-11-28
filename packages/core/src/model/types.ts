@@ -19,7 +19,7 @@ import type { Roof, RoofType } from '../roof/types.ts';
 import type { Room } from '../room/types.ts';
 import type { RoomCategory } from '../room/category.ts';
 import type { CoveringType } from '../covering/types.ts';
-import type { Section, SectionPreset } from '../section/types.ts';
+import type { ElevationsAround, Section, SectionPreset } from '../section/types.ts';
 import type { LevelDimension } from '../level-dim/types.ts';
 import type { PlanLevelDimension } from '../level-dim/plan.ts';
 import type { SectionDimension } from '../section-dim/types.ts';
@@ -27,7 +27,7 @@ import type { CompositionTag } from '../composition-tag/types.ts';
 import type { ElectroElement, ElectroGroup, ElectroType } from '../electro/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 42;
+export const SCHEMA_VERSION = 43;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -146,6 +146,8 @@ export interface Model {
   readonly sections: Readonly<Record<Id, Section>>;
   /** Styly řezu: pojmenované předvolby hloubky a vzdálené oblasti (Ardit „Styl“ u nástroje Řez). */
   readonly sectionPresets: Readonly<Record<Id, SectionPreset>>;
+  /** Automatické pohledy 1–4 kolem budovy: odstup a smazané (vznikají a přepočítávají se samy). */
+  readonly elevationsAround: ElevationsAround;
   /** Výškové kóty v řezech a pohledech (ČSN 01 3420): anotace řezu asociativní k modelu. */
   readonly levelDims: Readonly<Record<Id, LevelDimension>>;
   /** Výškové kóty v půdorysu (anotace podlaží): hodnota horního líce podlahy v rámečku nebo s kroužkem. */

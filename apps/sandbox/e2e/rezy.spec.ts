@@ -34,7 +34,7 @@ test('koncepce-rozhrani / 4: Řez A z Obsahu nahradí půdorys v okně, podlaž�
 test('rozhodnutí 19: měřítko a styl řezu v záhlaví okna; fasáda bez šraf; smazání stěn řez přepočítá', async ({
   page,
 }) => {
-  await page.getByTestId('open-section-Pohled jižní').click();
+  await page.getByTestId('open-section-Jižní').click();
   await expect.poll(() => count(page, 'primitives')).toBeGreaterThan(10);
   expect(await count(page, 'hatches')).toBe(0);
   await page.getByTestId('section-select').selectOption({ label: 'Řez A' });

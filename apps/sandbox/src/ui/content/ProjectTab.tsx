@@ -1,6 +1,6 @@
 // Obsah → Projekt (koncepce rozhraní, část 4): místa v modelu. Klik na podlaží otevře jeho pracovní okno
 // (nastavení se mění volně, výkresy se nemění), klik na 3D pohled otevře 3D okno, klik na řez okno řezu. Zvýrazněná položka =
-// okno, ve kterém se pracuje. Dole nastavení podlaží.
+// okno, ve kterém se pracuje. Pořadí skupin jako Ardit: Podlaží, Řezy, Pohledy, 3D, Výkazy. Dole nastavení podlaží.
 import { storeysOf } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { openStorey } from '../../session/sets.ts';
@@ -38,6 +38,7 @@ export function ProjectTab({ s }: { s: Session }) {
           </li>
         ))}
       </ul>
+      <Sections s={s} />
       <div class="content-group">3D</div>
       <ul class="content-list" data-testid="content-3d">
         {Object.values(s.model.views3d).map((v) => (
@@ -53,7 +54,6 @@ export function ProjectTab({ s }: { s: Session }) {
           </li>
         ))}
       </ul>
-      <Sections s={s} />
       <Schedules s={s} />
       <StoreysPanel s={s} />
     </>

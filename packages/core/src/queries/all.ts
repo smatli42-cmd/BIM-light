@@ -17,6 +17,7 @@ import { wallTagList } from './tags.ts';
 import {
   sectionElementsQuery,
   sectionList,
+  elevationAround,
   sectionPick,
   sectionPickBoxQuery,
   sectionPresetList,
@@ -82,6 +83,7 @@ export const CORE_QUERIES = [
   scheduleTable,
   wallTagList,
   sectionList,
+  elevationAround,
   sectionElementsQuery,
   sectionPick,
   sectionPickBoxQuery,

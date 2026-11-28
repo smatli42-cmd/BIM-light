@@ -205,7 +205,7 @@ export function houseSections(c: SampleContext) {
   const preset = Object.values(c.model.sectionPresets).find((p) => p.depth === 6000)?.id ?? null;
   const points = [vec(-2500, 6500), vec(5000, 6500), vec(5000, 8000), vec(W + 2500, 8000)];
   c.run('section.create', { points, direction: 'right', presetId: preset, styleId: projectStyle(c) });
-  c.run('elevation.create', {});
+  // Pohledy 1–4 (Jižní, Východní…) vznikly samy s první stěnou a jdou za obálkou domu.
   // Výškové kóty v půdorysu 1.NP: podlaha obývacího pokoje v rámečku, kóta terénu RT / UT u nároží stavby.
   const plan = { storeyId: c.storeyId, viewId: c.viewId };
   c.run('planLevelDim.create', { ...plan, point: vec(1500, 3000) });

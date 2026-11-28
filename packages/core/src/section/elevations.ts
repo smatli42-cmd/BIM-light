@@ -1,10 +1,11 @@
 // Pohledy (fasády) kolem budovy (Revit „Elevation“ ×4, Archicad „Elevation“): obálka stěn a desek hlavního
 // modelu + odstup, čtyři čáry kolem ní, každá se dívá dovnitř. Název podle světové strany, kam fasáda hledí
-// (georeference: natočení osy Y od severu), např. „Pohled jižní“.
-import type { Vec2 } from '../geometry/index.ts';
+// (georeference: natočení osy Y od severu), např. „Jižní“ (skupina v Obsahu se jmenuje Pohledy).
+import { tessellate, type Vec2 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
 import { allSlabs } from '../slab/queries.ts';
-import { allWallGeometry } from '../wall/geometry.ts';
+import { allWalls, wallSection } from '../wall/queries.ts';
+import type { Wall } from '../wall/types.ts';
 import type { SectionDirection } from './types.ts';
 
 export interface ElevationSpec {
@@ -27,20 +28,36 @@ export function compassSide(model: Model, n: Vec2): (typeof SIDES)[number] {
   return SIDES[i] as (typeof SIDES)[number];
 }
 
-/** Výchozí název pohledu podle světové strany fasády („Pohled jižní“)? Ten se při přegenerování obnoví. */
+/** Název pohledu = světová strana s velkým písmenem („Jižní“). */
+const sideName = (side: string) => side.charAt(0).toUpperCase() + side.slice(1);
+
+/** Výchozí název pohledu podle světové strany („Jižní“)? Ten se při přepočtu obnoví (otočení severu). */
 export function isCompassName(name: string): boolean {
-  return SIDES.some((side) => name === `Pohled ${side}`);
+  return SIDES.some((side) => name === sideName(side));
 }
 
 /** Název ručně kresleného pohledu: fasáda hledí proti směru pohledu (`look` = kam se díváme). */
 export function elevationName(model: Model, look: Vec2): string {
-  return `Pohled ${compassSide(model, { x: -look.x, y: -look.y })}`;
+  return sideName(compassSide(model, { x: -look.x, y: -look.y }));
+}
+
+/**
+ * Body obálky stěny: osa (oblouk rozložený) rozšířená o největší odsazení líce na každou stranu. Bez
+ * výpočtu napojení (běží po každém příkazu); obálka je nanejvýš o tloušťku stěny větší než skutečná.
+ */
+function wallEnvelope(model: Model, wall: Wall): Vec2[] {
+  const f = wallSection(model, wall).faces;
+  const r = Math.max(Math.abs(f.ref), Math.abs(f.opp));
+  return tessellate(wall.path).flatMap((p) => [
+    { x: p.x - r, y: p.y - r },
+    { x: p.x + r, y: p.y + r },
+  ]);
 }
 
 /** Obálka modelu v půdorysu (stěny a desky hlavního modelu); null = prázdný model. */
 export function modelEnvelope(model: Model): { min: Vec2; max: Vec2 } | null {
   const pts: Vec2[] = [];
-  for (const g of allWallGeometry(model).values()) pts.push(...g.outline);
+  for (const w of allWalls(model)) if (w.variant.kind === 'main') pts.push(...wallEnvelope(model, w));
   for (const s of allSlabs(model)) if (s.variant.kind === 'main') pts.push(...s.outline);
   if (!pts.length) return null;
   const xs = pts.map((p) => p.x);
@@ -64,7 +81,7 @@ export function elevationsAround(model: Model, margin = ELEVATION_MARGIN): Eleva
     { start: { x: x0, y: y1 }, end: { x: x0, y: y0 }, out: { x: -1, y: 0 } },
   ];
   return lines.map((l, i) => ({
-    name: `Pohled ${compassSide(model, l.out)}`,
+    name: sideName(compassSide(model, l.out)),
     mark: String(i + 1),
     start: l.start,
     end: l.end,

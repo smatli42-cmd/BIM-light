@@ -5,6 +5,7 @@ import type { IdGenerator } from '../ids/index.ts';
 import { followOpenings } from '../opening/follow.ts';
 import { followSlabs } from '../slab/link.ts';
 import { followElectro } from '../electro/follow.ts';
+import { followElevations } from './section/auto.ts';
 import { describeOpeningViolation, openingViolations } from '../opening/validate.ts';
 import { wallShapeViolation } from '../wall/shape.ts';
 import { MAIN_MODEL, type Model, type VariantRef } from '../model/types.ts';
@@ -90,10 +91,7 @@ export class Editor {
       if (e instanceof CommandFailure) return { ok: false, error: { code: e.code, message: e.message } };
       throw e;
     }
-    const model = followElectro(
-      this.current,
-      followSlabs(this.current, followOpenings(this.current, result.model)),
-    );
+    const model = this.follow(result.model);
     const violations = lockViolations(model);
     const first = violations[0];
     if (first) {
@@ -120,13 +118,20 @@ export class Editor {
     if (!def || validate(def.params, params).length) return null;
     try {
       const run = def.run(this.current, params, { newId: this.options.newId, variant: this.variant }).model;
-      const m = followElectro(this.current, followSlabs(this.current, followOpenings(this.current, run)));
+      const m = this.follow(run);
       const bad = lockViolations(m).length || openingViolations(this.current, m).length;
       return bad || wallShapeViolation(this.current, m) ? null : m;
     } catch (e) {
       if (e instanceof CommandFailure) return null;
       throw e;
     }
+  }
+
+  /** Navázané přepočty po příkazu: otvory, vázané desky, elektro, automatické pohledy. */
+  private follow(after: Model): Model {
+    const b = this.current;
+    const m = followElectro(b, followSlabs(b, followOpenings(b, after)));
+    return followElevations(b, m, this.options.newId);
   }
 
   /** Spustí dotaz (jen čtení, bez Undo) podle jména s parametry v JSON. */

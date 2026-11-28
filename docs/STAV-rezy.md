@@ -4,18 +4,26 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
-### Pohledy 1–4 z Obsahu, 2026-11-28 (pokyn uživatele se screenshotem Obsahu z Arditu; scéna `?ukazka=pohledy`)
+### Automatické pohledy 1–4, 2026-11-28 (pokyny uživatele se screenshoty Obsahu z Arditu; scéna `?ukazka=pohledy`)
 
-- Obsah → Projekt → **Pohledy**: tlačítko **+** („Přidat pohledy 1–4 kolem budovy“) = příkaz
-  `elevation.create`. Když pohledy 1–4 už existují, je na tlačítku **⟳** a tentýž příkaz jim jen přepočítá
-  čáry podle aktuální obálky budovy – nezdvojí je; název (pokud ho uživatel změnil), styl, měřítko, místní
-  úpravy i kóty zůstanou, smazaný pohled se doplní se stejným číslem. Prázdný model = hláška.
-- V Obsahu je u pohledu i jeho označení („1 Pohled jižní“). Dvojklik na řez / pohled v Obsahu ho
-  přejmenuje (`section.rename`; Enter potvrdí, Esc zruší).
-- Jeden pohled ručně: nástroj **Řez** → Geometrická metoda **Pohled** (třetí tlačítko): dva kliky
-  a klik na stranu = `section.create` s `kind: 'elevation'` (jen rovná čára, označení další číslo,
-  název podle světové strany fasády). Hláška řekne, že je v Obsahu → Pohledy.
-- Testy: jádro `section/elevation-create.test.ts`, AI krok v `scenario-sections`, e2e `pohledy.spec.ts`.
+- **Pohledy jsou v projektu samy** (jako Revit, kde jsou v šabloně projektu): 4 pohledy kolem budovy vzniknou
+  s první stěnou nebo deskou a po každém příkazu jdou čáry za obálkou budovy (`commands/section/auto.ts`,
+  `followElevations` v editoru jako `followSlabs`; jeden krok Zpět). Ručně posunutý pohled (čára změněná
+  příkazem) se zamkne (základ 16, `auto.locked`) a přepočet ho nechá být. Smazaný automatický pohled se
+  zapamatuje (`elevationsAround.removed`) a sám se nevrátí. Příkaz `elevation.create` je teď „Obnovit
+  pohledy kolem budovy“: smazané vrátí, posunuté odemkne, může změnit odstup (`margin`). Dotaz
+  `elevation.around` (odstup, smazané, zamčené), `section.list` má `auto` (follow / locked / null).
+- **Názvy:** jen světová strana s velkým písmenem (Jižní, Východní, Severní, Západní) – skupina se jmenuje
+  Pohledy. Migrace 42 → 43 zkrátí dosavadní výchozí „Pohled jižní“ → „Jižní“, přejmenované nechá, pohledy
+  1–4 udělá automatickými, chybějící z 1–4 zapíše jako smazané.
+- **Obsah:** pořadí skupin Podlaží, Řezy, Pohledy, 3D, Výkazy (Ardit); u pohledu číslo a název na jednom
+  řádku („1  Jižní“, dlouhý název se zkrátí třemi tečkami – dřív se „Pohled východní“ lámal a název byl
+  odsazený vpravo kvůli CSS pravidlu druhého prvku). Dvojklik přejmenuje (Enter / Esc), Delete smaže.
+  Tlačítko + zmizelo; ⟳ „Obnovit pohledy kolem budovy“ je u Pohledů jen tehdy, když je co obnovit.
+- Další pohled: nástroj **Řez** → Geometrická metoda **Pohled** (`section.create` `kind: 'elevation'`,
+  rovná čára, další číslo 5, 6…, název podle strany fasády; není automatický).
+- Testy: jádro `section/elevation-create.test.ts` (vytvoření, obálka, zámek, smazaný, migrace), AI krok
+  v `scenario-sections`, e2e `pohledy.spec.ts`.
 
 ### Popis skladby v řezu, 2026-11-28 (úkol uživatele; scéna `?ukazka=popis-skladeb`, Řez A i v `?ukazka=dum`)
 
@@ -289,15 +297,13 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Rozhodl Code (k potvrzení)
 
-- **Pohledy 1–4 (2026-11-28):** Revit ani Archicad pohledy „kolem budovy“ nepřegenerovávají (značky se
-  posouvají ručně); protože pohledy u nás v půdorysu značku nemají, druhé stisknutí tlačítka (⟳) přepočítá
-  čáry pohledů s označením 1–4 podle aktuální obálky místo vytvoření duplikátů. Pohled se pozná podle
-  označení 1–4 (bez nového pole v datech, bez migrace). Výchozí název zůstal podle světové strany
-  („Pohled jižní“ – česká DPS); v Obsahu je před ním označení jako v Arditu („1 Pohled jižní“). Výchozí
-  název se při přegenerování obnoví (po otočení severu), přejmenovaný zůstane. Ručně kreslený pohled má
-  další číslo (5, 6…) a název podle strany fasády; v půdorysu se dál nekreslí (otevřený bod: značka
-  pohledu v půdorysu, aby šel vybrat a posunout – až podle screenshotu Arditu).
-
+- **Automatické pohledy (2026-11-28):** obálka pro čáry pohledů se počítá z os stěn rozšířených o tloušťku
+  (bez výpočtu napojení, aby přepočet po každém příkazu byl levný) – čára je od fasády 3000 mm ± tloušťka
+  stěny. Automatický pohled se pozná podle `auto` v datech (ne podle čísla). Ruční ⟳ zůstal jen jako
+  „obnovit“ (smazané / posunuté), jinak není potřeba. Pohledy se v půdorysu dál nekreslí (české výkresy),
+  posunout je jde jen příkazem `section.move` (AI) – značka pohledu v půdorysu podle screenshotu Arditu
+  zůstává otevřená. Smazat pohled jde v Obsahu klávesou Delete (Revit: Delete v Project Browseru).
+  Přepočet přejmenuje i výchozí název po otočení severu; ručně přejmenovaný zůstane.
 - **Popis skladby (podle výkresu uživatele 2026-11-28; plný text ČSN 01 3420 není volně dostupný):**
   kolečko s číslem je vždy na konci čáry a řádky visí pod ním (na výkresu uživatele je u P1 kolečko
   u konstrukce a řádky na druhém konci – dá se napodobit lomenou čárou). Lomy se srovnávají do pravých úhlů,
