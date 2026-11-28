@@ -65,7 +65,27 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
 - Vybraná střecha v půdorysu ukazuje u každé hrany štítek s číslem (jako v info boxu) a sklonem / „štít“,
   šipku ve směru stoupání roviny a referenční čáru čárkovaně (`apps/sandbox/src/render/roof-labels.ts`).
 
+### S2 – nástroj Střecha, 2026-11-28 (pokyn uživatele; scéna `?ukazka=strechy-nastroj`)
+
+- **Ikona a klávesa:** v paletě vedle Desky ikona Střecha (vlastní kresba – domek se střechou), klávesa
+  **H** (volné byly C, E, G, H, I, J, Q, Y; „hřeben“), v registru jako zkratka příkazu `roof.create`.
+- **Konstrukční metody** jako Deska / Ardit: mnohoúhelník, obdélník, natočený obdélník – stejné kreslení
+  obrysu (přichytávání, pomocné čáry, tracker s čísly a Tab, dočasné kóty, Backspace, Esc; `slab-tool.ts`
+  s cílem `roof`). Při kreslení náhled spočítané střechy (hřebeny, nároží, okap) – týž příkaz bez zápisu.
+- **Info box nové střechy** (`RoofNewInfo.tsx`): Konstrukční metoda, Tvar (pultová / sedlová / valbová),
+  Geometrie – Sklon, Ref. čára nad podlahou podlaží, Ref. čára (abs.), Přesah, Úhel okapu, Okap (abs.)
+  jen ke čtení; Skladba – Typ, Tloušťka kolmo a Vrstva jen ke čtení; Stav. Výchozí metoda obdélník, valbová.
+- **Úpravy v půdorysu:** klik na štítek hrany („2 · 35°“), na okapovou čáru nebo hranu ref. čáry vybrané
+  střechy vybere hranu (zvýrazněný okap a štítek); info box → Hrany → Hrana N: druh sklon / štít, sklon,
+  přesah (`roof.setEdge`); klik na řádek hrany ji vybere také. Modré úchopy v rozích ref. čáry se táhnou
+  nebo kliknou (přichytávání, Alt vypne) – příkaz `roof.moveVertex`; tažení střechy posune (`roof.move`),
+  Del, Ctrl+Z. Nový příkaz `roof.setOutline` (celý obrys, volitelně hrany) – AI krok v `scenario-roofs`.
+- E2E `strechy-nastroj.spec.ts` (obdélník, náhled, hrana na štít, úchop bodu, Ctrl+Z).
+
 ## Rozhodl Code (k potvrzení)
+
+- **S2:** sedlová předvolba se na obrys, který není čtyřúhelník, nepoužije – nástroj vytvoří valbovou
+  (štíty jde pak přepnout po hranách). Polovalbová v Tvaru zatím není (potřebuje výšku zlomu, viz Otevřené).
 
 - **Okap v jedné výšce:** přesah zadaný u hrany je nejmenší vodorovný přesah; u mírnějších rovin se
   prodlouží tak, aby okap byl ve výšce okapu nejstrmější / nejdelší hrany (info box Okap abs. = jedna
@@ -91,14 +111,15 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
 - Roviny téže střechy se v pohledu řezu navzájem nezakrývají (zakrývání bere jen jiné prvky).
 - Šrafa / výplň průsečíku střechy s rovinou řezu v půdorysu (teď jen dvě čáry perem řezu).
 - Výkaz střech (plochy rovin, délky hřebenů, okapů a úžlabí pro klempíře) – mechanismus výkazů.
-- Úchopy a úprava hran v půdorysu (klik na hranu → sklon / štít), kreslení obrysu – nástroj S2.
+- Polovalba (hrana se sklonem do výšky zlomu, nad ní štít) a mansarda – druhá rovina nad hranou.
+- Metoda „podle stěn / obrysu budovy“ (klik do budovy, ref. čára = vnější líc nosné zdi) – potřebuje obrys
+  vnějšího líce budovy ze stěn podlaží (jako deska podle stěn, ale vnější líc); zatím jen přichytávání k lícům.
+- Úchop hrany obrysu (posun hrany rovnoběžně) a vložení / smazání bodu obrysu v půdorysu.
 - Stěny pod střechou se nedořezávají (štítová zeď, nadezdívka) – S3.
 
 ## Další krok
 
-1. **S2 – nástroj Střecha** podle Arditu (před začátkem si vyžádat screenshot panelu a probrat): konstrukční
-   metoda mnohoúhelník / obdélník / natočený obdélník, předvolby tvaru, klik na hranu = sklon / štít /
-   polovalba, úchopy bodů obrysu a přesahu, náhled, tracker.
+1. **S2 – dokončit:** polovalba, metoda podle obrysu budovy, úchop hrany a vložení bodu (Otevřené).
 2. **S3 – napojení:** stěny se dořezávají ke střeše (štítová zeď pod střechu, nadezdívka), podkroví
    (výška místností pod střechou), IFC export IfcRoof složená z IfcSlab po rovinách.
 3. **S4 – krov:** generátor vaznicové soustavy z `roof.planes` (krokve, pozednice, vaznice, kleštiny,

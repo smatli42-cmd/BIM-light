@@ -106,6 +106,19 @@ describe('AI scénář: střechy (rozhodnutí 11, S1)', () => {
     const q = c.ai.call<Planes>('roof.planes', { roofId });
     const p0 = must(q.planes.find((x) => x.edge === 0));
     expect(p0.eaveZ).toBeCloseTo(3000 - 500 * tan(45), 0);
+    // S2: úchop bodu obrysu = roof.moveVertex; vnitřní roh L posunutý ven – pořád jedno úžlabí.
+    c.ai.call('roof.moveVertex', { roofId, index: 3, point: { x: 7000, y: 7000 } });
+    const moved = c.ai.call<Planes>('roof.planes', { roofId });
+    expect(moved.lines.filter((l) => l.kind === 'valley')).toHaveLength(1);
+    const square = [
+      { x: 0, y: 0 },
+      { x: 8000, y: 0 },
+      { x: 8000, y: 8000 },
+      { x: 0, y: 8000 },
+    ];
+    const edges = square.map(() => ({ kind: 'slope', slope: 40, overhang: 400 }));
+    c.ai.call('roof.setOutline', { roofId, outline: square, edges });
+    expect(c.ai.call<Planes>('roof.planes', { roofId }).planes).toHaveLength(4);
     const [copy] = c.ai.call<string[]>('roof.move', {
       roofIds: [roofId],
       vector: { x: 20000, y: 0 },

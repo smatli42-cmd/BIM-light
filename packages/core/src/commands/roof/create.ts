@@ -67,6 +67,7 @@ export const roofCreate = defineCommand<RoofCreateParams>({
     'perpendicular / horizontal). Roviny, hřebeny, nároží a úžlabí se spočítají (dotaz roof.planes).',
   group: 'Střecha',
   icon: 'roof',
+  shortcut: 'H',
   params: S.object(
     {
       storeyId: S.id,

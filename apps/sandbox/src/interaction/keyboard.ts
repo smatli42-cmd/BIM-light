@@ -24,6 +24,7 @@ export const TOOL_KEYS: Readonly<Record<string, ToolId>> = {
   b: 'rect',
   o: 'opening',
   s: 'slab',
+  h: 'roof',
   n: 'room',
 };
 

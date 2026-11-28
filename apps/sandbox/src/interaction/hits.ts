@@ -4,6 +4,7 @@ import {
   add,
   type Dimension,
   dimensionText,
+  findRoof,
   findSlab,
   findWall,
   type Id,
@@ -45,7 +46,7 @@ export interface GripView {
 
 /** Uzel obrysu jediné vybrané desky (D2) nebo otvoru v desce (D3). */
 export interface SlabGripView {
-  readonly kind: 'slab' | 'hole';
+  readonly kind: 'slab' | 'hole' | 'roof';
   readonly id: Id;
   readonly index: number;
   readonly end: 'vertex';
@@ -132,13 +133,20 @@ export function gripViews(s: Session): GripView[] {
   return [...ends, ...sideGrips(s, w)];
 }
 
-/** Uzly obrysu jediné vybrané desky nebo otvoru v desce. */
+/** Uzly obrysu jediné vybrané desky, otvoru v desce nebo střechy (ref. čára). */
 export function slabGripViews(s: Session): SlabGripView[] {
   if (s.tool.id !== 'select') return [];
   const sl = findSlab(s.model, s.selection.singleSlab);
   const hid = s.selection.singleSlabOpening;
   const hole = hid ? s.model.slabOpenings[hid] : undefined;
-  const target = sl ? { kind: 'slab' as const, it: sl } : hole ? { kind: 'hole' as const, it: hole } : null;
+  const roof = findRoof(s.model, s.selection.singleRoof);
+  const target = sl
+    ? { kind: 'slab' as const, it: sl }
+    : hole
+      ? { kind: 'hole' as const, it: hole }
+      : roof
+        ? { kind: 'roof' as const, it: roof }
+        : null;
   if (!target) return [];
   return target.it.outline.map((p, index) => ({
     kind: target.kind,

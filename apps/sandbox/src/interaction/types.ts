@@ -42,6 +42,7 @@ export type ToolId =
   | 'opening'
   | 'arc'
   | 'slab'
+  | 'roof'
   | 'room'
   | 'section'
   | 'levelDim'

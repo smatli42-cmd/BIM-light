@@ -50,6 +50,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
       : s.slab.method === 'room'
         ? new SlabRoomTool(s)
         : new SlabTool(s),
+  roof: (s) => new SlabTool(s, 'roof'),
   room: (s) => new RoomTool(s),
   section: (s) => new SectionTool(s),
   levelDim: (s) => new LevelDimTool(s),

@@ -2,6 +2,7 @@
 // prvek, stěny stojí): klik vybere, tažení posune výběr, uzel obrysu se táhne nebo klikne na nové místo.
 import {
   add,
+  findRoof,
   findSlab,
   roofsAt,
   roundTo,
@@ -17,6 +18,7 @@ import { DRAG_PX, type Mode } from '../../mode.ts';
 import { deltaFields, trackerMm } from '../../tracker-fields.ts';
 import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
 import { ClickOrDrag } from './click-or-drag.ts';
+import { pickRoofEdge } from './roof-edge.ts';
 
 /** Deska, otvor v desce, nebo střecha (obrys v půdorysu). */
 export type OutlineKind = 'slab' | 'hole' | 'roof';
@@ -51,7 +53,7 @@ const OPS = {
         : (s.run('slabOpening.moveVertex', { openingId: id, index, point }), null),
     outline: (m: Model, id: Id) => m.slabOpenings[id]?.outline ?? [],
   },
-  // Střecha (S1): klik vybere, tažení posune; úpravy hran a bodů přijdou s nástrojem (S2).
+  // Střecha: klik vybere, tažení posune, uzel obrysu ref. čáry se táhne (roof.moveVertex).
   roof: {
     ids: (s: Session) => s.selection.roofs,
     select: (s: Session, id: Id) => s.selection.set([], [], [], [], [], [], [], [], [id]),
@@ -60,8 +62,11 @@ const OPS = {
       preview
         ? s.editor.preview('roof.move', { roofIds: ids, vector })
         : (s.run('roof.move', { roofIds: ids, vector }), null),
-    vertex: () => null,
-    outline: () => [],
+    vertex: (s: Session, id: Id, index: number, point: Vec2, preview: boolean) =>
+      preview
+        ? s.editor.preview('roof.moveVertex', { roofId: id, index, point })
+        : (s.run('roof.moveVertex', { roofId: id, index, point }), null),
+    outline: (m: Model, id: Id) => findRoof(m, id)?.outline ?? [],
   },
 } as const;
 
@@ -88,6 +93,7 @@ export function outlineUnder(s: Session, p: PointerInfo): { kind: OutlineKind; i
  * stisku (klik vybere, tažení posune), null po Shift (přidáno / ubráno), undefined = žádná hrana.
  */
 export function pressRoofLine(s: Session, p: PointerInfo): Mode | null | undefined {
+  if (pickRoofEdge(s, p.screen)) return null;
   const id = roofUnder(s, p, true);
   if (!id) return undefined;
   pickOutline(s, 'roof', id, p.shift);

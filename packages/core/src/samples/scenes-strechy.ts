@@ -25,6 +25,46 @@ const L: [number, number][] = [
 
 export const ROOF_SCENES: readonly Sample[] = [
   {
+    key: 'strechy-nastroj',
+    title: 'Střechy S2 – nástroj Střecha (ikona domu, klávesa H)',
+    kind: 'scena',
+    date: '2026-11-28',
+    description:
+      'Dva domy bez střechy (obdélník a L) a vpravo hotová valbová střecha k úpravám. Zkus: v paletě ikona ' +
+      'Střecha (domek) nebo klávesa H. V info boxu Konstrukční metoda (mnohoúhelník / obdélník / natočený ' +
+      'obdélník), Tvar (pultová / sedlová / valbová), Sklon, Ref. čára nad podlahou podlaží, Přesah, Úhel ' +
+      'okapu; Ref. čára (abs.), Okap (abs.) a Tloušťka kolmo se dopočítají. Obdélníkem klikni dva rohy ' +
+      'obvodové zdi (přichytává se k lícům, čísla v trackeru, Tab, Enter) – už při kreslení se ukazuje ' +
+      'spočítaná střecha. U L použij mnohoúhelník (klik na první bod nebo dvojklik uzavře). Hotovou střechu ' +
+      'vyber, klikni na štítek hrany „2 · 35°“ nebo na okap – v info boxu Hrana 2: druh sklon / štít, sklon, ' +
+      'přesah. Modré čtverečky v rozích ref. čáry jdou táhnout; tažení hřebene posune celou střechu, Del, Ctrl+Z.',
+    build(c) {
+      walls(c, [
+        [0, 0],
+        [10000, 0],
+        [10000, 7000],
+        [0, 7000],
+      ]);
+      walls(c, [
+        [14000, 0],
+        [24000, 0],
+        [24000, 5000],
+        [19000, 5000],
+        [19000, 10000],
+        [14000, 10000],
+      ]);
+      walls(c, [
+        [28000, 0],
+        [36000, 0],
+        [36000, 6000],
+        [28000, 6000],
+      ]);
+      const rect = { a: vec(28000, 0), b: vec(36000, 6000) };
+      const typeId = roofType(c, 'Šikmá střecha, pálená krytina');
+      c.run('roof.create', { storeyId: c.storeyId, typeId, rect, shape: 'hip', slope: 35, refOffset: 3000 });
+    },
+  },
+  {
     key: 'strechy',
     title: 'Střechy S1 – valbová, sedlová se štíty, L s úžlabím',
     kind: 'scena',

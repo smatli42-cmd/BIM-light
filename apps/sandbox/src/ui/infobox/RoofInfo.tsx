@@ -13,6 +13,7 @@ import type { Session } from '../../session/session.ts';
 import { NumberInput } from '../NumberInput.tsx';
 import { STATUS_LABELS } from './NewStatus.tsx';
 import { Section } from './Section.tsx';
+import { RoofEdges } from './RoofEdges.tsx';
 
 const CUT_LABEL: Record<EaveCut, string> = {
   vertical: 'svisle',
@@ -28,38 +29,6 @@ function Row({ label, value, testid }: { label: string; value: string; testid?: 
       <span class="muted">{label}</span>
       <strong data-testid={testid}>{value}</strong>
     </div>
-  );
-}
-
-/** Hrany obrysu: sklon / štít, sklon a přesah (hrana i = bod i → i+1). */
-function EdgesSection({ s, roof }: { s: Session; roof: Roof }) {
-  const set = (i: number, p: Record<string, unknown>) =>
-    s.run('roof.setEdge', { roofId: roof.id, indices: [i], ...p });
-  return (
-    <Section
-      title="Hrany"
-      info="Každá hrana obrysu: sklon (okap) nebo štít, sklon a přesah. Hřebeny se dopočítají."
-    >
-      {roof.edges.map((e, i) => (
-        <div class="ib-row" key={i} data-testid={`roof-edge-${i}`}>
-          <select
-            data-testid={`roof-edge-kind-${i}`}
-            value={e.kind}
-            onChange={(ev) => set(i, { kind: ev.currentTarget.value })}
-          >
-            <option value="slope">{i + 1}: sklon</option>
-            <option value="gable">{i + 1}: štít</option>
-          </select>
-          {e.kind === 'slope' && (
-            <NumberInput
-              testid={`roof-edge-slope-${i}`}
-              value={e.slope}
-              onSet={(v) => set(i, { slope: v })}
-            />
-          )}
-        </div>
-      ))}
-    </Section>
   );
 }
 
@@ -168,7 +137,7 @@ export function SelectedRoofInfo({ s, roof }: { s: Session; roof: Roof }) {
       />
       <GeometrySection s={s} roof={roof} update={update} />
       <CompositionSection s={s} roof={roof} />
-      <EdgesSection s={s} roof={roof} />
+      <RoofEdges s={s} roof={roof} />
       <Select
         label="Stav (fáze)"
         testid="roof-status"

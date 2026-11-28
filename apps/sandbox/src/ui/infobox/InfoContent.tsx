@@ -13,6 +13,7 @@ import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
 import { NewSlabInfo, SelectedSlabsInfo } from './SlabInfo.tsx';
 import { SelectedSlabOpenings } from './SlabOpeningInfo.tsx';
 import { SelectedRoofsInfo } from './RoofInfo.tsx';
+import { NewRoofInfo } from './RoofNewInfo.tsx';
 import { NewRoomPanel, SelectedRoomsInfo } from './RoomInfo.tsx';
 import { NewSectionInfo, SelectedSectionsInfo } from './SectionInfo.tsx';
 import { NewLevelDimInfo, SelectedLevelDimsInfo } from './LevelDimInfo.tsx';
@@ -56,6 +57,7 @@ export function InfoContent({ s }: { s: Session }) {
   if (any) return <Selection s={s} />;
   if (WALL_TOOLS.includes(id)) return <NewWallInfo s={s} />;
   if (id === 'slab') return <NewSlabInfo s={s} />;
+  if (id === 'roof') return <NewRoofInfo s={s} />;
   if (id === 'room') return <NewRoomPanel s={s} />;
   if (id === 'section') return <NewSectionInfo s={s} />;
   if (id === 'levelDim') return <NewLevelDimInfo s={s} />;

@@ -13,6 +13,11 @@ export const ICONS = {
   // Deska: šikmo viděná deska (tloušťka) a metody (mnohoúhelník, obdélník, natočený, podle stěn)
   slab: ['M3 10l7-4h11l-7 4z', 'M3 10v4h11l7-4v-4', 'M14 10v4'],
   room: ['M4 4h16v16H4z', 'M4 13h7v7', 'M8 8.5h8'],
+  // Střecha: dům se šikmou střechou a přesahem; tvary (valbová, sedlová, pultová) v půdorysu
+  roof: ['M2 12L12 4l10 8', 'M5 10v10h14V10', 'M10 20v-5h4v5'],
+  'roof-hip': ['M3 6h18v12H3z', 'M3 6l5 6h8l5-6', 'M3 18l5-6', 'M21 18l-5-6'],
+  'roof-gable': ['M3 6h18v12H3z', 'M3 12h18'],
+  'roof-shed': ['M3 6h18v12H3z', 'M8 15V9', 'M6 11l2-2 2 2', 'M16 15V9', 'M14 11l2-2 2 2'],
   'slab-polygon': ['M12 3l8 6-3 10H7L4 9z'],
   'slab-rect': ['M4 6h16v12H4z'],
   'slab-rotated': ['M9 3l12 6-6 12L3 15z'],

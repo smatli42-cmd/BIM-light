@@ -240,3 +240,19 @@
   border: 1px solid var(--line);
   border-radius: 6px;
 }
+
+/* Vybraná hrana střechy (klik na řádek nebo na hranu v půdorysu). */
+.ib-row.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+.ib-group {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid var(--accent-ring);
+  border-radius: 6px;
+}

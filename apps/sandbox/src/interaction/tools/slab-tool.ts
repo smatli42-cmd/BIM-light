@@ -16,6 +16,7 @@ import {
 } from '@bim-light/core';
 import type { Session } from '../../session/session.ts';
 import { slabCreateParams } from '../../session/slab-defaults.ts';
+import { roofCreateParams, roofDefaults } from '../../session/roof-defaults.ts';
 import { clearTyped, editTyped } from '../../session/ui-state.ts';
 import { draftOutlineViews, type TempDimView } from '../temp-layout.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../types.ts';
@@ -28,8 +29,10 @@ export { rotatedRect } from './slab-tool-parts.ts';
 const inRect = (p: Vec2, r: { x: number; y: number; w: number; h: number }) =>
   p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
 
+type Target = 'slab' | 'opening' | 'roof';
+
 export class SlabTool implements Tool {
-  readonly id: 'slab' | 'opening';
+  readonly id: Target;
   private pts: Vec2[] = [];
   private end: Vec2 | null = null;
   private snapRes: SnapResult | null = null;
@@ -38,20 +41,25 @@ export class SlabTool implements Tool {
   private angle = 0;
   private width = 0;
 
-  /** `opening` = stejné kreslení obrysu pro otvor v desce (nástroj Otvor, volba „v desce“, D3). */
+  /**
+   * `opening` = stejné kreslení obrysu pro otvor v desce (nástroj Otvor, volba „v desce“, D3); `roof` =
+   * obrys referenční čáry střechy (nástroj Střecha, S2) s náhledem spočítaných rovin.
+   */
   constructor(
     private readonly s: Session,
-    private readonly target: 'slab' | 'opening' = 'slab',
+    private readonly target: Target = 'slab',
   ) {
     this.id = target;
   }
 
   private get method() {
+    if (this.target === 'roof') return roofDefaults(this.s).method;
     return this.target === 'slab' ? this.s.slab.method : this.s.openingDefaults.slabMethod;
   }
 
   hint(): string {
     const h = slabHint(this.method, this.pts.length);
+    if (this.target === 'roof') return h.replaceAll('desky', 'ref. čáry střechy');
     return this.target === 'slab' ? h : h.replaceAll('desky', 'otvoru v desce');
   }
 
@@ -138,9 +146,11 @@ export class SlabTool implements Tool {
   private create(outline: readonly Vec2[]) {
     const s = this.s;
     const r =
-      this.target === 'slab'
-        ? s.run('slab.create', { ...slabCreateParams(s), outline })
-        : s.run('slabOpening.create', { storeyId: s.storeyId, outline, status: s.options.newStatus });
+      this.target === 'roof'
+        ? s.run('roof.create', roofCreateParams(s, outline))
+        : this.target === 'slab'
+          ? s.run('slab.create', { ...slabCreateParams(s), outline })
+          : s.run('slabOpening.create', { storeyId: s.storeyId, outline, status: s.options.newStatus });
     if (r.ok) this.reset();
   }
 
@@ -208,7 +218,13 @@ export class SlabTool implements Tool {
     const r = this.snapRes;
     const snap = r?.snap && this.end ? { point: this.end, label: snapLabel(r) } : null;
     const ghost = this.outline();
+    // Střecha: náhled spočítaných rovin (hřebeny, nároží, okap) – stejný příkaz bez zápisu do modelu.
+    const previewModel =
+      this.target === 'roof' && ghost.length >= 3
+        ? this.s.editor.preview('roof.create', roofCreateParams(this.s, ghost))
+        : null;
     return {
+      previewModel,
       snap,
       guides: r?.guides ?? [],
       ghosts: ghost.length >= 3 ? [ghost] : [],
