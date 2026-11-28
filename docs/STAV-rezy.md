@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Úchopy v řezu, 2026-11-28 (pokyn uživatele 2026-11-27; scéna `?ukazka=rezy-uchopy`)
+
+- Jádro `section/edge-level.ts`: posun vodorovné hrany prvku na výšku z = volání stávajícího příkazu
+  (`wall.setHeight`, `slab.update`, `opening.update`); příkaz `element.setEdgeLevel` (stejný výsledek jako
+  tažení, jedno Undo). `section/grips.ts`: úchopy vybraných prvků v řezu a výšky pro přichycení (úrovně
+  podlaží, vodorovné hrany ostatních prvků). Dotaz AI `section.grips`. Testy `grips.test.ts`, AI
+  `scenario-section-grips.test.ts` (scenario-sections.test.ts je u limitu velikosti).
+- Sandbox `ui/section/section-grips.ts`: vybraná stěna, deska a otvor mají modré trojúhelníky na horní
+  a spodní hraně; tažení nebo klik + klik posune jen uchopenou hranu, náhled z příkazu (preview), přichytí se
+  k úrovni / hraně (čárkovaná čára, Alt vypne), tracker u kurzoru (Výška, Spodek, Horní / Spodní líc,
+  Parapet, Výška otvoru) – číslo jde napsat, Enter potvrdí, Esc zruší. Ctrl+Z / Ctrl+Y fungují i v okně řezu.
+- E2E `rezy-uchopy.spec.ts` (vršek stěny tažením i číslem, Esc, Undo; parapet okna).
+
 ### Fáze v řezu a u desek, 2026-11-27 (hlášení uživatele se screenshoty Řezu B)
 
 - **Fáze ve spodní liště při aktivním řezu** měnila půdorys; nově nastaví fázi řezu (`section.update`
@@ -224,6 +237,17 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Úchopy v řezu (k potvrzení, bez screenshotu Arditu – standard Revitu / Archicadu):** vršek stěny vázaný
+  na podlaží nebo desku si vazbu nechá, změní se odsazení vršku (Revit Top Offset); nespojená stěna změní
+  výšku. Spodek stěny = odsazení spodku, vršek stojí. Deska: tloušťku dává typ (skladba), proto horní
+  i spodní úchop posune celou desku (horní líc nad podlažím, Revit Height Offset From Level); tloušťka se
+  mění v editoru typů. Otvor: spodní úchop = parapet a nadpraží stojí (výška se dopočte), horní = výška.
+  Tracker ukazuje: Výška stěny (od spodku, jak ho kreslí řez – i s prodloužením k nosné desce), Spodek
+  (odsazení od podlaží), Horní / Spodní líc desky (od podlaží), Parapet, Výška otvoru. Úchopy jsou jen
+  u výšek (vodorovné hrany); délka stěny a šířka otvoru se v řezu netáhnou (to je v půdorysu). Úchopy se
+  ukazují do 30 vybraných prvků; tažení mění vždy jen uchopený prvek. Tvar úchopu = vlastní trojúhelník
+  (Revit má modré šipky, Archicad čtverečky) – podle screenshotu Arditu lze upravit.
 
 - **Barva fáze v řezu (k potvrzení):** pohledové plochy v řezu a pohledu dostanou barvu povrchu z funkce
   grafiky (stejná jako ve 3D, bourání žlutě 50 %); řezané konstrukce mají dál výplň řezu z grafiky.

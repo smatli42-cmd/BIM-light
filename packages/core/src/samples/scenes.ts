@@ -11,6 +11,30 @@ import { HOUSE } from './house.ts';
 import { ELECTRO_SCENES } from './scenes-elektro.ts';
 
 export const SCENES: readonly Sample[] = [
+  {
+    key: 'rezy-uchopy',
+    title: 'Úchopy v řezu – výška stěny, poloha stropu, parapet okna',
+    kind: 'scena',
+    date: '2026-11-28',
+    description:
+      'Místnost 6 × 4 m s oknem a stropem nad 1.NP, Řez A napříč oknem. Zkus: Obsah → Projekt → Řezy → Řez A, ' +
+      'klikni na stěnu s oknem – na horní a spodní hraně se ukážou modré trojúhelníky (úchopy). Táhni horní ' +
+      'úchop: vršek se přichytí k úrovni podlaží a hranám stropu, tracker ukazuje výšku; napiš číslo a Enter, ' +
+      'Esc zruší, Ctrl+Z vrátí. Vyber okno: spodní úchop mění parapet (nadpraží stojí), horní výšku okna. ' +
+      'Vyber strop: tažení ho posune celý (tloušťka je podle typu). Klik na úchop a druhý klik = bez držení.',
+    build(c) {
+      const t = { typeId: c.type('Zdivo 300') };
+      const bottom = c.line(vec(0, 0), vec(6000, 0), t);
+      c.line(vec(6000, 0), vec(6000, 4000), t);
+      c.line(vec(6000, 4000), vec(0, 4000), t);
+      c.line(vec(0, 4000), vec(0, 0), t);
+      c.run('opening.create', { wallId: bottom, offset: 2400, width: 1200, height: 1500, sill: 900 });
+      const rect = { a: vec(-300, -300), b: vec(6300, 4300) };
+      const slab = { storeyId: c.storeyId, typeId: c.slabType('ŽB strop 250'), rect, topOffset: 3000 };
+      c.run('slab.create', slab);
+      c.run('section.create', { start: vec(3000, -2000), end: vec(3000, 6000) });
+    },
+  },
   ...ELECTRO_SCENES,
   {
     key: 'rezy',

@@ -12,6 +12,7 @@ import type { Session } from '../../session/session.ts';
 import { activate } from '../../session/windows.ts';
 import { SectionInput } from './section-input.ts';
 import { cardTimer, type CardState } from './section-card.ts';
+import type { SectionTracker } from './section-grips.ts';
 
 function pointsOf(d: Drawing): Vec2[] {
   return d.primitives.flatMap((p) =>
@@ -37,11 +38,14 @@ interface Ctx {
   readonly index: number;
   /** Karta prvku po podržení myši (section-card.ts). */
   readonly onCard: (c: CardState) => void;
+  /** Tracker úchopu u kurzoru (section-grips.ts). */
+  readonly onTracker: (t: SectionTracker | null) => void;
 }
 
 /** Myš, kolečko a klávesy; vrací úklid. */
 function events(c: Ctx): () => void {
-  const { canvas, v, input, schedule } = c;
+  const { canvas, v, input } = c;
+  const schedule = () => (c.schedule(), c.onTracker(input.grips.tracker()));
   const at = (e: MouseEvent) => {
     const r = canvas.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
@@ -58,7 +62,7 @@ function events(c: Ctx): () => void {
     const inside = p.x >= 0 && p.y >= 0 && p.x <= canvas.clientWidth && p.y <= canvas.clientHeight;
     if (inside) card.move(p, e.buttons);
     else card.hide();
-    if (input.move(p)) schedule();
+    if (input.move(p, e.altKey)) schedule();
   };
   const onUp = () => (input.up(), schedule());
   const onKey = (e: KeyboardEvent) => {
@@ -83,7 +87,7 @@ function events(c: Ctx): () => void {
 }
 
 /** Vykreslí řez do plátna; při prvním kreslení přiblíží na celou kresbu. */
-function painter(c: Omit<Ctx, 'schedule'>, ctx: CanvasRenderingContext2D, id: string) {
+function painter(c: Omit<Ctx, 'schedule' | 'onTracker'>, ctx: CanvasRenderingContext2D, id: string) {
   const { canvas, s, v } = c;
   let fitted = false;
   return () => {
@@ -122,6 +126,7 @@ function attach(
   sectionId: string,
   index: number,
   onCard: (c: CardState) => void,
+  onTracker: (t: SectionTracker | null) => void,
 ): () => void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return () => undefined;
@@ -148,7 +153,7 @@ function attach(
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   const off = s.subscribe(schedule);
-  const offEvents = events({ canvas, s, v, input, schedule, index, onCard });
+  const offEvents = events({ canvas, s, v, input, schedule, index, onCard, onTracker });
   return () => {
     cancelAnimationFrame(frame);
     observer.disconnect();
@@ -163,11 +168,12 @@ export function SectionCanvas(p: {
   sectionId: string;
   index: number;
   onCard: (c: CardState) => void;
+  onTracker: (t: SectionTracker | null) => void;
 }) {
   const { s, sectionId, index } = p;
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(
-    () => (ref.current ? attach(ref.current, s, sectionId, index, p.onCard) : undefined),
+    () => (ref.current ? attach(ref.current, s, sectionId, index, p.onCard, p.onTracker) : undefined),
     [s, sectionId, index],
   );
   return (

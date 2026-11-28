@@ -21,6 +21,7 @@ import {
   sectionPickBoxQuery,
   sectionPresetList,
 } from './sections.ts';
+import { sectionGripsQuery } from './section-grips.ts';
 import {
   levelDimList,
   levelDimTargets,
@@ -79,6 +80,7 @@ export const CORE_QUERIES = [
   sectionElementsQuery,
   sectionPick,
   sectionPickBoxQuery,
+  sectionGripsQuery,
   sectionPresetList,
   levelDimList,
   levelDimTargets,

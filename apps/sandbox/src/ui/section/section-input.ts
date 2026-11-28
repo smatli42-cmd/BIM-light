@@ -20,6 +20,7 @@ import { AUX } from '../../render/overlay.ts';
 import { drawPrimitive, type RenderContext } from '../../render/primitives.ts';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
 import { SectionDimInput } from './section-dim-input.ts';
+import { SectionGrips } from './section-grips.ts';
 import { SectionSelect } from './section-select.ts';
 import type { Session } from '../../session/session.ts';
 
@@ -44,6 +45,8 @@ export class SectionInput {
   private readonly dims: SectionDimInput;
   /** Výběr stěn, desek a otvorů (section-select.ts). */
   readonly sel: SectionSelect;
+  /** Úchopy vybraných prvků (section-grips.ts). */
+  readonly grips: SectionGrips;
   private dimDrag: { id: Id; vertical: boolean; offset0: number; start: Vec2 } | null = null;
 
   constructor(
@@ -53,6 +56,7 @@ export class SectionInput {
   ) {
     this.dims = new SectionDimInput(s, sectionId, v);
     this.sel = new SectionSelect(s, sectionId, v);
+    this.grips = new SectionGrips(s, sectionId, v);
   }
 
   private get tool() {
@@ -89,6 +93,9 @@ export class SectionInput {
     if (button !== 0) return;
     if (this.tool) return this.toolClick(p);
     if (this.dims.active) return this.dims.click(p);
+    if (this.grips.down()) return;
+    const grip = this.grips.hit(p);
+    if (grip) return this.grips.press(grip, screen);
     const hit = this.dimAt(p);
     if (!hit) return this.pressSectionDim(p, screen, shift);
     this.select(hit.id, shift);
@@ -128,9 +135,10 @@ export class SectionInput {
   }
 
   /** true = je potřeba překreslit. */
-  move(screen: Vec2): boolean {
+  move(screen: Vec2, alt = false): boolean {
     const p = this.v.toWorld(screen);
     this.mouse = p;
+    if (this.grips.active) return this.grips.move(screen, p, alt);
     if (this.pan) {
       this.v.pan(screen.x - this.pan.x, screen.y - this.pan.y);
       this.pan = screen;
@@ -151,6 +159,7 @@ export class SectionInput {
   up() {
     const d = this.drag;
     this.drag = this.pan = null;
+    this.grips.up();
     this.dropSectionDim();
     if (this.sel.dragging) this.sel.release();
     if (d?.moved && this.mouse) {
@@ -172,6 +181,14 @@ export class SectionInput {
 
   /** Esc a Del v aktivním okně řezu; true = zpracováno. */
   key(key: string, ctrl = false): boolean {
+    if (this.grips.key(key)) return true;
+    // Undo / Redo i v okně řezu (jedno Undo vrátí celé tažení úchopu).
+    if (ctrl && /^[zy]$/i.test(key))
+      return (
+        key.toLowerCase() === 'z' ? this.s.editor.undo() : this.s.editor.redo(),
+        this.s.changed(),
+        true
+      );
     if (key === 'Tab' && !this.tool && !this.dims.active) return this.sel.tab();
     if (ctrl && (key === 'a' || key === 'A')) return (this.sel.selectAll(), true);
     if (key === 'Escape') {
@@ -227,5 +244,6 @@ export class SectionInput {
     for (const p of prims) drawPrimitive(r, p, AUX);
     if (this.dims.active) this.dims.overlay(r);
     this.sel.overlay(r);
+    this.grips.overlay(r);
   }
 }

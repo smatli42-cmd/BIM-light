@@ -60,6 +60,7 @@ import { wallMatchProperties } from './wall/match.ts';
 import { wallDemolishPart } from './wall/demolish.ts';
 import { wallDeleteNode } from './wall/merge.ts';
 import { selectionDelete } from './edit/delete.ts';
+import { elementSetEdgeLevel } from './edit/edge-level.ts';
 import { openingCreate } from './opening/create.ts';
 import { openingDelete, openingMove, openingUpdate } from './opening/edit.ts';
 import { openingCopy, openingMirror } from './opening/copy.ts';
@@ -119,6 +120,7 @@ export const CORE_COMMANDS = [
   wallDemolishPart,
   wallDeleteNode,
   selectionDelete,
+  elementSetEdgeLevel,
   wallConnect,
   wallCopy,
   wallPaste,

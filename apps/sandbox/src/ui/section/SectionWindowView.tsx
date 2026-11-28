@@ -9,18 +9,34 @@ import { ScaleSelect } from '../ViewControls.tsx';
 import { SectionCanvas } from './SectionCanvas.tsx';
 import { useState } from 'preact/hooks';
 import type { CardState } from './section-card.ts';
+import type { SectionTracker } from './section-grips.ts';
 import { ElementCard } from '../HoverCard.tsx';
 import { CanvasOverlays } from '../Overlays.tsx';
 import { PlanWindowTabs } from '../layout/WindowTabs.tsx';
 
+/** Tracker úchopu u kurzoru (jako tracker v půdorysu). */
+function TrackerBox({ t }: { t: SectionTracker }) {
+  return (
+    <div
+      class="tracker"
+      data-testid="section-tracker"
+      style={{ left: `${t.at.x + 28}px`, top: `${t.at.y + 24}px` }}
+    >
+      <div class="field on" data-testid={`section-tracker-${t.label}`}>
+        <span>{t.label}</span> <b>{t.value}</b>
+      </div>
+    </div>
+  );
+}
+
 export function SectionWindowView(p: { s: Session; index: number; sec: Section; cls: string }) {
   const { s, index, sec } = p;
-  const active = index === s.active;
   const [card, setCard] = useState<CardState>(null);
-  const suffix = active ? '' : '-passive';
+  const [tracker, setTracker] = useState<SectionTracker | null>(null);
+  const suffix = index === s.active ? '' : '-passive';
   const upd = (patch: Record<string, unknown>) => s.run('section.update', { sectionId: sec.id, ...patch });
   return (
-    <section class={p.cls} data-testid={active ? 'window' : 'window-passive'}>
+    <section class={p.cls} data-testid={`window${suffix}`}>
       <PlanWindowTabs s={s} index={index} />
       <div class="window-head" onMouseDown={() => activate(s, index)}>
         <span class="window-tab">
@@ -55,9 +71,10 @@ export function SectionWindowView(p: { s: Session; index: number; sec: Section; 
         <span class="view-label" data-testid={`section-label${suffix}`}>
           {sec.kind === 'section' ? 'Řez' : 'Pohled'} · {sec.name} · 1:{sec.scale}
         </span>
-        <SectionCanvas s={s} sectionId={sec.id} index={index} onCard={setCard} />
+        <SectionCanvas s={s} sectionId={sec.id} index={index} onCard={setCard} onTracker={setTracker} />
+        {tracker && <TrackerBox t={tracker} />}
         {card && <ElementCard s={s} id={card.id} at={card.at} />}
-        {active && <CanvasOverlays session={s} />}
+        {!suffix && <CanvasOverlays session={s} />}
       </main>
     </section>
   );

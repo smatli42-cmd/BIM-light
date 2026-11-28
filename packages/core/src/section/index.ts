@@ -6,3 +6,5 @@ export * from './mark.ts';
 export * from './elevations.ts';
 export * from './migrate-v30.ts';
 export * from './pick.ts';
+export * from './edge-level.ts';
+export * from './grips.ts';

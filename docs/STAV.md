@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-27, Elektro krok 1 (knihovna typů a půdorysné značky, `docs/STAV-elektro.md`); výběr prvků v okně řezu; záložky pohledů v záhlaví okna, výkazy v okně; výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-28, úchopy v řezu (výška stěny, poloha desky, parapet tažením, `docs/STAV-rezy.md`); 2026-11-27 Elektro krok 1 (knihovna typů a půdorysné značky, `docs/STAV-elektro.md`); výběr prvků v okně řezu; záložky pohledů v záhlaví okna, výkazy v okně; výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
@@ -10,7 +10,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ### Elektro, krok 1: knihovna typů a půdorysné značky (2026-11-27) – v `docs/STAV-elektro.md`, katalog `docs/katalog-elektro.md`
 
-### Řezy a pohledy, nástroj Řez, výškové kóty, záložky pohledů (2026-11-27) – v `docs/STAV-rezy.md`
+### Řezy a pohledy, nástroj Řez, výškové kóty, záložky pohledů, úchopy v řezu (2026-11-27/28) – v `docs/STAV-rezy.md`
 
 ### Podlaha pod dveřmi, 2026-11-27 (pokyn uživatele; scéna `?ukazka=podlaha-dvere`, dveře v `?ukazka=dum`)
 
@@ -280,21 +280,19 @@ pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, pus
 5. **Elektro, krok 2** (po probrání se screenshoty Arditu): nástroj pro vkládání a výběr elektro prvků,
    vazby vypínač → svítidla, okruhy a rozvaděč, legenda značek (vzor legendy Arditu, nový zdroj výkazu) – podrobně „Další krok“ v `docs/STAV-elektro.md`.
 
-**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `elektro`, `rezy`, `podlaha-dvere`, `typy-desek`, `desky-vazba`,
+**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `rezy-uchopy`, `elektro`, `rezy`, `podlaha-dvere`, `typy-desek`, `desky-vazba`,
 `sparorez`, `povrchy`, `mistnosti`, `desky-d4`, `desky-presny-otvor`, `desky-otvory`, `desky-kresleni`,
 `desky`, `dum` (i s `&3d`). Starší seznam „vyzkouší“ je v `docs/STAV-archiv.md`.
 
 ## Otevřené
 
-- **Úchopy v řezu** (pokyn uživatele 2026-11-27): výběr v okně řezu funguje, úpravy tažením (výška stěny,
-  tloušťka desky, parapet) zatím ne – přijdou jako úchopy řezu nad příkazy jádra.
 - **Detail napojení 1:5–1:10** (pokyn uživatele): kreslí se zvlášť jako 2D detail nad výřezem řezu (Revit
   Callout + 2D kresba, základ 22); model dává základní napojení pro 1:50 a 1:100. Zatím nedělat.
 - **Uložení stropu – zbývá:** zateplení přes čelo u stěny s vazbou vršku na desku (D4), uložení v půdorysu,
   věnec / pozednice jako samostatný prvek, atika (přesah stěny nad deskou jiného podlaží).
 - **Terén:** zatím není v modelu – RT / UT u kóty terénu a výška terénu v řezu jsou čísla zadaná u značky;
   až bude terén (situace, etapa), vezmou se z něj.
-- **Řezy – zbývá:** výběr prvků v okně řezu, výběr řezu rámečkem, přidání / ubrání zalomení u hotového
+- **Řezy – zbývá:** výběr řezu rámečkem, přidání / ubrání zalomení u hotového
   řezu, úchyty hloubky pohledu v půdorysu, popis skladeb (odkaz se skladbou vrstev), materiály a terén
   ve fasádě, okolní zástavba, šikmé střechy a schodiště (až budou prvky), hrany prvků za
   rovinou podrobněji (rohy šikmo viděných stěn, ostění u fasády), místnosti a kóty v řezu, výškové kóty
