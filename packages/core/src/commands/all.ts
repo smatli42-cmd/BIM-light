@@ -84,6 +84,7 @@ import {
 } from './wall-type/layers.ts';
 import { wallTypeLoad } from './wall-type/load.ts';
 import { SLAB_COMMANDS } from './slab/all.ts';
+import { ROOF_COMMANDS } from './roof/all.ts';
 import { ROOM_COMMANDS } from './room/all.ts';
 import { COVERING_COMMANDS } from './covering/all.ts';
 import { VIEW3D_COMMANDS } from './view-3d/all.ts';
@@ -131,6 +132,7 @@ export const CORE_COMMANDS = [
   wallSetJoin,
   wallCross,
   ...SLAB_COMMANDS,
+  ...ROOF_COMMANDS,
   ...ROOM_COMMANDS,
   ...COVERING_COMMANDS,
   ...VIEW3D_COMMANDS,

@@ -15,6 +15,7 @@ import type { Category } from './categories.ts';
 import type { ScheduleDef } from '../schedule/types.ts';
 import type { WallTag } from '../tag/types.ts';
 import type { Slab, SlabType } from '../slab/types.ts';
+import type { Roof, RoofType } from '../roof/types.ts';
 import type { Room } from '../room/types.ts';
 import type { RoomCategory } from '../room/category.ts';
 import type { CoveringType } from '../covering/types.ts';
@@ -26,7 +27,7 @@ import type { CompositionTag } from '../composition-tag/types.ts';
 import type { ElectroElement, ElectroGroup, ElectroType } from '../electro/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 41;
+export const SCHEMA_VERSION = 42;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -104,8 +105,8 @@ export interface ElementBase {
   readonly generator?: GeneratorLink;
 }
 
-/** Všechny BIM prvky (stěny, desky); přibudou okna, střechy… */
-export type Element = Wall | Slab;
+/** Všechny BIM prvky (stěny, desky, střechy); přibudou okna, schodiště… */
+export type Element = Wall | Slab | Roof;
 
 export interface Model {
   readonly schemaVersion: number;
@@ -116,6 +117,8 @@ export interface Model {
   readonly wallTypes: Readonly<Record<Id, WallType>>;
   /** Typy desek (strop, podlaha); skladbu berou z `compositions`. */
   readonly slabTypes: Readonly<Record<Id, SlabType>>;
+  /** Typy střech (rozhodnutí 11); skladbu berou z `compositions` (vrstvy odspodu, nosná = krokve). */
+  readonly roofTypes: Readonly<Record<Id, RoofType>>;
   /** Skladby společné pro stěny, desky a střechy (koncepce rozhraní 11a); pásy typů na ně odkazují. */
   readonly compositions: Readonly<Record<Id, Composition>>;
   readonly elements: Readonly<Record<Id, Element>>;

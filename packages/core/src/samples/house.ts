@@ -7,6 +7,7 @@ import type { Sample, SampleContext } from './types.ts';
 import { tiledFloor } from './scene-helpers.ts';
 import { houseElectro } from './house-electro.ts';
 import { houseCompositionTags } from './house-tags.ts';
+import { houseRoof } from './house-roof.ts';
 
 const W = 12000;
 const H = 9000;
@@ -228,7 +229,7 @@ export const HOUSE: Sample = {
   date: '2026-11-26',
   description:
     'Vymyšlený rodinný dům: 1.NP rekonstrukce (stávající, bouraná a nová konstrukce, probourání, zazdívka, ' +
-    'nika, oblouková příčka), 2.NP nástavba. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy vázané na místnosti; ' +
+    'nika, oblouková příčka), 2.NP nástavba s valbovou střechou. Desky: základová deska, strop nad 1.NP s otvorem pro schodiště a podlahy vázané na místnosti; ' +
     'nové příčky 1.NP mají vršek ke stropu, kóta od otvoru ve stropě k nosné zdi, výkaz desek. Kóty, ' +
     'značky typů, výkazy; místnosti s plochou podle ČSN 73 4301, Výpis místností, povrchy (obklad, ' +
     'dlažba, sokl, malba) a Výkaz povrchů; řezy A, B a 4 pohledy (Obsah → Projekt); filtr rekonstrukce ' +
@@ -236,6 +237,7 @@ export const HOUSE: Sample = {
   build(c) {
     ground(c);
     upper(c);
+    houseRoof(c, W, H);
     attachPartitions(c);
     houseSections(c);
     houseElectro(c);

@@ -73,7 +73,7 @@ export function SectionBoxButton({ s, solids }: { s: Session; solids: readonly S
   const on = !!active3d(s).sectionBox;
   const toggle = () => {
     if (on) return setBox3D(s, null);
-    const sel = new Set([...s.selection.walls, ...s.selection.slabs]);
+    const sel = new Set([...s.selection.walls, ...s.selection.slabs, ...s.selection.roofs]);
     const picked = solids.filter((x) => sel.has(x.elementId));
     const b = solidsBounds(picked.length ? picked : solids);
     if (b) setBox3D(s, grow(b, MARGIN));

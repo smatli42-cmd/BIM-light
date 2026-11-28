@@ -31,6 +31,7 @@ export interface TestHook {
     dims: string[];
     openings: string[];
     slabs: string[];
+    roofs: string[];
     slabOpenings: string[];
     rooms: string[];
     /** Vybraný líc stěny v místnosti (povrchy). */
@@ -113,6 +114,7 @@ export function installTestHook(s: Session) {
       dims: [...s.selection.dims],
       openings: [...s.selection.openings],
       slabs: [...s.selection.slabs],
+      roofs: [...s.selection.roofs],
       slabOpenings: [...s.selection.slabOpenings],
       rooms: [...s.selection.rooms],
       face: s.selection.face,

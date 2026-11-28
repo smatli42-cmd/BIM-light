@@ -40,6 +40,7 @@ import { coveringSurfaces, coveringTypeList } from './coverings.ts';
 import { coveringRoom } from './covering-room.ts';
 import { coveringJoints, coveringTiles } from './covering-tiles.ts';
 import { electroList, electroTypeList } from './electro.ts';
+import { roofList, roofPlanes, roofTypeList } from './roofs.ts';
 
 export const CORE_QUERIES = [
   projectInfo,
@@ -52,6 +53,9 @@ export const CORE_QUERIES = [
   wallPropertiesQuery,
   openingList,
   slabList,
+  roofList,
+  roofPlanes,
+  roofTypeList,
   wallTopSlab,
   slabOpeningList,
   roomList,

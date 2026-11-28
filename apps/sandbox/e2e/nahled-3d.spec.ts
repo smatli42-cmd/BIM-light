@@ -31,8 +31,8 @@ test('koncepce-rozhrani / G 10: Zobrazit vše ve 3D otevře 3D okno s celým uk�
   const ids = await elements3d(page);
   const storeys = new Set(ids.map((id) => (m.elements[id] as { storeyId: string }).storeyId));
   expect(storeys.size).toBe(2);
-  // Dům ve 3D má stěny i desky (stropy a podlahy) – všechny 3D prvky jsou prvky modelu.
-  expect(new Set(ids.map((id) => m.elements[id]?.category))).toEqual(new Set(['wall', 'slab']));
+  // Dům ve 3D má stěny, desky (stropy a podlahy) a střechu (S1) – všechny 3D prvky jsou prvky modelu.
+  expect(new Set(ids.map((id) => m.elements[id]?.category))).toEqual(new Set(['wall', 'slab', 'roof']));
   await page.getByTestId('view3d-close').click();
   await expect(page.getByTestId('window-3d')).toHaveCount(0);
 });

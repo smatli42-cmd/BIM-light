@@ -7,6 +7,8 @@ import { removeElements, removeOpenings, removeRelations } from '../model/update
 import { openingFacts } from '../opening/draw.ts';
 import { allSlabs } from '../slab/queries.ts';
 import type { Slab } from '../slab/types.ts';
+import { allRoofs } from '../roof/queries.ts';
+import type { Roof } from '../roof/types.ts';
 import { elementFacts } from '../style/conditions.ts';
 import { resolveGraphics } from '../style/graphics.ts';
 import type { ResolvedEffect } from '../style/types.ts';
@@ -20,9 +22,10 @@ export interface SectionElements {
   readonly model: Model;
   readonly walls: readonly { readonly wall: Wall; readonly g: ResolvedEffect }[];
   readonly slabs: readonly { readonly slab: Slab; readonly g: ResolvedEffect }[];
+  readonly roofs: readonly { readonly roof: Roof; readonly g: ResolvedEffect }[];
 }
 
-function shown<T extends Wall | Slab>(model: Model, s: Section, items: readonly T[]) {
+function shown<T extends Wall | Slab | Roof>(model: Model, s: Section, items: readonly T[]) {
   const out: { el: T; g: ResolvedEffect }[] = [];
   const hidden = new Set<Id>();
   for (const el of items) {
@@ -37,6 +40,7 @@ function shown<T extends Wall | Slab>(model: Model, s: Section, items: readonly 
 export function sectionElements(model: Model, s: Section): SectionElements {
   const w = shown(model, s, allWalls(model));
   const sl = shown(model, s, allSlabs(model));
+  const rf = shown(model, s, allRoofs(model));
   const gone = Object.values(model.relations).filter(
     (r) =>
       r.kind === 'wall-connection' && (w.hidden.has(r.relating.wallId) || w.hidden.has(r.related.wallId)),
@@ -59,5 +63,6 @@ export function sectionElements(model: Model, s: Section): SectionElements {
     model: m,
     walls: w.out.map(({ el, g }) => ({ wall: el, g })),
     slabs: sl.out.map(({ el, g }) => ({ slab: el, g })),
+    roofs: rf.out.map(({ el, g }) => ({ roof: el, g })),
   };
 }

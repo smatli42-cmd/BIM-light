@@ -12,6 +12,7 @@ import { ModelCheckSection } from './ModelCheck.tsx';
 import { NewWallInfo, SelectedWallsInfo } from './WallInfo.tsx';
 import { NewSlabInfo, SelectedSlabsInfo } from './SlabInfo.tsx';
 import { SelectedSlabOpenings } from './SlabOpeningInfo.tsx';
+import { SelectedRoofsInfo } from './RoofInfo.tsx';
 import { NewRoomPanel, SelectedRoomsInfo } from './RoomInfo.tsx';
 import { NewSectionInfo, SelectedSectionsInfo } from './SectionInfo.tsx';
 import { NewLevelDimInfo, SelectedLevelDimsInfo } from './LevelDimInfo.tsx';
@@ -32,6 +33,7 @@ function Selection({ s }: { s: Session }) {
       <SelectedSectionsInfo s={s} />
       <SelectedLevelDimsInfo s={s} />
       <SelectedCompositionTagsInfo s={s} />
+      <SelectedRoofsInfo s={s} />
       {slabs.length > 0 && <SelectedSlabsInfo key={slabs.map((x) => x.id).join()} s={s} slabs={slabs} />}
       {dims > 0 && (
         <section>

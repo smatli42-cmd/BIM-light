@@ -16,6 +16,7 @@ export function levelZ(model: Model, ref: LevelRef): number | null {
     const lv = slabLevels(model, el);
     return ref.edge === 'top' ? lv.top : lv.bottom;
   }
+  if (el.category === 'roof') return null;
   const h = wallHeight(model, el);
   return ref.edge === 'top' ? h.top : h.bottom;
 }

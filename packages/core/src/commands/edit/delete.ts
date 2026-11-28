@@ -8,6 +8,7 @@ import { slabOpeningOf } from '../slab-opening/edit.ts';
 import { deleteElements, deleteOpenings } from '../../rules/delete.ts';
 import { openingOf } from '../opening/shared.ts';
 import { slabOf } from '../slab/shared.ts';
+import { roofOf } from '../roof/shared.ts';
 import { dimensionOf, wallOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
@@ -19,6 +20,7 @@ export const selectionDelete = defineCommand<{
   dimensionIds?: Id[];
   openingIds?: Id[];
   slabIds?: Id[];
+  roofIds?: Id[];
   slabOpeningIds?: Id[];
   roomIds?: Id[];
   sectionIds?: Id[];
@@ -27,7 +29,7 @@ export const selectionDelete = defineCommand<{
   name: 'selection.delete',
   label: 'Smazat vybrané',
   description:
-    'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), ' +
+    'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), střechy (roofIds), ' +
     'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds), místnosti (roomIds), řezy ' +
     '(sectionIds), výškové kóty v řezech i půdorysu, kóty a popisy skladby v řezu (levelDimIds) a kóty jedním krokem.',
   group: 'Úpravy',
@@ -38,6 +40,7 @@ export const selectionDelete = defineCommand<{
       dimensionIds: IDS,
       openingIds: IDS,
       slabIds: IDS,
+      roofIds: IDS,
       slabOpeningIds: IDS,
       roomIds: IDS,
       sectionIds: IDS,
@@ -50,6 +53,7 @@ export const selectionDelete = defineCommand<{
     const dims = p.dimensionIds ?? [];
     const ops = p.openingIds ?? [];
     const slabs = p.slabIds ?? [];
+    const roofs = p.roofIds ?? [];
     const holes = p.slabOpeningIds ?? [];
     const rooms = p.roomIds ?? [];
     const secs = p.sectionIds ?? [];
@@ -59,6 +63,7 @@ export const selectionDelete = defineCommand<{
       !dims.length &&
       !ops.length &&
       !slabs.length &&
+      !roofs.length &&
       !holes.length &&
       !rooms.length &&
       !secs.length &&
@@ -70,6 +75,7 @@ export const selectionDelete = defineCommand<{
     dims.forEach((id) => dimensionOf(model, id));
     ops.forEach((id) => openingOf(model, id));
     slabs.forEach((id) => slabOf(model, id));
+    roofs.forEach((id) => roofOf(model, id));
     rooms.forEach((id) => roomOf(model, id));
     secs.forEach((id) => sectionOf(model, id));
     lds.forEach((id) => anyLevelDimOf(model, id));
@@ -77,7 +83,7 @@ export const selectionDelete = defineCommand<{
       removeSlabOpenings(removeDimensions(removeRooms(model, rooms), dims), holes),
       ops.filter((id) => model.openings[id]),
     );
-    const done = deleteElements(m, [...walls, ...slabs]);
+    const done = deleteElements(m, [...walls, ...slabs, ...roofs]);
     const out = removeLevelDims(done, lds);
     return { model: secs.length ? { ...out, sections: omitIds(out.sections, secs) } : out };
   },

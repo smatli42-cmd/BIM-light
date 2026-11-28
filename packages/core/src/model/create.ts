@@ -19,6 +19,7 @@ import { SCHEMA_VERSION, type Model } from './types.ts';
 import { defaultSchedules } from '../schedule/defaults.ts';
 import { slabLibraryForProject } from '../slab/library.ts';
 import { emptyElectroData } from '../electro/project.ts';
+import { withRoofLibrary } from '../roof/project.ts';
 
 const byId = <T extends { id: Id }>(items: T[]): Record<Id, T> =>
   Object.fromEntries(items.map((i) => [i.id, i]));
@@ -43,15 +44,19 @@ function wallTypes(mats: Material[], newId: IdGenerator): WallType[] {
 /** Model bez 3D pohledu a dat řezů (ta se doplní na konci, aby se id ostatních položek neposunula). */
 type BaseModel = Omit<
   Model,
-  'views3d' | keyof ReturnType<typeof emptySectionData> | keyof ReturnType<typeof emptyElectroData>
+  | 'views3d'
+  | 'roofTypes'
+  | keyof ReturnType<typeof emptySectionData>
+  | keyof ReturnType<typeof emptyElectroData>
 >;
 
 export function createEmptyProject(newId: IdGenerator, name = 'Nový projekt'): Model {
   const m = emptyProject(newId, name);
-  return ensureCompositions({ ...m, display: withElectroDisplay(m.display) });
+  const withRoofs = withRoofLibrary({ ...m, display: withElectroDisplay(m.display) }) as unknown as Model;
+  return ensureCompositions(withRoofs);
 }
 
-function emptyProject(newId: IdGenerator, name: string): Model {
+function emptyProject(newId: IdGenerator, name: string): Omit<Model, 'roofTypes'> {
   const buildingId = newId();
   const storeyId = newId();
   const mats = materials(newId);

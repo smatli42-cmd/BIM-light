@@ -1,5 +1,8 @@
 // Karta prvku (koncepce rozhraní, část 2 I – informace po podržení myši): souhrn vlastností stěny,
 // otvoru nebo desky spočítaný z modelu. Stejná data vidí AI dotazem `element.info` (základy 6, 15).
+import { roofGeometry } from '../roof/planes.ts';
+import { findRoof } from '../roof/queries.ts';
+import type { Roof } from '../roof/types.ts';
 import { findWall } from '../wall/queries.ts';
 import { pathLength } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
@@ -83,7 +86,23 @@ export interface RoomCardInfo {
   readonly layerName: string;
 }
 
-export type ElementInfo = WallInfo | OpeningInfo | SlabInfo | RoomCardInfo;
+/** Střecha (rozhodnutí 11): typ, ref. čára, okap a hřeben (absolutně), roviny a plocha. */
+export interface RoofInfo {
+  readonly kind: 'roof';
+  readonly id: Id;
+  readonly storeyName: string;
+  readonly typeName: string;
+  readonly mark: string;
+  readonly refLevel: number;
+  readonly eaveLevel: number;
+  readonly ridgeLevel: number;
+  readonly planes: number;
+  /** m² v rovině střechy. */
+  readonly area: number;
+  readonly layerName: string;
+}
+
+export type ElementInfo = WallInfo | OpeningInfo | SlabInfo | RoomCardInfo | RoofInfo;
 
 function roomCard(m: Model, id: Id): RoomCardInfo | null {
   const r = m.rooms[id];
@@ -101,6 +120,25 @@ function roomCard(m: Model, id: Id): RoomCardInfo | null {
     volume: Math.round(g.volume / 1e6) / 1000,
     state: g.state,
     layerName: layerForCategory(m.display, 'room')?.name ?? '',
+  };
+}
+
+function roofInfo(m: Model, r: Roof): RoofInfo {
+  const t = m.roofTypes[r.typeId];
+  const g = roofGeometry(m, r);
+  const zs = g.planes.flatMap((p) => p.polygon.map((q) => q.z));
+  return {
+    kind: 'roof',
+    id: r.id,
+    storeyName: m.storeys[r.storeyId]?.name ?? '',
+    typeName: t?.name ?? '',
+    mark: t?.mark ?? '',
+    refLevel: r1(g.refZ),
+    eaveLevel: r1(Math.min(g.refZ, ...g.planes.map((p) => p.eaveZ))),
+    ridgeLevel: r1(Math.max(g.refZ, ...zs)),
+    planes: g.planes.length,
+    area: m2(g.planes.reduce((a, p) => a + p.area, 0)),
+    layerName: layerForCategory(m.display, 'roof')?.name ?? '',
   };
 }
 
@@ -164,5 +202,7 @@ export function elementInfo(m: Model, id: Id): ElementInfo | null {
   const w = findWall(m, id);
   if (w) return wallInfo(m, w);
   const s = findSlab(m, id);
-  return s ? slabInfo(m, s) : roomCard(m, id);
+  if (s) return slabInfo(m, s);
+  const roof = findRoof(m, id);
+  return roof ? roofInfo(m, roof) : roomCard(m, id);
 }

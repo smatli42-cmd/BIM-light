@@ -164,7 +164,7 @@ export function View3DWindow({ s }: { s: Session }) {
   useViewLook(s, viewer, solids);
   useEffect(() => viewer?.setBox(v.sectionBox), [viewer, v.sectionBox]);
   useEffect(() => viewer?.fit(), [viewer, st.fit]);
-  const picked = [...s.selection.walls, ...s.selection.slabs];
+  const picked = [...s.selection.walls, ...s.selection.slabs, ...s.selection.roofs];
   useEffect(() => viewer?.setSelection(picked), [viewer, solids, picked.join(',')]);
   const cam = useCameraUi(s, viewer);
   const hover = useHover3D(s, viewer);

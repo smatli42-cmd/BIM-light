@@ -12,10 +12,9 @@ import {
 import type { Session } from '../../../session/session.ts';
 import { hitAt, type Hit } from '../../hits.ts';
 import type { Mode } from '../../mode.ts';
-import { PlacingMode, type DraftItem } from '../../placing.ts';
-import type { TempDimView } from '../../temp-layout.ts';
+import { PlacingMode } from '../../placing.ts';
 import type { KeyInfo, Overlay, PointerInfo, Tool, TrackerField } from '../../types.ts';
-import { PermDimDragMode, TempDimDragMode } from './dim-drag.ts';
+import { itemFromTemp, PermDimDragMode, TempDimDragMode } from './dim-drag.ts';
 import { BoxMode, PressWallMode } from './drag-modes.ts';
 import { DimTextMode } from './dim-text-mode.ts';
 import { dimMenu, edgeMenu, nodeMenu, openingMenu, wallMenu } from './menus.ts';
@@ -24,19 +23,19 @@ import { PressOpeningMode } from './opening-modes.ts';
 import { NodeMode } from './node-mode.ts';
 import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
-import { OutlineVertexMode, outlineUnder, pickOutline, PressOutlineMode } from './slab-modes.ts';
+import {
+  OutlineVertexMode,
+  outlineUnder,
+  pickOutline,
+  PressOutlineMode,
+  pressRoofLine,
+  roofUnder,
+} from './slab-modes.ts';
 import { faceOverlay, flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
 import { pressTileOrigin, withTileOrigin } from './tile-origin-mode.ts';
 import { openSectionAt, pressSection, withSectionMarks } from './section-modes.ts';
 import { cycleUnder } from './tab-cycle.ts';
 import { pressPlanLevel } from './plan-level-modes.ts';
-
-function itemFromTemp(t: TempDimView): DraftItem {
-  const temp = t.temp;
-  if (temp.kind === 'length') return { kind: 'length', ref: temp.own };
-  // Kolečko je jen u obrysu s vlastníkem (temp-layout), own tedy existuje.
-  return { kind: 'linear', refs: [temp.own ?? temp.other, temp.other], ownerRef: 0 };
-}
 
 export class SelectTool implements Tool {
   readonly id = 'select';
@@ -94,6 +93,8 @@ export class SelectTool implements Tool {
     if (this.faceOfSelected(p, onFace)) return;
     if (hit) return this.onHit(hit, p);
     const op = this.openingUnder(p);
+    const roof = pressRoofLine(this.s, p);
+    if (roof !== undefined) return void (this.mode = roof);
     if (op && p.shift) return this.s.selection.toggleOpening(op);
     if (op) {
       if (!this.s.selection.openings.includes(op)) this.s.selection.set([], [], [op]);
@@ -181,7 +182,9 @@ export class SelectTool implements Tool {
 
   move(p: PointerInfo) {
     if (this.mode?.active) this.mode.move(p);
-    else this.hover = this.openingUnder(p) ?? this.wallsUnder(p)[0] ?? flatUnder(this.s, p);
+    else
+      this.hover =
+        this.openingUnder(p) ?? roofUnder(this.s, p, true) ?? this.wallsUnder(p)[0] ?? flatUnder(this.s, p);
   }
 
   up(p: PointerInfo) {

@@ -23,6 +23,7 @@ export const CATEGORY_GRAPHICS: CategoryGraphics = {
   wall: { cutPen: 6, projectionPen: 3, layerPen: 1, hatch: 'material' },
   column: { cutPen: 6, projectionPen: 3, layerPen: 1, hatch: 'material' },
   slab: { projectionPen: 2, cutPen: 5, hatch: 'material' },
+  roof: { projectionPen: 2, cutPen: 5, hatch: 'material' },
   window: { projectionPen: 3 },
   door: { projectionPen: 3 },
   symbol: { projectionPen: 2 },

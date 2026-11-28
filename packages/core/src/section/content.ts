@@ -9,6 +9,7 @@ import { ringsOf } from './pieces.ts';
 import { slabProjection, wallProjection, type Projected } from './projection.ts';
 import type { Section } from './types.ts';
 import { sectionElements } from './visible.ts';
+import { roofCut, roofProjection } from '../roof/section.ts';
 
 export interface CutRow {
   readonly elementId: Id;
@@ -84,11 +85,19 @@ export function sectionContent(model: Model, s: Section): { cut: CutRow[]; seen:
       ? [
           ...els.walls.flatMap(({ wall }) => cutRow(wall.id, 'wall', wallCut(m, wall, f, s.range))),
           ...els.slabs.flatMap(({ slab }) => cutRow(slab.id, 'slab', slabCut(m, slab, f, s.range))),
+          ...els.roofs.flatMap(({ roof }) => cutRow(roof.id, 'roof', roofCut(m, roof, f, s.range))),
         ]
       : [];
   const seen = [
     ...els.walls.flatMap(({ wall }) => seenRow('wall', wallProjection(m, wall, f, s.range))),
     ...els.slabs.flatMap(({ slab }) => seenRow('slab', slabProjection(m, slab, f, s.range))),
+    ...els.roofs.flatMap(({ roof }) => {
+      const ps = roofProjection(m, roof, f, s.range);
+      const depth = Math.min(...ps.map((p) => p.depth));
+      return ps.length
+        ? seenRow('roof', { elementId: roof.id, depth, shapes: ps.flatMap((p) => p.shapes) })
+        : [];
+    }),
   ].sort((a, b) => a.depth - b.depth);
   return { cut, seen };
 }

@@ -52,6 +52,7 @@ export function show3D(s: Session, selection: boolean) {
           s.selection.openings,
           s.selection.slabs,
           s.selection.slabOpenings,
+          s.selection.roofs,
         ),
       ]
     : [];

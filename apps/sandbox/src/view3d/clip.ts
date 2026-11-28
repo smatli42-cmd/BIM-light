@@ -2,6 +2,7 @@
 // vrstvy je svislý hranol, takže stačí oříznout výšku (z) a půdorys obdélníkem (2D průnik, polygon-clipping).
 // Výsledek jsou zase uzavřená tělesa: řez je plný a má barvu materiálu (jako řez v Archicadu), žádná dutá
 // skořápka. Kvádr je v osách modelu (mm), zatím bez natočení.
+import { boxPlanes, cutMeshSolid } from './clip-mesh.ts';
 import polygonClipping, { type MultiPolygon } from 'polygon-clipping';
 import type { Slab } from './slice.ts';
 import type { Solid } from './solids.ts';
@@ -52,6 +53,10 @@ function clipSlab(s: Slab, b: Box3D, rect: MultiPolygon): Slab | null {
 export function clipSolids(solids: readonly Solid[], box: Box3D): Solid[] {
   const rect = rectOf(box);
   return solids.flatMap((s) => {
+    if (s.mesh) {
+      const cut = cutMeshSolid(s, boxPlanes(box));
+      return cut ? [cut] : [];
+    }
     const slabs = s.slabs.map((x) => clipSlab(x, box, rect)).filter((x): x is Slab => !!x);
     return slabs.length ? [{ ...s, slabs }] : [];
   });
@@ -65,7 +70,13 @@ export function solidsBounds(solids: readonly Solid[]): Box3D | null {
     x1 = -Infinity,
     y1 = -Infinity,
     z1 = -Infinity;
-  for (const s of solids)
+  for (const s of solids) {
+    const m = s.mesh ?? [];
+    for (let i = 0; i + 2 < m.length; i += 3) {
+      [x0, x1] = [Math.min(x0, m[i] ?? 0), Math.max(x1, m[i] ?? 0)];
+      [y0, y1] = [Math.min(y0, m[i + 1] ?? 0), Math.max(y1, m[i + 1] ?? 0)];
+      [z0, z1] = [Math.min(z0, m[i + 2] ?? 0), Math.max(z1, m[i + 2] ?? 0)];
+    }
     for (const slab of s.slabs) {
       z0 = Math.min(z0, slab.z0);
       z1 = Math.max(z1, slab.z1);
@@ -77,5 +88,6 @@ export function solidsBounds(solids: readonly Solid[]): Box3D | null {
           y1 = Math.max(y1, y);
         }
     }
+  }
   return x0 <= x1 ? { min: { x: x0, y: y0, z: z0 }, max: { x: x1, y: y1, z: z1 } } : null;
 }

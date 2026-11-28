@@ -1,4 +1,4 @@
-// Výběr stěn, otvorů (ve stěnách i deskách), desek, místností, řezů a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
+// Výběr stěn, otvorů (ve stěnách i deskách), desek, střech, místností, řezů a kót (pravidla-interakce: Výběr). Jen stav rozhraní, model se nemění.
 import type { FaceSide, Id, Model } from '@bim-light/core';
 
 /** Vybraný líc stěny v místnosti (přepis zón povrchů jedné stěny). */
@@ -15,6 +15,8 @@ export class Selection {
   openings: Id[] = [];
   /** Vybrané desky (D2). */
   slabs: Id[] = [];
+  /** Vybrané střechy (rozhodnutí 11, S1). */
+  roofs: Id[] = [];
   /** Vybrané otvory v deskách (D3). */
   slabOpenings: Id[] = [];
   /** Vybrané místnosti. */
@@ -35,6 +37,7 @@ export class Selection {
     return (
       n +
       this.slabs.length +
+      this.roofs.length +
       this.slabOpenings.length +
       this.rooms.length +
       this.sections.length +
@@ -62,6 +65,11 @@ export class Selection {
     return this.slabs.length === 1 && this.count === 1 ? (this.slabs[0] as Id) : null;
   }
 
+  /** Právě jedna vybraná střecha (info box střechy). */
+  get singleRoof(): Id | null {
+    return this.roofs.length === 1 && this.count === 1 ? (this.roofs[0] as Id) : null;
+  }
+
   /** Právě jedna vybraná místnost (info box místnosti). */
   get singleRoom(): Id | null {
     return this.rooms.length === 1 && this.count === 1 ? (this.rooms[0] as Id) : null;
@@ -76,6 +84,7 @@ export class Selection {
     rooms: readonly Id[] = [],
     sections: readonly Id[] = [],
     levelDims: readonly Id[] = [],
+    roofs: readonly Id[] = [],
   ) {
     this.walls = [...new Set(walls)];
     this.dims = [...new Set(dims)];
@@ -85,6 +94,7 @@ export class Selection {
     this.rooms = [...new Set(rooms)];
     this.sections = [...new Set(sections)];
     this.levelDims = [...new Set(levelDims)];
+    this.roofs = [...new Set(roofs)];
     if (this.face && !this.rooms.includes(this.face.roomId)) this.face = null;
   }
 
@@ -113,6 +123,10 @@ export class Selection {
     this.slabs = Selection.toggle(this.slabs, id);
   }
 
+  toggleRoof(id: Id) {
+    this.roofs = Selection.toggle(this.roofs, id);
+  }
+
   toggleSlabOpening(id: Id) {
     this.slabOpenings = Selection.toggle(this.slabOpenings, id);
   }
@@ -135,6 +149,7 @@ export class Selection {
       this.dims,
       this.openings,
       this.slabs,
+      this.roofs,
       this.slabOpenings,
       this.rooms,
       this.sections,
@@ -150,6 +165,7 @@ export class Selection {
       dimensionIds: this.dims,
       openingIds: this.openings,
       slabIds: this.slabs,
+      roofIds: this.roofs,
       slabOpeningIds: this.slabOpenings,
       roomIds: this.rooms,
       sectionIds: this.sections,
@@ -163,6 +179,7 @@ export class Selection {
     this.dims = this.dims.filter((id) => model.dimensions[id]);
     this.openings = this.openings.filter((id) => model.openings[id]);
     this.slabs = this.slabs.filter((id) => model.elements[id]?.category === 'slab');
+    this.roofs = this.roofs.filter((id) => model.elements[id]?.category === 'roof');
     this.slabOpenings = this.slabOpenings.filter((id) => model.slabOpenings[id]);
     this.rooms = this.rooms.filter((id) => model.rooms[id]);
     this.sections = this.sections.filter((id) => model.sections[id]);

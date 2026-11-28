@@ -24,6 +24,7 @@ import { drawOpening, openingFacts } from '../opening/draw.ts';
 import { drawRenovationPatches } from '../opening/renovation.ts';
 import { drawWallTag, tagFacts } from '../tag/draw.ts';
 import { drawSlabs } from '../slab/draw-view.ts';
+import { drawRoofs } from '../roof/draw.ts';
 import { drawSlabOpenings } from '../slab-opening/draw-view.ts';
 import { drawRooms } from '../room/draw-view.ts';
 import { drawTileJoints } from '../covering/draw-joints.ts';
@@ -133,6 +134,7 @@ export function drawView(model: Model, viewId: Id, options: DrawOptions = {}): D
     ...walls,
     ...patches,
     ...drawOpenings(model, view, structure),
+    ...drawRoofs(model, view),
     ...drawElectro(model, view),
   ];
   for (const d of Object.values(model.dimensions)) {

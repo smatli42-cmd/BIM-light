@@ -1,8 +1,9 @@
-// Výběr a úpravy desky a otvoru v desce nástrojem Výběr (D2, D3; základ 25 – pohne se jen vybraný
+// Výběr a úpravy desky, otvoru v desce a střechy nástrojem Výběr (D2, D3; základ 25 – pohne se jen vybraný
 // prvek, stěny stojí): klik vybere, tažení posune výběr, uzel obrysu se táhne nebo klikne na nové místo.
 import {
   add,
   findSlab,
+  roofsAt,
   roundTo,
   slabOpeningsAt,
   slabsAt,
@@ -17,8 +18,8 @@ import { deltaFields, trackerMm } from '../../tracker-fields.ts';
 import type { Overlay, PointerInfo, TrackerField } from '../../types.ts';
 import { ClickOrDrag } from './click-or-drag.ts';
 
-/** Deska, nebo otvor v desce (obrys v půdorysu). */
-export type OutlineKind = 'slab' | 'hole';
+/** Deska, otvor v desce, nebo střecha (obrys v půdorysu). */
+export type OutlineKind = 'slab' | 'hole' | 'roof';
 
 /** Co se s deskou a otvorem dělá jinak: výběr, příkazy posunu a bodu obrysu, obrys. */
 const OPS = {
@@ -50,16 +51,47 @@ const OPS = {
         : (s.run('slabOpening.moveVertex', { openingId: id, index, point }), null),
     outline: (m: Model, id: Id) => m.slabOpenings[id]?.outline ?? [],
   },
+  // Střecha (S1): klik vybere, tažení posune; úpravy hran a bodů přijdou s nástrojem (S2).
+  roof: {
+    ids: (s: Session) => s.selection.roofs,
+    select: (s: Session, id: Id) => s.selection.set([], [], [], [], [], [], [], [], [id]),
+    toggle: (s: Session, id: Id) => s.selection.toggleRoof(id),
+    move: (s: Session, ids: Id[], vector: Vec2, preview: boolean) =>
+      preview
+        ? s.editor.preview('roof.move', { roofIds: ids, vector })
+        : (s.run('roof.move', { roofIds: ids, vector }), null),
+    vertex: () => null,
+    outline: () => [],
+  },
 } as const;
 
-/** Otvor v desce, jinak deska pod kurzorem (desky leží pod stěnami – zkouší se až po nich). */
+/** Střecha pod kurzorem: `lines` = jen klik na hranu střechy (okap, hřeben…), jinak i do plochy. */
+export function roofUnder(s: Session, p: PointerInfo, lines: boolean): Id | null {
+  if (s.screen.isolate || !s.filter.slabs) return null;
+  return roofsAt(s.model, s.view, p.world, s.viewport.px(3), !lines)[0] ?? null;
+}
+
+/** Otvor v desce, jinak deska pod kurzorem (desky leží pod stěnami – zkouší se až po nich), pak střecha. */
 export function outlineUnder(s: Session, p: PointerInfo): { kind: OutlineKind; id: Id } | null {
   if (s.screen.isolate || !s.filter.slabs) return null;
   const tol = s.viewport.px(2);
   const hole = slabOpeningsAt(s.model, s.view, p.world, tol)[0];
   if (hole) return { kind: 'hole', id: hole };
   const slab = slabsAt(s.model, s.view, p.world, tol)[0];
-  return slab ? { kind: 'slab', id: slab } : null;
+  if (slab) return { kind: 'slab', id: slab };
+  const roof = roofUnder(s, p, false);
+  return roof ? { kind: 'roof', id: roof } : null;
+}
+
+/**
+ * Hrana střechy (okap, hřeben, nároží…) má přednost před stěnou pod ní (střecha leží nad): vrátí režim
+ * stisku (klik vybere, tažení posune), null po Shift (přidáno / ubráno), undefined = žádná hrana.
+ */
+export function pressRoofLine(s: Session, p: PointerInfo): Mode | null | undefined {
+  const id = roofUnder(s, p, true);
+  if (!id) return undefined;
+  pickOutline(s, 'roof', id, p.shift);
+  return p.shift ? null : new PressOutlineMode(s, 'roof', id, p);
 }
 
 /** Shift = přidat / ubrat, jinak vybrat (když už vybraný není). */

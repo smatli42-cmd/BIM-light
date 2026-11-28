@@ -32,6 +32,10 @@ export interface Solid {
   /** Krytí 0–1 (1 = plné); průhledný materiál (sklo) 0,35, pravidlo grafiky může přepsat. */
   readonly opacity: number;
   readonly slabs: readonly Slab[];
+  /** Obecné těleso (střecha): trojúhelníky [x, y, z, …] v mm; `slabs` je pak prázdné. */
+  readonly mesh?: readonly number[];
+  /** Hrany obecného tělesa jako úsečky [x, y, z, x, y, z, …] v mm. */
+  readonly edges?: readonly number[];
 }
 
 function cuttersOf(model: Model, wall: Wall): Cutter[] {

@@ -6,13 +6,21 @@ import { useSession } from '../use-session.ts';
 import { toolLabel } from './tool-defs.ts';
 
 function heading(s: Session): { title: string; sub: string } {
-  const { walls, openings, dims, rooms, sections, levelDims } = s.selection;
-  const n = walls.length + openings.length + dims.length + rooms.length + sections.length + levelDims.length;
+  const { walls, openings, dims, rooms, sections, levelDims, roofs } = s.selection;
+  const n =
+    walls.length +
+    openings.length +
+    dims.length +
+    rooms.length +
+    sections.length +
+    levelDims.length +
+    roofs.length;
   if (!n && s.tool.id !== 'select') return { title: toolLabel(s), sub: 'Výchozí nastavení nových prvků' };
   if (!n) return { title: toolLabel(s), sub: 'nic nevybráno' };
   if (n === walls.length) return { title: n > 1 ? 'Stěny' : 'Stěna', sub: `Označené: ${n}` };
   if (n === openings.length) return { title: n > 1 ? 'Otvory' : 'Otvor', sub: `vybráno: ${n}` };
   if (n === rooms.length) return { title: n > 1 ? 'Místnosti' : 'Místnost', sub: `vybráno: ${n}` };
+  if (n === roofs.length) return { title: n > 1 ? 'Střechy' : 'Střecha', sub: `vybráno: ${n}` };
   if (n === sections.length) return { title: n > 1 ? 'Řezy' : 'Řez', sub: `vybráno: ${n}` };
   const tags = levelDims.filter((id) => s.model.compositionTags[id]).length;
   if (n === tags) return { title: n > 1 ? 'Popisy skladby' : 'Popis skladby', sub: `vybráno: ${n}` };

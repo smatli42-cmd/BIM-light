@@ -5,6 +5,7 @@
 import {
   allSlabOpenings,
   allSlabs,
+  allRoofs,
   allWalls,
   categoryState,
   elementFacts,
@@ -26,6 +27,7 @@ import { surfaceSheets, type Sheet } from './surface-sheets.ts';
 import { resolveOverlaps } from './overlaps.ts';
 import { patchLook, patchSolid } from './patches.ts';
 import { slabSolids } from './slab-solids.ts';
+import { roofSolids3d } from './roof-solids.ts';
 import { wallSolids, type Solid } from './solids.ts';
 import { lookOf, withLook } from './surface.ts';
 
@@ -96,6 +98,7 @@ export function modelSolids(
   const shown = shownModel(model, view);
   const want = (e: Element) => (!only || only.has(e.id)) && (!storeys || storeys.has(e.storeyId));
   const slabs = allSlabs(model).filter((d) => want(d) && isShown(model, view, d));
+  const roofs = allRoofs(model).filter((d) => want(d) && isShown(model, view, d));
   const all = [
     ...shown.walls
       .filter(want)
@@ -104,6 +107,7 @@ export function modelSolids(
         ...patchesOf(shown.model, view, w),
       ]),
     ...slabs.flatMap((d) => surfaced(model, view, d, slabSolids(model, d, slabHoles(model, view, d.id)))),
+    ...roofs.flatMap((r) => surfaced(model, view, r, roofSolids3d(model, r))),
   ];
   // Uložení stropu řeší jádro (junction/slab-wall.ts, priorita materiálů); zbylé překryvy (pojistka proti
   // prolínání ploch): stěna má přednost, deska se v ní vyřízne.
@@ -117,10 +121,11 @@ export function selectionElements(
   openings: readonly Id[],
   slabs: readonly Id[] = [],
   slabOpenings: readonly Id[] = [],
+  roofs: readonly Id[] = [],
 ): Set<Id> {
   const hosts = openings.map((id) => model.openings[id]?.hostId).filter((x): x is Id => !!x);
   const slabHosts = slabOpenings.flatMap((id) => model.slabOpenings[id]?.hostIds ?? []);
-  return new Set([...walls, ...hosts, ...slabs, ...slabHosts]);
+  return new Set([...walls, ...hosts, ...slabs, ...slabHosts, ...roofs]);
 }
 
 /** Povrchy místností pro 3D okno: na zobrazených stěnách, podle podlaží a výběru, oříznuté kvádrem a řezem. */

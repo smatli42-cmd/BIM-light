@@ -4,7 +4,7 @@ import { dot, roundTo, sub, type Dimension, type Id } from '@bim-light/core';
 import type { Session } from '../../../session/session.ts';
 import type { PermDimView } from '../../hits.ts';
 import { DRAG_PX, type Mode } from '../../mode.ts';
-import { placeDrafts, type Placed } from '../../placing.ts';
+import { placeDrafts, type DraftItem, type Placed } from '../../placing.ts';
 import type { TempDimView } from '../../temp-layout.ts';
 import type { Overlay, PointerInfo } from '../../types.ts';
 import { editPerm, editTemp } from '../../value-edit.ts';
@@ -115,4 +115,12 @@ export class TempDimDragMode implements Mode {
   overlay(): Overlay {
     return {};
   }
+}
+
+/** Dočasná kóta → položka trvalé kóty (připnutí špendlíkem). */
+export function itemFromTemp(t: TempDimView): DraftItem {
+  const temp = t.temp;
+  if (temp.kind === 'length') return { kind: 'length', ref: temp.own };
+  // Kolečko je jen u obrysu s vlastníkem (temp-layout), own tedy existuje.
+  return { kind: 'linear', refs: [temp.own ?? temp.other, temp.other], ownerRef: 0 };
 }

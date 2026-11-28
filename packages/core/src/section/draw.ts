@@ -28,6 +28,7 @@ import { sectionLimits, type Section } from './types.ts';
 import type { Element } from '../model/types.ts';
 import { elementFacts } from '../style/conditions.ts';
 import { sectionElements } from './visible.ts';
+import { roofCut, roofProjection } from '../roof/section.ts';
 
 interface CutItem {
   readonly elementId: Id;
@@ -166,12 +167,16 @@ export function drawSection(model: Model, sectionId: Id): Drawing {
       cut.push({ elementId: wall.id, g, pieces: wallCut(m, wall, f, s.range) });
     for (const { slab, g } of els.slabs)
       cut.push({ elementId: slab.id, g, pieces: slabCut(m, slab, f, s.range) });
+    for (const { roof, g } of els.roofs)
+      cut.push({ elementId: roof.id, g, pieces: roofCut(m, roof, f, s.range) });
   }
   const far = farGraphics(model, s);
   const proj: ProjItem[] = [
     ...els.walls.map(({ wall, g }) => ({ el: wall, p: wallProjection(m, wall, f, s.range), g })),
     ...els.slabs.map(({ slab, g }) => ({ el: slab, p: slabProjection(m, slab, f, s.range), g })),
   ].flatMap(({ el, p, g }) => (p ? [{ ...p, g: far(el, p.depth) ?? g }] : []));
+  for (const { roof, g } of els.roofs)
+    for (const p of roofProjection(m, roof, f, s.range)) proj.push({ ...p, g: far(roof, p.depth) ?? g });
   const cutItems = cut.filter((c) => c.pieces.length);
   const ext = extent(cutItems, proj, f.length);
   const g = resolveGraphics(model.display, s, annotationFacts(s.id, 'dimension')).effect;

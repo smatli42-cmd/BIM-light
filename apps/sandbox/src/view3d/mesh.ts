@@ -133,13 +133,22 @@ function edgesOf(solids: readonly Solid[], sketch: boolean): Map<string, number[
   const out = new Map<string, number[]>();
   for (const [id, slabs] of byId) {
     const others = all.filter((o) => o.id !== id).map((o) => o.b);
-    const segs = elementEdges(slabs, others);
+    const own = solids.filter((s) => s.elementId === id).flatMap((s) => s.edges ?? []);
+    const segs = [...elementEdges(slabs, others), ...own];
     out.set(
       id,
       (sketch ? sketchSegments(segs) : segs).map((v) => v * MM),
     );
   }
   return out;
+}
+
+function solidMesh(geo: BufferGeometry, s: Solid, mats: Materials): Mesh {
+  const mesh = new Mesh(geo, mats.face(s.color, s.opacity));
+  mesh.userData = { elementId: s.elementId, base: mesh.material };
+  mesh.castShadow = mats.look.shadows && s.opacity >= 1;
+  mesh.receiveShadow = mats.look.shadows;
+  return mesh;
 }
 
 /** Skupina sítí jednoho prvku; `userData.elementId` = id prvku (výběr). */
@@ -152,17 +161,25 @@ export function buildMeshes(solids: readonly Solid[], mats: Materials): Map<stri
       g.userData = { elementId: s.elementId, color: s.color };
       groups.set(s.elementId, g);
     }
+    if (s.mesh?.length) {
+      const geo = new BufferGeometry();
+      geo.setAttribute(
+        'position',
+        new Float32BufferAttribute(
+          s.mesh.map((v) => v * MM),
+          3,
+        ),
+      );
+      geo.computeVertexNormals();
+      g.add(solidMesh(geo, s, mats));
+    }
     for (const slab of s.slabs) {
       const geo = new ExtrudeGeometry(shapesOf(slab.shape), {
         depth: (slab.z1 - slab.z0) * MM,
         bevelEnabled: false,
       });
       geo.translate(0, 0, slab.z0 * MM);
-      const mesh = new Mesh(geo, mats.face(s.color, s.opacity));
-      mesh.userData = { elementId: s.elementId, base: mesh.material };
-      mesh.castShadow = mats.look.shadows && s.opacity >= 1;
-      mesh.receiveShadow = mats.look.shadows;
-      g.add(mesh);
+      g.add(solidMesh(geo, s, mats));
     }
   }
   for (const [id, segs] of edgesOf(solids, mats.look.mode === 'sketch')) {

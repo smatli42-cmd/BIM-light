@@ -44,6 +44,23 @@ function slabCard(i: Extract<ElementInfo, { kind: 'slab' }>): Card {
   };
 }
 
+function roofCard(i: Extract<ElementInfo, { kind: 'roof' }>): Card {
+  return {
+    icon: 'slab',
+    title: 'Střecha',
+    sub: `Střecha · ${i.storeyName}`,
+    head: `${m2(i.area)} · ${i.planes} rovin`,
+    note: 'plocha · roviny',
+    rows: [
+      ['Typ', `${i.mark} ${i.typeName}`],
+      ['Ref. čára', lvl(i.refLevel)],
+      ['Okap', lvl(i.eaveLevel)],
+      ['Hřeben', lvl(i.ridgeLevel)],
+      ['Vrstva', i.layerName],
+    ],
+  };
+}
+
 const STATE: Record<string, string> = {
   ok: 'v pořádku',
   'not-enclosed': 'neuzavřená',
@@ -87,6 +104,7 @@ function card(i: ElementInfo): Card {
     };
   if (i.kind === 'slab') return slabCard(i);
   if (i.kind === 'room') return roomCard(i);
+  if (i.kind === 'roof') return roofCard(i);
   const niche = i.openingKind === 'niche';
   return {
     icon: 'opening',

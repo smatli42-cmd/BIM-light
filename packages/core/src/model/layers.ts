@@ -1,4 +1,4 @@
-// Vrstvy skladby prvku bez ohledu na druh (stěna = všechny pásy typu, deska = skladba typu).
+// Vrstvy skladby prvku bez ohledu na druh (stěna = všechny pásy typu, deska a střecha = skladba typu).
 // Používá grafika (materiál ve skladbě), výkazy a hledání.
 import type { WallLayer } from '../wall-type/types.ts';
 import type { Element, Model } from './types.ts';
@@ -6,6 +6,10 @@ import type { Element, Model } from './types.ts';
 export function elementLayers(model: Model, el: Element): readonly WallLayer[] {
   if (el.category === 'slab') {
     const t = model.slabTypes[el.typeId];
+    return (t && model.compositions[t.compositionId]?.layers) || [];
+  }
+  if (el.category === 'roof') {
+    const t = model.roofTypes[el.typeId];
     return (t && model.compositions[t.compositionId]?.layers) || [];
   }
   return model.wallTypes[el.typeId]?.bands.flatMap((b) => b.layers) ?? [];

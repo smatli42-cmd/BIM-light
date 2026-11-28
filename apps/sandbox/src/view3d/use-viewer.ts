@@ -21,10 +21,13 @@ function clickPick(s: Session, v: Viewer) {
     // info box ho ukáže a mění, půdorys zůstane.
     const el = id ? s.model.elements[id] : undefined;
     const slab = el?.category === 'slab';
+    const roof = el?.category === 'roof';
     if (e.shiftKey && el) {
       if (slab) s.selection.toggleSlab(el.id);
+      else if (roof) s.selection.toggleRoof(el.id);
       else s.selection.toggleWall(el.id);
-    } else if (el) s.selection.set(slab ? [] : [el.id], [], [], slab ? [el.id] : []);
+    } else if (roof) s.selection.set([], [], [], [], [], [], [], [], [el.id]);
+    else if (el) s.selection.set(slab ? [] : [el.id], [], [], slab ? [el.id] : []);
     else s.selection.clear();
     s.changed();
   };

@@ -3,6 +3,8 @@
 import {
   isOutlineRef,
   allWallGeometry,
+  findRoof,
+  roofGeometry,
   edgePath,
   facePath,
   findSlab,
@@ -65,6 +67,14 @@ export function drawWallOutlines(
       const g = roomInfo(model, room);
       for (const loop of [g.outline, ...g.holes].filter((l) => l.length)) {
         poly(ctx, s, loop);
+        ctx.stroke();
+      }
+      continue;
+    }
+    const roof = findRoof(model, id);
+    if (roof) {
+      for (const l of roofGeometry(model, roof).lines) {
+        poly(ctx, s, [l.a, l.b], false);
         ctx.stroke();
       }
       continue;

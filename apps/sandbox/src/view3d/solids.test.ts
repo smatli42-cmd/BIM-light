@@ -137,14 +137,14 @@ describe('3D náhled / co je vidět: filtr rekonstrukce a vrstvy aktivního pohl
 });
 
 describe('3D náhled / ukázkový dům', () => {
-  it('3D náhled / ukázka dum: obě podlaží mají stěny i desky, otvory jsou vyříznuté', () => {
+  it('3D náhled / ukázka dum: obě podlaží mají stěny i desky, nahoře střecha, otvory jsou vyříznuté', () => {
     const m = buildSample(findSample('dum')!, sequentialIds());
     const v = Object.values(m.views)[0]!;
     const solids = modelSolids(m, v);
     const storeys = new Set(solids.map((s) => m.elements[s.elementId]!.storeyId));
     expect(storeys.size).toBe(Object.keys(m.storeys).length);
     const cats = new Set(solids.map((s) => m.elements[s.elementId]!.category));
-    expect(cats).toEqual(new Set(['wall', 'slab']));
+    expect(cats).toEqual(new Set(['wall', 'slab', 'roof']));
     const hosts = new Set(Object.values(m.openings).map((o) => o.hostId));
     const cut = solids.filter((s) => hosts.has(s.elementId) && s.slabs.length > 1);
     expect(cut.length).toBeGreaterThan(0);

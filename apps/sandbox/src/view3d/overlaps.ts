@@ -62,6 +62,7 @@ export function resolveOverlaps(solids: readonly Solid[], priority: (id: string)
     bands: s.slabs.map((slab) => ({ slab, box: bbox(slab.shape) })),
   }));
   return solids.flatMap((s) => {
+    if (s.mesh) return [s];
     const p = priority(s.elementId);
     const over = all.filter((o) => o.p > p).flatMap((o) => o.bands);
     if (!over.length) return [s];

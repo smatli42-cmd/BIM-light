@@ -13,6 +13,7 @@ export * from './tag/index.ts';
 export * from './wall-height/index.ts';
 export * from './opening/index.ts';
 export * from './slab/index.ts';
+export * from './roof/index.ts';
 export * from './slab-opening/index.ts';
 export * from './room/index.ts';
 export * from './covering/index.ts';
