@@ -6,13 +6,13 @@ import type { Model } from '../model/types.ts';
 import { faceLoop, loopArea, simplifyLoop } from './faces.ts';
 import { straightSkeleton, type Vec3 } from './skeleton.ts';
 import { roofEdgeLines, type EdgeLine } from './edge-lines.ts';
-import { cornerOf } from './corners.ts';
+import { cornerOf, effectiveEdges } from './corners.ts';
 import { classifyLines, type RoofLine } from './lines.ts';
 import type { Roof } from './types.ts';
 
-/** Hranice roviny: okap (`edge` = úsek po okapové čáře jiné hrany v rohu), štít nebo sousední rovina. */
+/** Hranice roviny: okap, štít (hrana obrysu) nebo sousední rovina (index hrany obrysu). */
 export type RoofBound =
-  | { readonly kind: 'eave'; readonly edge?: number }
+  | { readonly kind: 'eave' }
   | { readonly kind: 'gable'; readonly edge: number }
   | { readonly kind: 'plane'; readonly plane: number };
 
@@ -81,7 +81,7 @@ function boundOf(
 
 export function roofGeometry(model: Model, roof: Roof): RoofGeometry {
   const refZ = (model.storeys[roof.storeyId]?.elevation ?? 0) + roof.refOffset;
-  const edges = roofEdgeLines(roof);
+  const edges = effectiveEdges(roofEdgeLines(roof));
   const pts = roof.outline;
   const sk = straightSkeleton(
     pts,
@@ -100,19 +100,13 @@ export function roofGeometry(model: Model, roof: Roof): RoofGeometry {
         gables.push({ edge: i, polygon: loop.map((p) => ({ ...p, z: refZ + p.z })) });
       return;
     }
-    const raw: RoofBound[] = loop.map((p, k) =>
+    const bounds: RoofBound[] = loop.map((p, k) =>
       k === 0 ? { kind: 'eave' } : boundOf(loops, i, p, loop[(k + 1) % loop.length] as Vec3, isGable),
     );
     const g = { refZ, edges };
-    const polygon: Vec3[] = [];
-    const bounds: RoofBound[] = [];
-    loop.forEach((p, k) => {
-      const c = k < 2 ? cornerOf(edges, p, i, k === 0) : cornerOf(edges, p, -1, false);
-      c.pts.forEach((q, x) => {
-        polygon.push({ x: q.x, y: q.y, z: planeZ(g, i, q) });
-        const last = x === c.pts.length - 1;
-        bounds.push(last ? (raw[k] as RoofBound) : { kind: 'eave', edge: c.along ?? i });
-      });
+    const polygon = loop.map((p) => {
+      const q = cornerOf(edges, p);
+      return { x: q.x, y: q.y, z: planeZ(g, i, q) };
     });
     const sec = Math.sqrt(1 + e.tan * e.tan);
     const normal = { x: (-e.tan * e.n.x) / sec, y: (-e.tan * e.n.y) / sec, z: 1 / sec };

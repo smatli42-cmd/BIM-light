@@ -50,17 +50,26 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
 
 ### Oprava rohů přesahu a štítky hran, 2026-11-28 (hlášení uživatele, scéna `?ukazka=strechy`)
 
-- Roh přesahu mezi hranami s různým sklonem nebo přesahem (L 45° / 30°: vnější i vnitřní roh) nenavazoval.
-  Teď (`roof/corners.ts`, jako vícerovinná střecha Archicadu): obrys okapu je vždy uzavřený mnohoúhelník
-  posunutých hran (roh = průsečík okapových čar). Nároží / úžlabí jde z rohu ref. čáry ven a končí tam,
-  kde poprvé narazí na okapovou čáru jedné roviny; druhá rovina pokračuje z toho bodu po okapové čáře
-  té první až do rohu. Při stejném sklonu a přesahu beze změny. Test `roof/planes.test.ts`: každá hrana mezi
-  rovinami leží v obou rovinách a roviny přesně vyplní obrys okapu (bez mezery a přečnívajícího jazyka).
-  (První pokus téhož dne nechal nároží dojít až na okap každé roviny zvlášť – v rohu zůstala mezera.)
+- **Rohy při různých sklonech (třetí oprava, `roof/corners.ts`, jako Archicad / Ardit „Okap abs.“):**
+  okapy všech šikmých rovin jsou v jedné výšce; rovina dál prochází referenční čárou ve výšce ref. čáry,
+  takže mírnější rovina má delší vodorovný přesah (přesah = pokles / tg sklonu, pokles = největší ze
+  „zadaný přesah × tg sklonu“ – každá hrana má aspoň svůj přesah). Obrys okapu je vlna kostry o pokles
+  níž: každé nároží a úžlabí je jedna přímka od hřebene přes roh ref. čáry do rohu obrysu okapu.
+  Ve vrstvách: roh okapu mezi dvěma rovinami je v každé vrstvě jeden společný bod na nároží vrstvy
+  (`solids.ts` `eaveCorner`). Půdorys kreslí hrany horního líce a průsečíky s rovinou řezu na plochách
+  vrstev (stejná tělesa jako 3D), takže se čáry v rozích potkají. Testy `roof/planes.test.ts` (okap v jedné
+  výšce, nároží do rohu obrysu okapu, roviny přesně vyplní obrys okapu) a `roof/joins.test.ts` (L se třemi
+  kombinacemi sklonů: spoje vrstev ve 3D, čáry průsečíku v půdorysu konec na konec, nároží až k okapu).
+  Předchozí dva pokusy téhož dne (roh na nároží v okapu každé roviny zvlášť; nároží končí na prvním okapu)
+  nechávaly v rozích mezery, schody nebo okap vedoucí uvnitř střechy.
 - Vybraná střecha v půdorysu ukazuje u každé hrany štítek s číslem (jako v info boxu) a sklonem / „štít“,
   šipku ve směru stoupání roviny a referenční čáru čárkovaně (`apps/sandbox/src/render/roof-labels.ts`).
 
 ## Rozhodl Code (k potvrzení)
+
+- **Okap v jedné výšce:** přesah zadaný u hrany je nejmenší vodorovný přesah; u mírnějších rovin se
+  prodlouží tak, aby okap byl ve výšce okapu nejstrmější / nejdelší hrany (info box Okap abs. = jedna
+  hodnota). Velmi mírná rovina vedle strmé tak může mít velký přesah.
 
 - **Polovalba odložena:** v S1 jen sklon / štít po hranách. Polovalba (hrana se sklonem a výškou zlomu)
   a mansarda přijdou s nástrojem (S2) – vyžadují druhou rovinu nad jednou hranou.

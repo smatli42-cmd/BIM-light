@@ -62,12 +62,7 @@ class Planes {
     return { n: p.normal, k: dot3(p.normal, { x: e.a.x, y: e.a.y, z: this.geo.refZ }) + d };
   }
 
-  eave(p: RoofPlane, along?: number): Plane3 {
-    // Úsek po okapové čáře jiné hrany v rohu přesahu (corners.ts): svislá rovina té okapové čáry.
-    if (along !== undefined && along !== p.edge) {
-      const o = this.geo.edges[along] as EdgeLine;
-      return { n: { x: o.n.x, y: o.n.y, z: 0 }, k: o.c - o.overhang };
-    }
+  eave(p: RoofPlane): Plane3 {
     const e = this.geo.edges[p.edge] as EdgeLine;
     const k = e.c - e.overhang;
     const E = { x: e.n.x * k, y: e.n.y * k, z: p.eaveZ };
@@ -81,10 +76,25 @@ class Planes {
   }
 
   bound(p: RoofPlane, b: RoofBound, d: number): Plane3 {
-    if (b.kind === 'eave') return this.eave(p, b.edge);
+    if (b.kind === 'eave') return this.eave(p);
     if (b.kind === 'plane') return this.face(b.plane, d);
     const e = this.geo.edges[b.edge] as EdgeLine;
     return { n: { x: e.n.x, y: e.n.y, z: 0 }, k: e.c - e.overhang };
+  }
+
+  /**
+   * Roh okapu mezi rovinou p a sousední rovinou j (nároží / úžlabí končí v rohu obrysu okapu): při různých
+   * sklonech je nároží odsazené vrstvy posunuté i vodorovně a okap každé roviny ho protne jinde. Obě roviny
+   * proto vezmou týž bod – střed mezi oběma průsečíky na nároží vrstvy (symetrické, spoj bez mezery).
+   */
+  eaveCorner(p: RoofPlane, j: number, d: number): Vec3 | null {
+    const other = this.geo.planes.find((q) => q.edge === j);
+    if (!other) return null;
+    const own = this.face(p.edge, d);
+    const theirs = this.face(j, d);
+    const a = solve(own, theirs, this.eave(p));
+    const b = solve(own, theirs, this.eave(other));
+    return a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 } : null;
   }
 
   /** Plocha roviny p v odsazení d (kolmo, mm). */
@@ -94,7 +104,15 @@ class Planes {
     return p.polygon.map((v, k) => {
       const bin = p.bounds[(k + n - 1) % n] as RoofBound;
       const bout = p.bounds[k] as RoofBound;
-      const x = solve(own, this.bound(p, bin, d), this.bound(p, bout, d));
+      const j =
+        bin.kind === 'plane' && bout.kind === 'eave'
+          ? bin.plane
+          : bout.kind === 'plane' && bin.kind === 'eave'
+            ? bout.plane
+            : null;
+      const x =
+        (j !== null ? this.eaveCorner(p, j, d) : null) ??
+        solve(own, this.bound(p, bin, d), this.bound(p, bout, d));
       const lim = Math.max(2000, 20 * Math.abs(d));
       if (x && Math.hypot(x.x - v.x, x.y - v.y) < lim) return x;
       return { x: v.x, y: v.y, z: v.z + d / p.normal.z };

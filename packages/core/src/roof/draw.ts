@@ -11,7 +11,9 @@ import type { ResolvedEffect } from '../style/types.ts';
 import { categoryState } from '../view/effective.ts';
 import type { View } from '../view/types.ts';
 import type { EdgeLine } from './edge-lines.ts';
-import type { RoofLineKind } from './lines.ts';
+import { classifyLines, type RoofLineKind } from './lines.ts';
+import { roofSolids } from './solids.ts';
+import type { Vec3 } from '../covering/frame.ts';
 import { roofGeometry, type RoofGeometry, type RoofPlane } from './planes.ts';
 import { allRoofs, roofLayerOffsets, roofLayers } from './queries.ts';
 import type { Roof } from './types.ts';
@@ -24,54 +26,30 @@ const ROLE: Record<RoofLineKind, string> = {
   valley: 'úžlabí',
 };
 
-type Part = 'below' | 'cut' | 'above';
-
-interface Ctx {
-  readonly roof: Roof;
-  readonly g: ResolvedEffect;
-  readonly cut: number;
-  /** Svislé odsazení horního a spodního líce skladby od referenční roviny = d × sec sklonu. */
-  readonly top: number;
-  readonly bottom: number;
-}
-
 const lerp = (a: Vec2, b: Vec2, t: number): Vec2 => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
-/** Rozdělí úsečku (výšky z0, z1 v referenční rovině) na části pod řezem, v řezu a nad řezem. */
-function split(a: Vec2, b: Vec2, z0: number, z1: number, c: Ctx, sec: number): [Vec2, Vec2, Part][] {
-  const limits = [c.cut - c.top * sec, c.cut - c.bottom * sec];
+/** Rozdělí hranu horního líce na část pod rovinou řezu (vidět shora) a nad ní (čárkovaně). */
+function split(a: Vec3, b: Vec3, cut: number): [Vec2, Vec2, boolean][] {
   const ts = [0, 1];
-  for (const z of limits) if ((z0 - z) * (z1 - z) < 0) ts.push((z - z0) / (z1 - z0));
+  if ((a.z - cut) * (b.z - cut) < 0) ts.push((cut - a.z) / (b.z - a.z));
   ts.sort((x, y) => x - y);
-  const out: [Vec2, Vec2, Part][] = [];
+  const out: [Vec2, Vec2, boolean][] = [];
   for (let i = 0; i + 1 < ts.length; i++) {
-    const t0 = ts[i] as number;
-    const t1 = ts[i + 1] as number;
+    const [t0, t1] = [ts[i] as number, ts[i + 1] as number];
     if (t1 - t0 < 1e-9) continue;
-    const z = z0 + (z1 - z0) * ((t0 + t1) / 2);
-    const part: Part = z + c.top * sec < c.cut ? 'below' : z + c.bottom * sec > c.cut ? 'above' : 'cut';
-    out.push([lerp(a, b, t0), lerp(a, b, t1), part]);
+    const z = a.z + (b.z - a.z) * ((t0 + t1) / 2);
+    out.push([lerp(a, b, t0), lerp(a, b, t1), z > cut]);
   }
   return out;
 }
 
-function stroke(c: Ctx, part: Part): Stroke {
-  if (part === 'cut') return { pen: c.g.cutPen, color: c.g.lineColor, lineType: c.g.lineType };
-  return {
-    pen: c.g.projectionPen,
-    color: c.g.lineColor,
-    lineType: part === 'above' ? 'dashed' : c.g.lineType,
-  };
-}
-
-/** Průsečík roviny s výškou z uvnitř obrysu roviny (úseky přímky). */
-function contour(geo: RoofGeometry, p: RoofPlane, z: number): [Vec2, Vec2][] {
+/** Průsečík roviny p (odsazené o d) s výškou z uvnitř obrysu plochy `poly` (úseky přímky). */
+function contour(geo: RoofGeometry, p: RoofPlane, poly: readonly Vec2[], z: number): [Vec2, Vec2][] {
   const e = geo.edges[p.edge] as EdgeLine;
   const k = e.c + (z - geo.refZ) / e.tan;
-  const pts = p.polygon;
   const ts: number[] = [];
-  pts.forEach((a, i) => {
-    const b = pts[(i + 1) % pts.length] as Vec2;
+  poly.forEach((a, i) => {
+    const b = poly[(i + 1) % poly.length] as Vec2;
     const sa = dot(e.n, a) - k;
     const sb = dot(e.n, b) - k;
     if (sa > 0 === sb > 0) return;
@@ -84,18 +62,21 @@ function contour(geo: RoofGeometry, p: RoofPlane, z: number): [Vec2, Vec2][] {
   return out;
 }
 
+/**
+ * Půdorys kreslí plochy vrstev (stejná tělesa jako 3D a řez, solids.ts): hrany horního líce (okap, nároží,
+ * hřeben…) – pod rovinou řezu plně, nad ní čárkovaně; průsečík horního líce s rovinou řezu na ploše horního
+ * líce a spodního líce na ploše spodního líce. Sousední roviny mají v každé vrstvě společné hrany, takže
+ * se čáry v rozích potkají.
+ */
 export function drawRoof(model: Model, roof: Roof, cutPlane: number, g: ResolvedEffect): Primitive[] {
   if (!g.visible) return [];
   const geo = roofGeometry(model, roof);
   const offsets = roofLayerOffsets(roofLayers(model, roof));
-  const c: Ctx = {
-    roof,
-    g,
-    cut: (model.storeys[roof.storeyId]?.elevation ?? 0) + cutPlane,
-    top: offsets.at(-1) ?? 0,
-    bottom: offsets[0] ?? 0,
-  };
-  const out: Primitive[] = [];
+  const solids = roofSolids(model, roof, geo);
+  const last = Math.max(0, ...solids.map((s) => s.layer));
+  const surface = (p: RoofPlane, layer: number, side: 'top' | 'bottom') =>
+    solids.find((s) => s.plane === p.edge && s.layer === layer)?.[side] ?? p.polygon;
+  const cut = (model.storeys[roof.storeyId]?.elevation ?? 0) + cutPlane;
   const line = (a: Vec2, b: Vec2, s: Stroke, role: string): Primitive => ({
     kind: 'line',
     points: [a, b],
@@ -103,16 +84,25 @@ export function drawRoof(model: Model, roof: Roof, cutPlane: number, g: Resolved
     stroke: s,
     source: { elementId: roof.id, role },
   });
-  for (const l of geo.lines) {
-    const sec = 1 / ((geo.planes.find((p) => p.edge === l.planes[0])?.normal.z ?? 1) || 1);
-    for (const [a, b, part] of split(l.a, l.b, l.a.z, l.b.z, c, sec))
-      out.push(line(a, b, stroke(c, part), ROLE[l.kind]));
-  }
+  const seen = (above: boolean): Stroke => ({
+    pen: g.projectionPen,
+    color: g.lineColor,
+    lineType: above ? 'dashed' : g.lineType,
+  });
+  const cutStroke: Stroke = { pen: g.cutPen, color: g.lineColor, lineType: g.lineType };
+  const top = geo.planes.map((p) => ({ ...p, polygon: surface(p, last, 'top') }));
+  const out: Primitive[] = [];
+  for (const l of classifyLines(top, geo.edges, geo))
+    for (const [a, b, above] of split(l.a, l.b, cut)) out.push(line(a, b, seen(above), ROLE[l.kind]));
   for (const p of geo.planes) {
     const sec = 1 / p.normal.z;
-    for (const d of [c.top, c.bottom])
-      for (const [a, b] of contour(geo, p, c.cut - d * sec))
-        out.push(line(a, b, stroke(c, 'cut'), 'střecha v řezu'));
+    const faces: [readonly Vec2[], number][] = [
+      [surface(p, last, 'top'), offsets.at(-1) ?? 0],
+      [surface(p, 0, 'bottom'), offsets[0] ?? 0],
+    ];
+    for (const [poly, d] of faces)
+      for (const [a, b] of contour(geo, p, poly, cut - d * sec))
+        out.push(line(a, b, cutStroke, 'střecha v řezu'));
   }
   return out;
 }
