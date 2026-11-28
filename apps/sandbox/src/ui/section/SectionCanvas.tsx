@@ -62,7 +62,7 @@ function events(c: Ctx): () => void {
     const inside = p.x >= 0 && p.y >= 0 && p.x <= canvas.clientWidth && p.y <= canvas.clientHeight;
     if (inside) card.move(p, e.buttons);
     else card.hide();
-    if (input.move(p, e.altKey)) schedule();
+    if (input.move(p, e.altKey, e.shiftKey)) schedule();
   };
   const onUp = () => (input.up(), schedule());
   const onKey = (e: KeyboardEvent) => {

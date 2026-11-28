@@ -9,7 +9,7 @@ export const compositionTagList = defineQuery<{ sectionId?: string }, unknown>({
   label: 'Popisy skladby v řezu',
   description:
     'Popisy skladby v řezech (volitelně jen sectionId): id, řez, prvek, volby (numbered, thickness, title, ' +
-    'reverse), anchorAt = bod uchycení a textAt = začátek poličky na výkrese (mm), lines = řádky textu, ' +
+    'reverse, mark, side), anchorAt = bod uchycení, path = odkazová čára na výkrese (mm), end = kolečko, markText = číslo konstrukce, lines = řádky textu, ' +
     'layers = vrstvy (materiál, tloušťka) v pořadí popisu; null = prvek už rovina řezu neprotíná.',
   group: 'Řezy a pohledy',
   params: S.object({ sectionId: S.id }, []),
@@ -22,7 +22,9 @@ export const compositionTagList = defineQuery<{ sectionId?: string }, unknown>({
         return {
           ...t,
           anchorAt: l?.anchor ?? null,
-          textAt: l?.textAt ?? null,
+          path: l?.path ?? null,
+          end: l?.end ?? null,
+          markText: l?.mark ?? null,
           lines: l?.lines ?? null,
           layers: l?.layers ?? null,
         };

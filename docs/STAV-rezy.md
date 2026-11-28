@@ -6,6 +6,16 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ### Popis skladby v řezu, 2026-11-28 (úkol uživatele; scéna `?ukazka=popis-skladeb`, Řez A i v `?ukazka=dum`)
 
+- **Úprava podle výkresu uživatele (2026-11-28, migrace 39 → 40):** odkazová čára vždy protne konstrukci
+  kolmo (deska svisle, stěna vodorovně) přes celou tloušťku – od protilehlého líce; může se lomit (body
+  čáry `leader`, pravidlo v jádře `composition-tag/leader.ts`). Na konci kolečko s číslem konstrukce (značka
+  typu: S3, D1, P1), pod ním svislá čára a řádky vrstev, každý s vodorovnou čárkou – vpravo nebo vlevo.
+  Řádek „Materiál tl. 20 mm“ (bez pomlčky). Nastavení popisky: číslo v kolečku, název typu s celkovou
+  tloušťkou, tloušťky, číslování, obrácené pořadí, strana řádků (`compositionTag.update`, info box).
+  Kreslení: klik do konstrukce, další kliky = lomy (první srovnaný na kolmici, další vodorovně / svisle,
+  Shift = volně), dvojklik / Enter / pravé tlačítko dokončí, Esc ubere bod. Tažení kolečka posune konec
+  čáry, úseky zůstanou v pravých úhlech (`compositionTag.move` `delta`). Testy `leader.test.ts`.
+  Tečka a polička z první verze zrušené.
 - Jádro `composition-tag/` (migrace 38 → 39): anotace řezu – vazba na řez a řezanou stěnu / desku, bod
   uchycení poměrem na řezu prvku (pohne se s prvkem), poloha textu vůči bodu, volby obsahu (název typu
   s celkovou tloušťkou, tloušťky vrstev, číslování, obrácené pořadí), skupina anotací (výchozí Řezy
@@ -256,10 +266,12 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Rozhodl Code (k potvrzení)
 
-- **Popis skladby (screenshot Arditu zatím nepřišel – standard Revitu / Archicadu):** dva kliky (bod na
-  konstrukci, poloha textu) jako Revit tag s odkazovou čarou; plná tečka na konstrukci a polička, řádky pod
-  ní. Výchozí obsah: první řádek značka + název typu + celková tloušťka, pak „– Materiál tloušťka mm“
-  (číslování „1.“ volbou). Deska shora dolů (ČSN, Revit); stěna od referenční strany typu (vnitřní →
+- **Popis skladby (podle výkresu uživatele 2026-11-28; plný text ČSN 01 3420 není volně dostupný):**
+  kolečko s číslem je vždy na konci čáry a řádky visí pod ním (na výkresu uživatele je u P1 kolečko
+  u konstrukce a řádky na druhém konci – dá se napodobit lomenou čárou). Lomy se srovnávají do pravých úhlů,
+  Shift = libovolný úhel. Čára začíná na protilehlém líci konstrukce, bez tečky. Výchozí obsah: kolečko
+  s číslem + „Materiál tl. 20 mm“; název typu (vypnutý) a čísla vrstev volbou. Nastavení je u každého popisu
+  (a výchozí u nástroje); společný „styl popisky“ pro celý projekt zatím není. Deska shora dolů (ČSN, Revit); stěna od referenční strany typu (vnitřní →
   vnější podle uložení skladby) – volba „obrácené pořadí“ ji otočí; podle strany textu se pořadí samo
   nemění. Popis jen u řezaného prvku (ne u prvku v pohledu za rovinou); když ho rovina řezu přestane
   protínat, nekreslí se (data zůstanou). Skupina anotací Řezy a pohledy. V půdorysu zatím ne (Revit to

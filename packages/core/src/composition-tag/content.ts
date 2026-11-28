@@ -1,5 +1,5 @@
 // Obsah popisu skladby z modelu (základ 4): vrstvy typu řezaného prvku v pořadí a řádky textu; bod uchycení
-// na výkrese z rozsahu řezaného prvku. Stěna: vrstvy výškového pásu v místě bodu uchycení (vícepásový typ),
+// na výkrese z rozsahu řezaného prvku, odkazová čára kolmo přes konstrukci. Stěna: vrstvy výškového pásu v místě bodu uchycení (vícepásový typ),
 // od referenční strany; deska: skladba shora dolů. Nic se neukládá.
 import type { Vec2 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
@@ -9,6 +9,7 @@ import { cachedSectionContent } from '../section-dim/value.ts';
 import type { WallLayer } from '../wall-type/types.ts';
 import { wallHeight } from '../wall-height/resolve.ts';
 import type { Wall } from '../wall/types.ts';
+import { leaderAxis, normalizeLeader, onPerpendicular } from './leader.ts';
 import type { CompositionTag, CompositionTagOptions, TagAnchor } from './types.ts';
 
 export interface TagLayer {
@@ -50,21 +51,24 @@ export function tagLayers(
   elementId: string,
   z: number,
   reverse: boolean,
-): { title: string; layers: TagLayer[] } | null {
+): { title: string; mark: string; layers: TagLayer[] } | null {
   const el = model.elements[elementId];
   if (!el) return null;
   let raw: readonly WallLayer[];
   let title: string;
+  let mark: string;
   if (el.category === 'wall') {
     const t = model.wallTypes[el.typeId];
     raw = wallLayers(model, el as Wall, z);
-    title = t ? `${t.mark ? `${t.mark} ` : ''}${t.name}` : '';
+    title = t?.name ?? '';
+    mark = t?.mark ?? '';
   } else if (el.category === 'slab') {
     const t = model.slabTypes[el.typeId];
     const comp = t ? model.compositions[t.compositionId] : undefined;
     // Skladba desky je uložená odspodu; popis jde shora dolů (ČSN, Revit).
     raw = comp ? [...comp.layers].reverse() : [];
-    title = t ? `${t.mark ? `${t.mark} ` : ''}${t.name}` : '';
+    title = t?.name ?? '';
+    mark = t?.mark ?? '';
   } else return null;
   if (!raw.length) return null;
   const ordered = reverse ? [...raw].reverse() : raw;
@@ -73,15 +77,15 @@ export function tagLayers(
     material: model.materials[l.materialId]?.name ?? l.materialId,
     thickness: l.thickness,
   }));
-  return { title, layers };
+  return { title, mark, layers };
 }
 
 const mm = (n: number) => String(Math.round(n * 10) / 10).replace('.', ',');
 
-/** Řádky textu popisu: název typu s celkovou tloušťkou, pak vrstvy (odrážka / číslo, materiál, tloušťka). */
+/** Řádky vrstev popisu: (název typu s celkovou tloušťkou), číslo, materiál, „tl. 20 mm“. */
 export function tagLines(
   c: { title: string; layers: readonly TagLayer[] },
-  o: CompositionTagOptions,
+  o: Pick<CompositionTagOptions, 'title' | 'numbered' | 'thickness'>,
 ): string[] {
   const total = c.layers.reduce((a, l) => a + l.thickness, 0);
   const head = o.title && c.title ? [`${c.title} – ${mm(total)} mm`] : [];
@@ -89,15 +93,19 @@ export function tagLines(
     ...head,
     ...c.layers.map(
       (l, i) =>
-        `${o.numbered ? `${i + 1}.` : '–'} ${l.material}${o.thickness ? ` ${mm(l.thickness)} mm` : ''}`,
+        `${o.numbered ? `${i + 1}. ` : ''}${l.material}${o.thickness ? ` tl. ${mm(l.thickness)} mm` : ''}`,
     ),
   ];
 }
 
 export interface TagLayout {
   readonly anchor: Vec2;
-  /** Začátek poličky (pod prvním řádkem). */
-  readonly textAt: Vec2;
+  /** Odkazová čára: od protilehlého líce konstrukce kolmo přes ni a dál přes body (poslední = kolečko). */
+  readonly path: readonly Vec2[];
+  /** Konec čáry: střed kolečka, pod ním řádky. */
+  readonly end: Vec2;
+  /** Číslo konstrukce v kolečku; null = bez kolečka. */
+  readonly mark: string | null;
   readonly lines: readonly string[];
   readonly layers: readonly TagLayer[];
 }
@@ -108,10 +116,21 @@ export function tagLayout(model: Model, s: Section, tag: CompositionTag): TagLay
   if (!row) return null;
   const anchor = anchorPoint(row, tag.anchor);
   const c = tagLayers(model, tag.elementId, anchor.y, tag.reverse);
+  const axis = leaderAxis(model, tag.elementId);
+  const leader = normalizeLeader(axis, tag.leader) ?? [onPerpendicular(axis, { x: 1000, y: 1000 })];
   if (!c) return null;
+  const pts = leader.map((p) => ({ x: anchor.x + p.x, y: anchor.y + p.y }));
+  const first = pts[0] as Vec2;
+  // Čára protne celou konstrukci: začíná na líci na opačné straně, než jde čára ven.
+  const far =
+    axis === 'y'
+      ? { x: anchor.x, y: first.y >= anchor.y ? row.bottom : row.top }
+      : { x: first.x >= anchor.x ? row.u0 : row.u1, y: anchor.y };
   return {
     anchor,
-    textAt: { x: anchor.x + tag.offset.x, y: anchor.y + tag.offset.y },
+    path: [far, ...pts],
+    end: pts[pts.length - 1] as Vec2,
+    mark: tag.mark && c.mark ? c.mark : null,
     lines: tagLines(c, tag),
     layers: c.layers,
   };

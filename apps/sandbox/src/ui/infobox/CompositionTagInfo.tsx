@@ -1,11 +1,19 @@
-// Info box popisu skladby (Revit Multi-layer tag, Archicad Composite label): nástroj = výchozí obsah nového
-// popisu; vybraný popis = prvek, řádky spočítané z typu, volby obsahu, zámek, smazání (compositionTag.*).
-import { tagLayout, type CompositionTag, type CompositionTagOptions } from '@bim-light/core';
+// Info box popisu skladby (česká výkresová praxe, Revit Multi-layer tag): nastavení popisky = co obsahuje
+// (kolečko s číslem konstrukce, název typu, tloušťky, číslování), pořadí vrstev a strana řádků. Nástroj =
+// výchozí nastavení nového popisu; vybraný popis = řádky spočítané z typu, nastavení, zámek, smazání.
+import {
+  tagLayout,
+  type CompositionTag,
+  type CompositionTagOptions,
+  type CompositionTagSide,
+} from '@bim-light/core';
 import { setTagDefaults, tagDefaults } from '../../session/tag-defaults.ts';
 import type { Session } from '../../session/session.ts';
 import { Section } from './Section.tsx';
 
-const OPTIONS: readonly [keyof CompositionTagOptions, string][] = [
+type Flag = Exclude<keyof CompositionTagOptions, 'side'>;
+const OPTIONS: readonly [Flag, string][] = [
+  ['mark', 'Číslo konstrukce v kolečku'],
   ['title', 'Název typu a celková tloušťka'],
   ['thickness', 'Tloušťky vrstev'],
   ['numbered', 'Číslovat vrstvy'],
@@ -30,6 +38,17 @@ function Options(p: {
           {label}
         </label>
       ))}
+      <label>
+        Řádky od svislé čáry
+        <select
+          data-testid={`${p.prefix}-side`}
+          value={p.value.side}
+          onChange={(e) => p.onSet({ side: e.currentTarget.value as CompositionTagSide })}
+        >
+          <option value="right">vpravo</option>
+          <option value="left">vlevo</option>
+        </select>
+      </label>
     </>
   );
 }
@@ -41,7 +60,10 @@ export function NewCompositionTagInfo({ s }: { s: Session }) {
       title="Popis skladby"
       info="Text se počítá z typu prvku (skladby) – po změně skladby se hned přepíše. Deska shora dolů, stěna od referenční strany."
     >
-      <p class="muted">V okně řezu: klik na řezanou stěnu nebo desku, druhý klik = poloha textu.</p>
+      <p class="muted">
+        V okně řezu: klik na řezanou stěnu nebo desku, další kliky = lomy odkazové čáry (první úsek vždy kolmo
+        ke konstrukci, Shift = volně). Dvojklik, Enter nebo pravé tlačítko = kolečko s číslem a vrstvy.
+      </p>
       <Options prefix="tag-default" value={tagDefaults(s)} onSet={(patch) => setTagDefaults(s, patch)} />
     </Section>
   );
@@ -59,7 +81,9 @@ function One({ s, t }: { s: Session; t: CompositionTag }) {
         <span>{el?.category === 'slab' ? 'deska' : 'stěna'}</span>
       </div>
       <pre class="muted" data-testid="tag-lines">
-        {l ? l.lines.join('\n') : 'prvek už rovina řezu neprotíná'}
+        {l
+          ? [...(l.mark !== null ? [`(${l.mark})`] : []), ...l.lines].join('\n')
+          : 'prvek už rovina řezu neprotíná'}
       </pre>
       <Options prefix="tag" value={t} onSet={upd} />
       <label class="check">

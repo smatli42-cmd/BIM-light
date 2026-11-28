@@ -92,12 +92,13 @@ export class SectionInput {
   down(screen: Vec2, button: number, shift: boolean) {
     const p = this.v.toWorld(screen);
     if (button === 1) return void (this.pan = screen);
+    if (button === 2 && this.tags.finish()) return;
     if (button === 2 && !this.tool && !this.dims.active && !this.tags.active)
       return this.sel.context(screen, p);
     if (button !== 0) return;
     if (this.tool) return this.toolClick(p);
     if (this.dims.active) return this.dims.click(p);
-    if (this.tags.active) return this.tags.click(p);
+    if (this.tags.active) return this.tags.click(p, shift);
     if (this.grips.down()) return;
     const grip = this.grips.hit(p);
     if (grip) return this.grips.press(grip, screen);
@@ -140,7 +141,7 @@ export class SectionInput {
   }
 
   /** true = je potřeba překreslit. */
-  move(screen: Vec2, alt = false): boolean {
+  move(screen: Vec2, alt = false, shift = false): boolean {
     const p = this.v.toWorld(screen);
     this.mouse = p;
     if (this.grips.active) return this.grips.move(screen, p, alt);
@@ -149,7 +150,7 @@ export class SectionInput {
       this.pan = screen;
       return true;
     }
-    this.tags.move(p);
+    this.tags.move(p, shift);
     if (this.drag || this.tags.dragging || this.tags.active) {
       if (!this.drag) return true;
       this.drag.moved ||= Math.abs(p.x - this.drag.start.x) > this.v.px(3);
@@ -197,6 +198,7 @@ export class SectionInput {
         this.s.changed(),
         true
       );
+    if (key === 'Enter' && this.tags.finish()) return true;
     if (key === 'Tab' && !this.tool && !this.dims.active && !this.tags.active) return this.sel.tab();
     if (ctrl && (key === 'a' || key === 'A')) return (this.sel.selectAll(), true);
     if (key === 'Escape') {

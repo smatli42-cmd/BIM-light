@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { drawSection } from '../section/draw.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { projectV38toV39 } from './migrate-v38.ts';
+import { projectV39toV40 } from './migrate-v39.ts';
 
 const v = (x: number, y: number) => ({ x, y });
 
@@ -43,7 +44,7 @@ function middle(f: Fixture, sec: string, id: string) {
 }
 
 describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
-  it('ČSN 01 3420 / Revit Multi-layer tag: deska shora dolů, materiál + tloušťka, název typu s celkovou tloušťkou', () => {
+  it('pokyn uživatele 2026-11-28 (výkres se skladbami): číslo v kolečku, pod ním vrstvy desky shora dolů „tl. 50 mm“', () => {
     const f = fixture();
     const { slab, sec } = scene(f);
     const [id] = f.run('compositionTag.create', {
@@ -52,13 +53,14 @@ describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
       at: middle(f, sec, slab),
     });
     expect(texts(f, sec, id as string)).toEqual([
-      'P1 Podlaha anhydrit 150 – 150 mm',
-      '– Anhydrit 50 mm',
-      '– Tepelná izolace EPS 100 mm',
+      'P1',
+      'Anhydrit tl. 50 mm',
+      'Tepelná izolace EPS tl. 100 mm',
     ]);
     const prims = drawSection(f.model, sec).primitives.filter((p) => p.source.dimensionId === id);
-    expect(prims.some((p) => p.kind === 'fill' && p.source.role === 'tečka popisu')).toBe(true);
-    expect(prims.some((p) => p.kind === 'line' && p.source.role === 'odkazová čára')).toBe(true);
+    const roles = prims.map((p) => p.source.role);
+    expect(roles).toEqual(expect.arrayContaining(['odkazová čára', 'kolečko popisu', 'čárka řádku']));
+    expect(roles.filter((x) => x === 'čárka řádku')).toHaveLength(2);
   });
 
   it('základ 4: text se počítá z typu – změna skladby popis hned přepíše', () => {
@@ -70,11 +72,12 @@ describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
       at: middle(f, sec, slab),
     });
     f.run('slabType.updateLayer', { typeId: floorType, layerIndex: 1, thickness: 60 });
-    expect(texts(f, sec, id as string)).toContain('– Anhydrit 60 mm');
-    expect(texts(f, sec, id as string)[0]).toBe('P1 Podlaha anhydrit 150 – 160 mm');
+    f.run('compositionTag.update', { tagId: id, title: true });
+    expect(texts(f, sec, id as string)).toContain('Anhydrit tl. 60 mm');
+    expect(texts(f, sec, id as string)[1]).toBe('Podlaha anhydrit 150 – 160 mm');
   });
 
-  it('volby obsahu: číslování, bez tloušťek, bez názvu, obrácené pořadí (stěna od druhé strany)', () => {
+  it('pokyn uživatele 2026-11-28: volby obsahu – bez kolečka, číslování, bez tloušťek, obrácené pořadí', () => {
     const f = fixture();
     const { wall, sec } = scene(f);
     const [id] = f.run('compositionTag.create', {
@@ -82,16 +85,17 @@ describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
       elementId: wall,
       at: middle(f, sec, wall),
     });
-    expect(texts(f, sec, id as string).slice(1)).toEqual([
-      '– Omítka 15 mm',
-      '– Zdivo keramické 300 mm',
-      '– Tepelná izolace EPS 150 mm',
+    expect(texts(f, sec, id as string)).toEqual([
+      'S3',
+      'Omítka tl. 15 mm',
+      'Zdivo keramické tl. 300 mm',
+      'Tepelná izolace EPS tl. 150 mm',
     ]);
     f.run('compositionTag.update', {
       tagId: id,
       numbered: true,
       thickness: false,
-      title: false,
+      mark: false,
       reverse: true,
     });
     const t = texts(f, sec, id as string);
@@ -100,7 +104,7 @@ describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
     expect(t[1]).toBe('2. Zdivo keramické');
   });
 
-  it('základ 28: popis je anotace řezu – posun textu, zámek, smazání s prvkem i s řezem', () => {
+  it('základ 28: popis je anotace řezu – body čáry, posun konce, zámek, smazání s prvkem i s řezem', () => {
     const f = fixture();
     const { wall, slab, sec } = scene(f);
     const at = middle(f, sec, slab);
@@ -108,15 +112,15 @@ describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
       sectionId: sec,
       elementId: slab,
       at,
-      textAt: v(at.x + 900, 800),
+      points: [v(at.x + 300, 900), v(at.x + 900, 900)],
     });
-    type Row = { id: string; textAt: { x: number; y: number }; anchorAt: { x: number; y: number } };
+    type Row = { id: string; end: { x: number; y: number }; anchorAt: { x: number; y: number } };
     const row = () => q<Row[]>(f, 'compositionTag.list', { sectionId: sec })[0];
-    expect(row()?.textAt).toEqual(v(at.x + 900, 800));
-    f.run('compositionTag.move', { tagId: id, textAt: v(at.x - 1200, 1000) });
-    expect(row()?.textAt).toEqual(v(at.x - 1200, 1000));
+    expect(row()?.end).toEqual(v(at.x + 900, 900));
+    f.run('compositionTag.move', { tagId: id, delta: v(-2100, 100) });
+    expect(row()?.end).toEqual(v(at.x - 1200, 1000));
     f.run('compositionTag.update', { tagId: id, locked: true });
-    expect(f.editor.execute('compositionTag.move', { tagId: id, textAt: v(0, 0) }).ok).toBe(false);
+    expect(f.editor.execute('compositionTag.move', { tagId: id, delta: v(0, 10) }).ok).toBe(false);
     expect(f.editor.execute('compositionTag.create', { sectionId: sec, elementId: 'nic', at }).ok).toBe(
       false,
     );
@@ -140,7 +144,11 @@ describe('úkol uživatele 2026-11-28: popis skladby v řezu', () => {
     expect(f.model.compositionTags).toEqual({});
   });
 
-  it('migrace 38 → 39: prázdný seznam popisů skladby', () => {
+  it('migrace 38 → 39 a 39 → 40: prázdný seznam, poloha textu → bod čáry, kolečko', () => {
     expect(projectV38toV39({})).toEqual({ compositionTags: {} });
+    const out = projectV39toV40({ compositionTags: { a: { id: 'a', offset: { x: -500, y: 800 } } } });
+    expect(out['compositionTags']).toEqual({
+      a: { id: 'a', leader: [{ x: -500, y: 800 }], mark: true, side: 'left' },
+    });
   });
 });

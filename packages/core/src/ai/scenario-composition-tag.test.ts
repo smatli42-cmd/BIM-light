@@ -9,7 +9,8 @@ interface Cut {
 interface TagRow {
   id: string;
   lines: string[] | null;
-  textAt: { x: number; y: number } | null;
+  end: { x: number; y: number } | null;
+  markText: string | null;
 }
 
 describe('AI scénář: popis skladby v řezu', () => {
@@ -38,14 +39,19 @@ describe('AI scénář: popis skladby v řezu', () => {
       sectionId: sec,
       elementId: slab,
       at,
-      textAt: { x: at.x + 1000, y: 3800 },
+      points: [
+        { x: at.x, y: 3800 },
+        { x: at.x + 1000, y: 3800 },
+      ],
     });
     const list = () => must(c.ai.call<TagRow[]>('compositionTag.list', { sectionId: sec })[0]);
-    expect(must(list().lines ?? undefined)[0]).toMatch(/^D1 ŽB strop 250 – \d+ mm$/);
-    c.ai.call('compositionTag.update', { tagId: tag, numbered: true, title: false });
-    expect(must(list().lines ?? undefined)[0]).toMatch(/^1\. /);
-    c.ai.call('compositionTag.move', { tagId: tag, textAt: { x: at.x - 1500, y: 3900 } });
-    expect(list().textAt).toEqual({ x: at.x - 1500, y: 3900 });
+    expect(list().markText).toBe('D1');
+    expect(must(list().lines ?? undefined)[0]).toMatch(/ tl\. \d+ mm$/);
+    c.ai.call('compositionTag.update', { tagId: tag, title: true, numbered: true, side: 'left' });
+    expect(must(list().lines ?? undefined)[0]).toMatch(/^ŽB strop 250 – \d+ mm$/);
+    expect(must(list().lines ?? undefined)[1]).toMatch(/^1\. /);
+    c.ai.call('compositionTag.move', { tagId: tag, delta: { x: -2500, y: 100 } });
+    expect(list().end).toEqual({ x: at.x - 1500, y: 3900 });
     c.ai.call('selection.delete', { levelDimIds: [tag] });
     expect(c.ai.call<TagRow[]>('compositionTag.list', {})).toEqual([]);
   });

@@ -1,6 +1,7 @@
 // Popisy skladby v Řezu A ukázkového domu (úkol uživatele 2026-11-28): obvodová stěna 1.NP, strop nad 1.NP
-// a podlaha – odkazová čára od řezané konstrukce k vrstvám typu. Jen příkazy compositionTag.create.
+// a podlaha – odkazová čára kolmo přes konstrukci, lom, kolečko s číslem a vrstvy typu. Jen příkazy compositionTag.create.
 import { cutRowOf } from '../composition-tag/content.ts';
+import { vec, type Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { SampleContext } from './types.ts';
 
@@ -43,30 +44,26 @@ export function houseCompositionTags(c: SampleContext, sectionId: Id) {
         m.slabTypes[e.typeId]?.slabFunction === fn
       );
     });
-  // Obvodová stěna: text vlevo od budovy (polička doleva, řádky zarovnané zprava).
-  if (wall)
-    c.run('compositionTag.create', {
-      sectionId,
-      elementId: wall.id,
-      at: { x: wall.mid.x, y: wall.row.bottom + 1200 },
-      textAt: { x: box.u0 - 1500, y: wall.row.bottom + 2000 },
+  const put = (id: Id, at: Vec2, points: Vec2[], extra: Record<string, unknown> = {}) =>
+    c.run('compositionTag.create', { sectionId, elementId: id, at, points, ...extra });
+  // Obvodová stěna: čára kolmo (vodorovně) ven doleva, lom nahoru ke kolečku, řádky vlevo.
+  if (wall) {
+    const y = wall.row.bottom + 700;
+    put(wall.id, { x: wall.mid.x, y }, [vec(box.u0 - 3200, y), vec(box.u0 - 3200, y + 1500)], {
+      side: 'left',
     });
-  // Strop a podlaha: text vpravo od budovy.
+  }
+  // Strop a podlaha: čára kolmo (svisle) nahoru, lom vodorovně ven doprava ke kolečku.
   const ceiling = slab('structure', true);
-  if (ceiling)
-    c.run('compositionTag.create', {
-      sectionId,
-      elementId: ceiling.id,
-      at: { x: ceiling.row.u1 - 1500, y: ceiling.mid.y },
-      textAt: { x: box.u1 + 1500, y: ceiling.row.top + 1500 },
-    });
+  if (ceiling) {
+    const x = ceiling.row.u1 - 1500;
+    const y = ceiling.row.top + 700;
+    put(ceiling.id, vec(x, ceiling.mid.y), [vec(x, y), vec(box.u1 + 1500, y)]);
+  }
   const floor = slab('floor', false);
-  if (floor)
-    c.run('compositionTag.create', {
-      sectionId,
-      elementId: floor.id,
-      at: { x: floor.row.u1 - 1000, y: floor.mid.y },
-      textAt: { x: box.u1 + 1500, y: floor.row.top + 400 },
-      numbered: true,
-    });
+  if (floor) {
+    const x = floor.row.u1 - 1000;
+    const y = floor.row.top + 1800;
+    put(floor.id, vec(x, floor.mid.y), [vec(x, y), vec(box.u1 + 1500, y)], { numbered: true });
+  }
 }

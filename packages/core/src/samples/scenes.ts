@@ -17,12 +17,13 @@ export const SCENES: readonly Sample[] = [
     kind: 'scena',
     date: '2026-11-28',
     description:
-      'Ukázkový dům, Řez A (Obsah → Projekt → Řezy → Řez A) má tři popisy skladby: obvodová stěna 1.NP, ' +
-      'strop nad 1.NP a podlaha (číslované vrstvy). Tečka na konstrukci, odkazová čára k poličce, pod ní ' +
-      'vrstvy typu – deska shora dolů, stěna od referenční strany, materiál + tloušťka. Zkus: nástroj Popis ' +
-      'skladby v paletě (vedle Výškové kóty) → v okně řezu klik na řezanou stěnu nebo desku, druhý klik = ' +
-      'poloha textu. Výběr klikem na text, tažení ho posune, Del smaže. V info boxu číslování, tloušťky, ' +
-      'název typu, obrácené pořadí, zámek. Změň skladbu (Editor typů) – popis se hned přepíše.',
+      'Ukázkový dům, Řez A (Obsah → Projekt → Řezy → Řez A) má tři popisy skladby: obvodová stěna 1.NP (S3), ' +
+      'strop nad 1.NP (D1) a podlaha (P1, číslované vrstvy). Odkazová čára protne konstrukci kolmo, lomí se, ' +
+      'na konci číslo konstrukce v kolečku a pod ním vrstvy typu „Materiál tl. 20 mm“. Zkus: nástroj Popis ' +
+      'skladby v paletě (vedle Výškové kóty) → v okně řezu klik do řezané stěny nebo desky, další kliky = ' +
+      'lomy čáry (první vždy kolmo), dvojklik / Enter dokončí, Esc ubere bod. Klik na popis ho vybere, tažení ' +
+      'kolečka ho posune, Del smaže. V info boxu: kolečko, název typu, tloušťky, číslování, obrácené pořadí, ' +
+      'strana řádků, zámek. Změň skladbu (Editor typů) – popis se hned přepíše.',
     build(c) {
       HOUSE.build(c);
     },
