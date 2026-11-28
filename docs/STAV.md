@@ -272,10 +272,15 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Další krok
 
-Stav k 2026-11-28 (přechod na jiný počítač): vše je v `main` (c19f67d), CI zelené, žádná rozdělaná práce
-ani neuložené změny v sessions. Na novém počítači stačí napsat „pokračuj“ (postup v `CLAUDE.md`), pracovní
-pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, push po zelených testech, kontrola CI).
-Řezy, výškové kóty a záložky pohledů vede `docs/STAV-rezy.md`, elektro `docs/STAV-elektro.md`.
+Stav k 2026-11-28 večer (druhý přechod na jiný počítač): vše je v `main`, CI zelené, žádná rozdělaná práce
+ani neuložené změny v sessions (všechny worktree čisté, nic nad `origin/main`). Na novém počítači stačí napsat
+„pokračuj“ (postup v `CLAUDE.md`), pracovní pokyny jsou v `docs/pracovni-postup.md`.
+Dnes hotovo: úchopy v řezu, popis skladby (i na střechách; `docs/STAV-popis-skladby.md`), pohledy 1–4
+automaticky, skryté hrany v pohledu, střechy S1 + S2 vč. polovalby, obrysu budovy a tažení hrany
+(`docs/STAV-strechy.md`), priority spojování jako tabulka úrovní (`docs/STAV-materialy.md`).
+Řezy a pohledy vede `docs/STAV-rezy.md`, elektro `docs/STAV-elektro.md`.
+Zapsáno do plánu (pokyn uživatele, zatím nedělat): režim řezu / pohledu skryté hrany / čárový / stínovaný se
+sluncem a povrchy zap./vyp. (`katalog-pohledy-styly-zobrazeni.md`), šrafa řezu a povrchu zvlášť (`katalog-sraf-materialu.md`).
 
 **Čeká na rozhodnutí uživatele (z 2026-11-27):**
 - Elektro: stejné barvy skupin z legendy (Data = Zabezpečení tyrkys, Silnoproud = Řízení červená) nechat,
@@ -284,8 +289,11 @@ pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, pus
 - Legenda značek uživatele (Corel SVG, zdroj tvarů elektro značek) je jen na původním počítači
   v `D:\Download\legenda elektro znacek.svg` (mimo repo, repo je veřejné); tvary už jsou v knihovně jádra.
 - Řezy: žlutá barva fáze bourání v řezu a další body „Rozhodl Code“ v `docs/STAV-rezy.md`.
+- Z 2026-11-28: výchozích 12 úrovní priorit spojování (`docs/STAV-materialy.md`), rozhodnutí ke střechám
+  (`docs/STAV-strechy.md`), úchopům a pohledům (`docs/STAV-rezy.md`), popisu skladby (`docs/STAV-popis-skladby.md`).
 
-0. **Střechy S3–S4** (napojení stěn a podkroví, krov; zbytky S2 v Otevřené) – „Další krok“ v `docs/STAV-strechy.md`.
+0. **Střechy S3–S4** (S3: stěny dořezat pod střechu / štíty, podkroví < 1,30 m, IFC; S4: trám, generátor
+   vaznicové soustavy, kusovník; zbývá i mansarda, vložení bodu obrysu, vazba střechy na stěny) – „Další krok“ v `docs/STAV-strechy.md`.
 1. **Řezy – dál:** výškové kóty parapetů, nadpraží a terénu, tlačítko „plné praporky“ ve stylu, „Řez A / Řez B“ v rozbalovači 3D okna (data:
    `section.list` → `cutPlane3d`), okna a dveře v řezu (etapa 4), terén.
 2. **Spáry ve 3D** (3D okno) z dotazu `covering.joints` (tvar ve `docs/STAV-3d.md` / popis dotazu v registru).
