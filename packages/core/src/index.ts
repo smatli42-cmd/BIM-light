@@ -4,6 +4,7 @@ export * from './ids/index.ts';
 export * from './geometry/index.ts';
 export * from './model/index.ts';
 export * from './material/index.ts';
+export * from './join-priority/index.ts';
 export * from './hatch/index.ts';
 export * from './wall/index.ts';
 export * from './wall-type/index.ts';

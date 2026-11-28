@@ -34,21 +34,11 @@ export interface Material {
   readonly fillColor: string | null;
   /** Průhledný ve 3D (jako sklo). */
   readonly transparent3D: boolean;
-  /** Priorita protínání 0–999: ve spojích stěn vyšší projede nižší. */
-  readonly joinPriority: number;
+  /**
+   * Úroveň priority spojování (id z `model.joinPriorities.levels`); null = podle kategorie. Úroveň výš
+   * projede úroveň níž (join-priority/rank.ts).
+   */
+  readonly joinLevelId: Id | null;
   readonly note: string;
   readonly source?: LibraryRef;
 }
-
-/** Výchozí priorita protínání podle kategorie (já, k potvrzení). */
-export const DEFAULT_PRIORITY: Readonly<Record<MaterialCategory, number>> = {
-  Kov: 80,
-  'Beton a potěry': 60,
-  Zdivo: 50,
-  Dřevo: 40,
-  Sklo: 30,
-  Ostatní: 30,
-  Izolace: 20,
-  Omítky: 10,
-  'Zemina a sypaniny': 5,
-};

@@ -4,6 +4,7 @@ import { libraryHatch } from '../hatch/registry.ts';
 import { fixture, type Fixture } from '../testing/fixture.ts';
 import { drawView } from '../view/draw-view.ts';
 import { mixColor } from './colors.ts';
+import { materialLevel } from '../join-priority/rank.ts';
 
 const toProject = (f: Fixture) => f.run('view.setStyle', { viewId: f.viewId, styleId: f.style('Projekt') });
 const hatches = (f: Fixture) =>
@@ -91,7 +92,8 @@ describe('katalog-sraf-materialu / materiál odkazuje šrafu', () => {
       color: '#eeeeee',
       hatchId: 'hatch.zdivo',
     });
-    expect(f.model.materials[id!]?.joinPriority).toBe(50);
+    expect(f.model.materials[id!]?.joinLevelId).toBeNull();
+    expect(materialLevel(f.model, id!)?.name).toBe('Zdivo');
     expect(
       f.editor.execute('material.create', {
         name: 'Pórobeton',

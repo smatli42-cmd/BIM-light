@@ -48,7 +48,7 @@ describe('katalog-sraf-materialu / grafika šraf', () => {
           group: 'zdivo',
           hatch: { patternId: 'masonry', pen: 1, color: '#000000' },
           cutFillColor: '#c9b8a6',
-          joinPriority: 50,
+          joinLevelId: null,
         },
       },
       display: {

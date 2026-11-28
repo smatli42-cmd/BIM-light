@@ -4,6 +4,7 @@
 import {
   bandAt,
   DEFAULT_CUT_HEIGHT,
+  joinRankPercent,
   type Id,
   type LayerFunction,
   type Model,
@@ -45,7 +46,7 @@ function writeType(c: IfcContext, m: Model, t: WallType, mats: Map<Id, Raw>): Ty
   const band = exportBand(t);
   const layers = band.layers.map((l) => {
     const mat = material(c, m, mats, l.materialId);
-    const priority = m.materials[l.materialId]?.joinPriority;
+    const priority = m.materials[l.materialId] ? joinRankPercent(m, l.materialId) : undefined;
     return c.w.add('IfcMaterialLayer', [
       mat,
       l.thickness,

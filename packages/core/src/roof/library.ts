@@ -4,7 +4,7 @@
 // stejného jména (Dřevo, Sádrokarton), se použije a nový se nezakládá.
 import type { Composition } from '../composition/types.ts';
 import type { Id } from '../ids/index.ts';
-import { DEFAULT_PRIORITY, type Material, type MaterialCategory } from '../material/types.ts';
+import type { Material, MaterialCategory } from '../material/types.ts';
 import type { LayerFunction, WallLayer } from '../wall-type/types.ts';
 import type { RoofType } from './types.ts';
 
@@ -20,17 +20,20 @@ const mat = (id: Id, name: string, category: MaterialCategory, color: string, ha
   lineColor: null,
   fillColor: null,
   transparent3D: false,
-  joinPriority: DEFAULT_PRIORITY[category],
+  joinLevelId: null,
   note: '',
   source: { libraryId: ROOF_LIBRARY_ID, itemId: id, version: 1 },
 });
+
+/** Fólie: úroveň Hydroizolace a fólie (nad tepelnou izolací). */
+const membrane = (m: Material): Material => ({ ...m, joinLevelId: 'join-membrane' });
 
 /** Materiály střech (Dřevo a Sádrokarton se vezmou z projektu podle jména). */
 export const ROOF_MATERIALS: readonly Material[] = [
   mat('mat-roof-tiles', 'Krytina pálená', 'Ostatní', '#a9533b', 'hatch.krytina'),
   mat('mat-roof-sheet', 'Krytina plechová', 'Kov', '#4f5a63', 'hatch.kovy'),
-  mat('mat-roof-membrane', 'Pojistná hydroizolace', 'Izolace', '#3f6f8f', 'hatch.izolace-voda'),
-  mat('mat-roof-vapour', 'Parozábrana', 'Izolace', '#8a6fa8', 'hatch.izolace-voda'),
+  membrane(mat('mat-roof-membrane', 'Pojistná hydroizolace', 'Izolace', '#3f6f8f', 'hatch.izolace-voda')),
+  membrane(mat('mat-roof-vapour', 'Parozábrana', 'Izolace', '#8a6fa8', 'hatch.izolace-voda')),
   mat('mat-roof-rafters', 'Krokve s tepelnou izolací', 'Izolace', '#d4b85a', 'hatch.tepelna-izolace'),
   mat('mat-roof-wood', 'Dřevo', 'Dřevo', '#a8783f', 'hatch.drevo'),
   mat('mat-roof-plasterboard', 'Sádrokarton', 'Ostatní', '#cfcfc8', 'hatch.sadrokarton'),

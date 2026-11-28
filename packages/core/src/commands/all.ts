@@ -68,6 +68,7 @@ import { openingSetFloorSplit } from './opening/floor.ts';
 import { viewSetCutPlane } from './view/cut-plane.ts';
 import { materialCreate, materialDelete, materialDuplicate, materialUpdate } from './material/edit.ts';
 import { wallTypeSetLayerMaterial } from './material/layer.ts';
+import { PRIORITY_COMMANDS } from './material/priorities.ts';
 import { wallSetReferenceLine, wallSetThickness } from './wall/thickness.ts';
 import {
   wallTypeCreate,
@@ -184,6 +185,7 @@ export const CORE_COMMANDS = [
   materialDuplicate,
   materialUpdate,
   materialDelete,
+  ...PRIORITY_COMMANDS,
   wallTypeSetLayerMaterial,
   wallTypeCreate,
   wallTypeDuplicate,

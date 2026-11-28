@@ -3,6 +3,7 @@ import { createGlobalId, globalIdFromBytes, isGlobalId } from '../ids/index.ts';
 import { fixture } from '../testing/fixture.ts';
 import { resolveHeight } from './height.ts';
 import { SCHEMA_VERSION } from './types.ts';
+import { joinRank } from '../join-priority/rank.ts';
 
 describe('rozhodnutí / základy 1–3, 9, 12, 17: model ve tvaru IFC', () => {
   it('základ 1: GlobalId má 22 znaků IFC base64 a je náhodné', () => {
@@ -82,7 +83,7 @@ describe('rozhodnutí / základy 1–3, 9, 12, 17: model ve tvaru IFC', () => {
     const m = Object.values(f.model.materials)[0];
     expect(f.model.display.hatches[m!.hatchId]).toBeTruthy();
     expect(m?.hatchPen).toBeGreaterThan(0);
-    expect(m?.joinPriority).toBeGreaterThan(0);
+    expect(joinRank(f.model, m!.id)).toBeGreaterThan(0);
     expect(m?.source?.libraryId).toBe('bim-light-basic');
   });
 });

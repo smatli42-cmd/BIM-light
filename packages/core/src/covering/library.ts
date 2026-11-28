@@ -2,7 +2,7 @@
 // s odkazem na původ (základ 21); id jsou stabilní kvůli migraci a scénám. Materiál, který projekt už má
 // stejného jména (Omítka, Sádrokarton), se použije a nový se nezakládá.
 import type { Id } from '../ids/index.ts';
-import { DEFAULT_PRIORITY, type Material } from '../material/types.ts';
+import type { Material } from '../material/types.ts';
 import type { CoveringType } from './types.ts';
 
 export const COVERING_LIBRARY_ID = 'bim-light-coverings';
@@ -17,7 +17,7 @@ const mat = (id: Id, name: string, color: string, hatchId = 'hatch.omitky'): Mat
   lineColor: null,
   fillColor: null,
   transparent3D: false,
-  joinPriority: DEFAULT_PRIORITY['Omítky'],
+  joinLevelId: null,
   note: '',
   source: { libraryId: COVERING_LIBRARY_ID, itemId: id, version: 1 },
 });

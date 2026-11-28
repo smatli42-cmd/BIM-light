@@ -3,6 +3,7 @@
 import type { Composition } from '../composition/types.ts';
 import type { Id } from '../ids/index.ts';
 import type { Material } from '../material/types.ts';
+import type { JoinPriorities } from '../join-priority/types.ts';
 import type { Wall, WallType } from '../wall/types.ts';
 import type { Relation } from '../relation/types.ts';
 import type { Dimension } from '../dimension/types.ts';
@@ -27,7 +28,7 @@ import type { CompositionTag } from '../composition-tag/types.ts';
 import type { ElectroElement, ElectroGroup, ElectroType } from '../electro/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 43;
+export const SCHEMA_VERSION = 44;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -114,6 +115,8 @@ export interface Model {
   readonly buildings: Readonly<Record<Id, Building>>;
   readonly storeys: Readonly<Record<Id, Storey>>;
   readonly materials: Readonly<Record<Id, Material>>;
+  /** Priority spojování vrstev: seřazené úrovně, výchozí úroveň kategorií a zásady řazení. */
+  readonly joinPriorities: JoinPriorities;
   readonly wallTypes: Readonly<Record<Id, WallType>>;
   /** Typy desek (strop, podlaha); skladbu berou z `compositions`. */
   readonly slabTypes: Readonly<Record<Id, SlabType>>;

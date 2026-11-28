@@ -18,6 +18,7 @@ import {
   type Vec2,
 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
+import { joinRank } from '../join-priority/rank.ts';
 import type { Model } from '../model/types.ts';
 import { wallSection } from '../wall/queries.ts';
 import type { Wall } from '../wall/types.ts';
@@ -67,7 +68,7 @@ export function frameLayers(model: Model, wall: Wall): FrameLayer[] {
     index,
     lo: Math.min(s.from, s.to),
     hi: Math.max(s.from, s.to),
-    prio: model.materials[s.layer.materialId]?.joinPriority ?? 0,
+    prio: joinRank(model, s.layer.materialId),
     core: s.layer.function === 'core',
     finish: s.layer.function === 'finish',
     materialId: s.layer.materialId,

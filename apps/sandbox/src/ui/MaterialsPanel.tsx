@@ -12,6 +12,8 @@ import { useState } from 'preact/hooks';
 import type { Session } from '../session/session.ts';
 import { HatchSwatch } from './HatchSwatch.tsx';
 import { SchemaForm } from './SchemaForm.tsx';
+import { LevelSelect } from './priorities/LevelList.tsx';
+import { openPriorities } from './priorities/PrioritiesDialog.tsx';
 
 const LABELS: Record<string, string> = {
   name: 'Název',
@@ -22,11 +24,29 @@ const LABELS: Record<string, string> = {
   lineColor: 'Barva čar 2D',
   fillColor: 'Barva výplně 2D',
   transparent3D: 'Průhledný ve 3D',
-  joinPriority: 'Priorita protínání',
   note: 'Poznámka',
 };
 
+/** Pole panelu bez úrovně priority (ta má vlastní volbu s odkazem na okno priorit). */
+const { joinLevelId: _level, ...FIELDS } = MATERIAL_FIELDS;
+
 const HATCH_OPTIONS = HATCH_LIBRARY.map((h) => ({ value: h.id, label: `${h.order}. ${h.name}` }));
+
+/** Úroveň priority spojování materiálu a odkaz na okno Nastavení → Priority spojování. */
+function JoinLevelField({ s, m }: { s: Session; m: Material }) {
+  return (
+    <>
+      <label>
+        Priorita spojování
+        <span class="muted">spoje stěn: úroveň výš projede nižší</span>
+        <LevelSelect s={s} m={m} testid="material-join-level" />
+      </label>
+      <button data-testid="material-priorities" onClick={() => openPriorities(s)}>
+        Priority spojování…
+      </button>
+    </>
+  );
+}
 
 function Detail({ s, m }: { s: Session; m: Material }) {
   const use = materialUsage(s.model, m.id);
@@ -37,13 +57,14 @@ function Detail({ s, m }: { s: Session; m: Material }) {
   return (
     <div class="material-detail" data-testid="material-detail">
       <SchemaForm
-        fields={MATERIAL_FIELDS}
+        fields={FIELDS}
         labels={LABELS}
         value={m as unknown as Record<string, unknown>}
         options={{ hatchId: HATCH_OPTIONS }}
         derived={{ lineColor: materialLines(m), fillColor: materialFill(m) }}
         onChange={update}
       />
+      <JoinLevelField s={s} m={m} />
       <p class="muted" data-testid="material-usage">
         Použití: {use.elements} prvků, {use.types} skladeb
       </p>

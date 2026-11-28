@@ -8,6 +8,7 @@ import { ensureCompositions } from '../composition/store.ts';
 import type { Id, IdGenerator } from '../ids/index.ts';
 import { BASIC_MATERIALS, MATERIAL_LIBRARY_ID } from '../material/library.ts';
 import type { Material } from '../material/types.ts';
+import { defaultJoinPriorities } from '../join-priority/types.ts';
 import { withHatchesFor } from '../hatch/project.ts';
 import { createDefaultDisplay } from '../style/presets/create.ts';
 import { withElectroDisplay } from '../electro/display.ts';
@@ -85,6 +86,7 @@ function emptyProject(newId: IdGenerator, name: string): Omit<Model, 'roofTypes'
     buildings: { [buildingId]: { id: buildingId, name: 'Budova' } },
     storeys: { [storeyId]: { id: storeyId, name: '1.NP', buildingId, elevation: 0, height: 3000 } },
     materials: covering.materials,
+    joinPriorities: defaultJoinPriorities(),
     wallTypes: byId(wallTypes(mats, newId)),
     slabTypes: byId(slabs.map((s) => s.type)),
     compositions: byId(slabs.map((s) => s.composition)),

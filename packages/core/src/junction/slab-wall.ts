@@ -10,6 +10,7 @@
 import { clipRect, planePolygon, polygonsArea, type PlanePolygon } from '../covering/polygon.ts';
 import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
+import { joinRank } from '../join-priority/rank.ts';
 import type { Model } from '../model/types.ts';
 import { slabPlan } from '../slab/plan.ts';
 import { simplePieces } from '../section/pieces.ts';
@@ -36,7 +37,7 @@ export interface SlabWallCuts {
   readonly slab: ReadonlyMap<Id, readonly PlanCut[]>;
 }
 
-const priority = (m: Model, materialId: Id) => m.materials[materialId]?.joinPriority ?? 0;
+const priority = (m: Model, materialId: Id) => joinRank(m, materialId);
 
 /** Priorita jádra desky (nosné vrstvy, jinak nejvyšší ze všech). */
 function slabCorePriority(m: Model, s: Slab): number {

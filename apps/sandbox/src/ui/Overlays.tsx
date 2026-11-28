@@ -8,6 +8,7 @@ import { PetPalette } from './PetPalette.tsx';
 import { ScaleDialog } from './ScaleDialog.tsx';
 import { SegmentMenu } from './SegmentMenu.tsx';
 import { TypeEditorDialog } from './type-editor/TypeEditorDialog.tsx';
+import { PrioritiesDialog } from './priorities/PrioritiesDialog.tsx';
 import { useSession } from './use-session.ts';
 
 function ValueEditor({ s }: { s: Session }) {
@@ -98,6 +99,7 @@ export function CanvasOverlays({ session }: { session: Session }) {
       <HoverCard s={s} />
       <ScaleDialog s={s} />
       <TypeEditorDialog s={s} />
+      <PrioritiesDialog s={s} />
       <Menu s={s} />
       <ValueEditor s={s} />
       <div class="toasts">

@@ -7,6 +7,7 @@ import { ExportIfc } from '../ExportIfc.tsx';
 import { IconButton } from '../icons/Icon.tsx';
 import { useState } from 'preact/hooks';
 import { LessonsDialog } from '../lessons/LessonsDialog.tsx';
+import { openPriorities } from '../priorities/PrioritiesDialog.tsx';
 import { SamplesDialog } from '../samples/SamplesDialog.tsx';
 import { useSession } from '../use-session.ts';
 import { StyleSwitch } from '../ViewControls.tsx';
@@ -48,6 +49,29 @@ function LookToggles({ s }: { s: Session }) {
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+/** Nastavení projektu (koncepce rozhraní: okna nastavení); zatím Priority spojování. */
+function SettingsMenu({ s }: { s: Session }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div class="settings-menu">
+      <button data-testid="settings-open" title="Nastavení projektu" onClick={() => setOpen(!open)}>
+        Nastavení ▾
+      </button>
+      {open && (
+        <div class="settings-list panel" role="menu">
+          <button
+            role="menuitem"
+            data-testid="settings-priorities"
+            onClick={() => (setOpen(false), openPriorities(s))}
+          >
+            Priority spojování…
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -101,6 +125,7 @@ export function AppBar({ s }: { s: Session }) {
           onClick={() => s.editor.redo()}
         />
       </div>
+      <SettingsMenu s={s} />
       <SamplesButton s={s} />
       <ExportIfc s={s} />
       <a class="muted" href="#galerie" title="Galerie napojení stěn (pro vývoj)">

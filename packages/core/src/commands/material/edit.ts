@@ -1,6 +1,6 @@
 // Příkazy materiálu (katalog šraf a materiálů): vytvoř, duplikuj, uprav, smaž (s náhradou).
 // Každý je jeden krok Undo (základ 6). Šrafu materiál jen odkazuje (základ 34).
-import { DEFAULT_PRIORITY, type Material, type MaterialCategory } from '../../material/types.ts';
+import type { Material, MaterialCategory } from '../../material/types.ts';
 import { materialUsage } from '../../material/usage.ts';
 import type { Model } from '../../model/types.ts';
 import type { WallLayer } from '../../wall-type/types.ts';
@@ -17,8 +17,8 @@ export const materialCreate = defineCommand<
   label: 'Nový materiál',
   description:
     'Vytvoří materiál: název (jedinečný), kategorie, barva (#rrggbb, 2D barvy se z ní odvodí), šrafa ' +
-    '(id z hatch.list), volitelně pero šrafy, přepsané 2D barvy, průhlednost ve 3D, priorita protínání ' +
-    '0–999 (výchozí podle kategorie) a poznámka.',
+    '(id z hatch.list), volitelně pero šrafy, přepsané 2D barvy, průhlednost ve 3D, úroveň priority ' +
+    'spojování joinLevelId (výchozí null = podle kategorie; viz material.priorities) a poznámka.',
   group: 'Materiál',
   params: S.object(MATERIAL_FIELDS, ['name', 'category', 'color', 'hatchId']),
   run(model, p, ctx) {
@@ -27,7 +27,7 @@ export const materialCreate = defineCommand<
       lineColor: null,
       fillColor: null,
       transparent3D: false,
-      joinPriority: DEFAULT_PRIORITY[p.category],
+      joinLevelId: null,
       note: '',
       ...p,
       id: ctx.newId(),

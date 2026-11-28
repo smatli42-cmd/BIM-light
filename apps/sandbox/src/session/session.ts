@@ -79,6 +79,8 @@ export class Session {
   valueEdit: ValueEditState | null = null;
   /** Otevřené okno Editor typů: vybraný typ (null = zavřeno). */
   typeEditor: Id | null = null;
+  /** Otevřené okno Nastavení → Priority spojování. */
+  prioritiesOpen = false;
   toasts: Toast[] = [];
   /** Kóty, které brání změně (zvýrazní se červeně). */
   flashDims: Id[] = [];

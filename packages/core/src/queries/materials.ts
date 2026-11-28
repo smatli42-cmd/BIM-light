@@ -3,6 +3,7 @@ import { S } from '../commands/schema.ts';
 import { HATCH_LIBRARY } from '../hatch/registry.ts';
 import { materialFill, materialLines } from '../material/colors.ts';
 import { materialUsage } from '../material/usage.ts';
+import { joinRank, materialLevel } from '../join-priority/rank.ts';
 import { defineQuery } from './types.ts';
 
 export const hatchList = defineQuery<Record<string, never>, unknown>({
@@ -30,7 +31,7 @@ export const materialList = defineQuery<Record<string, never>, unknown>({
   label: 'Materiály',
   description:
     'Vrátí materiály projektu: id, název, kategorie, barva, šrafa (id), pero šrafy, výsledné 2D barvy ' +
-    'čar a výplně (odvozené nebo přepsané), průhlednost ve 3D, priorita protínání, poznámka a použití ' +
+    'čar a výplně (odvozené nebo přepsané), průhlednost ve 3D, úroveň priority spojování (joinLevelId, výslovně / podle kategorie, joinRank = pořadí zdola), poznámka a použití ' +
     '(počet prvků a skladeb).',
   group: 'Materiál',
   params: S.object({}, []),
@@ -45,7 +46,9 @@ export const materialList = defineQuery<Record<string, never>, unknown>({
       lines2D: materialLines(x),
       fill2D: materialFill(x),
       transparent3D: x.transparent3D,
-      joinPriority: x.joinPriority,
+      joinLevelId: materialLevel(m, x.id)?.id ?? null,
+      joinLevelExplicit: x.joinLevelId !== null,
+      joinRank: joinRank(m, x.id),
       note: x.note,
       usage: materialUsage(m, x.id),
     }));

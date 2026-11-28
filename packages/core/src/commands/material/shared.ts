@@ -23,7 +23,10 @@ export const MATERIAL_FIELDS: Record<string, JsonSchema> = {
   lineColor: colorOrNull,
   fillColor: colorOrNull,
   transparent3D: { type: 'boolean', description: 'průhledný ve 3D (sklo)' },
-  joinPriority: { type: 'integer', minimum: 0, maximum: 999, description: 'priorita protínání 0–999' },
+  joinLevelId: {
+    oneOf: [{ type: 'string' }, { type: 'null' }],
+    description: 'úroveň priority spojování (id z material.priorities) nebo null = podle kategorie',
+  },
   note: { type: 'string', description: 'poznámka' },
 };
 
@@ -37,6 +40,8 @@ export function putMaterial(model: Model, m: Material): Model {
   const clash = Object.values(model.materials).find((o) => o.id !== m.id && o.name === m.name);
   if (clash) fail('invalid', `Materiál „${m.name}“ už v projektu je`);
   if (!hatchExists(model.display, m.hatchId)) fail('not-found', `Šrafa ${m.hatchId} neexistuje`);
+  if (m.joinLevelId !== null && !model.joinPriorities.levels.some((l) => l.id === m.joinLevelId))
+    fail('not-found', `Úroveň priority ${m.joinLevelId} neexistuje`);
   const materials = { ...model.materials, [m.id]: m };
   return { ...model, materials, display: withHatchesFor(model.display, [m]) };
 }

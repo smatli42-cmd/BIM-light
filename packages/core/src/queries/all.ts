@@ -5,6 +5,7 @@ import { elementGraphics } from './element-graphics.ts';
 import { elementInfoQuery } from './element-info.ts';
 import { elementFind } from './find.ts';
 import { hatchList, materialList } from './materials.ts';
+import { materialPriorities } from './priorities.ts';
 import { openingList } from './openings.ts';
 import { projectInfo } from './project.ts';
 import { viewInfo } from './views.ts';
@@ -72,6 +73,7 @@ export const CORE_QUERIES = [
   dimensionList,
   hatchList,
   materialList,
+  materialPriorities,
   viewInfo,
   wallTypeList,
   wallTypeLibrary,

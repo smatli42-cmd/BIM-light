@@ -11,8 +11,10 @@ import { HOUSE } from './house.ts';
 import { ELECTRO_SCENES } from './scenes-elektro.ts';
 import { ROOF_SCENES } from './scenes-strechy.ts';
 import { ELEVATION_SCENES } from './scenes-pohledy.ts';
+import { PRIORITY_SCENES } from './scenes-priority.ts';
 
 export const SCENES: readonly Sample[] = [
+  ...PRIORITY_SCENES,
   {
     key: 'popis-skladeb',
     title: 'Popis skladby v řezu',
