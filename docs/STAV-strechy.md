@@ -48,6 +48,16 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
 - Ukázky: scéna `strechy` (valbová, sedlová se štíty, L s úžlabím a různými sklony v podkroví, Řez A),
   dům `dum` má valbovou střechu 35° nad 2.NP.
 
+### Oprava rohů přesahu a štítky hran, 2026-11-28 (hlášení uživatele, scéna `?ukazka=strechy`)
+
+- Roh přesahu mezi hranami s různým sklonem nebo přesahem (L 45° / 30°: vnější i vnitřní roh) nenavazoval –
+  roh byl průsečík okapových čar, který při různých sklonech neleží na nároží / úžlabí. Teď je roh každé
+  roviny bod na nároží (průsečík obou rovin) v její okapové čáře; okap níž položené roviny pokračuje po
+  nároží o kus dál (jako u skutečných střech s okapy v různé výšce). Při stejném sklonu a přesahu beze
+  změny. Test `roof/planes.test.ts` (každá hrana mezi rovinami leží v obou rovinách).
+- Vybraná střecha v půdorysu ukazuje u každé hrany štítek s číslem (jako v info boxu) a sklonem / „štít“,
+  šipku ve směru stoupání roviny a referenční čáru čárkovaně (`apps/sandbox/src/render/roof-labels.ts`).
+
 ## Rozhodl Code (k potvrzení)
 
 - **Polovalba odložena:** v S1 jen sklon / štít po hranách. Polovalba (hrana se sklonem a výškou zlomu)

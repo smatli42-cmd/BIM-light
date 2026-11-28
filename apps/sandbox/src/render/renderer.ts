@@ -1,4 +1,5 @@
 // Jeden snímek výkresu: kresba pohledu z jádra (základ 4), výběr, náhledy a pomocné značky.
+import { drawRoofLabels } from './roof-labels.ts';
 import {
   dimensionFacts,
   drawDimension,
@@ -64,6 +65,7 @@ export function render(ctx: CanvasRenderingContext2D, s: Session) {
     2,
     model,
   );
+  drawRoofLabels(ctx, s, model);
   for (const d of o.draftDims ?? []) {
     const g = resolveGraphics(s.model.display, s.view, dimensionFacts(d)).effect;
     for (const p of drawDimension(s.model, d, s.view.scale, s.model.display.paperSizes, g))
