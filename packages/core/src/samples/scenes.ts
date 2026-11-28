@@ -10,8 +10,10 @@ import { VIEW3D_SCENES } from './scenes-3d.ts';
 import { HOUSE } from './house.ts';
 import { ELECTRO_SCENES } from './scenes-elektro.ts';
 import { ROOF_SCENES } from './scenes-strechy.ts';
+import { ELEVATION_SCENES } from './scenes-pohledy.ts';
 
 export const SCENES: readonly Sample[] = [
+  ...ELEVATION_SCENES,
   ...ROOF_SCENES,
   {
     key: 'popis-skladeb',

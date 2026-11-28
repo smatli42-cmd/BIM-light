@@ -1,6 +1,6 @@
 // Nástroj Řez (rozhodnutí 19; info box podle Arditu, kreslení jako Archicad): rovný řez = dva kliky (začátek,
 // konec), zalomený = kliky po úsecích (rovnoběžně s prvním a kolmo na něj, Enter / dvojklik / pravé tlačítko
-// ukončí). Pak třetí klik na stranu, kam se řez dívá (šipky jdou za myší). Body se přichytávají jako u stěny.
+// ukončí). Metoda Pohled = rovná čára jako rovný řez, vznikne pohled (fasáda). Pak třetí klik na stranu, kam se řez dívá (šipky jdou za myší). Body se přichytávají jako u stěny.
 // Esc vrátí krok. Výsledek je jeden příkaz section.create (AI udělá totéž).
 import { cross, dist, dot, norm, sub, trackerPoint, type SnapResult, type Vec2 } from '@bim-light/core';
 import { sectionCreateParams, sectionDefaults } from '../../session/section-defaults.ts';
@@ -32,9 +32,11 @@ export class SectionTool implements Tool {
   }
 
   hint(): string {
-    if (this.side) return 'Klikni na stranu, kam se má řez dívat (šipky ukazují směr). Esc vrátí krok.';
-    if (!this.pts.length) return 'Klikni na začátek čáry řezu.';
-    if (!this.jogged) return 'Klikni na konec čáry řezu (Tab / čísla: délka, úhel).';
+    const what = sectionDefaults(this.s).method === 'elevation' ? 'pohledu' : 'řezu';
+    if (this.side)
+      return `Klikni na stranu, kam se má ${what === 'pohledu' ? 'pohled' : 'řez'} dívat (šipky ukazují směr). Esc vrátí krok.`;
+    if (!this.pts.length) return `Klikni na začátek čáry ${what}.`;
+    if (!this.jogged) return `Klikni na konec čáry ${what} (Tab / čísla: délka, úhel).`;
     return 'Klikej úseky zalomeného řezu (kolmo a rovnoběžně); Enter, dvojklik nebo pravé tlačítko ukončí.';
   }
 
@@ -111,7 +113,12 @@ export class SectionTool implements Tool {
       direction: this.direction(at),
       ...sectionCreateParams(this.s),
     });
-    if (r.ok) this.reset();
+    if (!r.ok) return;
+    this.reset();
+    const id = r.created?.[0];
+    const sec = id ? this.s.model.sections[id] : undefined;
+    if (sec?.kind === 'elevation')
+      this.s.toast(`${sec.mark} ${sec.name} je v Obsahu → Pohledy (fasády se v půdorysu nekreslí).`);
   }
 
   private reset() {

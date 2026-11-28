@@ -86,7 +86,7 @@ function InstanceFields({ s, sec, values }: { s: Session; sec: SectionData; valu
         onPick={(id) => upd({ annotationLayerId: id })}
       />
       <MethodButtons
-        value={sec.points.length > 2 ? 'jogged' : 'straight'}
+        value={sec.kind === 'elevation' ? 'elevation' : sec.points.length > 2 ? 'jogged' : 'straight'}
         disabled
         onPick={() => undefined}
       />

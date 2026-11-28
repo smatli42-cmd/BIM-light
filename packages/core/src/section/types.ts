@@ -78,6 +78,11 @@ export function nextSectionMark(used: readonly string[]): string {
   }
 }
 
+/** Další volné číslo pohledu (1, 2, 3…). */
+export function nextElevationMark(used: readonly string[]): string {
+  for (let i = 1; ; i++) if (!used.includes(String(i))) return String(i);
+}
+
 function letters(i: number): string {
   const a = String.fromCharCode(65 + (i % 26));
   return i < 26 ? a : letters(Math.floor(i / 26) - 1) + a;

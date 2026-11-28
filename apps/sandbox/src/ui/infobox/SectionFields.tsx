@@ -81,9 +81,10 @@ export function LayerSelect(p: { s: Session; value: Id; testid: string; onPick: 
   );
 }
 
-const METHODS: readonly [SectionMethod, 'section-straight' | 'section-jogged', string][] = [
+const METHODS: readonly [SectionMethod, 'section-straight' | 'section-jogged' | 'elevation', string][] = [
   ['straight', 'section-straight', 'Rovný řez (dva body)'],
   ['jogged', 'section-jogged', 'Zalomený řez (úseky kolmo a rovnoběžně)'],
+  ['elevation', 'elevation', 'Pohled / fasáda (dva body, nic neprořízne)'],
 ];
 
 export function MethodButtons(p: {

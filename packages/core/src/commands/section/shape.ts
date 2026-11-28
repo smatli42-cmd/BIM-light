@@ -6,6 +6,7 @@ import type { Model } from '../../model/types.ts';
 import { SECTION_LAYER } from '../../style/presets/defaults.ts';
 import {
   DEFAULT_SECTION_SCALE,
+  nextElevationMark,
   nextSectionMark,
   SECTION_DIRECTIONS,
   type Section,
@@ -13,6 +14,7 @@ import {
   type SectionKind,
   type SectionRange,
 } from '../../section/types.ts';
+import { elevationName } from '../../section/elevations.ts';
 import { styleOf } from '../lookup.ts';
 import { S, type JsonSchema } from '../schema.ts';
 import { fail } from '../types.ts';
@@ -116,6 +118,18 @@ const usedMarks = (m: Model, kind: SectionKind) =>
 const defaultLayer = (m: Model, fallback: Id): Id =>
   m.display.layers[SECTION_LAYER.id] ? SECTION_LAYER.id : fallback;
 
+/** Kam se pohled dívá (jednotkový vektor od prvního úseku čáry). */
+function lookOf(points: readonly Vec2[], direction: SectionDirection): Vec2 {
+  const d = norm(sub(points[1] as Vec2, points[0] as Vec2));
+  return direction === 'left' ? { x: -d.y, y: d.x } : { x: d.y, y: -d.x };
+}
+
+/** Výchozí název: řez podle písmene („Řez A“), pohled podle světové strany fasády („Pohled jižní“). */
+function defaultName(m: Model, kind: SectionKind, mark: string, pts: Vec2[], dir: SectionDirection) {
+  if (kind === 'section') return `Řez ${mark}`;
+  return pts.length >= 2 ? elevationName(m, lookOf(pts, dir)) : `Pohled ${mark}`;
+}
+
 /** Nový řez / pohled: styl prvního půdorysu, neomezená hloubka, vzdálená oblast vypnutá (jako Ardit). */
 export function newSection(
   m: Model,
@@ -125,14 +139,18 @@ export function newSection(
 ): Section {
   const styleId = p.styleId ?? Object.values(m.views)[0]?.styleId ?? '';
   const style = styleOf(m, styleId);
-  const mark = p.mark ?? nextSectionMark(usedMarks(m, kind));
+  const next = kind === 'section' ? nextSectionMark : nextElevationMark;
+  const mark = p.mark ?? next(usedMarks(m, kind));
+  const points = pointsFrom(p);
+  const direction = p.direction ?? 'left';
+  if (kind === 'elevation' && points.length !== 2) fail('invalid', 'Pohled má rovnou čáru (2 body)');
   return checkSection(m, {
     id,
     kind,
-    name: p.name ?? (kind === 'section' ? `Řez ${mark}` : `Pohled ${mark}`),
+    name: p.name ?? defaultName(m, kind, mark, points, direction),
     mark,
-    points: pointsFrom(p),
-    direction: p.direction ?? 'left',
+    points,
+    direction,
     depth: p.depth ?? null,
     farClip: p.farClip ?? null,
     presetId: p.presetId ?? null,

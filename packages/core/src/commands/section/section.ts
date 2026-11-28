@@ -4,7 +4,7 @@ import { add, type Vec2 } from '../../geometry/index.ts';
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import { omitIds } from '../../model/update.ts';
-import type { Section } from '../../section/types.ts';
+import { SECTION_KINDS, type Section, type SectionKind } from '../../section/types.ts';
 import { S } from '../schema.ts';
 import { defineCommand, fail } from '../types.ts';
 import { checkSection, newSection, pointsFrom, SECTION_PROPS, type SectionShape } from './shape.ts';
@@ -13,7 +13,7 @@ export const sectionOf = (m: Model, id: Id): Section =>
   m.sections[id] ?? fail('not-found', `Řez ${id} neexistuje`);
 export const putSection = (m: Model, s: Section): Model => ({ ...m, sections: { ...m.sections, [s.id]: s } });
 
-export const sectionCreate = defineCommand<SectionShape & { name?: string }>({
+export const sectionCreate = defineCommand<SectionShape & { name?: string; kind?: SectionKind }>({
   name: 'section.create',
   label: 'Řez',
   description:
@@ -22,12 +22,22 @@ export const sectionCreate = defineCommand<SectionShape & { name?: string }>({
     'neomezená, výchozí), farClip = vzdálená oblast od (null = vypnuto), presetId = styl řezu (přepíše ' +
     'hloubku a vzdálenou oblast), annotationLayerId = vrstva značky (výchozí Řezy a pohledy), range = ' +
     'rozsah výšky (null = celá budova), scale = měřítko (výchozí 100), mark = písmeno (výchozí další A, B…), ' +
-    'name = název (výchozí „Řez A“). Značka řezu se kreslí v půdorysech protnutých podlaží.',
+    'name = název (výchozí „Řez A“). Značka řezu se kreslí v půdorysech protnutých podlaží. kind = ' +
+    'elevation vytvoří jeden pohled (fasádu): jen rovná čára, nic neprořízne, označení další číslo 1, 2…, ' +
+    'název podle světové strany fasády (Pohled jižní…).',
   group: 'Řezy a pohledy',
   icon: 'section',
-  params: S.object({ ...SECTION_PROPS, name: { type: 'string' } }, []),
+  params: S.object(
+    {
+      ...SECTION_PROPS,
+      name: { type: 'string' },
+      kind: S.enumOf(SECTION_KINDS, 'section = řez (výchozí), elevation = pohled (fasáda)'),
+    },
+    [],
+  ),
   run(model, p, ctx) {
-    const s = newSection(model, ctx.newId(), 'section', p);
+    const { kind = 'section', ...shape } = p;
+    const s = newSection(model, ctx.newId(), kind, shape);
     return { model: putSection(model, s), created: [s.id] };
   },
 });

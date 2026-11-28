@@ -27,6 +27,16 @@ export function compassSide(model: Model, n: Vec2): (typeof SIDES)[number] {
   return SIDES[i] as (typeof SIDES)[number];
 }
 
+/** Výchozí název pohledu podle světové strany fasády („Pohled jižní“)? Ten se při přegenerování obnoví. */
+export function isCompassName(name: string): boolean {
+  return SIDES.some((side) => name === `Pohled ${side}`);
+}
+
+/** Název ručně kresleného pohledu: fasáda hledí proti směru pohledu (`look` = kam se díváme). */
+export function elevationName(model: Model, look: Vec2): string {
+  return `Pohled ${compassSide(model, { x: -look.x, y: -look.y })}`;
+}
+
 /** Obálka modelu v půdorysu (stěny a desky hlavního modelu); null = prázdný model. */
 export function modelEnvelope(model: Model): { min: Vec2; max: Vec2 } | null {
   const pts: Vec2[] = [];

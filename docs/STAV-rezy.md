@@ -4,6 +4,19 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Pohledy 1–4 z Obsahu, 2026-11-28 (pokyn uživatele se screenshotem Obsahu z Arditu; scéna `?ukazka=pohledy`)
+
+- Obsah → Projekt → **Pohledy**: tlačítko **+** („Přidat pohledy 1–4 kolem budovy“) = příkaz
+  `elevation.create`. Když pohledy 1–4 už existují, je na tlačítku **⟳** a tentýž příkaz jim jen přepočítá
+  čáry podle aktuální obálky budovy – nezdvojí je; název (pokud ho uživatel změnil), styl, měřítko, místní
+  úpravy i kóty zůstanou, smazaný pohled se doplní se stejným číslem. Prázdný model = hláška.
+- V Obsahu je u pohledu i jeho označení („1 Pohled jižní“). Dvojklik na řez / pohled v Obsahu ho
+  přejmenuje (`section.rename`; Enter potvrdí, Esc zruší).
+- Jeden pohled ručně: nástroj **Řez** → Geometrická metoda **Pohled** (třetí tlačítko): dva kliky
+  a klik na stranu = `section.create` s `kind: 'elevation'` (jen rovná čára, označení další číslo,
+  název podle světové strany fasády). Hláška řekne, že je v Obsahu → Pohledy.
+- Testy: jádro `section/elevation-create.test.ts`, AI krok v `scenario-sections`, e2e `pohledy.spec.ts`.
+
 ### Popis skladby v řezu, 2026-11-28 (úkol uživatele; scéna `?ukazka=popis-skladeb`, Řez A i v `?ukazka=dum`)
 
 - **Úprava podle výkresu uživatele (2026-11-28, migrace 39 → 40):** odkazová čára vždy protne konstrukci
@@ -275,6 +288,15 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Pohledy 1–4 (2026-11-28):** Revit ani Archicad pohledy „kolem budovy“ nepřegenerovávají (značky se
+  posouvají ručně); protože pohledy u nás v půdorysu značku nemají, druhé stisknutí tlačítka (⟳) přepočítá
+  čáry pohledů s označením 1–4 podle aktuální obálky místo vytvoření duplikátů. Pohled se pozná podle
+  označení 1–4 (bez nového pole v datech, bez migrace). Výchozí název zůstal podle světové strany
+  („Pohled jižní“ – česká DPS); v Obsahu je před ním označení jako v Arditu („1 Pohled jižní“). Výchozí
+  název se při přegenerování obnoví (po otočení severu), přejmenovaný zůstane. Ručně kreslený pohled má
+  další číslo (5, 6…) a název podle strany fasády; v půdorysu se dál nekreslí (otevřený bod: značka
+  pohledu v půdorysu, aby šel vybrat a posunout – až podle screenshotu Arditu).
 
 - **Popis skladby (podle výkresu uživatele 2026-11-28; plný text ČSN 01 3420 není volně dostupný):**
   kolečko s číslem je vždy na konci čáry a řádky visí pod ním (na výkresu uživatele je u P1 kolečko

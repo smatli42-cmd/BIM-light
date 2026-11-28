@@ -3,7 +3,8 @@
 import type { Id } from '@bim-light/core';
 import type { Session } from './session.ts';
 
-export type SectionMethod = 'straight' | 'jogged';
+/** Rovný řez, zalomený řez, nebo pohled (fasáda: rovná čára, nic neprořízne). */
+export type SectionMethod = 'straight' | 'jogged' | 'elevation';
 
 export interface SectionDefaults {
   /** Záložka info boxu: Instance (nový řez), nebo Styl (úprava vybraného stylu řezu). */
@@ -55,6 +56,7 @@ export function sectionCreateParams(s: Session) {
   const d = sectionDefaults(s);
   const preset = d.presetId && s.model.sectionPresets[d.presetId] ? d.presetId : null;
   return {
+    ...(d.method === 'elevation' ? { kind: 'elevation' } : {}),
     ...(preset ? { presetId: preset } : { depth: d.depth, farClip: d.farClip }),
     ...(d.layerId && s.model.display.layers[d.layerId] ? { annotationLayerId: d.layerId } : {}),
   };

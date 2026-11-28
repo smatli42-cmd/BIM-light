@@ -78,6 +78,11 @@ describe('AI scénář: řezy a pohledy', () => {
     c.ai.call('section.delete', { sectionId: ids[3] });
     const after = c.ai.call<SectionRow[]>('section.list');
     expect(after.map((r) => r.name)).toEqual(['Pohled jižní – vstup', 'Pohled východní', 'Pohled severní']);
+    // Přegenerování (tlačítko v Obsahu) nezdvojí, doplní smazaný; jeden pohled ručně = section.create kind.
+    c.ai.call('elevation.create', {});
+    expect(c.ai.call<SectionRow[]>('section.list')).toHaveLength(4);
+    c.ai.call('section.create', { kind: 'elevation', start: { x: 0, y: -1500 }, end: { x: 4000, y: -1500 } });
+    expect(c.ai.call<SectionRow[]>('section.list').map((r) => r.name)).toContain('Pohled jižní');
   });
 
   it('zalomený řez se stylem řezu: posun, změna stylu, smazání stylu nechá hodnoty v řezu', () => {
