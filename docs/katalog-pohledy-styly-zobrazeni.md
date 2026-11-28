@@ -97,5 +97,10 @@ Tři úrovně, každá se otevře jen když je potřeba:
 - Doladit tabulku tlouštěk a přiřazení per podle uživatelovy praxe (AutoCAD tabulka stylů tisku, kancelářský standard, vzorový výkres); případně hodnoty po měřítkách.
 - Kopírování kót mezi skupinami a automatické okótování (jako v arditu); jemnější členění kót než skupina (např. „vnější řetěz / okna / výškové“).
 - Styl pro řezy a pohledy (fasády); editor stylů a okno grafických přepisů (UI); zobrazení vrstev ve 3D.
+- **Režim zobrazení řezu a pohledu (pokyn uživatele 2026-11-28, až dovolí vývoj zobrazování):** volba ve stylu
+  pohledu – **skryté hrany** (vidět jen viditelné hrany, zakryté se nekreslí), **čárový** (jen čáry, bez výplní),
+  **stínovaný** (výplně ploch podle barvy materiálu a natočení ke slunci; nastavení, odkud svítí slunce, jako
+  ve 3D). Cíl: fasáda s barevnými plochami, stíny a povrchovou šrafou (vzor uživatele: obklad svislými lamelami,
+  okna s rámy a sklem). Zapnout / vypnout **povrchy** (povrchové šrafy) jde zvlášť.
 - Pravidla podle U-hodnoty (tepelná obálka) vyžadují λ a výpočet; až s tepelnými vlastnostmi materiálů.
 - Sdílení stylů, pravidel a kombinací v knihovně mezi projekty.

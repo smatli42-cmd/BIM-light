@@ -10,6 +10,11 @@ Stav: **koncept z 2026-11-24; seznam materiálů (8 screenshotů), seznam šraf 
 ## Vlastnosti materiálu (podle detailu z arditu) [R: zatím jen základní]
 - **Teď ukládáme jen:** název (klíč, na který se odkazují prvky a skladby), kategorie, barva (u arditu „Barva 3D“), šrafa (půdorys a řezy), průhledný ve 3D (jako sklo), priorita protínání (spoje stěn: vyšší projede nižší; 0–999; výchozí podle kategorie), poznámka. K tomu údaj „Použití“ (počet prvků a skladeb, spočítaný z modelu, ne uložený) a v arditu „výchozí u Stěna“ (materiál výchozí pro typ prvku; (já) jen pokud to bude snadné, jinak později).
 - **Zatím NEDĚLÁME** (ardit je má, uživatel je teď nepočítá): tepelná vodivost λ, objemová hmotnost, měrná tepelná kapacita, uhlíková stopa GWP, faktor difuzního odporu μ, cena v konstrukci, vzduchová vrstva (R podle ČSN EN ISO 6946). Přidají se později jako další vlastnosti materiálu (nová verze schématu s migrací, základ 9); panel vlastností se generuje z popisu parametrů (základ 15b), takže přidání je záznam v popisu, ne nový panel.
+- **Šrafa řezu a šrafa povrchu zvlášť (pokyn uživatele 2026-11-28):** materiál odkazuje dvě šrafy z knihovny –
+  **řez** (řezaná konstrukce v půdorysu a řezu) a **povrch** (pohledová plocha ve fasádě, řezu za rovinou a
+  případně ve 3D; např. obklad svislými lamelami, cihelný obklad, krytina). Každá může být „bez šrafy“ a jde
+  přepsat pravidlem nebo přepisem prvku (základ 30). Povrchovou šrafu jde ve stylu pohledu zapnout / vypnout.
+  Zatím neuděláno.
 - **Barva:** materiál má jednu barvu (3D). Výplň a čáry šrafy v 2D se z ní výchozně odvodí (výplň světlá, čáry tmavé) a jde je přepsat u materiálu, pravidlem nebo přepisem prvku (základ 30). (já)
 - Stav v arditu: 137 materiálů.
 
