@@ -2,6 +2,7 @@
 // kolečka, trojúhelník délky a uzly vybrané stěny. Vše v px, počítá se ze stavu (ne z kreslení).
 import {
   add,
+  mid,
   type Dimension,
   dimensionText,
   findRoof,
@@ -49,7 +50,8 @@ export interface SlabGripView {
   readonly kind: 'slab' | 'hole' | 'roof';
   readonly id: Id;
   readonly index: number;
-  readonly end: 'vertex';
+  /** Uzel obrysu, nebo kolečko uprostřed hrany (jen střecha – posun hrany). */
+  readonly end: 'vertex' | 'mid';
   readonly at: Vec2;
 }
 
@@ -148,13 +150,26 @@ export function slabGripViews(s: Session): SlabGripView[] {
         ? { kind: 'roof' as const, it: roof }
         : null;
   if (!target) return [];
-  return target.it.outline.map((p, index) => ({
+  const o = target.it.outline;
+  const vertices = o.map((p, index) => ({
     kind: target.kind,
     id: target.it.id,
     index,
-    end: 'vertex',
+    end: 'vertex' as const,
     at: s.viewport.toScreen(p),
   }));
+  if (target.kind !== 'roof') return vertices;
+  const mids = o.map((p, index) => {
+    const q = o[(index + 1) % o.length] as Vec2;
+    return {
+      kind: target.kind,
+      id: target.it.id,
+      index,
+      end: 'mid' as const,
+      at: s.viewport.toScreen(mid(p, q)),
+    };
+  });
+  return [...vertices, ...mids];
 }
 
 /** Co je pod kurzorem (v pořadí: kolečko, zámek, trojúhelník, uzel, čísla, čáry). */

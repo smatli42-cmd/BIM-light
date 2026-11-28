@@ -53,7 +53,10 @@ export class SlabTool implements Tool {
   }
 
   private get method() {
-    if (this.target === 'roof') return roofDefaults(this.s).method;
+    if (this.target === 'roof') {
+      const m = roofDefaults(this.s).method;
+      return m === 'building' ? 'polygon' : m;
+    }
     return this.target === 'slab' ? this.s.slab.method : this.s.openingDefaults.slabMethod;
   }
 

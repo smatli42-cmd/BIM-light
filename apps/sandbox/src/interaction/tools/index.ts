@@ -17,6 +17,8 @@ import { SectionTool } from './section-tool.ts';
 import { LevelDimTool } from './level-dim-tool.ts';
 import { CompositionTagTool } from './composition-tag-tool.ts';
 import { SlabTool } from './slab-tool.ts';
+import { RoofBuildingTool } from './roof-building-tool.ts';
+import { roofDefaults } from '../../session/roof-defaults.ts';
 import { SlabRoomTool } from './slab-room-tool.ts';
 import { SlabWallsTool } from './slab-walls-tool.ts';
 import { SelectTool } from './select/select-tool.ts';
@@ -50,7 +52,7 @@ const FACTORIES: Record<ToolId, (s: Session) => Tool> = {
       : s.slab.method === 'room'
         ? new SlabRoomTool(s)
         : new SlabTool(s),
-  roof: (s) => new SlabTool(s, 'roof'),
+  roof: (s) => (roofDefaults(s).method === 'building' ? new RoofBuildingTool(s) : new SlabTool(s, 'roof')),
   room: (s) => new RoomTool(s),
   section: (s) => new SectionTool(s),
   levelDim: (s) => new LevelDimTool(s),

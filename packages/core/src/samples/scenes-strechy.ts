@@ -25,6 +25,39 @@ const L: [number, number][] = [
 
 export const ROOF_SCENES: readonly Sample[] = [
   {
+    key: 'strechy-polovalba',
+    title: 'Střechy – polovalba, střecha podle obrysu budovy, tažení hrany',
+    kind: 'scena',
+    date: '2026-11-28',
+    description:
+      'Vlevo dům s polovalbovou střechou vytvořenou podle obrysu budovy (ref. čára po vnějším líci nosné ' +
+      'vrstvy stěn, výška z vršku stěn), vpravo dům tvaru L bez střechy. Zkus: H (Střecha) → Konstrukční ' +
+      'metoda „Podle obrysu budovy“ (poslední ikona), Tvar polovalbová nebo valbová, najeď do L – ukáže ' +
+      'se náhled – a klikni. Vyber střechu vlevo: kolečka uprostřed hran ref. čáry táhni (hrana se posune ' +
+      'rovnoběžně, sousední se prodlouží; číslo v trackeru + Enter, Esc zruší, jedno Ctrl+Z). Klikni na ' +
+      'štítek „2 · polovalba 40°“ – v info boxu Hrana 2: výška zlomu, sklon valby, přesah; druh přepni na ' +
+      'štít nebo sklon. Přidej &3d: štít do výšky zlomu, nad ním malá valba.',
+    build(c) {
+      walls(c, [
+        [0, 0],
+        [10000, 0],
+        [10000, 7000],
+        [0, 7000],
+      ]);
+      walls(c, [
+        [14000, 0],
+        [24000, 0],
+        [24000, 5000],
+        [19000, 5000],
+        [19000, 10000],
+        [14000, 10000],
+      ]);
+      const typeId = roofType(c, 'Šikmá střecha, pálená krytina');
+      const fromWalls = { point: vec(5000, 3500) };
+      c.run('roof.create', { storeyId: c.storeyId, typeId, fromWalls, shape: 'halfhip', slope: 40 });
+    },
+  },
+  {
     key: 'strechy-nastroj',
     title: 'Střechy S2 – nástroj Střecha (ikona domu, klávesa H)',
     kind: 'scena',

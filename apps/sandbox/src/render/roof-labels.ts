@@ -71,8 +71,8 @@ export function roofEdgeTags(s: Session, model: Model): RoofEdgeTag[] {
       return {
         roofId: id,
         index: i,
-        text: `${i + 1} · ${e.gable ? 'štít' : deg(e.slope)}`,
-        slope: !e.gable,
+        text: `${i + 1} · ${e.halfhip ? `polovalba ${deg(e.slope)}` : e.gable ? 'štít' : deg(e.slope)}`,
+        slope: !e.gable || e.halfhip,
         at: { x: eave.x - dir.x * uiPx(16), y: eave.y - dir.y * uiPx(16) },
         mid: c,
         dir,

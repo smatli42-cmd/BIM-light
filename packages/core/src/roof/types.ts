@@ -7,9 +7,9 @@ import type { Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { ElementBase, LibraryRef } from '../model/types.ts';
 
-/** Druh hrany obrysu: sklon (okap, rovina stoupá dovnitř) nebo štít (svislá rovina). */
-export type RoofEdgeKind = 'slope' | 'gable';
-export const ROOF_EDGE_KINDS: readonly RoofEdgeKind[] = ['slope', 'gable'];
+/** Druh hrany obrysu: sklon (okap), štít (svislá rovina), polovalba (štít do výšky zlomu, nad ním valba). */
+export type RoofEdgeKind = 'slope' | 'gable' | 'halfhip';
+export const ROOF_EDGE_KINDS: readonly RoofEdgeKind[] = ['slope', 'gable', 'halfhip'];
 
 /** Hrana obrysu `outline[i] → outline[i+1]`. */
 export interface RoofEdge {
@@ -18,6 +18,8 @@ export interface RoofEdge {
   readonly slope: number;
   /** Přesah vodorovně za referenční čáru (mm), u štítu přesah štítu. */
   readonly overhang: number;
+  /** Polovalba: výška zlomu nad referenční čárou (mm) – do ní štít, nad ní valba se sklonem `slope`. */
+  readonly breakHeight?: number;
 }
 
 /** Úhel řezu okapu (Ardit „Úhel okapu“): svisle, kolmo k rovině, vodorovně. */
@@ -46,11 +48,13 @@ export interface RoofType {
   readonly source?: LibraryRef;
 }
 
-/** Předvolby tvaru (jen předvyplní hrany): pultová, sedlová, valbová. */
-export type RoofShape = 'shed' | 'gable' | 'hip';
-export const ROOF_SHAPES: readonly RoofShape[] = ['shed', 'gable', 'hip'];
+/** Předvolby tvaru (jen předvyplní hrany): pultová, sedlová, valbová, polovalbová. */
+export type RoofShape = 'shed' | 'gable' | 'hip' | 'halfhip';
+export const ROOF_SHAPES: readonly RoofShape[] = ['shed', 'gable', 'hip', 'halfhip'];
 
 export const DEFAULT_ROOF_SLOPE = 35;
+/** Výchozí výška zlomu polovalby nad ref. čárou (mm), když ji předvolba nespočítá. */
+export const DEFAULT_BREAK_HEIGHT = 1500;
 export const DEFAULT_ROOF_OVERHANG = 500;
 /** Výchozí výška referenční čáry nad podlahou (Ardit 3000 = konstrukční výška podlaží). */
 export const DEFAULT_ROOF_REF = 3000;

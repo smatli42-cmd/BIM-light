@@ -14,11 +14,17 @@ const METHODS: readonly [RoofMethod, IconName, string][] = [
   ['polygon', 'slab-polygon', 'Mnohoúhelník'],
   ['rect', 'slab-rect', 'Obdélník'],
   ['rotated', 'slab-rotated', 'Natočený obdélník'],
+  [
+    'building',
+    'roof-building',
+    'Podle obrysu budovy (klik do budovy; ref. čára = vnější líc nosné vrstvy stěn)',
+  ],
 ];
 const SHAPES: readonly [RoofShape, IconName, string][] = [
   ['shed', 'roof-shed', 'Pultová (okap na první hraně, ostatní štíty)'],
   ['gable', 'roof-gable', 'Sedlová (štíty na kratších hranách obdélníku)'],
   ['hip', 'roof-hip', 'Valbová'],
+  ['halfhip', 'roof-halfhip', 'Polovalbová (kratší hrany: štít do výšky zlomu, nad ním valba)'],
 ];
 const CUT_LABEL: Record<EaveCut, string> = {
   vertical: 'svisle',

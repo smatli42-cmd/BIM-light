@@ -23,14 +23,8 @@ import { PressOpeningMode } from './opening-modes.ts';
 import { NodeMode } from './node-mode.ts';
 import { edgePet, nodePet } from './pet.ts';
 import { OffsetMode } from './wall-modes.ts';
-import {
-  OutlineVertexMode,
-  outlineUnder,
-  pickOutline,
-  PressOutlineMode,
-  pressRoofLine,
-  roofUnder,
-} from './slab-modes.ts';
+import { outlineUnder, pickOutline, PressOutlineMode, pressRoofLine, roofUnder } from './slab-modes.ts';
+import { outlineGripMode } from './roof-modes.ts';
 import { faceOverlay, flatUnder, pressRoom, roomUnder, stampUnder } from './room-modes.ts';
 import { pressTileOrigin, withTileOrigin } from './tile-origin-mode.ts';
 import { openSectionAt, pressSection, withSectionMarks } from './section-modes.ts';
@@ -129,8 +123,7 @@ export class SelectTool implements Tool {
     else if (hit.kind === 'lock')
       s.run('dimension.setLocked', { dimensionId: hit.dim.id, locked: !hit.dim.locked });
     else if (hit.kind === 'len-end') s.lenEnd = s.lenEnd === 'end' ? 'start' : 'end';
-    else if (hit.kind === 'slab-vertex')
-      this.mode = new OutlineVertexMode(s, hit.grip.kind, hit.grip.id, hit.grip.index, p, true);
+    else if (hit.kind === 'slab-vertex') this.mode = outlineGripMode(s, hit.grip, p);
     else if (hit.kind === 'grip') {
       const e = hit.grip.end;
       const id = hit.grip.wallId;

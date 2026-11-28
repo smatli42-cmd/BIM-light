@@ -59,7 +59,7 @@ class Planes {
   face(i: number, d: number): Plane3 {
     const p = this.geo.planes.find((q) => q.edge === i) as RoofPlane;
     const e = this.geo.edges[i] as EdgeLine;
-    return { n: p.normal, k: dot3(p.normal, { x: e.a.x, y: e.a.y, z: this.geo.refZ }) + d };
+    return { n: p.normal, k: dot3(p.normal, { x: e.a.x, y: e.a.y, z: this.geo.refZ + e.lift }) + d };
   }
 
   eave(p: RoofPlane): Plane3 {
@@ -104,12 +104,15 @@ class Planes {
     return p.polygon.map((v, k) => {
       const bin = p.bounds[(k + n - 1) % n] as RoofBound;
       const bout = p.bounds[k] as RoofBound;
-      const j =
+      const pair =
         bin.kind === 'plane' && bout.kind === 'eave'
           ? bin.plane
           : bout.kind === 'plane' && bin.kind === 'eave'
             ? bout.plane
             : null;
+      // Společný roh jen v rohu obrysu okapu (bod leží i na okapové čáře sousední roviny).
+      const oe = pair !== null ? this.geo.edges[pair] : undefined;
+      const j = oe && Math.abs(oe.n.x * v.x + oe.n.y * v.y - (oe.c - oe.overhang)) < 1 ? pair : null;
       const x =
         (j !== null ? this.eaveCorner(p, j, d) : null) ??
         solve(own, this.bound(p, bin, d), this.bound(p, bout, d));

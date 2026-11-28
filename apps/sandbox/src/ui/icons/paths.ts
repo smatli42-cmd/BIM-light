@@ -17,6 +17,8 @@ export const ICONS = {
   roof: ['M2 12L12 4l10 8', 'M5 10v10h14V10', 'M10 20v-5h4v5'],
   'roof-hip': ['M3 6h18v12H3z', 'M3 6l5 6h8l5-6', 'M3 18l5-6', 'M21 18l-5-6'],
   'roof-gable': ['M3 6h18v12H3z', 'M3 12h18'],
+  'roof-halfhip': ['M3 6h18v12H3z', 'M6 12h12', 'M3 8l3 4-3 4', 'M21 8l-3 4 3 4'],
+  'roof-building': ['M3 4h18v16H3z', 'M6 7h12v10H6z', 'M12 11l2 4h-4z'],
   'roof-shed': ['M3 6h18v12H3z', 'M8 15V9', 'M6 11l2-2 2 2', 'M16 15V9', 'M14 11l2-2 2 2'],
   'slab-polygon': ['M12 3l8 6-3 10H7L4 9z'],
   'slab-rect': ['M4 6h16v12H4z'],

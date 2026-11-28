@@ -8,3 +8,4 @@ export * from './draw.ts';
 export * from './pick.ts';
 export * from './solids.ts';
 export * from './triangulate.ts';
+export * from './from-walls.ts';

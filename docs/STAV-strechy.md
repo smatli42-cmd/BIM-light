@@ -82,7 +82,36 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
   Del, Ctrl+Z. Nový příkaz `roof.setOutline` (celý obrys, volitelně hrany) – AI krok v `scenario-roofs`.
 - E2E `strechy-nastroj.spec.ts` (obdélník, náhled, hrana na štít, úchop bodu, Ctrl+Z).
 
+### S2 – polovalba, střecha podle obrysu budovy, tažení hrany, 2026-11-28 (pokyn uživatele; scéna `?ukazka=strechy-polovalba`)
+
+- **Polovalba** (`roof/halfhip.ts`, `skeleton-wave.ts`): druh hrany `halfhip` s výškou zlomu `breakHeight`
+  (mm nad ref. čárou). Do výšky zlomu je hrana štít (svislá rovina, v kostře stojí), nad zlomem valba se
+  sklonem hrany (v kostře se od výšky zlomu začne posouvat – událost „start hrany“). V `roof.planes` je
+  valba polovalby samostatná rovina (spodní hrana = okap valby ve výšce zlomu, eaveZ) a štít pod zlomem
+  v `gables`; nároží valby a štítové hrany sousedních rovin navazují i ve všech vrstvách (test
+  `roof/halfhip.test.ts`). Předvolba **polovalbová**: kratší hrany čtyřúhelníku polovalba se zlomem
+  v polovině výšky hřebene (po 10 mm). Příkaz `roof.setEdge` s `kind: 'halfhip'` a `breakHeight`.
+  Info box: Tvar polovalbová; Hrana → druh polovalba, Výška zlomu nad ref. čárou, sklon, přesah; štítek
+  „2 · polovalba 40°“. Přesah polovalby = přesah štítu (spodní svislá část), okap valby nad štítem.
+- **Podle obrysu budovy** (`roof/from-walls.ts`): `roof.create` s `fromWalls: { point?, wallIds? }` –
+  ref. čára = vnější smyčka sjednocení **jader** stěn podlaží (vnější líc nosné vrstvy, tam leží pozednice;
+  zateplení a omítky jsou vně, střecha je přesahem překryje), bod uvnitř budovy vybere budovu; vybrané
+  stěny obrys omezí. Výška ref. čáry = nejvyšší vršek obvodových stěn (vázaný na podlaží), když není
+  `refOffset`. Nástroj Střecha → Konstrukční metoda „Podle obrysu budovy“: náhled střechy pod kurzorem,
+  klik vytvoří (`roof-building-tool.ts`).
+- **Tažení hrany**: kolečko uprostřed každé hrany ref. čáry vybrané střechy – tažení (nebo klik a klik)
+  posune hranu rovnoběžně, sousední hrany se prodlouží / zkrátí po své přímce (základ 25); přichytávání,
+  tracker Posun s číslem a Enter, Esc, jedno Undo (`roof-modes.ts`). Příkaz `roof.moveEdge` (index,
+  distance kladně ven).
+- AI `ai/scenario-roofs-s2.test.ts` (obrys budovy, polovalba, posun hrany), e2e `strechy-s2.spec.ts`.
+
 ## Rozhodl Code (k potvrzení)
+
+- **Polovalba – parametr:** výška zlomu nad referenční čárou (mm), sklon valby = sklon hrany. Archicad
+  polovalbu dělá jako štít do výšky + valbovou rovinu nad ním; výška je pro zaměření i výkres
+  srozumitelnější než délka valby. Výchozí zlom předvolby = polovina výšky hřebene.
+- **Obrys budovy:** ref. čára po vnějším líci nosné vrstvy (jádra) obvodových stěn – pozednice leží na
+  zdivu; bez jádra (např. SDK) celá stěna. Výška ref. čáry = nejvyšší vršek obvodových stěn.
 
 - **S2:** sedlová předvolba se na obrys, který není čtyřúhelník, nepoužije – nástroj vytvoří valbovou
   (štíty jde pak přepnout po hranách). Polovalbová v Tvaru zatím není (potřebuje výšku zlomu, viz Otevřené).
@@ -111,15 +140,14 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
 - Roviny téže střechy se v pohledu řezu navzájem nezakrývají (zakrývání bere jen jiné prvky).
 - Šrafa / výplň průsečíku střechy s rovinou řezu v půdorysu (teď jen dvě čáry perem řezu).
 - Výkaz střech (plochy rovin, délky hřebenů, okapů a úžlabí pro klempíře) – mechanismus výkazů.
-- Polovalba (hrana se sklonem do výšky zlomu, nad ní štít) a mansarda – druhá rovina nad hranou.
-- Metoda „podle stěn / obrysu budovy“ (klik do budovy, ref. čára = vnější líc nosné zdi) – potřebuje obrys
-  vnějšího líce budovy ze stěn podlaží (jako deska podle stěn, ale vnější líc); zatím jen přichytávání k lícům.
-- Úchop hrany obrysu (posun hrany rovnoběžně) a vložení / smazání bodu obrysu v půdorysu.
+- Mansarda (druhá rovina nad hranou se zlomem sklonu).
+- Vložení / smazání bodu obrysu v půdorysu (zatím `roof.setOutline`).
+- Střecha podle obrysu budovy se neváže na stěny (posun stěny ji nepřepočítá) – vazba jako u desky (S3).
 - Stěny pod střechou se nedořezávají (štítová zeď, nadezdívka) – S3.
 
 ## Další krok
 
-1. **S2 – dokončit:** polovalba, metoda podle obrysu budovy, úchop hrany a vložení bodu (Otevřené).
+1. **S2 – zbytky:** mansarda, vložení / smazání bodu obrysu, vazba na stěny (Otevřené).
 2. **S3 – napojení:** stěny se dořezávají ke střeše (štítová zeď pod střechu, nadezdívka), podkroví
    (výška místností pod střechou), IFC export IfcRoof složená z IfcSlab po rovinách.
 3. **S4 – krov:** generátor vaznicové soustavy z `roof.planes` (krokve, pozednice, vaznice, kleštiny,

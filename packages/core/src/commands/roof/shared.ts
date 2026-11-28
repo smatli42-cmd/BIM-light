@@ -2,6 +2,7 @@
 import type { Id } from '../../ids/index.ts';
 import type { Model } from '../../model/types.ts';
 import {
+  DEFAULT_BREAK_HEIGHT,
   MAX_ROOF_SLOPE,
   MIN_ROOF_SLOPE,
   ROOF_EDGE_KINDS,
@@ -15,11 +16,15 @@ import { fail } from '../types.ts';
 export const ROOF_IDS = { type: 'array', items: S.id, minItems: 1 } as JsonSchema;
 export const SLOPE_SCHEMA = S.number(`sklon ve stupních (${MIN_ROOF_SLOPE}–${MAX_ROOF_SLOPE})`);
 export const OVERHANG_SCHEMA = S.number('přesah vodorovně za referenční čáru (mm, 0–3000)');
+export const BREAK_SCHEMA = S.number(
+  'polovalba: výška zlomu nad referenční čárou (mm) – do ní štít, nad ní valba se sklonem hrany',
+);
 export const EDGE_SCHEMA: JsonSchema = S.object(
   {
-    kind: S.enumOf(ROOF_EDGE_KINDS, 'slope = sklon (okap), gable = štít (svislá rovina)'),
+    kind: S.enumOf(ROOF_EDGE_KINDS, 'slope = sklon (okap), gable = štít, halfhip = polovalba'),
     slope: SLOPE_SCHEMA,
     overhang: OVERHANG_SCHEMA,
+    breakHeight: BREAK_SCHEMA,
   },
   ['kind', 'slope', 'overhang'],
 );
@@ -50,6 +55,11 @@ export function checkEdges(edges: readonly RoofEdge[], points: number): RoofEdge
     checkSlope(e.slope);
     checkOverhang(e.overhang);
   });
-  if (!edges.some((e) => e.kind === 'slope')) fail('invalid', 'Aspoň jedna hrana musí mít sklon (ne štít)');
-  return edges.map((e) => ({ kind: e.kind, slope: e.slope, overhang: e.overhang }));
+  if (!edges.some((e) => e.kind !== 'gable')) fail('invalid', 'Aspoň jedna hrana musí mít sklon (ne štít)');
+  return edges.map((e) => {
+    if (e.kind !== 'halfhip') return { kind: e.kind, slope: e.slope, overhang: e.overhang };
+    const h = e.breakHeight ?? DEFAULT_BREAK_HEIGHT;
+    if (!(h > 0)) fail('invalid', 'Výška zlomu polovalby musí být kladná');
+    return { kind: e.kind, slope: e.slope, overhang: e.overhang, breakHeight: h };
+  });
 }

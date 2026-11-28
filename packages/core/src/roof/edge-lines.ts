@@ -1,4 +1,4 @@
-// Hrany obrysu střechy jako přímky: směr, normála dovnitř, poloha, sklon (tg), přesah a štít.
+// Hrany obrysu střechy jako přímky: směr, normála dovnitř, poloha, sklon (tg), přesah, štít a polovalba.
 import { dist, dot, norm, sub, type Vec2 } from '../geometry/index.ts';
 import type { Roof } from './types.ts';
 
@@ -14,7 +14,12 @@ export interface EdgeLine {
   /** tg sklonu (štít 0 – rovina se nepočítá). */
   readonly tan: number;
   readonly overhang: number;
+  /** Svislá spodní část: štít, nebo polovalba (štít do výšky zlomu). */
   readonly gable: boolean;
+  /** Polovalba: štít do výšky zlomu `lift`, nad ním valba se sklonem `slope`. */
+  readonly halfhip: boolean;
+  /** Výška roviny nad ref. čárou na přímce hrany (polovalba = výška zlomu, jinak 0). */
+  readonly lift: number;
   /** Leží bod na úsečce hrany (tolerance 0,5 mm)? */
   readonly contains: (q: Vec2) => boolean;
 }
@@ -26,7 +31,8 @@ export function roofEdgeLines(roof: Pick<Roof, 'outline' | 'edges'>): EdgeLine[]
     const d = norm(sub(b, a));
     const n = { x: -d.y, y: d.x };
     const e = roof.edges[i];
-    const gable = e?.kind === 'gable';
+    const halfhip = e?.kind === 'halfhip';
+    const gable = e?.kind === 'gable' || halfhip;
     const slope = e?.slope ?? 0;
     const len = dist(a, b);
     return {
@@ -36,9 +42,11 @@ export function roofEdgeLines(roof: Pick<Roof, 'outline' | 'edges'>): EdgeLine[]
       n,
       c: dot(n, a),
       slope,
-      tan: gable ? 0 : Math.tan((slope * Math.PI) / 180),
+      tan: gable && !halfhip ? 0 : Math.tan((slope * Math.PI) / 180),
       overhang: e?.overhang ?? 0,
       gable,
+      halfhip,
+      lift: halfhip ? (e?.breakHeight ?? 0) : 0,
       contains: (q: Vec2) => {
         const s = dot(sub(q, a), d);
         return Math.abs(dot(sub(q, a), n)) < 0.5 && s > -0.5 && s < len + 0.5;

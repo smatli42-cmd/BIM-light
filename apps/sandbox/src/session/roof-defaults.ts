@@ -4,8 +4,8 @@ import { DEFAULT_ROOF_OVERHANG, DEFAULT_ROOF_REF, DEFAULT_ROOF_SLOPE } from '@bi
 import type { EaveCut, Id, RoofShape, Vec2 } from '@bim-light/core';
 import type { Session } from './session.ts';
 
-/** Konstrukční metoda: mnohoúhelník, obdélník, natočený obdélník (jako Deska). */
-export type RoofMethod = 'polygon' | 'rect' | 'rotated';
+/** Konstrukční metoda: mnohoúhelník, obdélník, natočený obdélník (jako Deska), podle obrysu budovy. */
+export type RoofMethod = 'polygon' | 'rect' | 'rotated' | 'building';
 
 export interface RoofDefaults {
   typeId: Id;
@@ -41,12 +41,13 @@ export function roofDefaults(s: Session): RoofDefaults {
 }
 
 /**
- * Parametry příkazu roof.create pro nakreslený obrys. Sedlová předvolba jde jen na čtyřúhelník – na jiném
+ * Parametry příkazu roof.create pro nakreslený obrys. Sedlová a polovalbová předvolba jde jen na čtyřúhelník – na jiném
  * obrysu se použije valbová (štíty pak jde přepnout po hranách).
  */
 export function roofCreateParams(s: Session, outline: readonly Vec2[]) {
   const d = roofDefaults(s);
-  const shape = d.shape === 'gable' && outline.length !== 4 ? 'hip' : d.shape;
+  const quad = d.shape === 'gable' || d.shape === 'halfhip';
+  const shape = quad && outline.length !== 4 ? 'hip' : d.shape;
   return {
     storeyId: s.storeyId,
     typeId: d.typeId,
@@ -55,6 +56,22 @@ export function roofCreateParams(s: Session, outline: readonly Vec2[]) {
     slope: d.slope,
     overhang: d.overhang,
     refOffset: d.refOffset,
+    eaveCut: d.eaveCut,
+    status: s.options.newStatus,
+  };
+}
+
+/** Parametry roof.create podle obrysu budovy (klik do budovy; vybrané stěny omezí obrys). Výška ref. čáry z vršku stěn. */
+export function roofFromWallsParams(s: Session, point: Vec2) {
+  const d = roofDefaults(s);
+  const walls = s.selection.walls;
+  return {
+    storeyId: s.storeyId,
+    typeId: d.typeId,
+    fromWalls: { point, ...(walls.length ? { wallIds: walls } : {}) },
+    shape: d.shape,
+    slope: d.slope,
+    overhang: d.overhang,
     eaveCut: d.eaveCut,
     status: s.options.newStatus,
   };

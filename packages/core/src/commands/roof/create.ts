@@ -5,6 +5,7 @@ import { IFC_CLASS } from '../../model/categories.ts';
 import { STATUSES, type Status } from '../../model/types.ts';
 import { putElements } from '../../model/update.ts';
 import { presetEdges } from '../../roof/presets.ts';
+import { buildingOutline } from '../../roof/from-walls.ts';
 import { signedArea } from '../../slab/geometry.ts';
 import {
   DEFAULT_ROOF_OVERHANG,
@@ -36,6 +37,8 @@ export interface RoofCreateParams {
   typeId: string;
   outline?: Vec2[];
   rect?: { a: Vec2; b: Vec2 };
+  /** Obrys budovy: vnější líc jader obvodových stěn (bod uvnitř budovy, nebo vybrané stěny). */
+  fromWalls?: { point?: Vec2; wallIds?: string[] };
   shape?: RoofShape;
   slope?: number;
   overhang?: number;
@@ -51,7 +54,10 @@ function edgesFor(outline: readonly Vec2[], p: RoofCreateParams, reversed: boole
   const slope = checkSlope(p.slope ?? DEFAULT_ROOF_SLOPE);
   const overhang = checkOverhang(p.overhang ?? DEFAULT_ROOF_OVERHANG);
   const edges = presetEdges(outline, p.shape ?? 'hip', slope, overhang);
-  return edges ?? fail('invalid', 'Sedlová předvolba jde jen na čtyřúhelník; jinak zadej hrany (edges)');
+  return (
+    edges ??
+    fail('invalid', 'Sedlová a polovalbová předvolba jde jen na čtyřúhelník; jinak zadej hrany (edges)')
+  );
 }
 
 export const roofCreate = defineCommand<RoofCreateParams>({
@@ -59,8 +65,11 @@ export const roofCreate = defineCommand<RoofCreateParams>({
   label: 'Střecha',
   description:
     'Vytvoří vícerovinnou střechu. Obrys referenční čáry (spodní líc nosné vrstvy = krokví, typicky vnější ' +
-    'líc zdi) jako outline (body mnohoúhelníku) nebo rect (dva rohy). Hrany: shape = předvolba (hip = ' +
-    'valbová, gable = sedlová se štíty na kratších hranách čtyřúhelníku, shed = pultová s okapem na první ' +
+    'líc zdi) jako outline (body mnohoúhelníku), rect (dva rohy) nebo fromWalls = obrys budovy: vnější líc ' +
+    'nosné vrstvy obvodových stěn (point = bod uvnitř budovy, wallIds = jen tyto stěny; výška ref. čáry ' +
+    'z vršku stěn, když není refOffset). Hrany: shape = předvolba (hip = ' +
+    'valbová, gable = sedlová se štíty na kratších hranách čtyřúhelníku, halfhip = polovalbová (kratší hrany ' +
+    'polovalba, zlom v polovině výšky hřebene), shed = pultová s okapem na první ' +
     'hraně) se sklonem slope (°, výchozí 35) a přesahem overhang (mm, výchozí 500), nebo edges = pro ' +
     'každou hranu obrysu (outline[i] → outline[i+1]) kind slope / gable, slope, overhang. refOffset = ' +
     'výška referenční čáry nad úrovní podlaží (mm, výchozí 3000). eaveCut = úhel řezu okapu (vertical / ' +
@@ -74,7 +83,11 @@ export const roofCreate = defineCommand<RoofCreateParams>({
       typeId: S.id,
       outline: OUTLINE_SCHEMA,
       rect: RECT_SCHEMA,
-      shape: S.enumOf(ROOF_SHAPES, 'předvolba tvaru: shed = pultová, gable = sedlová, hip = valbová'),
+      fromWalls: S.object({ point: S.point, wallIds: { type: 'array', items: S.id, minItems: 1 } }, []),
+      shape: S.enumOf(
+        ROOF_SHAPES,
+        'předvolba tvaru: shed = pultová, gable = sedlová, hip = valbová, halfhip = polovalbová',
+      ),
       slope: SLOPE_SCHEMA,
       overhang: OVERHANG_SCHEMA,
       edges: { type: 'array', items: EDGE_SCHEMA, minItems: 3 },
@@ -87,9 +100,13 @@ export const roofCreate = defineCommand<RoofCreateParams>({
   run(model, p, ctx) {
     const storey = storeyOf(model, p.storeyId);
     const type = roofTypeOf(model, p.typeId);
+    const building = p.fromWalls ? buildingOutline(model, storey.id, p.fromWalls) : null;
+    if (p.fromWalls && !building) fail('invalid', 'Stěny netvoří uzavřený obrys budovy (v místě bodu)');
     const pts =
       p.outline ??
-      (p.rect ? rectOutline(p.rect.a, p.rect.b) : fail('invalid-params', 'Chybí outline nebo rect'));
+      (p.rect
+        ? rectOutline(p.rect.a, p.rect.b)
+        : (building?.outline ?? fail('invalid-params', 'Chybí obrys střechy')));
     const outline = validOutline(pts);
     const reversed = signedArea(pts) < 0;
     const roof: Roof = {
@@ -103,7 +120,7 @@ export const roofCreate = defineCommand<RoofCreateParams>({
       typeId: type.id,
       outline,
       edges: edgesFor(outline, p, reversed),
-      refOffset: p.refOffset ?? DEFAULT_ROOF_REF,
+      refOffset: p.refOffset ?? (building ? Math.round(building.top - storey.elevation) : DEFAULT_ROOF_REF),
       eaveCut: p.eaveCut ?? 'vertical',
     };
     return { model: putElements(model, [roof]), created: [roof.id] };

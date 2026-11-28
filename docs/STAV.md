@@ -1,6 +1,6 @@
 # BIM-light – stav práce
 
-Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-28, střechy S2 (nástroj Střecha, klávesa H) a S1 (vícerovinná střecha v jádře, `docs/STAV-strechy.md`); popis skladby v řezu; úchopy v řezu (výška stěny, poloha desky, parapet tažením, `docs/STAV-rezy.md`); 2026-11-27 Elektro krok 1 (knihovna typů a půdorysné značky, `docs/STAV-elektro.md`); výběr prvků v okně řezu; záložky pohledů v záhlaví okna, výkazy v okně; výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
+Aktualizuje Claude Code na konci každého kroku. Poslední změna: 2026-11-28, střechy S2 (nástroj Střecha, klávesa H; polovalba, podle obrysu budovy, tažení hrany) a S1 (vícerovinná střecha v jádře, `docs/STAV-strechy.md`); popis skladby v řezu; úchopy v řezu (výška stěny, poloha desky, parapet tažením, `docs/STAV-rezy.md`); 2026-11-27 Elektro krok 1 (knihovna typů a půdorysné značky, `docs/STAV-elektro.md`); výběr prvků v okně řezu; záložky pohledů v záhlaví okna, výkazy v okně; výškové kóty v půdorysu; výškové kóty v řezech (ČSN 01 3420); řez a pohled v pracovním okně (místo dialogu); nástroj Řez a info box řezu podle Arditu; řezy a pohledy z modelu; typy desek v editoru typů; vazba desky (podlaha podle místnosti, deska podle stěn, zámek); povrchy místností (část 3: spárořez); 3D náhled běží ve druhém proudu (`docs/STAV-3d.md`).
 
 Etapa 0 (kroky 1–4, skupina A, doplněk šraf) a její rozhodnutí jsou v `docs/STAV-etapa-0.md`.
 Stěny Z1–Z5 (hotovo a rozhodnutí, Z4 a Z5 k potvrzení) jsou v `docs/STAV-steny.md`.
@@ -8,7 +8,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ## Hotovo
 
-### Střechy S1 (jádro) a S2 (nástroj Střecha, klávesa H) – 2026-11-28, v `docs/STAV-strechy.md`, scény `?ukazka=strechy-nastroj`, `?ukazka=strechy`
+### Střechy S1 (jádro) a S2 (nástroj Střecha, klávesa H) – 2026-11-28, v `docs/STAV-strechy.md`, scény `?ukazka=strechy-polovalba`, `?ukazka=strechy-nastroj`, `?ukazka=strechy`
 
 ### Elektro, krok 1: knihovna typů a půdorysné značky (2026-11-27) – v `docs/STAV-elektro.md`, katalog `docs/katalog-elektro.md`
 
@@ -289,7 +289,7 @@ pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, pus
 5. **Elektro, krok 2** (po probrání se screenshoty Arditu): nástroj pro vkládání a výběr elektro prvků,
    vazby vypínač → svítidla, okruhy a rozvaděč, legenda značek (vzor legendy Arditu, nový zdroj výkazu) – podrobně „Další krok“ v `docs/STAV-elektro.md`.
 
-**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `strechy-nastroj`, `strechy`, `popis-skladeb`, `rezy-uchopy`, `elektro`, `rezy`, `podlaha-dvere`, `typy-desek`, `desky-vazba`,
+**Uživatel může vyzkoušet** (ukázky `…/BIM-light/?ukazka=<klíč>`): `strechy-polovalba`, `strechy-nastroj`, `strechy`, `popis-skladeb`, `rezy-uchopy`, `elektro`, `rezy`, `podlaha-dvere`, `typy-desek`, `desky-vazba`,
 `sparorez`, `povrchy`, `mistnosti`, `desky-d4`, `desky-presny-otvor`, `desky-otvory`, `desky-kresleni`,
 `desky`, `dum` (i s `&3d`). Starší seznam „vyzkouší“ je v `docs/STAV-archiv.md`.
 
@@ -375,8 +375,8 @@ Výstup `npm run check:size`: bez varování (STAV.md 35 KB).
 
 | Řádky | Soubor |
 |---|---|
-| 250 | apps/sandbox/src/interaction/tools/select/select-tool.ts |
 | 248 | apps/sandbox/src/session/session.ts |
+| 247 | apps/sandbox/src/interaction/tools/slab-tool.ts |
 | 245 | packages/core/src/samples/house.ts |
 | 244 | apps/sandbox/e2e/koty-trvale.spec.ts |
-| 244 | apps/sandbox/src/interaction/tools/slab-tool.ts |
+| 243 | apps/sandbox/src/interaction/tools/select/select-tool.ts |

@@ -3,7 +3,8 @@
 // čárou. Vrcholy vlny putují po nárožích a úžlabích; události: hrana zmizí (edge event), vrchol úžlabí
 // narazí do protější hrany a vlnu rozdělí (split event). Vlna s nulovou plochou = hřebeny. Výsledek:
 // trasy vrcholů (oblouky mezi rovinami dvou hran) a pro každou hranu úsečky hranice její roviny.
-import { add, cross, dist, dot, mid, mul, norm, sub, type Vec2 } from '../geometry/index.ts';
+import { dist, dot, mid, sub, type Vec2 } from '../geometry/index.ts';
+import { lineAt, makeEdges, pos, speedAt, vertex, type Edge, type Vx } from './skeleton-wave.ts';
 import { signedArea } from '../slab/geometry.ts';
 import type { Vec3 } from '../covering/frame.ts';
 
@@ -23,59 +24,21 @@ export interface Skeleton {
   readonly faceSegs: readonly (readonly (readonly [Vec3, Vec3])[])[];
 }
 
-interface Edge {
-  readonly d: Vec2;
-  readonly n: Vec2;
-  readonly c: number;
-  readonly v: number;
-}
-
-interface Vx {
-  readonly p: Vec2;
-  readonly t0: number;
-  readonly w: Vec2;
-  readonly ein: number;
-  readonly eout: number;
-  readonly reflex: boolean;
-  readonly degenerate: boolean;
-}
-
 type Ev =
   | { t: number; kind: 'edge'; lav: number; i: number }
-  | { t: number; kind: 'split'; lav: number; iv: number; j: number };
+  | { t: number; kind: 'split'; lav: number; iv: number; j: number }
+  | { t: number; kind: 'start'; edge: number };
 
 const EPS = 1e-3;
 const P3 = (p: Vec2, z: number): Vec3 => ({ x: p.x, y: p.y, z });
-const pos = (v: Vx, t: number): Vec2 => add(v.p, mul(v.w, t - v.t0));
-
-function makeEdges(pts: readonly Vec2[], speeds: readonly number[]): Edge[] {
-  return pts.map((p, i) => {
-    const q = pts[(i + 1) % pts.length] as Vec2;
-    const d = norm(sub(q, p));
-    const n = { x: -d.y, y: d.x };
-    return { d, n, c: dot(n, p), v: speeds[i] ?? 0 };
-  });
-}
-
-function vertex(E: readonly Edge[], ein: number, eout: number, p: Vec2, t: number): Vx {
-  const a = E[ein] as Edge;
-  const b = E[eout] as Edge;
-  const det = cross(a.n, b.n);
-  const reflex = cross(a.d, b.d) < -1e-9;
-  if (Math.abs(det) > 1e-9) {
-    const w = { x: (a.v * b.n.y - b.v * a.n.y) / det, y: (a.n.x * b.v - b.n.x * a.v) / det };
-    return { p, t0: t, w, ein, eout, reflex, degenerate: false };
-  }
-  // Rovnoběžné hrany: stejný směr = vrchol jde s hranou, protisměr = hřeben (vrchol stojí).
-  const same = dot(a.n, b.n) > 0;
-  return { p, t0: t, w: same ? mul(a.n, a.v) : { x: 0, y: 0 }, ein, eout, reflex, degenerate: !same };
-}
 
 class Wave {
   readonly arcs: SkeletonArc[] = [];
   readonly faceSegs: [Vec3, Vec3][][];
   lavs: Vx[][];
   now = 0;
+  /** Hrany polovalby, které už se posouvají. */
+  readonly started = new Set<number>();
 
   constructor(
     readonly E: readonly Edge[],
@@ -117,8 +80,8 @@ class Wave {
     const Y = L[(j + 1) % L.length] as Vx;
     if (X === V || Y === V) return null;
     const e = this.E[X.eout] as Edge;
-    const s = dot(e.n, pos(V, this.now)) - (e.c + e.v * this.now);
-    const rate = dot(e.n, V.w) - e.v;
+    const s = dot(e.n, pos(V, this.now)) - lineAt(e, this.now);
+    const rate = dot(e.n, V.w) - speedAt(e, this.now);
     if (rate >= -1e-12 || s < -EPS) return null;
     const at = this.now + Math.max(s, 0) / -rate;
     if (at >= t) return null;
@@ -131,6 +94,11 @@ class Wave {
 
   nextEvent(): Ev | null {
     let best: Ev | null = null;
+    // Start hrany polovalby (nad výškou zlomu se začne posouvat).
+    this.E.forEach((e, edge) => {
+      if (e.start > 0 && !this.started.has(edge) && (!best || e.start < best.t))
+        best = { t: e.start, kind: 'start', edge };
+    });
     this.lavs.forEach((L, lav) => {
       L.forEach((V, i) => {
         const t = this.edgeEvent(L, i, best ? best.t + 1e-9 : Infinity);
@@ -176,6 +144,19 @@ class Wave {
     return [one, two];
   }
 
+  /** Start hrany: vrcholy u ní dostanou novou rychlost (zlom trasy v bodě zlomu). */
+  applyStart(edge: number, t: number) {
+    this.started.add(edge);
+    this.lavs = this.lavs.map((L) =>
+      L.map((v) => {
+        if (v.ein !== edge && v.eout !== edge) return v;
+        const P = pos(v, t);
+        this.trace(v, P, t);
+        return vertex(this.E, v.ein, v.eout, P, t);
+      }),
+    );
+  }
+
   /** Vlna s nulovou plochou (nebo 2 vrcholy): zbylé úseky jsou hřebeny mezi protilehlými hranami. */
   collapse(L: Vx[], t: number) {
     const P = L.map((v) => pos(v, t));
@@ -204,6 +185,10 @@ class Wave {
         return;
       }
       this.now = Math.max(this.now, ev.t);
+      if (ev.kind === 'start') {
+        this.applyStart(ev.edge, this.now);
+        continue;
+      }
       const L = this.lavs[ev.lav] as Vx[];
       const next =
         ev.kind === 'edge' ? this.applyEdge(L, ev.i, this.now) : this.applySplit(L, ev.iv, ev.j, this.now);
@@ -218,9 +203,16 @@ class Wave {
   }
 }
 
-/** Kostra obrysu proti směru hodin; `speeds[i]` = vodorovný posun hrany i na 1 mm výšky (štít 0). */
-export function straightSkeleton(points: readonly Vec2[], speeds: readonly number[]): Skeleton {
-  const E = makeEdges(points, speeds);
+/**
+ * Kostra obrysu proti směru hodin; `speeds[i]` = vodorovný posun hrany i na 1 mm výšky (štít 0),
+ * `starts[i]` = výška, od které se hrana posouvá (polovalba; jinak 0).
+ */
+export function straightSkeleton(
+  points: readonly Vec2[],
+  speeds: readonly number[],
+  starts: readonly number[] = [],
+): Skeleton {
+  const E = makeEdges(points, speeds, starts);
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
   const diag = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));

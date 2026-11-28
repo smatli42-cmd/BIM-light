@@ -11,6 +11,7 @@ import {
   checkEdges,
   checkOverhang,
   checkSlope,
+  BREAK_SCHEMA,
   OVERHANG_SCHEMA,
   ROOF_IDS,
   roofOf,
@@ -24,12 +25,14 @@ export const roofSetEdge = defineCommand<{
   kind?: RoofEdgeKind;
   slope?: number;
   overhang?: number;
+  breakHeight?: number;
 }>({
   name: 'roof.setEdge',
   label: 'Hrana střechy',
   description:
     'Změní hrany obrysu střechy (indices = indexy hran, hrana i = outline[i] → outline[i+1]): kind slope = ' +
-    'sklon (okap) / gable = štít, slope = sklon ve stupních, overhang = přesah v mm. Hřebeny, nároží ' +
+    'sklon (okap) / gable = štít / halfhip = polovalba (štít do výšky zlomu breakHeight v mm nad ref. ' +
+    'čárou, nad ní valba se sklonem slope), slope = sklon ve stupních, overhang = přesah v mm. Hřebeny, nároží ' +
     'a úžlabí se přepočítají. Aspoň jedna hrana musí zůstat se sklonem.',
   group: 'Střecha',
   params: S.object(
@@ -39,6 +42,7 @@ export const roofSetEdge = defineCommand<{
       kind: S.enumOf(ROOF_EDGE_KINDS, 'slope = sklon (okap), gable = štít'),
       slope: SLOPE_SCHEMA,
       overhang: OVERHANG_SCHEMA,
+      breakHeight: BREAK_SCHEMA,
     },
     ['roofId', 'indices'],
   ),
@@ -48,7 +52,14 @@ export const roofSetEdge = defineCommand<{
     if (bad !== undefined) fail('invalid', `Střecha má jen ${r.edges.length} hran`);
     const edges = r.edges.map((e, i) =>
       p.indices.includes(i)
-        ? { kind: p.kind ?? e.kind, slope: p.slope ?? e.slope, overhang: p.overhang ?? e.overhang }
+        ? {
+            kind: p.kind ?? e.kind,
+            slope: p.slope ?? e.slope,
+            overhang: p.overhang ?? e.overhang,
+            ...((p.breakHeight ?? e.breakHeight) !== undefined && {
+              breakHeight: p.breakHeight ?? e.breakHeight,
+            }),
+          }
         : e,
     );
     return { model: putElements(model, [{ ...r, edges: checkEdges(edges, r.outline.length) }]) };

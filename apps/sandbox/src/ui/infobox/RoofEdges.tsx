@@ -24,9 +24,20 @@ function ActiveEdge({ s, roof, index }: { s: Session; roof: Roof; index: number 
         >
           <option value="slope">sklon (okap)</option>
           <option value="gable">štít</option>
+          <option value="halfhip">polovalba</option>
         </select>
       </label>
-      {e.kind === 'slope' && (
+      {e.kind === 'halfhip' && (
+        <label>
+          Výška zlomu nad ref. čárou (mm)
+          <NumberInput
+            testid="roof-active-break"
+            value={e.breakHeight ?? 0}
+            onSet={(v) => set({ breakHeight: v })}
+          />
+        </label>
+      )}
+      {e.kind !== 'gable' && (
         <label>
           Sklon (°)
           <NumberInput testid="roof-active-slope" value={e.slope} onSet={(v) => set({ slope: v })} />
@@ -65,8 +76,9 @@ export function RoofEdges({ s, roof }: { s: Session; roof: Roof }) {
           >
             <option value="slope">{i + 1}: sklon</option>
             <option value="gable">{i + 1}: štít</option>
+            <option value="halfhip">{i + 1}: polovalba</option>
           </select>
-          {e.kind === 'slope' && (
+          {e.kind !== 'gable' && (
             <NumberInput
               testid={`roof-edge-slope-${i}`}
               value={e.slope}
