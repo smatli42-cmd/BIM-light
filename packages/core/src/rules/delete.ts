@@ -40,21 +40,22 @@ function unhostSlabOpenings(model: Model, gone: ReadonlySet<Id>): Model {
   );
 }
 
+/** Anotace navázané na smazané prvky zaniknou: výškové kóty k hranám, popisy skladby řezaného prvku. */
+function withoutAnnotationsOf(input: Model, gone: ReadonlySet<Id>): Model {
+  const keep = <T>(rec: Readonly<Record<Id, T>> | undefined, ok: (x: T) => boolean) =>
+    Object.fromEntries(Object.entries(rec ?? {}).filter(([, x]) => ok(x)));
+  return {
+    ...input,
+    levelDims: keep(input.levelDims, (d) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId)),
+    planLevelDims: keep(input.planLevelDims, (d) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId)),
+    compositionTags: keep(input.compositionTags, (t) => !gone.has(t.elementId)),
+  };
+}
+
 /** Smaže prvky a vše, co s nimi podle tabulky zaniká. */
 export function deleteElements(input: Model, ids: readonly Id[]): Model {
   const gone = new Set(ids);
-  // Výškové kóty k hranám smazaných prvků zaniknou (jako kóty k jejich lícům).
-  const levelDims = Object.fromEntries(
-    Object.entries(input.levelDims ?? {}).filter(
-      ([, d]) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId),
-    ),
-  );
-  const planLevelDims = Object.fromEntries(
-    Object.entries(input.planLevelDims ?? {}).filter(
-      ([, d]) => d.ref.kind !== 'edge' || !gone.has(d.ref.elementId),
-    ),
-  );
-  const model = { ...input, levelDims, planLevelDims };
+  const model = withoutAnnotationsOf(input, gone);
   const cascade = new Set(
     ids.flatMap((id) => {
       const el = model.elements[id];

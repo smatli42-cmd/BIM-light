@@ -138,6 +138,7 @@ export const ICONS = {
   cube: ['M12 3l8 4.5v9L12 21l-8-4.5v-9z', 'M4 7.5l8 4.5 8-4.5', 'M12 12v9'],
   section: ['M12 3v18', 'M12 4h6', 'M15.5 2l2.5 2-2.5 2', 'M12 20h6', 'M15.5 18l2.5 2-2.5 2', 'M4 9h5v6H4z'],
   'level-dim': ['M4 14h16', 'M12 14l-4-4h8z', 'M8 6h8'],
+  'comp-tag': ['M4 18h6', 'M4 15h6', 'M4 12h6', 'M10 15l6-6', 'M16 9h4', 'M16 6h4'],
   'section-straight': ['M4 12h16', 'M4 8v8', 'M20 8v8'],
   'section-jogged': ['M3 8h8v8h10', 'M3 5v6', 'M21 13v6'],
   elevation: ['M4 20h16', 'M6 20V10l6-5 6 5v10', 'M9 13h2v3H9z', 'M13 13h2v3h-2z'],

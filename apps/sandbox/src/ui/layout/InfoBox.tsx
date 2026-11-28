@@ -14,6 +14,8 @@ function heading(s: Session): { title: string; sub: string } {
   if (n === openings.length) return { title: n > 1 ? 'Otvory' : 'Otvor', sub: `vybráno: ${n}` };
   if (n === rooms.length) return { title: n > 1 ? 'Místnosti' : 'Místnost', sub: `vybráno: ${n}` };
   if (n === sections.length) return { title: n > 1 ? 'Řezy' : 'Řez', sub: `vybráno: ${n}` };
+  const tags = levelDims.filter((id) => s.model.compositionTags[id]).length;
+  if (n === tags) return { title: n > 1 ? 'Popisy skladby' : 'Popis skladby', sub: `vybráno: ${n}` };
   if (n === levelDims.length) return { title: n > 1 ? 'Výškové kóty' : 'Výšková kóta', sub: `vybráno: ${n}` };
   if (n === dims.length) return { title: n > 1 ? 'Kóty' : 'Kóta', sub: `vybráno: ${n}` };
   return { title: 'Výběr', sub: `vybráno: ${n}` };

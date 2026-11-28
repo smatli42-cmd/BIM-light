@@ -37,6 +37,7 @@ import { projectV34toV35 } from '../level-dim/migrate-v34.ts';
 import { projectV35toV36 } from '../section-dim/migrate-v35.ts';
 import { projectV36toV37 } from '../electro/project.ts';
 import { projectV37toV38 } from '../electro/migrate-v37.ts';
+import { projectV38toV39 } from '../composition-tag/migrate-v38.ts';
 import { migrate, type Migrations } from './migrate.ts';
 import type { Platform } from './platform.ts';
 
@@ -102,6 +103,7 @@ export const PROJECT_MIGRATIONS: Migrations = {
   35: projectV35toV36,
   36: projectV36toV37,
   37: projectV37toV38,
+  38: projectV38toV39,
 };
 
 export function serializeProject(model: Model): string {

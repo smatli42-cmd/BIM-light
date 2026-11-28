@@ -44,7 +44,8 @@ export type ToolId =
   | 'slab'
   | 'room'
   | 'section'
-  | 'levelDim';
+  | 'levelDim'
+  | 'compositionTag';
 
 /** Co nástroj kreslí přes výkres (světle modré pomocné značky, katalog kreslení 2). */
 export interface Overlay {

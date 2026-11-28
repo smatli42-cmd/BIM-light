@@ -3,7 +3,6 @@
 // na hranu v místě kliku; jinak hláška. Jinak výběr výškové kóty klikem (Shift přidá), tažení ji posune (i pod
 // hranu), Del smaže, tažení prázdného místa posune výkres. Model se mění jen příkazy levelDim.* (stejně jako AI).
 import {
-  drawLevelSymbol,
   levelDimSymbol,
   levelMarkSize,
   levelTargetPick,
@@ -12,7 +11,6 @@ import {
   type Id,
   type LevelTarget,
   type Model,
-  type Primitive,
   type Vec2,
 } from '@bim-light/core';
 import type { Viewport } from '../../canvas/viewport.ts';
@@ -20,8 +18,10 @@ import { AUX } from '../../render/overlay.ts';
 import { drawPrimitive, type RenderContext } from '../../render/primitives.ts';
 import { levelDimDefaults } from '../../session/section-defaults.ts';
 import { SectionDimInput } from './section-dim-input.ts';
+import { levelPreview } from './section-level-preview.ts';
 import { SectionGrips } from './section-grips.ts';
 import { SectionSelect } from './section-select.ts';
+import { SectionTagInput } from './section-tag-input.ts';
 import type { Session } from '../../session/session.ts';
 
 /** Přichycení k hraně / úrovni (px); klik do plochy prvku vezme jeho bližší hranu. */
@@ -43,6 +43,8 @@ export class SectionInput {
   private cache: { model: Model; targets: LevelTarget[] } | null = null;
   /** Nástroj Kóta v řezu a tažení vybrané kóty (section-dim-input.ts). */
   private readonly dims: SectionDimInput;
+  /** Nástroj Popis skladby a tažení textu popisu (section-tag-input.ts). */
+  private readonly tags: SectionTagInput;
   /** Výběr stěn, desek a otvorů (section-select.ts). */
   readonly sel: SectionSelect;
   /** Úchopy vybraných prvků (section-grips.ts). */
@@ -55,6 +57,7 @@ export class SectionInput {
     private readonly v: Viewport,
   ) {
     this.dims = new SectionDimInput(s, sectionId, v);
+    this.tags = new SectionTagInput(s, sectionId, v);
     this.sel = new SectionSelect(s, sectionId, v);
     this.grips = new SectionGrips(s, sectionId, v);
   }
@@ -89,10 +92,12 @@ export class SectionInput {
   down(screen: Vec2, button: number, shift: boolean) {
     const p = this.v.toWorld(screen);
     if (button === 1) return void (this.pan = screen);
-    if (button === 2 && !this.tool && !this.dims.active) return this.sel.context(screen, p);
+    if (button === 2 && !this.tool && !this.dims.active && !this.tags.active)
+      return this.sel.context(screen, p);
     if (button !== 0) return;
     if (this.tool) return this.toolClick(p);
     if (this.dims.active) return this.dims.click(p);
+    if (this.tags.active) return this.tags.click(p);
     if (this.grips.down()) return;
     const grip = this.grips.hit(p);
     if (grip) return this.grips.press(grip, screen);
@@ -112,7 +117,7 @@ export class SectionInput {
   private pressSectionDim(p: Vec2, screen: Vec2, shift: boolean) {
     const hit = this.dims.hit(p);
     // Jinde výběr prvku nebo rámeček (posun výkresu prostředním tlačítkem, jako v půdorysu).
-    if (!hit) return this.sel.press(screen, p, shift);
+    if (!hit) return void (this.tags.press(p, shift) || this.sel.press(screen, p, shift));
     this.select(hit.id, shift);
     this.dimDrag = { id: hit.id, vertical: hit.vertical, offset0: hit.offset, start: p };
     this.s.changed();
@@ -144,7 +149,9 @@ export class SectionInput {
       this.pan = screen;
       return true;
     }
-    if (this.drag) {
+    this.tags.move(p);
+    if (this.drag || this.tags.dragging || this.tags.active) {
+      if (!this.drag) return true;
       this.drag.moved ||= Math.abs(p.x - this.drag.start.x) > this.v.px(3);
       return true;
     }
@@ -161,6 +168,7 @@ export class SectionInput {
     this.drag = this.pan = null;
     this.grips.up();
     this.dropSectionDim();
+    this.tags.release();
     if (this.sel.dragging) this.sel.release();
     if (d?.moved && this.mouse) {
       const at = d.at0 + this.mouse.x - d.start.x;
@@ -189,11 +197,11 @@ export class SectionInput {
         this.s.changed(),
         true
       );
-    if (key === 'Tab' && !this.tool && !this.dims.active) return this.sel.tab();
+    if (key === 'Tab' && !this.tool && !this.dims.active && !this.tags.active) return this.sel.tab();
     if (ctrl && (key === 'a' || key === 'A')) return (this.sel.selectAll(), true);
     if (key === 'Escape') {
-      if (this.dims.active && this.dims.escape()) return true;
-      else if (this.tool || this.dims.active) this.s.setTool('select');
+      if ((this.dims.active && this.dims.escape()) || this.tags.escape()) return true;
+      else if (this.tool || this.dims.active || this.tags.active) this.s.setTool('select');
       else if (!this.s.selection.empty) this.s.selection.set([]);
       else return false;
       this.s.changed();
@@ -211,38 +219,10 @@ export class SectionInput {
     const sec = this.s.model.sections[this.sectionId];
     const m = this.mouse;
     if (!sec || !m) return;
-    const g = { ...this.s.model.display.baseGraphics, projectionPen: 1 };
-    const ghost = (x: number, z: number, below: boolean) =>
-      drawLevelSymbol(
-        { x, z, text: '', below, filled: false },
-        this.s.model.display.paperSizes,
-        sec.scale,
-        g,
-        {
-          role: 'náhled',
-        },
-      );
-    let prims: Primitive[] = [];
-    const t = this.tool ? this.hover : null;
-    if (t) {
-      const u0 = Number.isFinite(t.u0) ? t.u0 : m.x - this.v.px(200);
-      const u1 = Number.isFinite(t.u1) ? t.u1 : m.x + this.v.px(200);
-      const line: Primitive = {
-        kind: 'line',
-        points: [
-          { x: u0, y: t.z },
-          { x: u1, y: t.z },
-        ],
-        closed: false,
-        stroke: { pen: 1, color: AUX, lineType: 'dashed' },
-        source: { role: 'náhled' },
-      };
-      prims = [line, ...ghost(m.x, t.z, false)];
-    }
-    if (this.drag?.moved)
-      prims = ghost(this.drag.at0 + m.x - this.drag.start.x, this.drag.z, m.y < this.drag.z);
+    const prims = levelPreview(this.s.model, sec, this.v, m, this.tool ? this.hover : null, this.drag);
     for (const p of prims) drawPrimitive(r, p, AUX);
     if (this.dims.active) this.dims.overlay(r);
+    this.tags.overlay(r);
     this.sel.overlay(r);
     this.grips.overlay(r);
   }

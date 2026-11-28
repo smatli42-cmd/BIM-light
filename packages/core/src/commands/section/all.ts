@@ -6,6 +6,7 @@ import { levelDimCreate, levelDimDelete, levelDimMove, levelDimUpdate } from '..
 import { styleSetLevelMarkFill } from '../level-dim/style.ts';
 import { styleSetTerrainLabels } from '../level-dim/terrain-style.ts';
 import { sectionDimCreate, sectionDimUpdate } from '../section-dim/section-dim.ts';
+import { COMPOSITION_TAG_COMMANDS } from '../composition-tag/composition-tag.ts';
 import { planLevelDimCreate, planLevelDimMove, planLevelDimUpdate } from '../level-dim/plan.ts';
 
 export const SECTION_COMMANDS = [
@@ -29,4 +30,5 @@ export const SECTION_COMMANDS = [
   styleSetTerrainLabels,
   sectionDimCreate,
   sectionDimUpdate,
+  ...COMPOSITION_TAG_COMMANDS,
 ] as const;

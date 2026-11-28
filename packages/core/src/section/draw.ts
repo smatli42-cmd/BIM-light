@@ -20,6 +20,7 @@ import { effectiveFrame } from './frame.ts';
 import { drawLevels } from './levels.ts';
 import { drawLevelDims } from '../level-dim/draw.ts';
 import { drawSectionDims } from '../section-dim/draw.ts';
+import { drawCompositionTags } from '../composition-tag/draw.ts';
 import { occluder, visibleParts, type Occluder } from './occlude.ts';
 import { ringsOf, simplePieces } from './pieces.ts';
 import { slabProjection, wallProjection, type Projected } from './projection.ts';
@@ -190,6 +191,7 @@ export function drawSection(model: Model, sectionId: Id): Drawing {
       }),
       ...drawLevelDims(model, s),
       ...drawSectionDims(model, s),
+      ...drawCompositionTags(model, s),
     ],
   };
 }

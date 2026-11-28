@@ -20,4 +20,5 @@ export const emptySectionData = () => ({
   levelDims: {},
   planLevelDims: {},
   sectionDims: {},
+  compositionTags: {},
 });

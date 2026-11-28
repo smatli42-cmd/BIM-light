@@ -29,6 +29,7 @@ import {
   sectionDimList,
   sectionDimSides,
 } from './level-dims.ts';
+import { compositionTagList } from './composition-tags.ts';
 import { compositionList } from './compositions.ts';
 import { slabList, slabOpeningList, slabTypeList } from './slabs.ts';
 import { outlineTempDimensionList } from './outline-dims.ts';
@@ -87,5 +88,6 @@ export const CORE_QUERIES = [
   planLevelDimList,
   sectionDimList,
   sectionDimSides,
+  compositionTagList,
   compositionList,
 ];

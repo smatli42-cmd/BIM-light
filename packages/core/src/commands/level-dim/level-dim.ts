@@ -32,11 +32,12 @@ export const REF: JsonSchema = {
 export const levelDimOf = (m: Model, id: Id): LevelDimension =>
   m.levelDims[id] ?? fail('not-found', `Výšková kóta ${id} neexistuje`);
 
-/** Výšková kóta v řezu nebo v půdorysu (mazání bere obě). */
+/** Výšková kóta v řezu nebo v půdorysu, kóta a popis skladby v řezu (mazání bere všechny). */
 export const anyLevelDimOf = (m: Model, id: Id): unknown =>
   m.levelDims[id] ??
   m.planLevelDims[id] ??
   m.sectionDims[id] ??
+  m.compositionTags[id] ??
   fail('not-found', `Výšková kóta ${id} neexistuje`);
 const put = (m: Model, d: LevelDimension): Model => ({ ...m, levelDims: { ...m.levelDims, [d.id]: d } });
 
@@ -131,13 +132,15 @@ export const removeLevelDims = (m: Model, ids: readonly Id[]): Model =>
         levelDims: omitIds(m.levelDims, ids),
         planLevelDims: omitIds(m.planLevelDims, ids),
         sectionDims: omitIds(m.sectionDims, ids),
+        compositionTags: omitIds(m.compositionTags, ids),
       }
     : m;
 
 export const levelDimDelete = defineCommand<{ levelDimIds: Id[] }>({
   name: 'levelDim.delete',
   label: 'Smazat výškovou kótu',
-  description: 'Smaže výškové kóty v řezech i v půdorysu (i zamčené – zámek brání jen posunu a změně).',
+  description:
+    'Smaže výškové kóty v řezech i v půdorysu, kóty a popisy skladby v řezu (i zamčené – zámek brání jen posunu a změně).',
   group: 'Řezy a pohledy',
   params: S.object({ levelDimIds: { type: 'array', items: S.id, minItems: 1 } }, ['levelDimIds']),
   run(model, p) {

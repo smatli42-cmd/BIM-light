@@ -22,10 +22,11 @@ import type { Section, SectionPreset } from '../section/types.ts';
 import type { LevelDimension } from '../level-dim/types.ts';
 import type { PlanLevelDimension } from '../level-dim/plan.ts';
 import type { SectionDimension } from '../section-dim/types.ts';
+import type { CompositionTag } from '../composition-tag/types.ts';
 import type { ElectroElement, ElectroGroup, ElectroType } from '../electro/types.ts';
 
 /** Verze tvaru dat; při změně tvaru přibude migrace (persistence/migrations.ts). */
-export const SCHEMA_VERSION = 38;
+export const SCHEMA_VERSION = 39;
 
 /** Stav prvku (fáze): stávající / bourání / nový. IFC: Pset Status. */
 export type Status = 'existing' | 'demolished' | 'new';
@@ -148,6 +149,8 @@ export interface Model {
   readonly planLevelDims: Readonly<Record<Id, PlanLevelDimension>>;
   /** Délkové kóty v řezech (svislé mezi úrovněmi, vodorovné mezi boky prvků), asociativní. */
   readonly sectionDims: Readonly<Record<Id, SectionDimension>>;
+  /** Popisy skladby v řezech (odkazová čára od řezané stěny / desky k vrstvám typu), text z modelu. */
+  readonly compositionTags: Readonly<Record<Id, CompositionTag>>;
   /** Výkazy a legendy (základ 8, plán stěn Z8): definice tabulek z modelu. */
   readonly schedules: Readonly<Record<Id, ScheduleDef>>;
   /** Značky typu stěn v půdorysu (plán stěn Z8): popisky podlaží se skupinou anotací (základ 28). */

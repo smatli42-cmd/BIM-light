@@ -28,6 +28,7 @@ export const PALETTE: readonly (readonly ToolDef[])[] = [
     { tool: 'dimension', icon: 'dimension', label: 'Kóta', key: 'D' },
     { tool: 'angle', icon: 'angle', label: 'Úhel', key: 'U' },
     { tool: 'levelDim', icon: 'level-dim', command: 'levelDim.create' },
+    { tool: 'compositionTag', icon: 'comp-tag', command: 'compositionTag.create' },
   ],
 ];
 

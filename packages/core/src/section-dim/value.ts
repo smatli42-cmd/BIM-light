@@ -10,7 +10,8 @@ import type { SectionDimRef, SideRef } from './types.ts';
 type Content = ReturnType<typeof sectionContent>;
 const cache = new WeakMap<Model, Map<Id, Content>>();
 
-function content(model: Model, s: Section): Content {
+/** Obsah řezu, spočítaný jednou pro daný model (kóty a popisy skladby v řezu). */
+export function cachedSectionContent(model: Model, s: Section): Content {
   const byId = cache.get(model) ?? new Map<Id, Content>();
   cache.set(model, byId);
   const hit = byId.get(s.id);
@@ -22,7 +23,7 @@ function content(model: Model, s: Section): Content {
 
 /** Rozsah prvku po výkrese řezu (u0–u1); null = prvek v řezu není. */
 function elementSpan(model: Model, s: Section, id: Id): { u0: number; u1: number } | null {
-  const c = content(model, s);
+  const c = cachedSectionContent(model, s);
   return c.cut.find((r) => r.elementId === id) ?? c.seen.find((r) => r.elementId === id) ?? null;
 }
 
@@ -43,7 +44,7 @@ export interface SideTarget {
 
 /** Boky prvků v řezu, ke kterým jde vodorovná kóta (levý a pravý okraj každé stěny a desky). */
 export function sideTargets(model: Model, s: Section): SideTarget[] {
-  const c = content(model, s);
+  const c = cachedSectionContent(model, s);
   const rows = [...c.cut, ...c.seen.filter((r) => !c.cut.some((x) => x.elementId === r.elementId))];
   return rows.flatMap((r) => {
     const top = levelZ(model, { kind: 'edge', elementId: r.elementId, edge: 'top' });

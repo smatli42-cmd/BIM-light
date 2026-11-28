@@ -6,6 +6,7 @@ import type { Id } from '../ids/index.ts';
 import type { Sample, SampleContext } from './types.ts';
 import { tiledFloor } from './scene-helpers.ts';
 import { houseElectro } from './house-electro.ts';
+import { houseCompositionTags } from './house-tags.ts';
 
 const W = 12000;
 const H = 9000;
@@ -197,6 +198,7 @@ export function houseSections(c: SampleContext) {
       at: 6000,
       below: true,
     });
+  if (a) houseCompositionTags(c, a);
   c.run('section.create', { start: vec(-2500, 3000), end: vec(W + 2500, 3000), styleId: projectStyle(c) });
   // Zalomený řez se stylem řezu (hloubka 6 m, vzdálená oblast od 3 m): přes obývák a koupelnu.
   const preset = Object.values(c.model.sectionPresets).find((p) => p.depth === 6000)?.id ?? null;

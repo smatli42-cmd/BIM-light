@@ -4,6 +4,24 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 
 ## Hotovo
 
+### Popis skladby v řezu, 2026-11-28 (úkol uživatele; scéna `?ukazka=popis-skladeb`, Řez A i v `?ukazka=dum`)
+
+- Jádro `composition-tag/` (migrace 38 → 39): anotace řezu – vazba na řez a řezanou stěnu / desku, bod
+  uchycení poměrem na řezu prvku (pohne se s prvkem), poloha textu vůči bodu, volby obsahu (název typu
+  s celkovou tloušťkou, tloušťky vrstev, číslování, obrácené pořadí), skupina anotací (výchozí Řezy
+  a pohledy) a zámek. Text se neukládá – řádky se počítají z typu (deska shora dolů, stěna od referenční
+  strany; u vícepásové stěny pás v místě bodu); změna skladby popis hned přepíše (základ 4).
+- Kresba (ČSN 01 3420, Archicad Composite label): plná tečka na konstrukci, odkazová čára k poličce, pod
+  ní řádky „– Materiál 15 mm“ zarovnané k začátku poličky (text vpravo od bodu zleva, vlevo zprava). Pero
+  a barva z funkce grafiky kategorie Popisy, písmo = výška popisu, řádkování jako razítko místnosti.
+- Příkazy `compositionTag.create / move / update`, mazání `levelDim.delete` / `selection.delete`
+  `levelDimIds` (jako kóty v řezu); smazaný prvek nebo řez vezme své popisy. Dotaz `compositionTag.list`
+  (řádky, vrstvy, body). AI `ai/scenario-composition-tag.test.ts`, testy `composition-tag.test.ts`.
+- Sandbox: nástroj **Popis skladby** v paletě (vedle Výškové kóty) – v okně řezu klik na řezanou stěnu
+  nebo desku, druhý klik = poloha textu; v půdorysu jen nápověda. Výběr klikem na text nebo odkazovou
+  čáru (Shift přidá), tažení posune text, Del smaže, Esc vrátí krok / ukončí nástroj. Info box: výchozí
+  volby nového popisu; vybraný popis – řádky z typu, volby, zámek, smazání. E2E `popis-skladeb.spec.ts`.
+
 ### Úchopy v řezu, 2026-11-28 (pokyn uživatele 2026-11-27; scéna `?ukazka=rezy-uchopy`)
 
 - Jádro `section/edge-level.ts`: posun vodorovné hrany prvku na výšku z = volání stávajícího příkazu
@@ -237,6 +255,16 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   tažení posune, Esc zavře); kresba se přepočítá po každé změně modelu. E2E `rezy.spec.ts`.
 
 ## Rozhodl Code (k potvrzení)
+
+- **Popis skladby (screenshot Arditu zatím nepřišel – standard Revitu / Archicadu):** dva kliky (bod na
+  konstrukci, poloha textu) jako Revit tag s odkazovou čarou; plná tečka na konstrukci a polička, řádky pod
+  ní. Výchozí obsah: první řádek značka + název typu + celková tloušťka, pak „– Materiál tloušťka mm“
+  (číslování „1.“ volbou). Deska shora dolů (ČSN, Revit); stěna od referenční strany typu (vnitřní →
+  vnější podle uložení skladby) – volba „obrácené pořadí“ ji otočí; podle strany textu se pořadí samo
+  nemění. Popis jen u řezaného prvku (ne u prvku v pohledu za rovinou); když ho rovina řezu přestane
+  protínat, nekreslí se (data zůstanou). Skupina anotací Řezy a pohledy. V půdorysu zatím ne (Revit to
+  umí u řezaných stěn – přijde, až bude potřeba). Výběr a mazání jdou přes výběr anotací řezu
+  (`levelDimIds`), aby nebyl další druh výběru.
 
 - **Úchopy v řezu (k potvrzení, bez screenshotu Arditu – standard Revitu / Archicadu):** vršek stěny vázaný
   na podlaží nebo desku si vazbu nechá, změní se odsazení vršku (Revit Top Offset); nespojená stěna změní

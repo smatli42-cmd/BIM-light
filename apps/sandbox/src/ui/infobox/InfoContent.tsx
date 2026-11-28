@@ -15,6 +15,7 @@ import { SelectedSlabOpenings } from './SlabOpeningInfo.tsx';
 import { NewRoomPanel, SelectedRoomsInfo } from './RoomInfo.tsx';
 import { NewSectionInfo, SelectedSectionsInfo } from './SectionInfo.tsx';
 import { NewLevelDimInfo, SelectedLevelDimsInfo } from './LevelDimInfo.tsx';
+import { NewCompositionTagInfo, SelectedCompositionTagsInfo } from './CompositionTagInfo.tsx';
 
 const COMMANDS: readonly ToolId[] = ['move', 'copy', 'rotate', 'mirror', 'array', 'align', 'trim', 'split'];
 
@@ -30,6 +31,7 @@ function Selection({ s }: { s: Session }) {
       <SelectedRoomsInfo s={s} />
       <SelectedSectionsInfo s={s} />
       <SelectedLevelDimsInfo s={s} />
+      <SelectedCompositionTagsInfo s={s} />
       {slabs.length > 0 && <SelectedSlabsInfo key={slabs.map((x) => x.id).join()} s={s} slabs={slabs} />}
       {dims > 0 && (
         <section>
@@ -55,6 +57,7 @@ export function InfoContent({ s }: { s: Session }) {
   if (id === 'room') return <NewRoomPanel s={s} />;
   if (id === 'section') return <NewSectionInfo s={s} />;
   if (id === 'levelDim') return <NewLevelDimInfo s={s} />;
+  if (id === 'compositionTag') return <NewCompositionTagInfo s={s} />;
   return (
     <>
       <SelectOptions s={s} />

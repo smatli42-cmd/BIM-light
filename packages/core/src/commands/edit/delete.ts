@@ -29,7 +29,7 @@ export const selectionDelete = defineCommand<{
   description:
     'Smaže vybrané stěny (i s jejich otvory, kótami a napojeními), desky (i s otvory jen v nich), ' +
     'vybrané otvory ve stěnách (openingIds) a v deskách (slabOpeningIds), místnosti (roomIds), řezy ' +
-    '(sectionIds), výškové kóty v řezech i půdorysu (levelDimIds) a kóty jedním krokem.',
+    '(sectionIds), výškové kóty v řezech i půdorysu, kóty a popisy skladby v řezu (levelDimIds) a kóty jedním krokem.',
   group: 'Úpravy',
   shortcut: 'Delete',
   params: S.object(

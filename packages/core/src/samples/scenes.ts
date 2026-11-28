@@ -12,6 +12,22 @@ import { ELECTRO_SCENES } from './scenes-elektro.ts';
 
 export const SCENES: readonly Sample[] = [
   {
+    key: 'popis-skladeb',
+    title: 'Popis skladby v řezu',
+    kind: 'scena',
+    date: '2026-11-28',
+    description:
+      'Ukázkový dům, Řez A (Obsah → Projekt → Řezy → Řez A) má tři popisy skladby: obvodová stěna 1.NP, ' +
+      'strop nad 1.NP a podlaha (číslované vrstvy). Tečka na konstrukci, odkazová čára k poličce, pod ní ' +
+      'vrstvy typu – deska shora dolů, stěna od referenční strany, materiál + tloušťka. Zkus: nástroj Popis ' +
+      'skladby v paletě (vedle Výškové kóty) → v okně řezu klik na řezanou stěnu nebo desku, druhý klik = ' +
+      'poloha textu. Výběr klikem na text, tažení ho posune, Del smaže. V info boxu číslování, tloušťky, ' +
+      'název typu, obrácené pořadí, zámek. Změň skladbu (Editor typů) – popis se hned přepíše.',
+    build(c) {
+      HOUSE.build(c);
+    },
+  },
+  {
     key: 'rezy-uchopy',
     title: 'Úchopy v řezu – výška stěny, poloha stropu, parapet okna',
     kind: 'scena',

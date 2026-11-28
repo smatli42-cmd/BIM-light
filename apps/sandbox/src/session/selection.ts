@@ -167,7 +167,8 @@ export class Selection {
     this.rooms = this.rooms.filter((id) => model.rooms[id]);
     this.sections = this.sections.filter((id) => model.sections[id]);
     this.levelDims = this.levelDims.filter(
-      (id) => model.levelDims[id] || model.planLevelDims[id] || model.sectionDims[id],
+      (id) =>
+        model.levelDims[id] || model.planLevelDims[id] || model.sectionDims[id] || model.compositionTags[id],
     );
     if (this.face && (!model.rooms[this.face.roomId] || !model.elements[this.face.wallId])) this.face = null;
   }

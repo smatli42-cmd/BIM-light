@@ -106,6 +106,9 @@ export const sectionDelete = defineCommand<{ sectionId: Id }>({
         sectionDims: Object.fromEntries(
           Object.entries(m.sectionDims).filter(([, d]) => d.sectionId !== p.sectionId),
         ),
+        compositionTags: Object.fromEntries(
+          Object.entries(m.compositionTags).filter(([, t]) => t.sectionId !== p.sectionId),
+        ),
       },
     };
   },
