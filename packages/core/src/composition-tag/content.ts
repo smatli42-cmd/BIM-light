@@ -100,9 +100,9 @@ export function tagLines(
 
 export interface TagLayout {
   readonly anchor: Vec2;
-  /** Odkazová čára: od protilehlého líce konstrukce kolmo přes ni a dál přes body (poslední = kolečko). */
+  /** Odkazová čára: od protilehlého líce konstrukce kolmo přes ni a dál přes body (poslední = spodek popisky). */
   readonly path: readonly Vec2[];
-  /** Konec čáry: střed kolečka, pod ním řádky. */
+  /** Konec čáry = spodek svislé čáry popisky; nad ním řádky a nahoře kolečko. */
   readonly end: Vec2;
   /** Číslo konstrukce v kolečku; null = bez kolečka. */
   readonly mark: string | null;

@@ -64,7 +64,7 @@ function text(r: RenderContext, p: Extract<Primitive, { kind: 'text' }>, color?:
   ctx.translate(at.x, at.y);
   ctx.rotate(-p.angle);
   ctx.font = `${p.bold ? 'bold ' : ''}${px.toFixed(1)}px ui-monospace, monospace`;
-  ctx.textAlign = 'center';
+  ctx.textAlign = p.align ?? 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
   ctx.lineWidth = 3;

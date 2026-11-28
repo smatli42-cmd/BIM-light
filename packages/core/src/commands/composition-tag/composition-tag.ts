@@ -38,7 +38,7 @@ const POINTS: JsonSchema = {
   minItems: 1,
   description:
     'body odkazové čáry na výkrese řezu (mm) za bodem uchycení: první se srovná na kolmici ke konstrukci ' +
-    '(deska svisle, stěna vodorovně), další lomí čáru; poslední = kolečko s číslem, pod ním řádky',
+    '(deska svisle, stěna vodorovně), další lomí čáru; poslední = spodek popisky – nad ním řádky a nahoře kolečko s číslem (popiska má vždy stejný tvar)',
 };
 
 const NOT_CUT = 'Prvek rovina řezu neprotíná (popis jen u řezané stěny nebo desky)';

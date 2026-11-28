@@ -60,6 +60,8 @@ export type Primitive =
       readonly angle: number;
       /** Tučně (číslo místnosti). */
       readonly bold?: boolean;
+      /** Kotva textu `at`: levý okraj, střed (výchozí), pravý okraj – písmo zná jen vykreslení. */
+      readonly align?: 'left' | 'center' | 'right';
       readonly color: string;
       readonly source: PrimitiveSource;
     };

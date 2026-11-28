@@ -45,7 +45,7 @@ export interface CompositionTag extends CompositionTagOptions {
   readonly anchor: TagAnchor;
   /**
    * Body odkazové čáry za bodem uchycení, vůči němu (mm výkresu; pohnou se s prvkem). První úsek je vždy
-   * kolmo ke konstrukci, další body lomí čáru; poslední = kolečko, pod ním řádky vrstev.
+   * kolmo ke konstrukci, další body lomí čáru; poslední = spodek popisky (nad ním řádky, nahoře kolečko).
    */
   readonly leader: readonly Vec2[];
   readonly annotationLayerId: Id;

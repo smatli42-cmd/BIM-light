@@ -1,18 +1,22 @@
 // Nástroj Popis skladby v okně řezu (česká výkresová praxe; Revit Multi-layer tag, Archicad Composite label):
 // první klik na řezanou stěnu nebo desku = bod uchycení, další kliky = body odkazové čáry – první vždy kolmo
 // ke konstrukci, další se srovnají vodorovně / svisle (Shift = volně). Dvojklik, Enter nebo pravé tlačítko
-// popis vloží (poslední bod = kolečko s číslem), Esc vrátí bod. Popis pod kurzorem jde vybrat (Shift přidá)
-// a táhnout kolečko s řádky (čára zůstane v pravých úhlech). Model se mění jen příkazy compositionTag.*.
+// popis vloží (poslední bod = spodek popisky, nad ním řádky a kolečko), Esc vrátí bod; celá popiska je
+// během kreslení vidět jako náhled. Popis pod kurzorem jde vybrat (Shift přidá) a táhnout (čára zůstane
+// v pravých úhlech). Model se mění jen příkazy compositionTag.* (jako AI).
 import {
+  anchorOf,
   cutRowOf,
+  drawCompositionTag,
   leaderAxis,
   moveLeaderEnd,
   nextLeaderPoint,
+  normalizeLeader,
   sectionPickAt,
   tagLayout,
   tagTextBox,
+  type CompositionTag,
   type Id,
-  type Primitive,
   type Vec2,
 } from '@bim-light/core';
 import type { Viewport } from '../../canvas/viewport.ts';
@@ -169,36 +173,36 @@ export class SectionTagInput {
     this.s.run('compositionTag.move', { tagId: d.id, delta: { x: m.x - d.start.x, y: m.y - d.start.y } });
   }
 
-  /** Náhled: rozkreslená čára k myši, nebo tažená čára (stejné pravidlo jako příkaz). */
-  private ghost(m: Vec2): Vec2[] {
+  /** Popis tak, jak by vznikl: rozkreslený (body + bod pod myší) nebo tažený (stejné pravidlo jako příkaz). */
+  private ghost(m: Vec2): CompositionTag | null {
+    const model = this.s.model;
+    const sec = model.sections[this.sectionId];
+    if (!sec) return null;
     const d = this.draw;
-    if (d)
-      return [
-        d.at,
-        ...[...d.pts, this.next(d, m, this.shift)].map((q) => ({ x: d.at.x + q.x, y: d.at.y + q.y })),
-      ];
+    if (d) {
+      const row = cutRowOf(model, sec, d.elementId);
+      const axis = leaderAxis(model, d.elementId);
+      const leader = normalizeLeader(axis, [...d.pts, this.next(d, m, this.shift)]);
+      if (!row || !leader) return null;
+      const base = { id: 'náhled', sectionId: sec.id, elementId: d.elementId, annotationLayerId: '' };
+      return { ...tagDefaults(this.s), ...base, anchor: anchorOf(row, d.at), leader, locked: false };
+    }
     const g = this.drag;
-    const sec = this.s.model.sections[this.sectionId];
-    const t = g?.moved ? this.s.model.compositionTags[g.id] : undefined;
-    const l = t && sec ? tagLayout(this.s.model, sec, t) : null;
-    if (!g || !t || !l) return [];
+    const t = g?.moved ? model.compositionTags[g.id] : undefined;
+    if (!g || !t) return null;
     const delta = { x: m.x - g.start.x, y: m.y - g.start.y };
-    const pts = moveLeaderEnd(leaderAxis(this.s.model, t.elementId), t.leader, delta) ?? t.leader;
-    return [l.anchor, ...pts.map((q) => ({ x: l.anchor.x + q.x, y: l.anchor.y + q.y }))];
+    return { ...t, leader: moveLeaderEnd(leaderAxis(model, t.elementId), t.leader, delta) ?? t.leader };
   }
 
+  /** Náhled celé popisky (čára, kolečko, řádky) při kreslení a tažení. */
   overlay(r: RenderContext) {
     const m = this.mouse;
-    if (!m) return;
-    const points = this.ghost(m);
-    if (points.length < 2) return;
-    const line: Primitive = {
-      kind: 'line',
-      points,
-      closed: false,
-      stroke: { pen: 1, color: AUX, lineType: 'dashed' },
-      source: { role: 'náhled' },
-    };
-    drawPrimitive(r, line, AUX);
+    const sec = this.s.model.sections[this.sectionId];
+    const t = m ? this.ghost(m) : null;
+    const l = t && sec ? tagLayout(this.s.model, sec, t) : null;
+    if (!t || !l || !sec) return;
+    const g = { ...this.s.model.display.baseGraphics, projectionPen: 1 };
+    for (const p of drawCompositionTag(t, l, this.s.model.display.paperSizes, sec.scale, g))
+      drawPrimitive(r, p, AUX);
   }
 }

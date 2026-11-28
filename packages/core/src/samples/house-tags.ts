@@ -46,15 +46,15 @@ export function houseCompositionTags(c: SampleContext, sectionId: Id) {
     });
   const put = (id: Id, at: Vec2, points: Vec2[], extra: Record<string, unknown> = {}) =>
     c.run('compositionTag.create', { sectionId, elementId: id, at, points, ...extra });
-  // Obvodová stěna: čára kolmo (vodorovně) ven doleva, lom nahoru ke kolečku, řádky vlevo.
+  // Obvodová stěna: čára kolmo (vodorovně) ven doleva, nad koncem popiska s řádky vlevo.
   if (wall) {
     const y = wall.row.bottom + 700;
-    put(wall.id, { x: wall.mid.x, y }, [vec(box.u0 - 3200, y), vec(box.u0 - 3200, y + 1500)], {
+    put(wall.id, { x: wall.mid.x, y }, [vec(box.u0 - 3200, y)], {
       side: 'left',
       align: 'right',
     });
   }
-  // Strop a podlaha: čára kolmo (svisle) nahoru, lom vodorovně ven doprava ke kolečku.
+  // Strop a podlaha: čára kolmo (svisle) nahoru, lom vodorovně ven doprava, nad koncem popiska.
   const ceiling = slab('structure', true);
   if (ceiling) {
     const x = ceiling.row.u1 - 1500;
@@ -64,7 +64,7 @@ export function houseCompositionTags(c: SampleContext, sectionId: Id) {
   const floor = slab('floor', false);
   if (floor) {
     const x = floor.row.u1 - 1000;
-    const y = floor.row.top + 1800;
+    const y = floor.row.top + 800;
     put(floor.id, vec(x, floor.mid.y), [vec(x, y), vec(box.u1 + 1500, y)], { numbered: true });
   }
 }

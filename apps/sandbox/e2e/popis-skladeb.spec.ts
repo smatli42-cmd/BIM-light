@@ -88,7 +88,7 @@ test('pokyn uživatele / popis skladby: lomená čára kolmo ke stropu, kolečko
   await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => window.__bim!.tool())).toBe('select');
   const e0 = made.end!;
-  await click(page, e0.x + 700, e0.y - 450);
+  await click(page, e0.x + 700, e0.y + 300);
   await expect(page.getByTestId('infobox-title')).toHaveText('Popis skladby');
   await expect(page.getByTestId('tag-lines')).toContainText('(D1)');
   await page.getByTestId('tag-thickness').uncheck();

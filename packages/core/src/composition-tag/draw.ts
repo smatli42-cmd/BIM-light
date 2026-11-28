@@ -1,7 +1,9 @@
-// Kresba popisu skladby (česká výkresová praxe, ČSN 01 3420): odkazová čára protne konstrukci kolmo a vede
-// přes zadané body ke kolečku s číslem konstrukce; pod kolečkem pokračuje svisle a z ní vybíhají krátké
-// vodorovné čárky k řádkům vrstev (vpravo nebo vlevo). Pero a barva z funkce grafiky (kategorie popisů),
-// písmo = výška popisu, řádkování jako razítko místnosti (základ 29); viditelnost podle skupiny anotací (28).
+// Kresba popisu skladby (česká výkresová praxe, ČSN 01 3420; pokyn uživatele 2026-11-28): popiska má vždy
+// stejný tvar – nahoře kolečko s číslem konstrukce, z něj svislá čára dolů a z ní vodorovné čárky k řádkům
+// vrstev (vpravo nebo vlevo); odkazová čára vychází vždy dole ze svislé čáry a přes zadané body protne
+// konstrukci kolmo. Řádky zarovnané vlevo / na střed / vpravo kotvou textu (písmo měří až vykreslení, jádro
+// šířku jen odhaduje). Pero a barva z funkce grafiky (kategorie popisů), písmo = výška popisu, řádkování
+// jako razítko místnosti (základ 29); viditelnost podle skupiny anotací (základ 28).
 import type { Primitive, PrimitiveSource, Stroke } from '../drawing/primitives.ts';
 import { vec, type Vec2 } from '../geometry/index.ts';
 import { circle, textWidth } from '../level-dim/terrain.ts';
@@ -12,57 +14,59 @@ import { resolveGraphics } from '../style/graphics.ts';
 import type { PaperSizes, ResolvedEffect } from '../style/types.ts';
 import { layerState } from '../view/effective.ts';
 import { tagLayout, type TagLayout } from './content.ts';
-import type { CompositionTag, CompositionTagSide } from './types.ts';
+import type { CompositionTag, CompositionTagOptions } from './types.ts';
 
 /** Rozměry popisu v mm modelu: výška písma, řádek, poloměr kolečka, čárka k řádku, mezera. */
 function metrics(sizes: PaperSizes, scale: number) {
   const th = sizes.labelText * scale;
   return { th, lh: th * sizes.roomLineSpacing, r: th * 0.95, tick: th * 0.9, gap: th * 0.3 };
 }
+type Metrics = ReturnType<typeof metrics>;
 
-/** Kde začínají řádky (pod kolečkem) a výška prvního řádku. */
-function rowsTop(l: TagLayout, r: number) {
-  return l.end.y - (l.mark !== null ? r : 0);
-}
-
-/** Obdélník kolečka a řádků (pro výběr a tažení): x0, x1, y0, y1 v mm modelu. */
-export function tagTextBox(l: TagLayout, side: CompositionTagSide, sizes: PaperSizes, scale: number) {
-  const { th, lh, r, tick, gap } = metrics(sizes, scale);
-  const dir = side === 'right' ? 1 : -1;
-  const w = Math.max(0, ...l.lines.map((t) => textWidth(t, th))) + tick + gap;
-  const x = [l.end.x - r, l.end.x + r, l.end.x + dir * w];
+/** Hlava popisky nad koncem čáry: výšky řádků (shora dolů), horní konec svislé čáry, střed kolečka. */
+function head(l: TagLayout, k: Metrics) {
+  const n = l.lines.length;
+  const top = l.end.y + k.lh * n;
   return {
-    x0: Math.min(...x),
-    x1: Math.max(...x),
-    y0: rowsTop(l, r) - lh * l.lines.length,
-    y1: l.end.y + (l.mark !== null ? r : 0),
+    ys: l.lines.map((_, i) => l.end.y + k.lh * (n - i - 0.5)),
+    top,
+    center: l.mark !== null ? vec(l.end.x, top + k.r) : null,
   };
 }
 
-/** Čára bez kusu uvnitř kolečka (končí na jeho obvodu). */
-function trimToCircle(path: readonly Vec2[], r: number): Vec2[] {
-  const pts = [...path];
-  const end = pts[pts.length - 1];
-  const prev = pts[pts.length - 2];
-  if (!end || !prev) return pts;
-  const len = Math.hypot(end.x - prev.x, end.y - prev.y);
-  if (len <= r) return pts.slice(0, -1);
-  const k = (len - r) / len;
-  pts[pts.length - 1] = { x: prev.x + (end.x - prev.x) * k, y: prev.y + (end.y - prev.y) * k };
-  return pts;
+/** Blok řádků: bližší okraj u svislé čáry, odhad šířky (nejdelší řádek), směr (+1 vpravo). */
+function block(l: TagLayout, side: CompositionTagOptions['side'], k: Metrics) {
+  const dir = side === 'right' ? 1 : -1;
+  const near = l.end.x + dir * (k.tick + k.gap);
+  const width = Math.max(0, ...l.lines.map((t) => textWidth(t, k.th)));
+  return { dir, near, far: near + dir * width, width };
+}
+
+/** Obdélník popisky (kolečko, svislá čára, řádky) pro výběr a tažení: x0, x1, y0, y1 v mm modelu. */
+export function tagTextBox(
+  l: TagLayout,
+  side: CompositionTagOptions['side'],
+  sizes: PaperSizes,
+  scale: number,
+) {
+  const k = metrics(sizes, scale);
+  const h = head(l, k);
+  const b = block(l, side, k);
+  const x = [l.end.x - k.r, l.end.x + k.r, b.far];
+  return { x0: Math.min(...x), x1: Math.max(...x), y0: l.end.y, y1: h.center ? h.center.y + k.r : h.top };
 }
 
 interface Painter {
   readonly line: (points: Vec2[], role: string, closed?: boolean) => Primitive;
-  readonly text: (at: Vec2, t: string, role: string) => Primitive;
+  readonly text: (at: Vec2, t: string, role: string, align?: 'left' | 'center' | 'right') => Primitive;
 }
 
-function painter(tag: CompositionTag, sizes: PaperSizes, g: ResolvedEffect): Painter {
+function painter(id: string, sizes: PaperSizes, g: ResolvedEffect): Painter {
   const stroke: Stroke = { pen: g.projectionPen, color: g.lineColor, lineType: 'solid' };
-  const source = (role: string): PrimitiveSource => ({ dimensionId: tag.id, role });
+  const source = (role: string): PrimitiveSource => ({ dimensionId: id, role });
   return {
     line: (points, role, closed = false) => ({ kind: 'line', points, closed, stroke, source: source(role) }),
-    text: (at, t, role) => ({
+    text: (at, t, role, align) => ({
       kind: 'text',
       at,
       text: t,
@@ -70,33 +74,35 @@ function painter(tag: CompositionTag, sizes: PaperSizes, g: ResolvedEffect): Pai
       angle: 0,
       color: g.lineColor,
       source: source(role),
+      ...(align ? { align } : {}),
     }),
   };
 }
 
-/** Svislá čára pod kolečkem a řádky vrstev, každý s čárkou od ní. */
-function drawRows(tag: CompositionTag, l: TagLayout, k: ReturnType<typeof metrics>, p: Painter): Primitive[] {
-  const dir = tag.side === 'right' ? 1 : -1;
+/** Řádky vrstev s čárkami od svislé čáry; kotva textu podle zarovnání (u čáry vždy přesně). */
+function drawRows(tag: CompositionTag, l: TagLayout, k: Metrics, p: Painter): Primitive[] {
+  const h = head(l, k);
+  const b = block(l, tag.side, k);
   const x = l.end.x;
-  const top = rowsTop(l, k.r);
-  const ys = l.lines.map((_, i) => top - k.lh * (i + 0.5));
-  const last = ys[ys.length - 1];
-  const out: Primitive[] =
-    last === undefined ? [] : [p.line([vec(x, top), vec(x, last)], 'svislá čára popisu')];
-  // Blok textu za čárkou: x0–x1 (šířka nejdelšího řádku); řádek v něm podle zarovnání.
-  const width = Math.max(0, ...l.lines.map((t) => textWidth(t, k.th)));
-  const near = x + dir * (k.tick + k.gap);
-  const [x0, x1] = dir > 0 ? [near, near + width] : [near - width, near];
-  l.lines.forEach((t, i) => {
-    const y = ys[i] as number;
+  const left = b.dir > 0 ? b.near : b.far;
+  const right = b.dir > 0 ? b.far : b.near;
+  const at = tag.align === 'left' ? left : tag.align === 'right' ? right : (left + right) / 2;
+  return l.lines.flatMap((t, i) => {
+    const y = h.ys[i] as number;
     const w = textWidth(t, k.th);
-    const cx = tag.align === 'left' ? x0 + w / 2 : tag.align === 'right' ? x1 - w / 2 : (x0 + x1) / 2;
-    // Čárka od svislé čáry k bližšímu okraji řádku (u zarovnání od čáry dál se prodlouží).
-    const edge = dir > 0 ? cx - w / 2 : cx + w / 2;
-    out.push(p.line([vec(x, y), vec(edge - dir * k.gap, y)], 'čárka řádku'));
-    out.push(p.text(vec(cx, y), t, i === 0 && tag.title ? 'název skladby' : 'vrstva skladby'));
+    // Bližší okraj řádku k čáře (u zarovnání od čáry dál odhad) – čárka k němu dosáhne.
+    const edge =
+      tag.align === 'center'
+        ? at - (b.dir * w) / 2
+        : (tag.align === 'left') === b.dir > 0
+          ? at
+          : at - b.dir * w;
+    const end = b.dir * (edge - b.dir * k.gap - x) > k.tick ? edge - b.dir * k.gap : x + b.dir * k.tick;
+    return [
+      p.line([vec(x, y), vec(end, y)], 'čárka řádku'),
+      p.text(vec(at, y), t, i === 0 && tag.title ? 'název skladby' : 'vrstva skladby', tag.align),
+    ];
   });
-  return out;
 }
 
 export function drawCompositionTag(
@@ -107,12 +113,13 @@ export function drawCompositionTag(
   g: ResolvedEffect,
 ): Primitive[] {
   const k = metrics(sizes, scale);
-  const p = painter(tag, sizes, g);
-  const hasMark = l.mark !== null;
-  const out: Primitive[] = [p.line(hasMark ? trimToCircle(l.path, k.r) : [...l.path], 'odkazová čára')];
-  if (hasMark) {
-    out.push(p.line(circle(l.end, k.r, 0, 2 * Math.PI), 'kolečko popisu', true));
-    out.push(p.text(l.end, l.mark as string, 'číslo konstrukce'));
+  const p = painter(tag.id, sizes, g);
+  const h = head(l, k);
+  // Odkazová čára od konstrukce ke konci a dál svisle nahoru přes řádky ke kolečku.
+  const out: Primitive[] = [p.line([...l.path, vec(l.end.x, h.top)], 'odkazová čára')];
+  if (h.center) {
+    out.push(p.line(circle(h.center, k.r, 0, 2 * Math.PI), 'kolečko popisu', true));
+    out.push(p.text(h.center, l.mark as string, 'číslo konstrukce'));
   }
   return [...out, ...drawRows(tag, l, k, p)];
 }

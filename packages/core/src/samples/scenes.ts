@@ -19,7 +19,7 @@ export const SCENES: readonly Sample[] = [
     description:
       'Ukázkový dům, Řez A (Obsah → Projekt → Řezy → Řez A) má tři popisy skladby: obvodová stěna 1.NP (S3), ' +
       'strop nad 1.NP (D1) a podlaha (P1, číslované vrstvy). Odkazová čára protne konstrukci kolmo, lomí se, ' +
-      'na konci číslo konstrukce v kolečku a pod ním vrstvy typu „Materiál tl. 20 mm“. Zkus: nástroj Popis ' +
+      'popiska má vždy stejný tvar – nahoře číslo konstrukce v kolečku, pod ním vrstvy „Materiál tl. 20 mm“. Zkus: nástroj Popis ' +
       'skladby v paletě (vedle Výškové kóty) → v okně řezu klik do řezané stěny nebo desky, další kliky = ' +
       'lomy čáry (první vždy kolmo), dvojklik / Enter dokončí, Esc ubere bod. Klik na popis ho vybere, tažení ' +
       'kolečka ho posune, Del smaže. V info boxu: kolečko, název typu, tloušťky, číslování, obrácené pořadí, ' +

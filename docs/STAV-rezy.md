@@ -19,6 +19,13 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
 - **Zarovnání textu (pokyn uživatele 2026-11-28, migrace 40 → 41):** řádky v bloku vlevo / na střed /
   vpravo (`align`); čárka od svislé čáry vždy dosáhne k textu (u zarovnání od čáry dál se prodlouží, jako
   P1 na výkresu uživatele). Dosavadní popisy si vzhled nechaly. Test `align.test.ts`.
+- **Oprava a jednotný tvar (hlášení uživatele se screenshotem 2026-11-28):** zarovnání nefungovalo –
+  jádro odhadovalo šířku písma a řádky kladlo středem, takže se okraje rozjížděly. Nově má textové
+  primitivum kotvu (`align`: levý okraj / střed / pravý okraj) a řádky zarovná až vykreslení (písmo zná jen
+  ono); odhad šířky zůstal jen pro délku čárek a obdélník výběru. Popiska má vždy stejný tvar: nahoře
+  kolečko, z něj svislá čára dolů s řádky, odkazová čára vychází vždy dole (poslední bod čáry = spodek
+  popisky, ne kolečko – dosavadní popisy se posunou nahoru o výšku řádků). Při kreslení lomené čáry i při
+  tažení je vidět náhled celé popisky (stejná kresba z jádra).
 - Jádro `composition-tag/` (migrace 38 → 39): anotace řezu – vazba na řez a řezanou stěnu / desku, bod
   uchycení poměrem na řezu prvku (pohne se s prvkem), poloha textu vůči bodu, volby obsahu (název typu
   s celkovou tloušťkou, tloušťky vrstev, číslování, obrácené pořadí), skupina anotací (výchozí Řezy
