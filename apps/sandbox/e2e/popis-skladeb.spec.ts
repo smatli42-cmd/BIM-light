@@ -16,6 +16,7 @@ interface Tag {
   elementId: string;
   numbered: boolean;
   side: string;
+  align: string;
   markText: string | null;
   end: { x: number; y: number } | null;
   path: { x: number; y: number }[] | null;
@@ -96,6 +97,8 @@ test('pokyn uživatele / popis skladby: lomená čára kolmo ke stropu, kolečko
     .not.toMatch(/mm$/);
   await page.getByTestId('tag-side').selectOption('left');
   await expect.poll(async () => (await tags(page)).find((t) => t.id === made.id)?.side).toBe('left');
+  await page.getByTestId('tag-align').selectOption('center');
+  await expect.poll(async () => (await tags(page)).find((t) => t.id === made.id)?.align).toBe('center');
   // Tažení kolečka posune konec čáry, úseky zůstanou v pravých úhlech.
   const a = await at(page, e0.x, e0.y);
   const b = await at(page, e0.x + 1000, e0.y + 200);

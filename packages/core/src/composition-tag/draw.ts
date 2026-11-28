@@ -83,11 +83,18 @@ function drawRows(tag: CompositionTag, l: TagLayout, k: ReturnType<typeof metric
   const last = ys[ys.length - 1];
   const out: Primitive[] =
     last === undefined ? [] : [p.line([vec(x, top), vec(x, last)], 'svislá čára popisu')];
+  // Blok textu za čárkou: x0–x1 (šířka nejdelšího řádku); řádek v něm podle zarovnání.
+  const width = Math.max(0, ...l.lines.map((t) => textWidth(t, k.th)));
+  const near = x + dir * (k.tick + k.gap);
+  const [x0, x1] = dir > 0 ? [near, near + width] : [near - width, near];
   l.lines.forEach((t, i) => {
     const y = ys[i] as number;
-    out.push(p.line([vec(x, y), vec(x + dir * k.tick, y)], 'čárka řádku'));
-    const at = vec(x + dir * (k.tick + k.gap + textWidth(t, k.th) / 2), y);
-    out.push(p.text(at, t, i === 0 && tag.title ? 'název skladby' : 'vrstva skladby'));
+    const w = textWidth(t, k.th);
+    const cx = tag.align === 'left' ? x0 + w / 2 : tag.align === 'right' ? x1 - w / 2 : (x0 + x1) / 2;
+    // Čárka od svislé čáry k bližšímu okraji řádku (u zarovnání od čáry dál se prodlouží).
+    const edge = dir > 0 ? cx - w / 2 : cx + w / 2;
+    out.push(p.line([vec(x, y), vec(edge - dir * k.gap, y)], 'čárka řádku'));
+    out.push(p.text(vec(cx, y), t, i === 0 && tag.title ? 'název skladby' : 'vrstva skladby'));
   });
   return out;
 }

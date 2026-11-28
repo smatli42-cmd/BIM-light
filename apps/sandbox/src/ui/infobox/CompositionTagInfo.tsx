@@ -1,9 +1,10 @@
 // Info box popisu skladby (česká výkresová praxe, Revit Multi-layer tag): nastavení popisky = co obsahuje
-// (kolečko s číslem konstrukce, název typu, tloušťky, číslování), pořadí vrstev a strana řádků. Nástroj =
+// (kolečko s číslem konstrukce, název typu, tloušťky, číslování), pořadí vrstev, strana a zarovnání řádků. Nástroj =
 // výchozí nastavení nového popisu; vybraný popis = řádky spočítané z typu, nastavení, zámek, smazání.
 import {
   tagLayout,
   type CompositionTag,
+  type CompositionTagAlign,
   type CompositionTagOptions,
   type CompositionTagSide,
 } from '@bim-light/core';
@@ -11,7 +12,7 @@ import { setTagDefaults, tagDefaults } from '../../session/tag-defaults.ts';
 import type { Session } from '../../session/session.ts';
 import { Section } from './Section.tsx';
 
-type Flag = Exclude<keyof CompositionTagOptions, 'side'>;
+type Flag = Exclude<keyof CompositionTagOptions, 'side' | 'align'>;
 const OPTIONS: readonly [Flag, string][] = [
   ['mark', 'Číslo konstrukce v kolečku'],
   ['title', 'Název typu a celková tloušťka'],
@@ -47,6 +48,18 @@ function Options(p: {
         >
           <option value="right">vpravo</option>
           <option value="left">vlevo</option>
+        </select>
+      </label>
+      <label>
+        Zarovnání textu
+        <select
+          data-testid={`${p.prefix}-align`}
+          value={p.value.align}
+          onChange={(e) => p.onSet({ align: e.currentTarget.value as CompositionTagAlign })}
+        >
+          <option value="left">vlevo</option>
+          <option value="center">na střed</option>
+          <option value="right">vpravo</option>
         </select>
       </label>
     </>

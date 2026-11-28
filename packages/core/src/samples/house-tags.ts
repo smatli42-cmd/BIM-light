@@ -51,6 +51,7 @@ export function houseCompositionTags(c: SampleContext, sectionId: Id) {
     const y = wall.row.bottom + 700;
     put(wall.id, { x: wall.mid.x, y }, [vec(box.u0 - 3200, y), vec(box.u0 - 3200, y + 1500)], {
       side: 'left',
+      align: 'right',
     });
   }
   // Strop a podlaha: čára kolmo (svisle) nahoru, lom vodorovně ven doprava ke kolečku.

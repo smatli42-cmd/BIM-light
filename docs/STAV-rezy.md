@@ -16,6 +16,9 @@ Rozděleno z `docs/STAV.md` 2026-11-27 (čisté přesunutí, souhlas uživatele,
   Shift = volně), dvojklik / Enter / pravé tlačítko dokončí, Esc ubere bod. Tažení kolečka posune konec
   čáry, úseky zůstanou v pravých úhlech (`compositionTag.move` `delta`). Testy `leader.test.ts`.
   Tečka a polička z první verze zrušené.
+- **Zarovnání textu (pokyn uživatele 2026-11-28, migrace 40 → 41):** řádky v bloku vlevo / na střed /
+  vpravo (`align`); čárka od svislé čáry vždy dosáhne k textu (u zarovnání od čáry dál se prodlouží, jako
+  P1 na výkresu uživatele). Dosavadní popisy si vzhled nechaly. Test `align.test.ts`.
 - Jádro `composition-tag/` (migrace 38 → 39): anotace řezu – vazba na řez a řezanou stěnu / desku, bod
   uchycení poměrem na řezu prvku (pohne se s prvkem), poloha textu vůči bodu, volby obsahu (název typu
   s celkovou tloušťkou, tloušťky vrstev, číslování, obrácené pořadí), skupina anotací (výchozí Řezy

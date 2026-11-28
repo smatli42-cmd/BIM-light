@@ -23,7 +23,7 @@ export const SCENES: readonly Sample[] = [
       'skladby v paletě (vedle Výškové kóty) → v okně řezu klik do řezané stěny nebo desky, další kliky = ' +
       'lomy čáry (první vždy kolmo), dvojklik / Enter dokončí, Esc ubere bod. Klik na popis ho vybere, tažení ' +
       'kolečka ho posune, Del smaže. V info boxu: kolečko, název typu, tloušťky, číslování, obrácené pořadí, ' +
-      'strana řádků, zámek. Změň skladbu (Editor typů) – popis se hned přepíše.',
+      'strana a zarovnání řádků, zámek. Změň skladbu (Editor typů) – popis se hned přepíše.',
     build(c) {
       HOUSE.build(c);
     },

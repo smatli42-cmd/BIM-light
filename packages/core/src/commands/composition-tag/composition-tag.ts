@@ -7,6 +7,7 @@ import { anchorOf, anchorPoint, cutRowOf, tagLayers } from '../../composition-ta
 import { leaderAxis, moveLeaderEnd, normalizeLeader, onPerpendicular } from '../../composition-tag/leader.ts';
 import {
   TAG_DEFAULTS,
+  COMPOSITION_TAG_ALIGNS,
   COMPOSITION_TAG_SIDES,
   type CompositionTag,
   type CompositionTagOptions,
@@ -29,6 +30,7 @@ const OPTIONS: Record<keyof CompositionTagOptions, JsonSchema> = {
   numbered: { type: 'boolean', description: 'čísla vrstev 1., 2. …' },
   reverse: { type: 'boolean', description: 'obrácené pořadí (deska zdola nahoru, stěna od druhé strany)' },
   side: S.enumOf(COMPOSITION_TAG_SIDES, 'řádky vpravo / vlevo od svislé čáry'),
+  align: S.enumOf(COMPOSITION_TAG_ALIGNS, 'zarovnání řádků vlevo / na střed / vpravo'),
 };
 const POINTS: JsonSchema = {
   type: 'array',
@@ -132,7 +134,7 @@ export const compositionTagUpdate = defineCommand<
   label: 'Upravit popis skladby',
   description:
     'Změní obsah popisu skladby (mark = kolečko s číslem, title, thickness, numbered, reverse = pořadí, ' +
-    'side = strana řádků), vrstvu (skupina anotací) nebo zámek. Zamčený jde jen odemknout.',
+    'side = strana řádků, align = zarovnání řádků), vrstvu (skupina anotací) nebo zámek. Zamčený jde jen odemknout.',
   group: 'Řezy a pohledy',
   params: S.object({ tagId: S.id, ...OPTIONS, annotationLayerId: S.id, locked: { type: 'boolean' } }, [
     'tagId',

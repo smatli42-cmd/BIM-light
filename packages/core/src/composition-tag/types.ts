@@ -17,6 +17,10 @@ export interface TagAnchor {
 export type CompositionTagSide = 'left' | 'right';
 export const COMPOSITION_TAG_SIDES: readonly CompositionTagSide[] = ['left', 'right'];
 
+/** Zarovnání řádků v bloku textu (čárka od svislé čáry dosáhne vždy k textu). */
+export type CompositionTagAlign = 'left' | 'center' | 'right';
+export const COMPOSITION_TAG_ALIGNS: readonly CompositionTagAlign[] = ['left', 'center', 'right'];
+
 export interface CompositionTagOptions {
   /** Kolečko s číslem konstrukce (značka typu, např. „P2“, „S1“) na konci odkazové čáry. */
   readonly mark: boolean;
@@ -30,6 +34,8 @@ export interface CompositionTagOptions {
   readonly reverse: boolean;
   /** Řádky vpravo, nebo vlevo od svislé čáry. */
   readonly side: CompositionTagSide;
+  /** Zarovnání řádků vlevo, na střed, vpravo. */
+  readonly align: CompositionTagAlign;
 }
 
 export interface CompositionTag extends CompositionTagOptions {
@@ -54,4 +60,5 @@ export const TAG_DEFAULTS: CompositionTagOptions = {
   numbered: false,
   reverse: false,
   side: 'right',
+  align: 'left',
 };
