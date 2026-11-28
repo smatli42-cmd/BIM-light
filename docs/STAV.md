@@ -14,7 +14,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ### Automatické pohledy 1–4, Obsah podle Arditu (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=pohledy`
 
-### Popis skladby v řezu (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=popis-skladeb`
+### Popis skladby v řezu, i na střeše (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=popis-skladeb`
 
 ### Řezy a pohledy, nástroj Řez, výškové kóty, záložky pohledů, úchopy v řezu (2026-11-27/28) – v `docs/STAV-rezy.md`
 
@@ -294,6 +294,9 @@ pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, pus
 `desky`, `dum` (i s `&3d`). Starší seznam „vyzkouší“ je v `docs/STAV-archiv.md`.
 
 ## Otevřené
+
+- **Popis skladby v půdorysu (podkroví):** v půdorysu podkroví je střecha proříznutá rovinou řezu; popis by
+  šel stejným jádrem (`composition-tag/cross.ts`) s kolmicí k průsečnici střechy, až o to uživatel řekne.
 
 - **Detail napojení 1:5–1:10** (pokyn uživatele): kreslí se zvlášť jako 2D detail nad výřezem řezu (Revit
   Callout + 2D kresba, základ 22); model dává základní napojení pro 1:50 a 1:100. Zatím nedělat.

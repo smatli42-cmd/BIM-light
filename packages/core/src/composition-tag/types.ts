@@ -1,5 +1,5 @@
 // Popis skladby v řezu a pohledu (česká výkresová praxe, ČSN 01 3420; Revit Multi-layer tag, Archicad
-// Composite label): odkazová čára protne řezanou stěnu nebo desku kolmo (deska svisle, stěna vodorovně),
+// Composite label): odkazová čára protne řezanou stěnu, desku nebo střechu kolmo (deska svisle, stěna vodorovně, střecha kolmo k rovině),
 // může se lomit, na konci kolečko s číslem konstrukce (značka typu) a pod ním vrstvy skladby v pořadí –
 // každý řádek s čárkou od svislé čáry. Anotace řezu (skupina anotací, zámek), ne data prvku. Uložená je jen
 // vazba (řez, prvek, bod uchycení poměrem na prvku), body čáry a volby obsahu – text se vždy počítá z typu

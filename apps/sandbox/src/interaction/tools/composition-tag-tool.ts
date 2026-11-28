@@ -6,7 +6,7 @@ export class CompositionTagTool implements Tool {
   readonly id = 'compositionTag';
 
   hint(): string {
-    return 'Popis skladby se vkládá v okně řezu: klik na řezanou stěnu nebo desku, druhý klik = poloha textu.';
+    return 'Popis skladby se vkládá v okně řezu: klik na řezanou stěnu, desku nebo střechu, další kliky = lomy čáry, Enter = popiska.';
   }
 
   move() {}

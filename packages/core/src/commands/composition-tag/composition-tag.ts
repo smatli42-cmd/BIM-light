@@ -1,10 +1,18 @@
 // Příkazy popisu skladby v řezu (česká výkresová praxe; Revit Multi-layer tag, Archicad Composite label):
-// vložení na řezanou stěnu nebo desku (bod uchycení + body lomené odkazové čáry), posun bodu / konce čáry /
+// vložení na řezanou stěnu, desku nebo střechu (bod uchycení + body lomené odkazové čáry), posun bodu / konce čáry /
 // celé čáry, volby obsahu (kolečko s číslem, název typu, tloušťky, číslování, pořadí, strana řádků), vrstva,
 // zámek. Mazání jako u kót v řezu (levelDim.delete, selection.delete levelDimIds). Text se nezadává – počítá
 // se z typu prvku. Pravidlo „první úsek kolmo ke konstrukci“ hlídá jádro (leader.ts). Undo jako vše.
-import { anchorOf, anchorPoint, cutRowOf, tagLayers } from '../../composition-tag/content.ts';
-import { leaderAxis, moveLeaderEnd, normalizeLeader, onPerpendicular } from '../../composition-tag/leader.ts';
+import { cutRowOf, tagLayers } from '../../composition-tag/content.ts';
+import { tagAnchorOf, tagCross } from '../../composition-tag/cross.ts';
+import {
+  moveLeaderEnd,
+  normalizeLeader,
+  onPerpendicular,
+  type LeaderAxis,
+} from '../../composition-tag/leader.ts';
+import type { TagAnchor } from '../../composition-tag/types.ts';
+import type { Section } from '../../section/types.ts';
 import {
   TAG_DEFAULTS,
   COMPOSITION_TAG_ALIGNS,
@@ -38,10 +46,10 @@ const POINTS: JsonSchema = {
   minItems: 1,
   description:
     'body odkazové čáry na výkrese řezu (mm) za bodem uchycení: první se srovná na kolmici ke konstrukci ' +
-    '(deska svisle, stěna vodorovně), další lomí čáru; poslední = spodek popisky – nad ním řádky a nahoře kolečko s číslem (popiska má vždy stejný tvar)',
+    '(deska svisle, stěna vodorovně, střecha kolmo k rovině), další lomí čáru; poslední = spodek popisky – nad ním řádky a nahoře kolečko s číslem (popiska má vždy stejný tvar)',
 };
 
-const NOT_CUT = 'Prvek rovina řezu neprotíná (popis jen u řezané stěny nebo desky)';
+const NOT_CUT = 'Prvek rovina řezu neprotíná (popis jen u řezané stěny, desky nebo střechy)';
 const LOCKED = 'Popis skladby je zamčený';
 
 function put(m: Model, t: CompositionTag): Model {
@@ -53,9 +61,15 @@ function put(m: Model, t: CompositionTag): Model {
 }
 
 /** Body čáry z bodů výkresu (vůči bodu uchycení, první na kolmici). */
-function leaderFrom(m: Model, elementId: Id, at: Vec2, pts: readonly Vec2[]): Vec2[] {
+function leaderFrom(axis: LeaderAxis, at: Vec2, pts: readonly Vec2[]): Vec2[] {
   const rel = pts.map((p) => ({ x: p.x - at.x, y: p.y - at.y }));
-  return normalizeLeader(leaderAxis(m, elementId), rel) ?? fail('invalid', 'Odkazová čára je nulová');
+  return normalizeLeader(axis, rel) ?? fail('invalid', 'Odkazová čára je nulová');
+}
+
+/** Průřez v místě bodu (nový bod at, jinak uložený poměr). */
+function crossAt(m: Model, s: Section, elementId: Id, at: Vec2 | undefined, stored?: TagAnchor) {
+  const anchor = (at ? tagAnchorOf(m, s, elementId, at) : stored) ?? fail('not-found', NOT_CUT);
+  return { anchor, cross: tagCross(m, s, elementId, anchor) ?? fail('not-found', NOT_CUT) };
 }
 
 type CreateParams = Partial<CompositionTagOptions> & {
@@ -70,9 +84,9 @@ export const compositionTagCreate = defineCommand<CreateParams>({
   name: 'compositionTag.create',
   label: 'Popis skladby',
   description:
-    'Vloží do řezu popis skladby řezané stěny nebo desky: bod at (u, z na výkrese, v ploše prvku), points = ' +
+    'Vloží do řezu popis skladby řezané stěny, desky nebo střechy: bod at (u, z na výkrese, v ploše prvku), points = ' +
     'body lomené odkazové čáry (výchozí jeden bod kolmo 15 mm na papíře od bodu). Čára konstrukci protne ' +
-    'kolmo, na konci kolečko s číslem konstrukce, pod ním vrstvy typu (deska shora dolů, stěna od ' +
+    'kolmo, na konci kolečko s číslem konstrukce, pod ním vrstvy typu (deska a střecha shora dolů, stěna od ' +
     'referenční strany) – počítá se z modelu (dotaz compositionTag.list). Řezané prvky viz section.elements.',
   group: 'Řezy a pohledy',
   params: S.object(
@@ -81,14 +95,13 @@ export const compositionTagCreate = defineCommand<CreateParams>({
   ),
   run(model, p, ctx) {
     const s = sectionOf(model, p.sectionId);
-    const row = cutRowOf(model, s, p.elementId) ?? fail('not-found', NOT_CUT);
     if (!tagLayers(model, p.elementId, p.at.y, false)) fail('invalid', 'Prvek nemá skladbu');
-    const anchor = anchorOf(row, p.at);
-    const at = anchorPoint(row, anchor);
+    const { anchor, cross } = crossAt(model, s, p.elementId, p.at);
     const k = s.scale * 15;
+    const out = { x: cross.axis.x * k, y: cross.axis.y * k };
     const leader = p.points
-      ? leaderFrom(model, p.elementId, at, p.points)
-      : [onPerpendicular(leaderAxis(model, p.elementId), { x: k, y: k })];
+      ? leaderFrom(cross.axis, cross.anchor, p.points)
+      : [onPerpendicular(cross.axis, out)];
     const { sectionId, elementId, at: _at, points: _p, annotationLayerId, ...opts } = p;
     const t: CompositionTag = {
       ...TAG_DEFAULTS,
@@ -117,12 +130,10 @@ export const compositionTagMove = defineCommand<{ tagId: Id; at?: Vec2; points?:
   run(model, p) {
     const t = compositionTagOf(model, p.tagId);
     if (t.locked) fail('lock-violation', LOCKED);
-    const row = cutRowOf(model, sectionOf(model, t.sectionId), t.elementId) ?? fail('not-found', NOT_CUT);
-    const anchor = p.at ? anchorOf(row, p.at) : t.anchor;
-    const at = anchorPoint(row, anchor);
-    const axis = leaderAxis(model, t.elementId);
-    let leader: readonly Vec2[] = p.points ? leaderFrom(model, t.elementId, at, p.points) : t.leader;
-    if (p.delta) leader = moveLeaderEnd(axis, leader, p.delta) ?? leader;
+    const s = sectionOf(model, t.sectionId);
+    const { anchor, cross } = crossAt(model, s, t.elementId, p.at, t.anchor);
+    let leader: readonly Vec2[] = p.points ? leaderFrom(cross.axis, cross.anchor, p.points) : t.leader;
+    if (p.delta) leader = moveLeaderEnd(cross.axis, leader, p.delta) ?? leader;
     return { model: put(model, { ...t, anchor, leader }) };
   },
 });

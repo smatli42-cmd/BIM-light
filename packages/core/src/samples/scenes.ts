@@ -13,18 +13,17 @@ import { ROOF_SCENES } from './scenes-strechy.ts';
 import { ELEVATION_SCENES } from './scenes-pohledy.ts';
 
 export const SCENES: readonly Sample[] = [
-  ...ELEVATION_SCENES,
-  ...ROOF_SCENES,
   {
     key: 'popis-skladeb',
     title: 'Popis skladby v řezu',
     kind: 'scena',
     date: '2026-11-28',
     description:
-      'Ukázkový dům, Řez A (Obsah → Projekt → Řezy → Řez A) má tři popisy skladby: obvodová stěna 1.NP (S3), ' +
-      'strop nad 1.NP (D1) a podlaha (P1, číslované vrstvy). Odkazová čára protne konstrukci kolmo, lomí se, ' +
+      'Ukázkový dům, Řez A (Obsah → Projekt → Řezy → Řez A) má čtyři popisy skladby: obvodová stěna 1.NP (S3), ' +
+      'strop nad 1.NP (D1), podlaha (P1, číslované vrstvy) a střecha (R1 – čára kolmo k rovině střechy, ' +
+      'vrstvy od krytiny k SDK). Odkazová čára protne konstrukci kolmo, lomí se, ' +
       'popiska má vždy stejný tvar – nahoře číslo konstrukce v kolečku, pod ním vrstvy „Materiál tl. 20 mm“. Zkus: nástroj Popis ' +
-      'skladby v paletě (vedle Výškové kóty) → v okně řezu klik do řezané stěny nebo desky, další kliky = ' +
+      'skladby v paletě (vedle Výškové kóty) → v okně řezu klik do řezané stěny, desky nebo střechy, další kliky = ' +
       'lomy čáry (první vždy kolmo), dvojklik / Enter dokončí, Esc ubere bod. Klik na popis ho vybere, tažení ' +
       'kolečka ho posune, Del smaže. V info boxu: kolečko, název typu, tloušťky, číslování, obrácené pořadí, ' +
       'strana a zarovnání řádků, zámek. Změň skladbu (Editor typů) – popis se hned přepíše.',
@@ -32,6 +31,8 @@ export const SCENES: readonly Sample[] = [
       HOUSE.build(c);
     },
   },
+  ...ELEVATION_SCENES,
+  ...ROOF_SCENES,
   {
     key: 'rezy-uchopy',
     title: 'Úchopy v řezu – výška stěny, poloha stropu, parapet okna',

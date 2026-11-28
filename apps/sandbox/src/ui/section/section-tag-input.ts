@@ -1,22 +1,24 @@
 // Nástroj Popis skladby v okně řezu (česká výkresová praxe; Revit Multi-layer tag, Archicad Composite label):
-// první klik na řezanou stěnu nebo desku = bod uchycení, další kliky = body odkazové čáry – první vždy kolmo
+// první klik na řezanou stěnu, desku nebo střechu = bod uchycení, další kliky = body odkazové čáry – první vždy kolmo
 // ke konstrukci, další se srovnají vodorovně / svisle (Shift = volně). Dvojklik, Enter nebo pravé tlačítko
 // popis vloží (poslední bod = spodek popisky, nad ním řádky a kolečko), Esc vrátí bod; celá popiska je
 // během kreslení vidět jako náhled. Popis pod kurzorem jde vybrat (Shift přidá) a táhnout (čára zůstane
 // v pravých úhlech). Model se mění jen příkazy compositionTag.* (jako AI).
 import {
-  anchorOf,
   cutRowOf,
   drawCompositionTag,
-  leaderAxis,
   moveLeaderEnd,
   nextLeaderPoint,
   normalizeLeader,
+  roofCutAt,
   sectionPickAt,
+  tagAnchorOf,
+  tagCross,
   tagLayout,
   tagTextBox,
   type CompositionTag,
   type Id,
+  type TagAnchor,
   type Vec2,
 } from '@bim-light/core';
 import type { Viewport } from '../../canvas/viewport.ts';
@@ -38,7 +40,10 @@ const segDist = (p: Vec2, a: Vec2, b: Vec2) => {
 
 interface Drawing {
   readonly elementId: Id;
+  /** Bod uchycení na konstrukci a kolmice k ní (z jádra, stejně jako příkaz). */
   readonly at: Vec2;
+  readonly anchor: TagAnchor;
+  readonly axis: Vec2;
   /** Body čáry vůči bodu uchycení. */
   readonly pts: Vec2[];
   last: { time: number; screen: Vec2 } | null;
@@ -70,26 +75,35 @@ export class SectionTagInput {
     return !!this.drag;
   }
 
-  /** Řezaná stěna nebo deska pod kurzorem (nejbližší). */
+  /** Řezaná stěna, deska nebo střecha pod kurzorem (nejbližší). */
   private elementAt(p: Vec2): Id | null {
     const sec = this.s.model.sections[this.sectionId];
     if (!sec) return null;
     const ids = sectionPickAt(this.s.model, sec, p, this.v.px(PICK_PX));
-    return ids.find((id) => cutRowOf(this.s.model, sec, id)) ?? null;
+    return ids.find((id) => cutRowOf(this.s.model, sec, id)) ?? roofCutAt(this.s.model, sec, p);
+  }
+
+  /** Začátek kreslení: bod uchycení a kolmice v místě kliku. */
+  private start(id: Id, p: Vec2): Drawing | null {
+    const sec = this.s.model.sections[this.sectionId];
+    const anchor = sec ? tagAnchorOf(this.s.model, sec, id, p) : null;
+    const c = sec && anchor ? tagCross(this.s.model, sec, id, anchor) : null;
+    return c && anchor ? { elementId: id, at: c.anchor, anchor, axis: c.axis, pts: [], last: null } : null;
   }
 
   /** Další bod čáry pod kurzorem (vůči bodu uchycení, srovnaný podle pravidla jádra). */
   private next(d: Drawing, p: Vec2, free: boolean): Vec2 {
     const rel = { x: p.x - d.at.x, y: p.y - d.at.y };
-    return nextLeaderPoint(leaderAxis(this.s.model, d.elementId), d.pts, rel, free);
+    return nextLeaderPoint(d.axis, d.pts, rel, free);
   }
 
   click(p: Vec2, shift = false) {
     const d = this.draw;
     if (!d) {
       const id = this.elementAt(p);
-      if (!id) return this.s.toast('Klikni na řezanou stěnu nebo desku (ne na prvek v pohledu).', 'bad');
-      this.draw = { elementId: id, at: p, pts: [], last: null };
+      if (!id)
+        return this.s.toast('Klikni na řezanou stěnu, desku nebo střechu (ne na prvek v pohledu).', 'bad');
+      this.draw = this.start(id, p);
       return;
     }
     const screen = this.v.toScreen(p);
@@ -180,18 +194,17 @@ export class SectionTagInput {
     if (!sec) return null;
     const d = this.draw;
     if (d) {
-      const row = cutRowOf(model, sec, d.elementId);
-      const axis = leaderAxis(model, d.elementId);
-      const leader = normalizeLeader(axis, [...d.pts, this.next(d, m, this.shift)]);
-      if (!row || !leader) return null;
+      const leader = normalizeLeader(d.axis, [...d.pts, this.next(d, m, this.shift)]);
+      if (!leader) return null;
       const base = { id: 'náhled', sectionId: sec.id, elementId: d.elementId, annotationLayerId: '' };
-      return { ...tagDefaults(this.s), ...base, anchor: anchorOf(row, d.at), leader, locked: false };
+      return { ...tagDefaults(this.s), ...base, anchor: d.anchor, leader, locked: false };
     }
     const g = this.drag;
     const t = g?.moved ? model.compositionTags[g.id] : undefined;
     if (!g || !t) return null;
     const delta = { x: m.x - g.start.x, y: m.y - g.start.y };
-    return { ...t, leader: moveLeaderEnd(leaderAxis(model, t.elementId), t.leader, delta) ?? t.leader };
+    const axis = tagCross(model, sec, t.elementId, t.anchor)?.axis;
+    return { ...t, leader: (axis && moveLeaderEnd(axis, t.leader, delta)) || t.leader };
   }
 
   /** Náhled celé popisky (čára, kolečko, řádky) při kreslení a tažení. */

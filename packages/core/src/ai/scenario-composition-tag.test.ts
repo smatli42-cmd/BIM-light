@@ -1,5 +1,6 @@
 // AI scénář: popis skladby v řezu jen JSON voláními nástrojů – řez místností se stropem, bod ve stropu
-// (section.pick), vložení popisu, řádky z typu (compositionTag.list), volby obsahu, posun a smazání.
+// (section.pick), vložení popisu, řádky z typu (compositionTag.list), volby obsahu, posun a smazání; popis
+// střechy kolmo k rovině (pokyn uživatele 2026-11-28).
 import { describe, expect, it } from 'vitest';
 import { must, room, start } from './scenario-helpers.ts';
 
@@ -10,6 +11,7 @@ interface TagRow {
   id: string;
   lines: string[] | null;
   end: { x: number; y: number } | null;
+  path: { x: number; y: number }[] | null;
   markText: string | null;
 }
 
@@ -54,5 +56,38 @@ describe('AI scénář: popis skladby v řezu', () => {
     expect(list().end).toEqual({ x: at.x - 1500, y: 3900 });
     c.ai.call('selection.delete', { levelDimIds: [tag] });
     expect(c.ai.call<TagRow[]>('compositionTag.list', {})).toEqual([]);
+  });
+
+  it('pokyn uživatele / střechy: popis valbové střechy 45° – čára kolmo k rovině, krytina nahoře, číslo R1', () => {
+    const c = start();
+    const t = must(
+      c.ai
+        .call<{ id: string; name: string }[]>('roofType.list')
+        .find((x) => x.name === 'Šikmá střecha, pálená krytina'),
+    );
+    const [roof] = c.ai.call<string[]>('roof.create', {
+      storeyId: c.storeyId,
+      typeId: t.id,
+      rect: { a: { x: 0, y: 0 }, b: { x: 10000, y: 6000 } },
+      shape: 'hip',
+      slope: 45,
+      refOffset: 3000,
+    });
+    const [sec] = c.ai.call<string[]>('section.create', {
+      start: { x: 5000, y: -2000 },
+      end: { x: 5000, y: 8000 },
+    });
+    const r = must(
+      c.ai.call<Cut>('section.elements', { sectionId: sec }).cut.find((x) => x.elementId === roof),
+    );
+    // Bod kdekoli nad levou rovinou: jádro ho srovná na rovinu (kolmo k ní, v rozsahu skladby).
+    const at = { x: r.u0 + (r.u1 - r.u0) * 0.25, y: r.bottom };
+    c.ai.call('compositionTag.create', { sectionId: sec, elementId: roof, at });
+    const tag = must(c.ai.call<TagRow[]>('compositionTag.list', { sectionId: sec })[0]);
+    expect(tag.markText).toBe('R1');
+    expect(must(tag.lines ?? undefined)[0]).toBe('Krytina pálená tl. 30 mm');
+    const [p0, p1] = must(tag.path ?? undefined);
+    const angle = (Math.atan2(Math.abs(p1!.x - p0!.x), p1!.y - p0!.y) * 180) / Math.PI;
+    expect(angle).toBeCloseTo(45, 3);
   });
 });

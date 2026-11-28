@@ -74,8 +74,9 @@ export function NewCompositionTagInfo({ s }: { s: Session }) {
       info="Text se počítá z typu prvku (skladby) – po změně skladby se hned přepíše. Deska shora dolů, stěna od referenční strany."
     >
       <p class="muted">
-        V okně řezu: klik na řezanou stěnu nebo desku, další kliky = lomy odkazové čáry (první úsek vždy kolmo
-        ke konstrukci, Shift = volně). Dvojklik, Enter nebo pravé tlačítko = kolečko s číslem a vrstvy.
+        V okně řezu: klik na řezanou stěnu, desku nebo střechu, další kliky = lomy odkazové čáry (první úsek
+        vždy kolmo ke konstrukci, Shift = volně). Dvojklik, Enter nebo pravé tlačítko = kolečko s číslem a
+        vrstvy.
       </p>
       <Options prefix="tag-default" value={tagDefaults(s)} onSet={(patch) => setTagDefaults(s, patch)} />
     </Section>

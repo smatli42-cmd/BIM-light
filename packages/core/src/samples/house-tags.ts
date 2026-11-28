@@ -1,6 +1,7 @@
-// Popisy skladby v Řezu A ukázkového domu (úkol uživatele 2026-11-28): obvodová stěna 1.NP, strop nad 1.NP
-// a podlaha – odkazová čára kolmo přes konstrukci, lom, kolečko s číslem a vrstvy typu. Jen příkazy compositionTag.create.
+// Popisy skladby v Řezu A ukázkového domu (úkol uživatele 2026-11-28): obvodová stěna 1.NP, strop nad 1.NP,
+// podlaha a střecha (kolmo k rovině střechy) – odkazová čára kolmo přes konstrukci, lom, kolečko s číslem a vrstvy typu. Jen příkazy compositionTag.create.
 import { cutRowOf } from '../composition-tag/content.ts';
+import { roofCross } from '../composition-tag/roof.ts';
 import { vec, type Vec2 } from '../geometry/index.ts';
 import type { Id } from '../ids/index.ts';
 import type { SampleContext } from './types.ts';
@@ -24,6 +25,29 @@ function extent(c: SampleContext, sectionId: Id) {
   const s = c.model.sections[sectionId];
   const rows = s ? Object.keys(c.model.elements).flatMap((id) => cutRowOf(c.model, s, id) ?? []) : [];
   return { u0: Math.min(...rows.map((r) => r.u0)), u1: Math.max(...rows.map((r) => r.u1)) };
+}
+
+/** Střecha: šikmá jižní rovina u okapu (dál už řez vede valbou podél vrstevnice), čára kolmo ven, lom doleva. */
+function roofTag(c: SampleContext, sectionId: Id, left: number) {
+  const s = c.model.sections[sectionId];
+  const roof = cut(c, sectionId, (id) => c.model.elements[id]?.category === 'roof');
+  if (!s || !roof) return;
+  const u = roof.row.u0 + (roof.row.u1 - roof.row.u0) * 0.1;
+  const r = roofCross(c.model, s, roof.id, u);
+  if (!r) return;
+  const at = {
+    x: r.bottom.x + (r.normal.x * r.thickness) / 2,
+    y: r.bottom.y + (r.normal.y * r.thickness) / 2,
+  };
+  const bend = { x: at.x + r.normal.x * 1200, y: at.y + r.normal.y * 1200 };
+  c.run('compositionTag.create', {
+    sectionId,
+    elementId: roof.id,
+    at,
+    points: [bend, vec(left, bend.y)],
+    side: 'left',
+    align: 'right',
+  });
 }
 
 export function houseCompositionTags(c: SampleContext, sectionId: Id) {
@@ -67,4 +91,5 @@ export function houseCompositionTags(c: SampleContext, sectionId: Id) {
     const y = floor.row.top + 800;
     put(floor.id, vec(x, floor.mid.y), [vec(x, y), vec(box.u1 + 1500, y)], { numbered: true });
   }
+  roofTag(c, sectionId, box.u0 - 3200);
 }

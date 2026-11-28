@@ -1,6 +1,7 @@
 // Prohlížečové testy popisu skladby v okně řezu (úkol uživatele 2026-11-28; Revit Multi-layer tag, Archicad
 // Composite label; pokyn uživatele 2026-11-28 – čára kolmo ke konstrukci, lomená, číslo v kolečku): ukázka
-// má v Řezu A tři popisy; nástroj Popis skladby – klik do stropu, lomy, Enter; nastavení popisky v info boxu.
+// má v Řezu A čtyři popisy; nástroj Popis skladby – klik do stropu, lomy, Enter; nastavení popisky v info boxu;
+// popis střechy kolmo k rovině (pokyn uživatele 2026-11-28).
 import { expect, test, type Page } from '@playwright/test';
 
 interface Row {
@@ -21,6 +22,7 @@ interface Tag {
   end: { x: number; y: number } | null;
   path: { x: number; y: number }[] | null;
   lines: string[] | null;
+  anchorAt: { x: number; y: number } | null;
 }
 
 async function at(page: Page, u: number, z: number) {
@@ -59,7 +61,7 @@ test.beforeEach(async ({ page }) => {
 test('pokyn uživatele / popis skladby: lomená čára kolmo ke stropu, kolečko s číslem, nastavení, tažení, Del', async ({
   page,
 }) => {
-  expect(await tags(page)).toHaveLength(3);
+  expect(await tags(page)).toHaveLength(4);
   const sid = await sectionId(page);
   const content = (await page.evaluate(
     (id) => window.__bim!.query('section.elements', { sectionId: id }),
@@ -77,7 +79,7 @@ test('pokyn uživatele / popis skladby: lomená čára kolmo ke stropu, kolečko
   await click(page, u + 300, slab.top + 1500);
   await click(page, u + 2000, slab.top + 1600);
   await page.keyboard.press('Enter');
-  await expect.poll(async () => (await tags(page)).length).toBe(4);
+  await expect.poll(async () => (await tags(page)).length).toBe(5);
   const made = (await tags(page)).find((t) => t.elementId === slab.elementId && t.numbered)!;
   expect(made.markText).toBe('D1');
   expect(made.lines?.[0]).toMatch(/^1\. .* tl\. \d+ mm$/);
@@ -110,5 +112,28 @@ test('pokyn uživatele / popis skladby: lomená čára kolmo ke stropu, kolečko
     .poll(async () => Math.round((await tags(page)).find((t) => t.id === made.id)?.end?.x ?? 0))
     .toBeGreaterThan(e0.x + 700);
   await page.keyboard.press('Delete');
-  await expect.poll(async () => (await tags(page)).length).toBe(3);
+  await expect.poll(async () => (await tags(page)).length).toBe(4);
+});
+
+test('pokyn uživatele / popis skladby na střeše: klik do střechy, čára kolmo k rovině, R1, krytina nahoře', async ({
+  page,
+}) => {
+  const roofId = await page.evaluate(
+    () => Object.values(window.__bim!.model().elements).find((e) => e.category === 'roof')!.id,
+  );
+  const sample = (await tags(page)).find((t) => t.elementId === roofId)!;
+  const a = sample.anchorAt!;
+  await page.getByTestId('tool-compositionTag').click();
+  // Klik do skladby střechy, druhý bod šikmo vpravo nahoru (srovná se na kolmici), Enter.
+  await click(page, a.x, a.y);
+  await click(page, a.x + 1500, a.y + 1800);
+  await page.keyboard.press('Enter');
+  await expect.poll(async () => (await tags(page)).filter((t) => t.elementId === roofId).length).toBe(2);
+  const made = (await tags(page)).find((t) => t.elementId === roofId && t.id !== sample.id)!;
+  expect(made.markText).toBe('R1');
+  expect(made.lines?.[0]).toBe('Krytina pálená tl. 30 mm');
+  const [p0, p1] = made.path!;
+  const angle = (Math.atan2(Math.abs(p1!.x - p0!.x), p1!.y - p0!.y) * 180) / Math.PI;
+  expect(angle).toBeGreaterThan(20);
+  expect(angle).toBeLessThan(50);
 });
