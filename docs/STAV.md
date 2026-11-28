@@ -16,7 +16,7 @@ Rozhraní UI1–UI5 je v `docs/STAV-rozhrani.md`, šrafy v `docs/STAV-srafy.md` 
 
 ### Automatické pohledy 1–4, Obsah podle Arditu (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=pohledy`
 
-### Popis skladby v řezu, i na střeše (2026-11-28) – v `docs/STAV-rezy.md`, scéna `?ukazka=popis-skladeb`
+### Popis skladby v řezu, i na střeše (2026-11-28) – v `docs/STAV-popis-skladby.md`, scéna `?ukazka=popis-skladeb`
 
 ### Řezy a pohledy, nástroj Řez, výškové kóty, záložky pohledů, úchopy v řezu (2026-11-27/28) – v `docs/STAV-rezy.md`
 
@@ -301,10 +301,6 @@ pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, pus
 ## Otevřené
 
 - **Priority spojování:** výjimka priority u vrstvy skladby (teď ne, pokyn uživatele), další v `docs/STAV-materialy.md`.
-- **Návrh rozdělení `docs/STAV-rezy.md` (41 KB, limit ~40 KB):** popis skladby (všechny iterace a jeho
-  „Rozhodl Code“) přesunout do `docs/STAV-popis-skladby.md`; zbytek (řezy, pohledy, výškové kóty, úchopy)
-  zůstane. Čeká na souhlas uživatele.
-
 - **Popis skladby v půdorysu (podkroví):** v půdorysu podkroví je střecha proříznutá rovinou řezu; popis by
   šel stejným jádrem (`composition-tag/cross.ts`) s kolmicí k průsečnici střechy, až o to uživatel řekne.
 
