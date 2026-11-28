@@ -1,17 +1,18 @@
 // Roviny střechy z modelu (rozhodnutí 11, návrh S1): kostra obrysu referenční čáry (skeleton.ts), přesahy
-// prodlouží roviny za referenční čáru (bod na hraně se posune o přesah ven, roh = průsečík posunutých hran),
+// prodlouží roviny za referenční čáru (bod na hraně se posune o přesah ven, rohy v corners.ts),
 // okap = výška ref. čáry − přesah × tg sklonu. Výsledek čte kresba, řez, 3D, dotaz roof.planes a později krov.
 import { dot, type Vec2 } from '../geometry/index.ts';
 import type { Model } from '../model/types.ts';
 import { faceLoop, loopArea, simplifyLoop } from './faces.ts';
 import { straightSkeleton, type Vec3 } from './skeleton.ts';
 import { roofEdgeLines, type EdgeLine } from './edge-lines.ts';
+import { cornerOf } from './corners.ts';
 import { classifyLines, type RoofLine } from './lines.ts';
 import type { Roof } from './types.ts';
 
-/** Hranice roviny: okap, štít (hrana obrysu) nebo sousední rovina (index hrany obrysu). */
+/** Hranice roviny: okap (`edge` = úsek po okapové čáře jiné hrany v rohu), štít nebo sousední rovina. */
 export type RoofBound =
-  | { readonly kind: 'eave' }
+  | { readonly kind: 'eave'; readonly edge?: number }
   | { readonly kind: 'gable'; readonly edge: number }
   | { readonly kind: 'plane'; readonly plane: number };
 
@@ -52,34 +53,6 @@ const rad = (deg: number) => (deg * Math.PI) / 180;
 export function planeZ(g: Pick<RoofGeometry, 'refZ' | 'edges'>, i: number, q: Vec2): number {
   const e = g.edges[i] as EdgeLine;
   return g.refZ + e.tan * (dot(e.n, q) - e.c);
-}
-
-/** Průsečík přímek n1·x = k1 a n2·x = k2 v půdorysu; null = rovnoběžné. */
-function meet(n1: Vec2, k1: number, n2: Vec2, k2: number): Vec2 | null {
-  const det = n1.x * n2.y - n1.y * n2.x;
-  if (Math.abs(det) < 1e-9) return null;
-  return { x: (k1 * n2.y - k2 * n1.y) / det, y: (n1.x * k2 - n2.x * k1) / det };
-}
-
-/**
- * Posun bodu na hraně obrysu o přesah ven. Roh dvou šikmých hran: bod na nároží / úžlabí (průsečík obou
- * rovin) v okapové čáře roviny `f` – roviny tak navazují i při různém sklonu nebo přesahu (okap níž
- * položené roviny pokračuje po nároží o kus dál). Roh se štítem = průsečík posunutých přímek.
- */
-function shifted(edges: readonly EdgeLine[], q: Vec2, f: number): Vec2 {
-  const on = edges.filter((e) => e.contains(q));
-  const a = on[0];
-  if (!a) return q;
-  const b = on.find((e) => Math.abs(a.n.x * e.n.y - a.n.y * e.n.x) > 1e-6);
-  if (!b) return { x: q.x - a.n.x * a.overhang, y: q.y - a.n.y * a.overhang };
-  const corner = meet(a.n, a.c - a.overhang, b.n, b.c - b.overhang) ?? q;
-  const own = edges[f];
-  if (a.gable || b.gable || !own || (own !== a && own !== b)) return corner;
-  const m = { x: a.tan * a.n.x - b.tan * b.n.x, y: a.tan * a.n.y - b.tan * b.n.y };
-  const hip = meet(m, a.tan * a.c - b.tan * b.c, own.n, own.c - own.overhang);
-  const out = hip && (hip.x - q.x) * own.n.x + (hip.y - q.y) * own.n.y <= 1e-6;
-  const near = hip && Math.hypot(hip.x - q.x, hip.y - q.y) < 20 * (a.overhang + b.overhang) + 1;
-  return hip && out && near ? hip : corner;
 }
 
 /** Kdo sdílí úsečku a→b: jiná rovina kostry, která má na své hranici její střed. */
@@ -127,13 +100,19 @@ export function roofGeometry(model: Model, roof: Roof): RoofGeometry {
         gables.push({ edge: i, polygon: loop.map((p) => ({ ...p, z: refZ + p.z })) });
       return;
     }
-    const bounds: RoofBound[] = loop.map((p, k) =>
+    const raw: RoofBound[] = loop.map((p, k) =>
       k === 0 ? { kind: 'eave' } : boundOf(loops, i, p, loop[(k + 1) % loop.length] as Vec3, isGable),
     );
     const g = { refZ, edges };
-    const polygon = loop.map((p) => {
-      const q = shifted(edges, p, i);
-      return { x: q.x, y: q.y, z: planeZ(g, i, q) };
+    const polygon: Vec3[] = [];
+    const bounds: RoofBound[] = [];
+    loop.forEach((p, k) => {
+      const c = k < 2 ? cornerOf(edges, p, i, k === 0) : cornerOf(edges, p, -1, false);
+      c.pts.forEach((q, x) => {
+        polygon.push({ x: q.x, y: q.y, z: planeZ(g, i, q) });
+        const last = x === c.pts.length - 1;
+        bounds.push(last ? (raw[k] as RoofBound) : { kind: 'eave', edge: c.along ?? i });
+      });
     });
     const sec = Math.sqrt(1 + e.tan * e.tan);
     const normal = { x: (-e.tan * e.n.x) / sec, y: (-e.tan * e.n.y) / sec, z: 1 / sec };

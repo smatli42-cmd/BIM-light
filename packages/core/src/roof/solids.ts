@@ -62,7 +62,12 @@ class Planes {
     return { n: p.normal, k: dot3(p.normal, { x: e.a.x, y: e.a.y, z: this.geo.refZ }) + d };
   }
 
-  eave(p: RoofPlane): Plane3 {
+  eave(p: RoofPlane, along?: number): Plane3 {
+    // Úsek po okapové čáře jiné hrany v rohu přesahu (corners.ts): svislá rovina té okapové čáry.
+    if (along !== undefined && along !== p.edge) {
+      const o = this.geo.edges[along] as EdgeLine;
+      return { n: { x: o.n.x, y: o.n.y, z: 0 }, k: o.c - o.overhang };
+    }
     const e = this.geo.edges[p.edge] as EdgeLine;
     const k = e.c - e.overhang;
     const E = { x: e.n.x * k, y: e.n.y * k, z: p.eaveZ };
@@ -76,7 +81,7 @@ class Planes {
   }
 
   bound(p: RoofPlane, b: RoofBound, d: number): Plane3 {
-    if (b.kind === 'eave') return this.eave(p);
+    if (b.kind === 'eave') return this.eave(p, b.edge);
     if (b.kind === 'plane') return this.face(b.plane, d);
     const e = this.geo.edges[b.edge] as EdgeLine;
     return { n: { x: e.n.x, y: e.n.y, z: 0 }, k: e.c - e.overhang };

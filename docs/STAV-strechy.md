@@ -50,11 +50,13 @@ sekce 11 (střechy a krovy) a 15 (otvory ve střeše, vikýře).
 
 ### Oprava rohů přesahu a štítky hran, 2026-11-28 (hlášení uživatele, scéna `?ukazka=strechy`)
 
-- Roh přesahu mezi hranami s různým sklonem nebo přesahem (L 45° / 30°: vnější i vnitřní roh) nenavazoval –
-  roh byl průsečík okapových čar, který při různých sklonech neleží na nároží / úžlabí. Teď je roh každé
-  roviny bod na nároží (průsečík obou rovin) v její okapové čáře; okap níž položené roviny pokračuje po
-  nároží o kus dál (jako u skutečných střech s okapy v různé výšce). Při stejném sklonu a přesahu beze
-  změny. Test `roof/planes.test.ts` (každá hrana mezi rovinami leží v obou rovinách).
+- Roh přesahu mezi hranami s různým sklonem nebo přesahem (L 45° / 30°: vnější i vnitřní roh) nenavazoval.
+  Teď (`roof/corners.ts`, jako vícerovinná střecha Archicadu): obrys okapu je vždy uzavřený mnohoúhelník
+  posunutých hran (roh = průsečík okapových čar). Nároží / úžlabí jde z rohu ref. čáry ven a končí tam,
+  kde poprvé narazí na okapovou čáru jedné roviny; druhá rovina pokračuje z toho bodu po okapové čáře
+  té první až do rohu. Při stejném sklonu a přesahu beze změny. Test `roof/planes.test.ts`: každá hrana mezi
+  rovinami leží v obou rovinách a roviny přesně vyplní obrys okapu (bez mezery a přečnívajícího jazyka).
+  (První pokus téhož dne nechal nároží dojít až na okap každé roviny zvlášť – v rohu zůstala mezera.)
 - Vybraná střecha v půdorysu ukazuje u každé hrany štítek s číslem (jako v info boxu) a sklonem / „štít“,
   šipku ve směru stoupání roviny a referenční čáru čárkovaně (`apps/sandbox/src/render/roof-labels.ts`).
 
