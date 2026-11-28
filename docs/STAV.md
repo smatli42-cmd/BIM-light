@@ -295,6 +295,10 @@ pokyny jsou v `docs/pracovni-postup.md` (koordinátor + vedlejší sessions, pus
 
 ## Otevřené
 
+- **Návrh rozdělení `docs/STAV-rezy.md` (41 KB, limit ~40 KB):** popis skladby (všechny iterace a jeho
+  „Rozhodl Code“) přesunout do `docs/STAV-popis-skladby.md`; zbytek (řezy, pohledy, výškové kóty, úchopy)
+  zůstane. Čeká na souhlas uživatele.
+
 - **Popis skladby v půdorysu (podkroví):** v půdorysu podkroví je střecha proříznutá rovinou řezu; popis by
   šel stejným jádrem (`composition-tag/cross.ts`) s kolmicí k průsečnici střechy, až o to uživatel řekne.
 
